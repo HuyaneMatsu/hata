@@ -23,25 +23,25 @@ from .preinstanced import IntegrationType
 # enabled
 
 parse_enabled = bool_parser_factory('enabled', True)
-put_enabled_into = bool_optional_putter_factory('enabled', True)
+put_enabled = bool_optional_putter_factory('enabled', True)
 validate_enabled = bool_validator_factory('enabled', True)
 
 # id
 
 parse_id = entity_id_parser_factory('id')
-put_id_into = entity_id_putter_factory('id')
+put_id = entity_id_putter_factory('id')
 validate_id = entity_id_validator_factory('integration_id')
 
 # name
 
 parse_name = force_string_parser_factory('name')
-put_name_into = force_string_putter_factory('name')
+put_name = force_string_putter_factory('name')
 validate_name = force_string_validator_factory('name', NAME_LENGTH_MIN, NAME_LENGTH_MAX)
 
 # scopes
 
 parse_scopes = preinstanced_array_parser_factory('scopes', Oauth2Scope)
-put_scopes_into = preinstanced_array_putter_factory('scopes')
+put_scopes = preinstanced_array_putter_factory('scopes')
 validate_scopes = preinstanced_array_validator_factory('scopes', Oauth2Scope)
 
 # type
@@ -52,7 +52,7 @@ def parse_type(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Entity data.
     
     Returns
@@ -64,12 +64,12 @@ def parse_type(data):
     except KeyError:
         preinstanced = IntegrationType.none
     else:
-        preinstanced = IntegrationType.get(value)
+        preinstanced = IntegrationType(value)
     
     return preinstanced
 
 
-def put_type_into(preinstanced, data, defaults):
+def put_type(preinstanced, data, defaults):
     """
     Puts the integration type the given `data` json serializable object.
     
@@ -77,14 +77,14 @@ def put_type_into(preinstanced, data, defaults):
     ----------
     preinstanced : ``IntegrationType``
         An integration's type.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     data['type'] = preinstanced.value
     
@@ -117,5 +117,5 @@ def validate_type(preinstanced):
 # user
 
 parse_user = default_entity_parser_factory('user', User, default = ZEROUSER)
-put_user_into = default_entity_putter_factory('user', ClientUserBase, ZEROUSER, force_include_internals = True)
+put_user = default_entity_putter_factory('user', ClientUserBase, ZEROUSER, force_include_internals = True)
 validate_user = default_entity_validator_factory('user', ClientUserBase, default = ZEROUSER)

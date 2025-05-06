@@ -9,8 +9,8 @@ from ...user import ClientUserBase, ZEROUSER, create_partial_user_from_id
 from ..team_member import TeamMember, TeamMembershipState
 
 from .fields import (
-    parse_id, parse_members, parse_name, parse_owner_id, put_id_into, put_members_into, put_name_into,
-    put_owner_id_into, validate_id, validate_members, validate_name, validate_owner_id
+    parse_id, parse_members, parse_name, parse_owner_id, put_id, put_members, put_name,
+    put_owner_id, validate_id, validate_members, validate_name, validate_owner_id
 )
 
 
@@ -126,7 +126,7 @@ class Team(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Team data.
         
         Returns
@@ -243,17 +243,17 @@ class Team(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         
         if include_internals:
-            put_id_into(self.id, data, defaults)
+            put_id(self.id, data, defaults)
         
         type(self).icon.put_into(self.icon, data, defaults, as_data = not include_internals)
-        put_name_into(self.name, data, defaults)
-        put_members_into(self.members, data, defaults, include_internals = include_internals)
-        put_owner_id_into(self.owner_id, data, defaults)
+        put_name(self.name, data, defaults)
+        put_members(self.members, data, defaults, include_internals = include_internals)
+        put_owner_id(self.owner_id, data, defaults)
         
         return data
     
@@ -264,7 +264,7 @@ class Team(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         team_id = self.id
         
@@ -284,7 +284,7 @@ class Team(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `None`, `dict` of (`str`, `object`) items
+        data : `None`, `dict<str, object>`
             Team dat.
         """
         self._set_icon(data)

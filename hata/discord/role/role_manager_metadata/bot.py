@@ -5,7 +5,7 @@ from scarletio import copy_docs
 from ...user import User, ZEROUSER
 
 from .base import RoleManagerMetadataBase
-from .fields import parse_bot_id, put_bot_id_into, validate_bot_id
+from .fields import parse_bot_id, put_bot_id, validate_bot_id
 
 
 class RoleManagerMetadataBot(RoleManagerMetadataBase):
@@ -57,7 +57,7 @@ class RoleManagerMetadataBot(RoleManagerMetadataBase):
     @copy_docs(RoleManagerMetadataBase.to_data)
     def to_data(self, *, defaults = False):
         data = {}
-        put_bot_id_into(self.bot_id, data, defaults)
+        put_bot_id(self.bot_id, data, defaults)
         return data
     
     

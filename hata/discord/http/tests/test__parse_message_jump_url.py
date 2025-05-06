@@ -1,34 +1,39 @@
 import vampytest
 
-from ..urls import parse_message_jump_url
+from ..urls import DISCORD_ENDPOINT, parse_message_jump_url
 
 
-@vampytest.call_with(
-    'https://discord.com/channels/@me/931534110002481173/1109217121273567569',
-    0,
-    931534110002481173,
-    1109217121273567569,
-)
-@vampytest.call_with(
-    'https://discord.com/channels/388267636661611178/931534110002481173/1109217121273567569',
-    388267636661611178,
-    931534110002481173,
-    1109217121273567569,
-)
+def _iter_options():
+    guild_id = 202504160010
+    channel_id = 202504160011
+    
+    message_id = 202504160012
+    yield (
+        f'{DISCORD_ENDPOINT}/channels/{guild_id}/{channel_id}/{message_id}',
+        (guild_id, channel_id, message_id),
+    )
+    
+    message_id = 202504160013
+    yield (
+        f'{DISCORD_ENDPOINT}/channels/@me/{channel_id}/{message_id}',
+        (0, channel_id, message_id),
+    )
+    
+    message_id = 202504160014
+    yield (
+        f'{DISCORD_ENDPOINT}/chaaaaannels/@me/{channel_id}/{message_id}',
+        (0, 0, 0),
+    )
+    
+    message_id = 202504160014
+    yield (
+        f'',
+        (0, 0, 0),
+    )
 
-@vampytest.call_with(
-    'https://discord.com/chaaannels/388267636661611178/931534110002481173/1109217121273567569',
-    0,
-    0,
-    0,
-)
-@vampytest.call_with(
-    '',
-    0,
-    0,
-    0,
-)
-def test__parse_message_jump_url(message_jump_url, expected_guild_id, expected_channel_id, expected_message_id):
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_message_jump_url(message_jump_url):
     """
     Tests whether ``parse_message_jump_url`` works as intended.
     
@@ -36,17 +41,18 @@ def test__parse_message_jump_url(message_jump_url, expected_guild_id, expected_c
     ----------
     message_jump_url : `str`
         Message jump url to input.
-    expected_guild_id : `int`
-        The expected guild identifier as output.
-    expected_channel_id : `int`
-        The expected channel identifier as output.
-    expected_message_id : `int`
-        The expected message identifier as output.
+    
+    Returns
+    -------
+    output : `(int, int, int)`
     """
     output = parse_message_jump_url(message_jump_url)
+    
     vampytest.assert_instance(output, tuple)
     vampytest.assert_eq(len(output), 3)
     
-    vampytest.assert_eq(output[0], expected_guild_id)
-    vampytest.assert_eq(output[1], expected_channel_id)
-    vampytest.assert_eq(output[2], expected_message_id)
+    vampytest.assert_instance(output[0], int)
+    vampytest.assert_instance(output[1], int)
+    vampytest.assert_instance(output[2], int)
+    
+    return output

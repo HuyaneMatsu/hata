@@ -1,6 +1,6 @@
 __all__ = ('PermissionMismatchWarning',)
 
-import warnings
+from warnings import warn
 
 from ...discord.application import Team
 from ...discord.application_command import ApplicationCommandPermissionOverwriteTargetType
@@ -173,7 +173,7 @@ def check_and_warn_can_request_owners_access_of(client):
         return True
     
     
-    warnings.warn(
+    warn(
         (
             f'\n'
             f'Requesting owner\'s access impossible:\n'
@@ -183,7 +183,6 @@ def check_and_warn_can_request_owners_access_of(client):
         PermissionMismatchWarning,
     )
     return False
-
 
 
 def _reduce_application_command_permission_overwrites(guild_id, application_command_permission_overwrites):

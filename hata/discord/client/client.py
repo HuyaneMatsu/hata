@@ -1,12 +1,13 @@
 __all__ = ('Client', )
 
-import sys, warnings
+import sys
 from json import JSONDecodeError
 from math import inf
+from warnings import warn
 
 from scarletio import (
-    CancelledError, CompoundMetaType, EventThread, Future, LOOP_TIME, Task, copy_docs, export, from_json,
-    methodize, run_coroutine, sleep, write_exception_async
+    CancelledError, CompoundMetaType, EventThread, Future, LOOP_TIME, Task, copy_docs, export, from_json, methodize,
+    run_coroutine, sleep, write_exception_async
 )
 
 from ...env import CACHE_USER
@@ -31,9 +32,9 @@ from ..user import (
 )
 from ..user.user.fields import (
     parse_email, parse_email_verified, parse_locale, parse_mfa_enabled, parse_premium_type, validate_avatar_decoration,
-    validate_banner_color, validate_bot, validate_clan, validate_discriminator, validate_display_name, validate_email,
+    validate_banner_color, validate_bot, validate_discriminator, validate_display_name, validate_email,
     validate_email_verified, validate_flags, validate_locale, validate_mfa_enabled, validate_name,
-    validate_premium_type, validate_status
+    validate_premium_type, validate_primary_guild_badge, validate_status
 )
 
 from .compounds import CLIENT_COMPOUNDS
@@ -126,16 +127,13 @@ class Client(
     bot : `bool`
         Whether the client is a bot.
     
-    clan : `None`, ``UserClan``
-        The client's primary clan.
-    
     discriminator : `int`
         The client's discriminator. Given to avoid overlapping names.
     
-    display_name : `None`, `str`
+    display_name : `None | str`
         The clients' non-unique display name.
     
-    email : `None`, `str`
+    email : `None | str`
         The client's email.
     
     email_verified : `bool`
@@ -180,6 +178,9 @@ class Client(
     
     premium_type : ``PremiumType``
         The Nitro subscription type of the client.
+    
+    primary_guild_badge : ``None | GuildBadge``
+        The client's primary guild's badge.
     
     private_channels : `dict` of (`int`, ``Channel``) items
         Stores the private channels of the client. The channels' other recipient' ids are the keys, meanwhile the
@@ -226,8 +227,8 @@ class Client(
         the voice clients.
     
     
-    Class Attributes
-    ----------------
+    Type Attributes
+    ---------------
     loop : ``EventThread``
         The event loop of the client. Every client uses the same one.
     _next_auto_id : `int`
@@ -269,7 +270,6 @@ class Client(
         banner = ...,
         banner_color = ...,
         bot = ...,
-        clan = ...,
         client_id = ...,
         discriminator = ...,
         display_name = ...,
@@ -284,6 +284,7 @@ class Client(
         mfa_enabled = ...,
         name = ...,
         premium_type = ...,
+        primary_guild_badge = ...,
         secret = ...,
         shard_count = ...,
         should_request_users = ...,
@@ -301,14 +302,14 @@ class Client(
         activity : ``Activity``, Optional (Keyword only)
             The client's preferred activity.
         
-        additional_owners : `None`, `int`, ``ClientUserBase``, `iterable` of (`int`, ``ClientUserBase``) \
+        additional_owners : ``None | int | ClientUserBase | iterable<int> | iterable<ClientUserBase>`` \
                 , Optional (Keyword only)
             Additional users to return `True` for by ``.is_owner`.
         
         api : `None | DiscordApiClient`, Optional (Keyword only)
             The api client to use.
         
-        application_id : `None`, `int`, `str`, Optional (Keyword only)
+        application_id : `None | int | str`, Optional (Keyword only)
             The client's application id. If passed as `str`, will be converted to `int`.
          
         avatar : `None`, ``Icon``, `str`, Optional (Keyword only)
@@ -326,10 +327,7 @@ class Client(
         bot : `bool`, Optional (Keyword only)
             Whether the client is a bot.
         
-        clan : `None`, ``UserClan``, Optional (Keyword only)
-            The client's primary clan.
-        
-        client_id : `None`, `int`, `str`, Optional (Keyword only)
+        client_id : `None | int | str`, Optional (Keyword only)
             The client's `.id`. If passed as `str` will be converted to `int`. Defaults to `None`.
             
             When more `Client` is started up, it is recommended to define their id initially. The wrapper can detect the
@@ -339,7 +337,7 @@ class Client(
         discriminator : `str`, `int`, Optional (Keyword only)
             The client's discriminator.
         
-        display_name : `None`, `str`, Optional (Keyword only)
+        display_name : `None | str`, Optional (Keyword only)
             The client's non-unique display name.
         
         email : `None, `str`, Optional (Keyword only)
@@ -348,7 +346,7 @@ class Client(
         email_verified : `bool`, Optional (Keyword only)
             Whether the email of the client is verified.
         
-        extensions : `None`, `str`, `iterable` of `str`, Optional (Keyword only)
+        extensions : `None | str | iterable<str>`, Optional (Keyword only)
             The extension's name to setup on the client.
         
         flags : `int`, ``UserFlag``, Optional (Keyword only)
@@ -357,7 +355,7 @@ class Client(
         http : `None | HTTPClient`, Optional (Keyword only)
             The http client to use.
         
-        http_debug_options: `None`, `str`, `iterable` of `str`, Optional (Keyword only)
+        http_debug_options: `None | str | iterable<str>`, Optional (Keyword only)
             Http client debug options for the client.
         
         intents : `int`, ``IntentFlag``, Optional (Keyword only)
@@ -373,8 +371,11 @@ class Client(
         name : `str`, Optional (Keyword only)
             The user's name.
         
-        premium_type : ``PremiumType``, `int`, Optional (Keyword only)
+        premium_type : ``None | PremiumType | int``, Optional (Keyword only)
             The Nitro subscription type of the client.
+        
+        primary_guild_badge : ``None | GuildBadge``, Optional (Keyword only)
+            The client's primary guild's badge.
         
         secret: `str`, Optional (Keyword only)
             Client secret used when interacting with oauth2 endpoints.
@@ -385,7 +386,7 @@ class Client(
         should_request_users : `int`, Optional (Keyword only)
             Whether the client should try to request the users of it's guilds.
         
-        status : `None`, `str`, ``Status``, Optional (Keyword only)
+        status : ``None | str | Status``, Optional (Keyword only)
             The client's preferred status.
         
         **keyword_parameters : keyword parameters
@@ -471,12 +472,6 @@ class Client(
         else:
             bot = validate_bot(bot)
         
-        # clan
-        if clan is ...:
-            clan = None
-        else:
-            clan = validate_clan(clan)
-        
         # client_id
         if client_id is ...:
             client_id = try_get_user_id_from_token(token)
@@ -561,6 +556,12 @@ class Client(
         else:
             premium_type = validate_premium_type(premium_type)
         
+        # primary_guild_badge
+        if primary_guild_badge is ...:
+            primary_guild_badge = None
+        else:
+            primary_guild_badge = validate_primary_guild_badge(primary_guild_badge)
+        
         # secret
         if secret is ...:
             secret = ''
@@ -634,7 +635,6 @@ class Client(
         self.banner = banner
         self.banner_color = banner_color
         self.bot = bot
-        self.clan = clan
         self.discriminator = discriminator
         self.display_name = display_name
         self.email = email
@@ -650,6 +650,7 @@ class Client(
         self.locale = locale
         self.mfa_enabled = mfa_enabled
         self.premium_type = premium_type
+        self.primary_guild_badge = primary_guild_badge
         self.private_channels = {}
         self.ready_state = None
         self.relationships = {}
@@ -744,7 +745,7 @@ class Client(
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Data requested from Discord by the ``.client_login_static`` method.
         
         Raises
@@ -971,7 +972,7 @@ class Client(
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         
         Raises
         ------
@@ -1029,7 +1030,7 @@ class Client(
                     pass
                 else:
                     if remaining < 100:
-                        warnings.warn(
+                        warn(
                             f'`Remaining session start limit reached low amount: {remaining!r}.',
                             RuntimeWarning,
                         )
@@ -1208,7 +1209,7 @@ class Client(
             
             before = [
                 'Exception occurred at calling ',
-                self.__class__.__name__,
+                type(self).__name__,
                 '.connect\n',
             ]
             

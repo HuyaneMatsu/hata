@@ -13,7 +13,7 @@ class UserVoiceSettings:
     audio_balance : `None`, ``AudioBalance``
         Audio balance.
     
-    user_id : `None`, `int`
+    user_id : `None | int`
         The user's identifier.
     
     volume : `None`, `float`
@@ -144,7 +144,7 @@ class AudioBalance:
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         

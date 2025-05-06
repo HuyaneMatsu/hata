@@ -11,9 +11,9 @@ from ...utils import DATETIME_FORMAT_CODE
 
 from .fields import (
     parse_actioned_at, parse_actioned_by, parse_created_at, parse_form_responses, parse_guild_id, parse_last_seen_at,
-    parse_rejection_reason, parse_status, parse_user, put_actioned_at_into, put_actioned_by_into, put_created_at_into,
-    put_form_responses_into, put_guild_id_into, put_last_seen_at_into, put_rejection_reason_into, put_status_into,
-    put_user_id_into, put_user_into, validate_actioned_at, validate_actioned_by, validate_created_at,
+    parse_rejection_reason, parse_status, parse_user, put_actioned_at, put_actioned_by, put_created_at,
+    put_form_responses, put_guild_id, put_last_seen_at, put_rejection_reason, put_status,
+    put_user_id, put_user, validate_actioned_at, validate_actioned_by, validate_created_at,
     validate_form_responses, validate_guild_id, validate_last_seen_at, validate_rejection_reason, validate_status,
     validate_user
 )
@@ -26,7 +26,7 @@ class GuildJoinRequest(EventBase):
     
     Attributes
     ----------
-    actioned_by : `None`, ``ClientUserBase``
+    actioned_by : ``None | ClientUserBase``
         The user who action the join request.
     actioned_at : `None`, `datetime`
         When the join request was actioned at.
@@ -68,7 +68,7 @@ class GuildJoinRequest(EventBase):
         
         Parameters
         ----------
-        actioned_by : `None`, ``ClientUserBase``, Optional (Keyword only)
+        actioned_by : ``None | ClientUserBase``, Optional (Keyword only)
             The user who action the join request.
         actioned_at : `None`, `datetime`, Optional (Keyword only)
             When the join request was actioned at.
@@ -170,7 +170,7 @@ class GuildJoinRequest(EventBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received data.
         
         Returns
@@ -201,19 +201,19 @@ class GuildJoinRequest(EventBase):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
-        put_actioned_by_into(self.actioned_by, data, defaults)
-        put_actioned_at_into(self.actioned_at, data, defaults)
-        put_created_at_into(self.created_at, data, defaults)
-        put_form_responses_into(self.form_responses, data, defaults)
-        put_guild_id_into(self.guild_id, data, defaults)
-        put_last_seen_at_into(self.last_seen_at, data, defaults)
-        put_rejection_reason_into(self.rejection_reason, data, defaults)
-        put_status_into(self.status, data, defaults)
-        put_user_into(self.user, data, defaults)
-        put_user_id_into(self.user_id, data, defaults)
+        put_actioned_by(self.actioned_by, data, defaults)
+        put_actioned_at(self.actioned_at, data, defaults)
+        put_created_at(self.created_at, data, defaults)
+        put_form_responses(self.form_responses, data, defaults)
+        put_guild_id(self.guild_id, data, defaults)
+        put_last_seen_at(self.last_seen_at, data, defaults)
+        put_rejection_reason(self.rejection_reason, data, defaults)
+        put_status(self.status, data, defaults)
+        put_user(self.user, data, defaults)
+        put_user_id(self.user_id, data, defaults)
         return data
     
     
@@ -419,7 +419,7 @@ class GuildJoinRequest(EventBase):
         
         Parameters
         ----------
-        actioned_by : `None`, ``ClientUserBase``, Optional (Keyword only)
+        actioned_by : ``None | ClientUserBase``, Optional (Keyword only)
             The user who action the join request.
         actioned_at : `None`, `datetime`, Optional (Keyword only)
             When the join request was actioned at.

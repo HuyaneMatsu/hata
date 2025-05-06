@@ -24,7 +24,7 @@ class TestAutocompleteInterface(AutocompleteInterface):
         return self.register_output
 
 
-def test___register_auto_completer__registering():
+def test__register_auto_completer__registering():
     """
     Tests whether ``_register_auto_completer`` works as intended.
     

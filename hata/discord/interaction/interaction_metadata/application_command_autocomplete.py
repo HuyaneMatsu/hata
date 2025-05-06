@@ -1,12 +1,10 @@
 __all__ = ('InteractionMetadataApplicationCommandAutocomplete',)
 
-from warnings import warn
-
 from scarletio import copy_docs
 
 from .base import InteractionMetadataBase
 from .fields import (
-    parse_id, parse_name, parse_options, put_id_into, put_name_into, put_options_into, validate_id, validate_name,
+    parse_id, parse_name, parse_options, put_id, put_name, put_options, validate_id, validate_name,
     validate_options
 )
 
@@ -32,7 +30,6 @@ class InteractionMetadataApplicationCommandAutocomplete(InteractionMetadataBase)
         cls,
         *,
         application_command_id = ...,
-        id = ...,
         name = ...,
         options = ...,
     ):
@@ -57,20 +54,6 @@ class InteractionMetadataApplicationCommandAutocomplete(InteractionMetadataBase)
         ValueError
             - If a parameter's value is incorrect.
         """
-        # id - Deprecated
-        if id is not ...:
-            warn(
-                (
-                    f'`{cls.__name__}.__new__`\' `id` parameter is deprecated '
-                    f'and will be removed in 2024 December. '
-                    f'Please use `application_command_id` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            application_command_id = id
-        
         # application_command_id
         if application_command_id is ...:
             application_command_id = 0
@@ -125,7 +108,6 @@ class InteractionMetadataApplicationCommandAutocomplete(InteractionMetadataBase)
         self,
         *,
         application_command_id = ...,
-        id = ...,
         name = ...,
         options = ...,
     ):
@@ -154,20 +136,6 @@ class InteractionMetadataApplicationCommandAutocomplete(InteractionMetadataBase)
         ValueError
             - If a parameter's value is incorrect.
         """
-        # id - Deprecated
-        if id is not ...:
-            warn(
-                (
-                    f'`{type(self).__name__}.copy_with`\' `id` parameter is deprecated '
-                    f'and will be removed in 2024 December. '
-                    f'Please use `application_command_id` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            application_command_id = id
-        
         # application_command_id
         if application_command_id is ...:
             application_command_id = self.id
@@ -209,9 +177,9 @@ class InteractionMetadataApplicationCommandAutocomplete(InteractionMetadataBase)
     @copy_docs(InteractionMetadataBase.to_data)
     def to_data(self, *, defaults = False, guild_id = 0):
         data = {}
-        put_id_into(self.id, data, defaults)
-        put_name_into(self.name, data, defaults)
-        put_options_into(self.options, data, defaults)
+        put_id(self.id, data, defaults)
+        put_name(self.name, data, defaults)
+        put_options(self.options, data, defaults)
         return data
     
     

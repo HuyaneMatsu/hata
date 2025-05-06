@@ -7,7 +7,7 @@ def process_precreate_parameters_and_raise_extra(keyword_parameters, fields):
     
     Parameters
     ----------
-    keyword_parameters : `dict` of (`str`, `object`) items
+    keyword_parameters : `dict<str, object>`
         Keyword parameters passed to a precreate method.
     fields : `dict` of (`str`, `tuple` (`str`, `callable`) items
         Accepted fields by their key as parameters name and their values as `attribute-name - validator`.
@@ -35,7 +35,7 @@ def process_precreate_parameters(keyword_parameters, fields, processed):
     
     Parameters
     ----------
-    keyword_parameters : `dict` of (`str`, `object`) items
+    keyword_parameters : `dict<str, object>`
         Keyword parameters passed to a precreate method.
     fields : `dict` of (`str`, `tuple` (`str`, `callable`) items
         Accepted fields by their key as parameters name and their values as `attribute-name - validator`.
@@ -44,7 +44,7 @@ def process_precreate_parameters(keyword_parameters, fields, processed):
     
     Returns
     -------
-    extra : `None`, `dict` of (`str`, `object`) items
+    extra : `None`, `dict<str, object>`
         Extra keyword parameters.
     
     Raises
@@ -77,7 +77,7 @@ def raise_extra(extra):
     
     Parameters
     ----------
-    extra : `None`, `dict` of (`str`, `object`) items
+    extra : `None`, `dict<str, object>`
         Extra keyword parameters.
     
     Raises

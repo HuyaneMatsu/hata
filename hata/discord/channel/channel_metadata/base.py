@@ -57,7 +57,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        keyword_parameters : `dict` of (`str`, `object`) items
+        keyword_parameters : `dict<str, object>`
             Keyword parameters to work with.
         
         Raises
@@ -77,7 +77,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Channel data receive from Discord.
         
         Returns
@@ -157,7 +157,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         return {}
     
@@ -168,7 +168,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Channel data received from Discord.
         """
         pass
@@ -181,12 +181,12 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Channel data received from Discord.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             All item in the returned dict is optional.
             
             Might contain the following items:
@@ -261,7 +261,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Channel status update data received from Discord.
         """
         pass
@@ -274,12 +274,12 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Channel status update data received from Discord.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             All item in the returned dict is optional.
             
             Might contain the following items:
@@ -301,7 +301,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `None`, `dict` of (`str`, `object`) items
+        data : `None`, `dict<str, object>`
             Partial channel data.
         
         Returns
@@ -358,7 +358,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        keyword_parameters : `dict` of (`str`, `object`) items
+        keyword_parameters : `dict<str, object>`
             Keyword parameters to copy the channel metadata with. The used ones are removed from the dictionary.
         
         Returns

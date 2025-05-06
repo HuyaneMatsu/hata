@@ -25,4 +25,6 @@ def test__value_serializer_ids(input_value):
     -------
     output : `list<str>`
     """
-    return value_serializer_ids(input_value)
+    output = value_serializer_ids(input_value)
+    vampytest.assert_instance(output, list)
+    return output

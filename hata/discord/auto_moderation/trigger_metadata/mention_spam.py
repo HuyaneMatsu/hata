@@ -5,7 +5,7 @@ from scarletio import copy_docs
 from .base import AutoModerationRuleTriggerMetadataBase
 from .constants import AUTO_MODERATION_TRIGGER_MENTION_LIMIT_MAX
 from .fields import (
-    parse_mention_limit, parse_raid_protection, put_mention_limit_into, put_raid_protection_into,
+    parse_mention_limit, parse_raid_protection, put_mention_limit, put_raid_protection,
     validate_mention_limit, validate_raid_protection
 )
 
@@ -89,8 +89,8 @@ class AutoModerationRuleTriggerMetadataMentionSpam(AutoModerationRuleTriggerMeta
     @copy_docs(AutoModerationRuleTriggerMetadataBase.to_data)
     def to_data(self, *, defaults = False):
         data = {}
-        put_mention_limit_into(self.mention_limit, data, defaults)
-        put_raid_protection_into(self.raid_protection, data, defaults)
+        put_mention_limit(self.mention_limit, data, defaults)
+        put_raid_protection(self.raid_protection, data, defaults)
         return data
     
     

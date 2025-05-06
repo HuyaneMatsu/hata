@@ -10,7 +10,7 @@ from ..helpers import with_translation
 
 from .fields import (
     parse_description, parse_description_localizations, parse_name, parse_name_localizations, parse_type,
-    put_description_into, put_description_localizations_into, put_name_into, put_name_localizations_into, put_type_into,
+    put_description, put_description_localizations, put_name, put_name_localizations, put_type,
     validate_description, validate_description_localizations, validate_name, validate_name_localizations, validate_type
 )
 from .helpers import _purge_defaults_and_maybe_raise
@@ -86,7 +86,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
             
             Mutually exclusive with the `choices` parameter. Only applicable for string type parameters.
         
-        channel_types : `None`, `iterable` of (``ChannelType``, `int`), Optional (Keyword only)
+        channel_types : ``None | iterable<int> | iterable<ChannelType>``, Optional (Keyword only)
             The accepted channel types by the option.
             
             Only applicable if ``.type`` is set to `ApplicationCommandOptionType.channel`.
@@ -100,22 +100,22 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
             Whether the option is the default one.
         
             
-        max_length : `None`, `int`, Optional (Keyword only)
+        max_length : `None | int`, Optional (Keyword only)
             The maximum input length allowed for this option.
             
             Only applicable for string options.
         
-        max_value : `None`, `int`, `float`, Optional (Keyword only)
+        max_value : `None | int | float`, Optional (Keyword only)
             The maximal value permitted for this option.
             
             Only applicable for integer as `int`, and for float options as `float`.
         
-        min_length : `None`, `int`, Optional (Keyword only)
+        min_length : `None | int`, Optional (Keyword only)
             The minimum input length allowed for this option.
             
             Only applicable for string options.
             
-        min_value : `None`, `int`, `float`, Optional (Keyword only)
+        min_value : `None | int | float`, Optional (Keyword only)
             The minimum value permitted for this option.
             
             Only applicable for integer as `int`, and for float options as `float`.
@@ -177,7 +177,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received application command option data.
         
         Returns
@@ -209,14 +209,14 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = self.metadata.to_data(defaults = defaults)
-        put_description_into(self.description, data, defaults)
-        put_description_localizations_into(self.description_localizations, data, defaults)
-        put_name_into(self.name, data, defaults)
-        put_name_localizations_into(self.name_localizations, data, defaults)
-        put_type_into(self.type, data, defaults)
+        put_description(self.description, data, defaults)
+        put_description_localizations(self.description_localizations, data, defaults)
+        put_name(self.name, data, defaults)
+        put_name_localizations(self.name_localizations, data, defaults)
+        put_type(self.type, data, defaults)
         return data
     
     
@@ -616,7 +616,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
             
             Mutually exclusive with the `choices` parameter. Only applicable for string type parameters.
         
-        channel_types : `None`, `iterable` of (``ChannelType``, `int`), Optional (Keyword only)
+        channel_types : ``None | iterable<int> | iterable<ChannelType>``, Optional (Keyword only)
             The accepted channel types by the option.
             
             Only applicable if ``.type`` is set to `ApplicationCommandOptionType.channel`.
@@ -629,22 +629,22 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         default : `bool` = `False`, Optional (Keyword only)
             Whether the option is the default one.
         
-        max_length : `None`, `int`, Optional (Keyword only)
+        max_length : `None | int`, Optional (Keyword only)
             The maximum input length allowed for this option.
             
             Only applicable for string options.
         
-        max_value : `None`, `int`, `float`, Optional (Keyword only)
+        max_value : `None | int | float`, Optional (Keyword only)
             The maximal value permitted for this option.
             
             Only applicable for integer as `int`, and for float options as `float`.
         
-        min_length : `None`, `int`, Optional (Keyword only)
+        min_length : `None | int`, Optional (Keyword only)
             The minimum input length allowed for this option.
             
             Only applicable for string options.
             
-        min_value : `None`, `int`, `float`, Optional (Keyword only)
+        min_value : `None | int | float`, Optional (Keyword only)
             The minimum value permitted for this option.
             
             Only applicable for integer as `int`, and for float options as `float`.

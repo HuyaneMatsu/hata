@@ -3,8 +3,8 @@ __all__ = ('Resolved',)
 from scarletio import RichAttributeErrorBaseType, export
 
 from .fields import (
-    parse_attachments, parse_channels, parse_messages, parse_roles, parse_users, put_attachments_into,
-    put_channels_into, put_messages_into, put_roles_into, put_users_into, validate_attachments, validate_channels,
+    parse_attachments, parse_channels, parse_messages, parse_roles, parse_users, put_attachments,
+    put_channels, put_messages, put_roles, put_users, validate_attachments, validate_channels,
     validate_messages, validate_roles, validate_users
 )
 
@@ -84,7 +84,7 @@ class Resolved(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Resolved data.
         
         guild_id : `int` = `0`, Optional (Keyword only)
@@ -117,14 +117,14 @@ class Resolved(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
-        put_attachments_into(self.attachments, data, defaults)
-        put_channels_into(self.channels, data, defaults)
-        put_roles_into(self.roles, data, defaults)
-        put_messages_into(self.messages, data, defaults)
-        put_users_into(self.users, data, defaults, guild_id = guild_id)
+        put_attachments(self.attachments, data, defaults)
+        put_channels(self.channels, data, defaults)
+        put_roles(self.roles, data, defaults)
+        put_messages(self.messages, data, defaults)
+        put_users(self.users, data, defaults, guild_id = guild_id)
         return data
     
     
@@ -311,7 +311,7 @@ class Resolved(RichAttributeErrorBaseType):
         
         Yields
         ------
-        container : `None`, `dict` of (`str`, `object`) items
+        container : `None`, `dict<str, object>`
         """
         yield self.attachments
         yield self.channels
@@ -350,7 +350,7 @@ class Resolved(RichAttributeErrorBaseType):
         
         Returns
         -------
-        channel : `None`, ``Channel``
+        channel : ``None | Channel``
         """
         channels = self.channels
         if (channels is not None):
@@ -404,7 +404,7 @@ class Resolved(RichAttributeErrorBaseType):
         
         Returns
         -------
-        user : `None`, ``ClientUserBase``
+        user : ``None | ClientUserBase``
         """
         users = self.users
         if (users is not None):

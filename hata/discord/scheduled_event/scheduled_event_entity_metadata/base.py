@@ -33,7 +33,7 @@ class ScheduledEventEntityMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        keyword_parameters : `dict` of (`str`, `object`) items
+        keyword_parameters : `dict<str, object>`
             Additional keyword parameters passed to ``ScheduledEvent.__new__``
         
         Raises
@@ -53,7 +53,7 @@ class ScheduledEventEntityMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Entity metadata structure.
         
         Returns
@@ -74,7 +74,7 @@ class ScheduledEventEntityMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         return {}
     
@@ -160,7 +160,7 @@ class ScheduledEventEntityMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        keyword_parameters : `dict` of (`str`, `object`) items
+        keyword_parameters : `dict<str, object>`
             Additional keyword parameters passed to ``ScheduledEvent.copy_with``
         Returns
         -------

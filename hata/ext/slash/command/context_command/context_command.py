@@ -90,7 +90,7 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
     required_permissions : ``Permission``
         The required permissions to use the application command inside of a guild.
     
-    _parameter_converters : `tuple<ParameterConverter>`
+    _parameter_converters : `tuple<ParameterConverterBase>`
         Parsers to parse command parameters.
     
     response_modifier : `None | ResponseModifier`

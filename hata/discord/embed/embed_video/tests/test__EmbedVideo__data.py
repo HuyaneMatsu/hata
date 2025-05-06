@@ -21,13 +21,13 @@ def test__EmbedVideo__from_data():
         'width': width,
     }
     
-    field = EmbedVideo.from_data(data)
-    _assert_fields_set(field)
+    embed_video = EmbedVideo.from_data(data)
+    _assert_fields_set(embed_video)
     
-    vampytest.assert_eq(field.height, height)
-    vampytest.assert_eq(field.proxy_url, proxy_url)
-    vampytest.assert_eq(field.url, url)
-    vampytest.assert_eq(field.width, width)
+    vampytest.assert_eq(embed_video.height, height)
+    vampytest.assert_eq(embed_video.proxy_url, proxy_url)
+    vampytest.assert_eq(embed_video.url, url)
+    vampytest.assert_eq(embed_video.width, width)
 
 
 def test__EmbedVideo__to_data():
@@ -49,11 +49,11 @@ def test__EmbedVideo__to_data():
     }
     
     # We cant set the internal fields with the constructor, so we use `.from_data` instead.
-    field = EmbedVideo.from_data(data)
+    embed_video = EmbedVideo.from_data(data)
     
     expected_output = data
     
     vampytest.assert_eq(
-        field.to_data(defaults = True, include_internals = True),
+        embed_video.to_data(defaults = True, include_internals = True),
         expected_output,
     )

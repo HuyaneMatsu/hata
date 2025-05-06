@@ -3,7 +3,7 @@ from .emoji_counts import *
 from .fields import *
 from .flags import *
 from .guild import *
-from .guild_premium_perks import *
+from .guild_boost_perks import *
 from .helpers import *
 from .preinstanced import *
 from .sticker_counts import *
@@ -16,7 +16,7 @@ __all__ = (
     *fields.__all__,
     *flags.__all__,
     *guild.__all__,
-    *guild_premium_perks.__all__,
+    *guild_boost_perks.__all__,
     *helpers.__all__,
     *preinstanced.__all__,
     *sticker_counts.__all__,

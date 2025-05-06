@@ -1,6 +1,6 @@
 __all__ = ('warn_auto_reloader_availability',)
 
-import warnings
+from warnings import warn
 
 from ..compatibility import AUTO_RELOAD_SUPPORTED, IS_LINUX
 
@@ -32,4 +32,4 @@ def warn_auto_reloader_availability(*, do_raise = False):
     if do_raise:
         raise RuntimeError(message)
     
-    warnings.warn(message, RuntimeWarning, stacklevel = 2)
+    warn(message, RuntimeWarning, stacklevel = 2)

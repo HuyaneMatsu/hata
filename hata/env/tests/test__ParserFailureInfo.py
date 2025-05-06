@@ -37,7 +37,7 @@ def test__ParserFailureInfo__new():
     vampytest.assert_eq(parser_failure_info.line_index, line_index)
 
 
-def test__ParserFailureInfo__from_parser_state__0():
+def test__ParserFailureInfo__from_parser_state__expected_input():
     """
     Tests whether ``ParserFailureInfo.from_parser_state`` works as intended.
     
@@ -59,7 +59,7 @@ def test__ParserFailureInfo__from_parser_state__0():
     vampytest.assert_eq(parser_failure_info.line_index, 1)
 
 
-def test__ParserFailureInfo__from_parser_state__1():
+def test__ParserFailureInfo__from_parser_state__end_of_line():
     """
     Tests whether ``ParserFailureInfo.from_parser_state`` works as intended.
     
@@ -81,7 +81,7 @@ def test__ParserFailureInfo__from_parser_state__1():
     vampytest.assert_eq(parser_failure_info.line_index, 1)
 
 
-def test__ParserFailureInfo__from_parser_state__2():
+def test__ParserFailureInfo__from_parser_state__end_of_content():
     """
     Tests whether ``ParserFailureInfo.from_parser_state`` works as intended.
     
@@ -118,10 +118,7 @@ def test__ParserFailureInfo__repr():
     vampytest.assert_instance(repr(parser_failure_info), str)
 
 
-def test__ParserFailureInfo__eq():
-    """
-    Tests whether ``ParserFailureInfo.__eq__`` works as intended.
-    """
+def _iter_options__eq():
     error_code = 4
     index = 2
     line = 'hello'
@@ -134,19 +131,72 @@ def test__ParserFailureInfo__eq():
         'line_index': line_index,
     }
     
-    parser_failure_info = ParserFailureInfo(**keyword_parameters)
-    vampytest.assert_eq(parser_failure_info, parser_failure_info)
-    vampytest.assert_ne(parser_failure_info, object())
+    yield (
+        keyword_parameters,
+        keyword_parameters,
+        True,
+    )
     
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'error_code': 3,
+        },
+        False,
+    )
     
-    for field_name, field_value in (
-        ('error_code', 3),
-        ('index', 1),
-        ('line', 'ayaya'),
-        ('line_index', 3),
-    ):
-        test_parser_failure_info = ParserFailureInfo(**{**keyword_parameters, field_name: field_value})
-        vampytest.assert_ne(parser_failure_info, test_parser_failure_info)
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'index': 1,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'line': 'ayaya',
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'line_index': 3,
+        },
+        False,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__eq()).returning_last())
+def test__ParserFailureInfo__eq(keyword_parameters_0, keyword_parameters_1):
+    """
+    Tests whether ``ParserFailureInfo.__eq__`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters_0 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    keyword_parameters_1 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    parser_failure_info_0 = ParserFailureInfo(**keyword_parameters_0)
+    parser_failure_info_1 = ParserFailureInfo(**keyword_parameters_1)
+    
+    output = parser_failure_info_0 == parser_failure_info_1
+    vampytest.assert_instance(output, bool)
+    return output
 
 
 def test__ParserFailureInfo__hash():

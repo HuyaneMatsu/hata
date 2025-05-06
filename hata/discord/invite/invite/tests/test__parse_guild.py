@@ -23,11 +23,13 @@ def test__parse_guild(input_data):
     
     Parameters
     ----------
-    input_data : `str`
+    input_data : `dict<str, object>`
         Data to parse from.
     
     Returns
     -------
-    output : `None`, ``Guild``
+    output : ``None | Guild``
     """
-    return parse_guild(input_data)
+    output = parse_guild(input_data)
+    vampytest.assert_instance(output, Guild, nullable = True)
+    return output

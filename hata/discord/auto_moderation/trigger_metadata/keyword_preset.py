@@ -4,7 +4,7 @@ from scarletio import copy_docs
 
 from .base import AutoModerationRuleTriggerMetadataBase
 from .fields import (
-    parse_excluded_keywords, parse_keyword_presets, put_excluded_keywords_into, put_keyword_presets_into,
+    parse_excluded_keywords, parse_keyword_presets, put_excluded_keywords, put_keyword_presets,
     validate_excluded_keywords, validate_keyword_presets
 )
 
@@ -29,11 +29,11 @@ class AutoModerationRuleTriggerMetadataKeywordPreset(AutoModerationRuleTriggerMe
         
         Parameters
         ----------
-        keyword_presets : `None`, `int`, ``AutoModerationKeywordPresetType``, \
-                `iterable` of (`int`, ``AutoModerationKeywordPresetType``), Optional
+        keyword_presets : ``None | int, AutoModerationKeywordPresetType | iterable<int> | iterable<AutoModerationKeywordPresetType>`` \
+                , Optional
             Keyword preset defined by Discord which will be searched for in content.
         
-        excluded_keywords : `None`, `str`, `iterable` of `str`, Optional
+        excluded_keywords : `None | str | iterable<str>`, Optional
             Excluded keywords from the preset.
         
         Raises
@@ -120,8 +120,8 @@ class AutoModerationRuleTriggerMetadataKeywordPreset(AutoModerationRuleTriggerMe
     @copy_docs(AutoModerationRuleTriggerMetadataBase.to_data)
     def to_data(self, *, defaults = False):
         data = {}
-        put_excluded_keywords_into(self.excluded_keywords, data, defaults)
-        put_keyword_presets_into(self.keyword_presets, data, defaults)
+        put_excluded_keywords(self.excluded_keywords, data, defaults)
+        put_keyword_presets(self.keyword_presets, data, defaults)
         return data
     
     
@@ -196,8 +196,8 @@ class AutoModerationRuleTriggerMetadataKeywordPreset(AutoModerationRuleTriggerMe
         excluded_keywords : `None`, `str`, `iterable` of `str, Optional (Keyword only)
             Excluded keywords from the rule.
         
-        keyword_presets : `None`, `int`, ``AutoModerationKeywordPresetType``, \
-                `iterable` of (`int`, ``AutoModerationKeywordPresetType``), Optional (Keyword only)
+        keyword_presets : ``None | int, AutoModerationKeywordPresetType | iterable<int> | iterable<AutoModerationKeywordPresetType>`` \
+                , Optional (Keyword only)
             Keyword preset defined by Discord which will be searched for in content.
         
         Returns

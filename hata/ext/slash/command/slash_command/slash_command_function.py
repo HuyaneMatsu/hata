@@ -6,7 +6,7 @@ from .....discord.application_command import ApplicationCommandOption, Applicati
 from .....discord.client import Client
 from .....discord.interaction import InteractionEvent
 
-from ...converters import InternalParameterConverter, SlashCommandParameterConverter
+from ...converters import ParameterConverterInternal, ParameterConverterSlashCommand
 from ...exceptions import handle_command_exception
 
 from ...interfaces.autocomplete import AutocompleteInterface
@@ -39,7 +39,7 @@ class SlashCommandFunction(
     _exception_handlers : `None | list<CoroutineFunction>`
         Exception handlers added with ``.error`` to the interaction handler.
     
-    _parameter_converters : `tuple<ParameterConverter>`
+    _parameter_converters : `tuple<ParameterConverterBase>`
         Parsers to parse command parameters.
     
     _parent_reference : `None | WeakReferer<SelfReferenceInterface>
@@ -76,7 +76,7 @@ class SlashCommandFunction(
         function : `async-callable`
             The command's function to call.
         
-        parameter_converters : `tuple<ParameterConverter>`
+        parameter_converters : `tuple<ParameterConverterBase>`
             Parsers to parse command parameters.
         
         name : `str`
@@ -300,7 +300,7 @@ class SlashCommandFunction(
                 parameter_relation[option.name] = option.value
         
         for parameter_converter in self._parameter_converters:
-            if isinstance(parameter_converter, InternalParameterConverter):
+            if isinstance(parameter_converter, ParameterConverterInternal):
                 value = None
             else:
                 value = parameter_relation.get(parameter_converter.name, None)
@@ -377,7 +377,7 @@ class SlashCommandFunction(
         parameter_name = focused_option.name
         
         for parameter_converter in self._parameter_converters:
-            if isinstance(parameter_converter, SlashCommandParameterConverter):
+            if isinstance(parameter_converter, ParameterConverterSlashCommand):
                 if parameter_converter.name == parameter_name:
                     break
         else:
@@ -448,14 +448,14 @@ class SlashCommandFunction(
         
         Returns
         -------
-        parameter_converters : `list` of ``SlashCommandParameterConverter``
+        parameter_converters : `list` of ``ParameterConverterSlashCommand``
         """
         auto_completable_parameters = set()
         
         for parameter_converter in self._parameter_converters:
             if (
-                isinstance(parameter_converter, SlashCommandParameterConverter) and
-                parameter_converter.can_auto_complete()
+                isinstance(parameter_converter, ParameterConverterSlashCommand) and
+                parameter_converter.can_be_auto_completed()
             ):
                 auto_completable_parameters.add(parameter_converter)
         

@@ -1,3 +1,234 @@
+## 1.3.79 *\[2025-05-05\]*
+
+### Improvements
+
+- Replace `MediaItem.url` with `MediaItem.media`.
+- Add `MediaItem.url` property.
+- Add `ComponentTypeLayoutFlag.version_1`.
+- Add `ComponentTypeLayoutFlag.version_2`.
+- Add `MediaInfo`.
+- Add `ComponentMetadataBase.media`.
+- Add `ComponentMetadataBase.spoiler`.
+- Add `Component.media`.
+- Add `Component.spoiler`.
+- Add `ComponentMetadataAttachmentMedia`.
+- Add `ComponentType.attachment_media`.
+- Add `create_attachment_media`.
+- Add `ComponentTypeLayoutFlag.section_thumbnail`.
+- Add `ComponentMetadataBase.description`.
+- Add `Component.description`.
+- Add `ComponentMetadataThumbnailMedia`.
+- Add `ComponentType.thumbnail_media`.
+- Add `create_thumbnail_media`.
+- Add `ComponentMetadataBase.color`.
+- Add `Component.color`.
+- Add `ComponentTypeLayoutFlag.nestable_into_container`.
+- Add `ComponentTypeLayoutFlag.allowed_in_message`.
+- Add `ComponentTypeLayoutFlag.allowed_in_form`.
+- Add `ComponentMetadataContainer`.
+- Add `ComponentType.container`.
+- Add `create_container`.
+- Add `ComponentMetadataBase.thumbnail`.
+- Add `Component.thumbnail`.
+- Add `ComponentTypeLayoutFlag.nestable_into_section`.
+- Add `ComponentMetadataSection`.
+- Add `ComponentType.section`.
+- Add `ComponentMetadataBase.iter_contents`.
+- Add `Component.iter_contents`.
+- Add `Component.contents`.
+- Add `Component.__len__`.
+- Add `ComponentMetadataBase.clean_copy`.
+- Add `Component.clean_copy`.
+- Add `Message.clean_components`.
+
+### Renames, Deprecations & Removals
+
+- Rename `ComponentTypeLayoutFlag.nestable` to `ComponentTypeLayoutFlag.nestable_into_row`. Deprecate `.nestable`.
+- Rename `ComponentType.text` to `.text_display` and every related types & functions.
+
+## 1.3.78 *\[2025-04-28\]*
+
+### Improvements
+
+- Add `Guild.home_splash`.
+- Add new `CUSTOM_INVITE_ENDPOINT` variable configurable using the `HATA_INVITE_ENDPOINT` environmental variable.
+- Add `InteractionEvent.attachment_size_limit`.
+- Add `GuildActivityOverviewActivity`.
+- Add `GuildActivityOverviewTag`.
+- Add `GuildActivityOverview`.
+- Add `GuildActivityOverviewActivityLevel`.
+- Add `MessageFlag.guild_feed_hidden`.
+- Add `MessageFlag.components_v2`.
+- Add `MessageFlag.created_by_social_integration`.
+- Add `ActivityFlag.contextless`.
+- Add `ERROR_CODES.max_friend_requests`.
+- Add `ERROR_CODES.message_entity_too_large`.
+- Add `ERROR_CODES.message_entity_empty`.
+- Remove & deprecate `ERROR_CODES.request_too_large`.
+- Remove & deprecate `ERROR_CODES.feature_disabled`.
+- Add `ERROR_CODES.invalid_gift_redemption_previously_owned`.
+- Add `ERROR_CODES.invalid_message_create_game_friend_private_channel`.
+- Add `ERROR_CODES.invalid_message_create_provisional_account_offline`.
+- Add `ERROR_CODES.missing_permissions_to_use_sticker`.
+- Add `ERROR_CODES.relationship_invalid_not_confirmed`.
+- Add `ERROR_CODES.guild_join_request_user_ineligible`.
+- Add `ERROR_CODES.content_inventory_entry_invalid_permissions`.
+- Add `ERROR_CODES.account_revert_invalid_token`.
+- Add `ERROR_CODES.account_revert_email_used`.
+- Add `ERROR_CODES.account_revert_account_not_found`.
+- Add `UserFlag.provisional_account`.
+- Add `ApplicationFlag.social_layer_integration`.
+- Add `ApplicationFlag.advertised`.
+- Add `ApplicationFlag.partnered`.
+- Add `AuditLogEntryType.clyde_ai_update`.
+- Add `AuditLogEntryType.scheduled_event_exception_create`.
+- Add `AuditLogEntryType.scheduled_event_exception_update`.
+- Add `AuditLogEntryType.scheduled_event_exception_delete`.
+- Add `AuditLogEntryType.user_verification_update`.
+- Add `AuditLogEntryType.guild_overview_update`.
+- Add `EntitlementType.free_staff_purchase`.
+- Add `EntitlementType.quest_reward`.
+- Add `EntitlementType.fractional_redemption`.
+- Add `EntitlementType.virtual_currency_redemption`.
+- Add `MessageType.voice_hangout_invite`.
+- Add `MessageType.changelog`.
+- Add `MessageType.nitro_notification`.
+- Add `MessageType.channel_linked_to_lobby`.
+- Add `MessageType.gifting_prompt`.
+- Add `MessageType.in_activity_message`.
+- Add `MessageType.guild_join_request_accept`.
+- Add `MessageType.guild_join_request_reject`.
+- Add `MessageType.guild_join_request_withdraw`.
+- Add `MessageType.streaming_quality_upgraded`.
+- Add `MessageType.channel_wallpaper_set`.
+- Add `MessageType.channel_wallpaper_removed`.
+- Add `banner_color` audit log change conversion for guilds.
+- Add `privacy_level` audit log change conversion for guilds.
+- Add `activity_application_ids` audit log change conversion for guilds.
+- Add `tags` audit log change conversion for guilds.
+- `AuditLogChange` notes table separated by types.
+- Use new endpoint for `guild-badges` (formerly `user-clan`).
+- Rename `UserClan` to `GuildBadge`. Deprecate `UserClan`.
+- Rename `UserBase.clan` to `.primary_guild_badge`. Deprecate `.clan`.
+- Add `PrivacyLevel.public_with_join_request`.
+- Add `RATE_LIMIT_GROUPS.guild_activity_overview_get`.
+- Add `RATE_LIMIT_GROUPS.guild_activity_overview_edit`.
+- Add `DiscordApiClient.guild_activity_overview_get`.
+- Add `DiscordApiClient.guild_activity_overview_edit`.
+- Add `Client.guild_activity_overview_get`.
+- Add `Client.guild_activity_overview_edit`.
+- Add `Invite.guild_activity_overview`.
+
+#### ext.patchouli
+- Do not treat `|` in graves as table `|`-s.
+- Allow global reference graves to be consisted of multiple references.
+
+### Bug fixes
+
+- Fix `sticker_pack_banner_as` could return an url if the sticker pack did not have any.
+- Fix `channel_group_icon_url` and `channel_group_icon_url_as` could raise `AttributeError`.
+- Fix `Invite._create_empty` set `.target_user` as `ZEROUSER` instead of `None`.
+
+### Renames, Deprecations & Removals
+
+- Rename `GuildPremiumPerks` to `GuildBoostPerks`.
+- Rename `Guild.upload_limit` and `GuildBoostPerks.upload_limit` to `.attachment_size_limit`.
+    Deprecate old `.upload_limit`. Now upload size limit is by attachment.
+- Rename `Guild.premium_tier` to `.boost_level`, `Guild.premium_perks` to `.boost_pers` and
+    `GuildBoostPerks.tier` to `.level` to match it to `Guild.booster_count` and `Guild.boost_progress_bar_enabled`.
+    Deprecate old `.premium_tier` and `.premium_perks`.
+- Rename `ERROR_CODES.activity_launch_premium_tier` to `.activity_launch_boost_level`.
+- Remove `Achievement` and most related code.
+
+
+## 1.3.77 *\[2025-03-19\]*
+
+### Improvements
+
+- Add `ERROR_CODES.cannot_remove_read_messages_permission_of_onboarding_channel`.
+- Sorting string fields in `Component` representation has been removed to make testing easier.
+
+### Bug fixes
+
+#### ext.slash
+- Fix `TypeError` when registering a command with multiple regex custom id-s.
+- `SlashCommandParameterAutoCompleter._is_deeper_than` did not handle if both is max deepness.
+- `ParameterConverterRegex.required` was set the opposite way.
+
+## 1.3.76 *\[2025-03-09\]*
+
+### Improvements
+
+- `Attachment.display_name` now includes its extension.
+- Add `Attachment.content_created_at`.
+
+### Bug fixes
+
+- `GuildPremiumPerks` 0 and `GuildPremiumPerks` 1 had their upload limit reversed.
+
+## 1.3.75 *\[2024-02-16\]*
+
+### Improvements
+
+- Rename putter functions from `put_..._into`-s to `put_...`.
+    This was something I acknowledged as an issue for a long time, just never got to fix it.
+- Handle unexpectedly closed sockets in `DiscordApiClient.discord_request`.
+- Add a second onboarding "feature" workaround.
+
+### Bug fixes
+
+- `ReadyState.discard_guild` could raise `AttributeError`.
+
+## 1.3.74 *\[2025-02-08\]*
+
+### Improvements
+
+- Add `Message.soundboard_sounds`.
+- Add `Message.soundboard_sound`.
+- Add `Message.iter_soundboard_sounds`.
+- Add `Message.has_soundboard_sound`.
+- Add `MessageSnapshot.soundboard_sounds`.
+- Add `MessageSnapshot.soundboard_sound`.
+- Add `MessageSnapshot.iter_soundboard_sounds`.
+- Add `MessageSnapshot.has_soundboard_sound`.
+- Add `SoundboardSound.mention`.
+- Use `with_components` query parameter for non application owned webhook requests.
+    It is actually not working but documented, so I added it.
+- `MessageType.poll.converter` now returns the correct value if noone voted.
+- Add `AttachmentFlag.spoiler`.
+- Add `AttachmentFlag.explicit`.
+- Add `AttachmentFlag.animated`.
+- Add `Attachment.application`.
+- Add `Attachment.clip_created_at`.
+- Add `Attachment.clip_users`.
+- Add `Attachment.iter_clip_users`.
+- Add `EmbedFlag`.
+- Add `Embed.flags`.
+- Add `EmbedMediaFlag`.
+- Add `EmbedImage.flags`.
+- Add `EmbedThumbnail.flags`.
+
+## 1.3.73 *\[2025-01-28\]*
+
+### Improvements
+
+- Add missing `Preinstance.__hash__` and `.__eq__`.
+- Add keyword parameter support to `Preinstance`.
+- `PreinstancedMeta.__call__` now decides whether to pull an object from cache or to create a new one.
+- `Preinstance` now supports keyword parameters.
+- Add missing `PlaceHolderBase.__repr__` and `.__hash__` and `.__eq__`.
+
+### Bug fixes
+
+- Fix `elapsed_time` could return invalid value. (Probably an error in the dependency.)
+
+### Renames, Deprecations & Removals
+
+- Rename `Preinstance.args` to `.positional_parameters`.
+- Rename `DiscordApiClient`'s `params` parameters to `query`.
+- Deprecate `PreinstancedBase.get`.
+- Deprecate `ActivityType.game` as scheduled. Use `.playing` instead.
+
 ## 1.3.72 *\[2024-12-23\]*
 
 ### Improvements
@@ -14,7 +245,6 @@
 - Add `Client.interaction_embedded_activity_launch`.
 
 #### ext.slash
-
 - Add `CommandBaseApplicationCommand.handler_type`.
 - Add `EmbeddedActivityLaunchCommand`.
 - Commands now respond correctly to if

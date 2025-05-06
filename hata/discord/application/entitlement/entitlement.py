@@ -8,9 +8,9 @@ from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 
 from .fields import (
     parse_application_id, parse_consumed, parse_deleted, parse_ends_at, parse_guild_id, parse_id, parse_sku_id,
-    parse_starts_at, parse_subscription_id, parse_type, parse_user_id, put_application_id_into, put_consumed_into,
-    put_deleted_into, put_ends_at_into, put_guild_id_into, put_id_into, put_owner_id_into, put_owner_type_into,
-    put_sku_id_into, put_starts_at_into, put_subscription_id_into, put_type_into, put_user_id_into,
+    parse_starts_at, parse_subscription_id, parse_type, parse_user_id, put_application_id, put_consumed,
+    put_deleted, put_ends_at, put_guild_id, put_id, put_owner_id, put_owner_type,
+    put_sku_id, put_starts_at, put_subscription_id, put_type, put_user_id,
     validate_application_id, validate_consumed, validate_deleted, validate_ends_at, validate_guild_id, validate_id,
     validate_sku_id, validate_starts_at, validate_subscription_id, validate_type, validate_user_id
 )
@@ -95,7 +95,7 @@ class Entitlement(DiscordEntity):
         guild_id : `int`, ``Guild``, Optional (Keyword only)
             The guild's identifier that was granted access to the stock keeping unit.
     
-        sku_id : `int`, ``SKU``, Optional (Keyword only)
+        sku_id : ``int | SKU``, Optional (Keyword only)
             The stock keeping unit's identifier the this entitlement grants access to.
         
         user_id : `int`, ``ClientUserBase``, Optional (Keyword only)
@@ -261,9 +261,9 @@ class Entitlement(DiscordEntity):
             +---------------------------+-----------------------------------------------+
             | deleted                   | `bool`                                        |
             +---------------------------+-----------------------------------------------+
-            | ends_at                   | `None`, `DateTime`                            |
+            | ends_at                   | `None | DateTime`                             |
             +---------------------------+-----------------------------------------------+
-            | starts_at                 | `None`, `DateTime`                            |
+            | starts_at                 | `None | DateTime`                             |
             +---------------------------+-----------------------------------------------+
         """
         old_attributes = {}
@@ -313,22 +313,22 @@ class Entitlement(DiscordEntity):
         """
         data = {}
         
-        put_sku_id_into(self.sku_id, data, defaults)
+        put_sku_id(self.sku_id, data, defaults)
         
         if include_internals:
-            put_application_id_into(self.application_id, data, defaults)
-            put_consumed_into(self.consumed, data, defaults)
-            put_deleted_into(self.deleted, data, defaults)
-            put_ends_at_into(self.ends_at, data, defaults)
-            put_guild_id_into(self.guild_id, data, defaults)
-            put_id_into(self.id, data, defaults)
-            put_starts_at_into(self.starts_at, data, defaults)
-            put_subscription_id_into(self.subscription_id, data, defaults)
-            put_type_into(self.type, data, defaults)
-            put_user_id_into(self.user_id, data, defaults)
+            put_application_id(self.application_id, data, defaults)
+            put_consumed(self.consumed, data, defaults)
+            put_deleted(self.deleted, data, defaults)
+            put_ends_at(self.ends_at, data, defaults)
+            put_guild_id(self.guild_id, data, defaults)
+            put_id(self.id, data, defaults)
+            put_starts_at(self.starts_at, data, defaults)
+            put_subscription_id(self.subscription_id, data, defaults)
+            put_type(self.type, data, defaults)
+            put_user_id(self.user_id, data, defaults)
         else:
-            put_owner_id_into(self.owner_id, data, defaults)
-            put_owner_type_into(self.owner_type, data, defaults)
+            put_owner_id(self.owner_id, data, defaults)
+            put_owner_type(self.owner_type, data, defaults)
         
         return data
     
@@ -389,7 +389,7 @@ class Entitlement(DiscordEntity):
         deleted : `bool`, Optional (Keyword only)
             Whether the entitlement is deleted.
         
-        ends_at : `None`, `DateTime`, Optional (Keyword only)
+        ends_at : `None | DateTime`, Optional (Keyword only)
             When the entitlement ends.
         
         entitlement_type : ``EntitlementType``, `int`, Optional (Keyword only)
@@ -401,13 +401,13 @@ class Entitlement(DiscordEntity):
         guild_id : `int`, ``Guild``, Optional (Keyword only)
             The guild's identifier that was granted access to the stock keeping unit.
         
-        sku : `int`, ``SKU``, Optional (Keyword only)
+        sku : ``int | SKU``, Optional (Keyword only)
             Alternative for `sku_id`.
         
-        sku_id : `int`, ``SKU``, Optional (Keyword only)
+        sku_id : ``int | SKU``, Optional (Keyword only)
             The stock keeping unit's identifier the this entitlement grants access to.
     
-        starts_at : `None`, `DateTime`, Optional (Keyword only)
+        starts_at : `None | DateTime`, Optional (Keyword only)
             When the entitlement starts.
         
         subscription : `int`, Optional (Keyword only)
@@ -605,7 +605,7 @@ class Entitlement(DiscordEntity):
         guild_id : `int`, ``Guild``, Optional (Keyword only)
             The guild's identifier that was granted access to the stock keeping unit.
     
-        sku_id : `int`, ``SKU``, Optional (Keyword only)
+        sku_id : ``int | SKU``, Optional (Keyword only)
             The stock keeping unit's identifier the this entitlement grants access to.
         
         user_id : `int`, ``ClientUserBase``, Optional (Keyword only)

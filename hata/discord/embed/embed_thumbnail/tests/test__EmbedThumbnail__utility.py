@@ -11,10 +11,10 @@ def test__EmbedThumbnail__clean_copy():
     """
     url = 'https://orindance.party/'
     
-    field = EmbedThumbnail(url)
-    copy = field.clean_copy()
+    embed_thumbnail = EmbedThumbnail(url)
+    copy = embed_thumbnail.clean_copy()
     _assert_fields_set(copy)
-    vampytest.assert_is_not(field, copy)
+    vampytest.assert_is_not(embed_thumbnail, copy)
     
     vampytest.assert_eq(copy.url, url)
 
@@ -25,12 +25,12 @@ def test__EmbedThumbnail__copy():
     """
     url = 'https://orindance.party/'
     
-    field = EmbedThumbnail(url)
-    copy = field.copy()
+    embed_thumbnail = EmbedThumbnail(url)
+    copy = embed_thumbnail.copy()
     _assert_fields_set(copy)
-    vampytest.assert_is_not(field, copy)
+    vampytest.assert_is_not(embed_thumbnail, copy)
     
-    vampytest.assert_eq(field, copy)
+    vampytest.assert_eq(embed_thumbnail, copy)
 
 
 def test__EmbedThumbnail__copy_with__no_fields():
@@ -41,12 +41,12 @@ def test__EmbedThumbnail__copy_with__no_fields():
     """
     url = 'https://orindance.party/'
     
-    field = EmbedThumbnail(url)
-    copy = field.copy_with()
+    embed_thumbnail = EmbedThumbnail(url)
+    copy = embed_thumbnail.copy_with()
     _assert_fields_set(copy)
-    vampytest.assert_is_not(field, copy)
+    vampytest.assert_is_not(embed_thumbnail, copy)
     
-    vampytest.assert_eq(field, copy)
+    vampytest.assert_eq(embed_thumbnail, copy)
 
 
 def test__EmbedThumbnail__copy_with__all_fields():
@@ -59,12 +59,12 @@ def test__EmbedThumbnail__copy_with__all_fields():
     
     new_url = 'https://www.astil.dev/'
     
-    field = EmbedThumbnail(old_url)
-    copy = field.copy_with(
+    embed_thumbnail = EmbedThumbnail(old_url)
+    copy = embed_thumbnail.copy_with(
         url = new_url,
     )
     _assert_fields_set(copy)
-    vampytest.assert_is_not(field, copy)
+    vampytest.assert_is_not(embed_thumbnail, copy)
     
     vampytest.assert_eq(copy.url, new_url)
 
@@ -90,8 +90,8 @@ def test__EmbedThumbnail__contents(keyword_parameters):
     -------
     output : `set<str>`
     """
-    field = EmbedThumbnail(**keyword_parameters)
-    output = field.contents
+    embed_thumbnail = EmbedThumbnail(**keyword_parameters)
+    output = embed_thumbnail.contents
     vampytest.assert_instance(output, list)
     return {*output}
 
@@ -117,5 +117,5 @@ def test__EmbedThumbnail__iter_contents(keyword_parameters):
     -------
     output : `set<str>`
     """
-    field = EmbedThumbnail(**keyword_parameters)
-    return {*field.iter_contents()}
+    embed_thumbnail = EmbedThumbnail(**keyword_parameters)
+    return {*embed_thumbnail.iter_contents()}

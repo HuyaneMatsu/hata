@@ -11,14 +11,17 @@ def test__ComponentMetadataRow__from_data():
     """
     Tests whether ``ComponentMetadataRow.from_data`` works as intended.
     """
-    components = [Component(ComponentType.button, label = 'chata')]
+    components = [
+        Component(ComponentType.button, label = 'chata'),
+    ]
     
     data = {
-        'components': [component.to_data() for component in components]
+        'components': [component.to_data(include_internals = True) for component in components],
     }
     
     component_metadata = ComponentMetadataRow.from_data(data)
     _assert_fields_set(component_metadata)
+    
     vampytest.assert_eq(component_metadata.components, tuple(components))
 
 
@@ -26,9 +29,11 @@ def test__ComponentMetadataRow__to_data():
     """
     Tests whether ``ComponentMetadataRow.to_data`` works as intended.
     
-    Case: include defaults.
+    Case: include defaults and internals.
     """
-    components = [Component(ComponentType.button, label = 'chata')]
+    components = [
+        Component(ComponentType.button, label = 'chata'),
+    ]
     
     component_metadata = ComponentMetadataRow(
         components = components,
@@ -37,8 +42,9 @@ def test__ComponentMetadataRow__to_data():
     vampytest.assert_eq(
         component_metadata.to_data(
             defaults = True,
+            include_internals = True,
         ),
         {
-            'components': [component.to_data(defaults = True) for component in components]
+            'components': [component.to_data(defaults = True, include_internals = True) for component in components],
         },
     )

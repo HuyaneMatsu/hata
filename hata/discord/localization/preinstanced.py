@@ -3,31 +3,24 @@ __all__ = ('Locale',)
 from ..bases import Preinstance as P, PreinstancedBase
 
 
-class Locale(PreinstancedBase):
+class Locale(PreinstancedBase, value_type = str):
     """
     Represents Discord's locale.
     
     Attributes
     ----------
-    value : `str`
-        The Discord side identifier value of the locale.
     name : `str`
         The default name of the locale.
+    
     native_name : `str`
         The native name of the language.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`str`, ``Locale``) items
-        Stores the predefined locales. This container is accessed when translating a Discord side
-        identifier of a locale. The identifier value is used as a key to get it's wrapper side
-        representation.
-    VALUE_TYPE : `type` = `str`
-        The locales' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the locales.
+    value : `str`
+        The Discord side identifier value of the locale.
     
-    Every predefined locale is also stored as a class attribute:
+    Type Attributes
+    ---------------
+    Every predefined locale is also stored as a type attribute:
     
     +-----------------------+-------------------------------+-----------+---------------------------------------+
     | Type attribute name   | Name                          | Value     | Native name                           |
@@ -97,53 +90,33 @@ class Locale(PreinstancedBase):
     | vietnamese            | Vietnamese                    | vi        | Tiếng Việt                            |
     +-----------------------+-------------------------------+-----------+---------------------------------------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = str
-    
     __slots__ = ('native_name',)
     
-
-    @classmethod
-    def _from_value(cls, value):
+    def __new__(cls, value, name = None, native_name = None):
         """
-        Creates a new locale with the given value.
+        Creates new locale.
         
         Parameters
         ----------
-        value : `int`
-            The locale's identifier value.
-        
-        Returns
-        -------
-        self : ``Locale``
-            The created instance.
-        """
-        self = object.__new__(cls)
-        self.name = cls.DEFAULT_NAME
-        self.value = value
-        self.native_name = value
-        
-        return self
-    
-    
-    def __init__(self, value, name, native_name):
-        """
-        Creates an ``Locale`` and stores it at the class's `.INSTANCES` class attribute as well.
-        
-        Parameters
-        ----------
-        value : `int`
+        value : `str`
             The Discord side identifier value of the locale.
-        name : `str`
+        
+        name : `None | str` = `None`, Optional
             The default name of the locale.
-        native_name : `str`
+        
+        native_name : `None | str` = `None`, Optional
             The native name of the locale.
         """
-        self.value = value
-        self.name = name
-        self.native_name = native_name
+        if name is None:
+            name = value
         
-        self.INSTANCES[value] = self
+        if native_name is None:
+            native_name = name
+        
+        self = PreinstancedBase.__new__(cls, value, name)
+        self.native_name = native_name
+        return self
+    
     
     # predefined
     bulgarian = P('bg', 'Bulgarian', 'български')

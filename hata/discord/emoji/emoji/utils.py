@@ -12,18 +12,18 @@ from ....utils.debug import call_debug_logger
 
 from ...core import EMOJIS, UNICODE_TO_EMOJI
 
-from .fields import put_name_into, put_role_ids_into, validate_name, validate_role_ids
+from .fields import put_name, put_role_ids, validate_name, validate_role_ids
 from .emoji import Emoji
 
 
 EMOJI_FIELD_CONVERTERS = {
-    'name': (validate_name, put_name_into),
-    'role_ids': (validate_role_ids, put_role_ids_into),
-    'roles': (validate_role_ids, put_role_ids_into),
+    'name': (validate_name, put_name),
+    'role_ids': (validate_role_ids, put_role_ids),
+    'roles': (validate_role_ids, put_role_ids),
 }
 
 EMOJI_APPLICATION_FIELD_CONVERTERS = {
-    'name': (validate_name, put_name_into),
+    'name': (validate_name, put_name),
 }
 
 

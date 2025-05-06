@@ -4,7 +4,7 @@ from scarletio import copy_docs
 
 from .constants import MAX_LENGTH_DEFAULT, MIN_LENGTH_DEFAULT
 from .fields import (
-    parse_max_length, parse_min_length, put_max_length_into, put_min_length_into, validate_max_length,
+    parse_max_length, parse_min_length, put_max_length, put_min_length, validate_max_length,
     validate_min_length
 )
 from .primitive import ApplicationCommandOptionMetadataPrimitive
@@ -111,8 +111,8 @@ class ApplicationCommandOptionMetadataString(ApplicationCommandOptionMetadataPri
     @copy_docs(ApplicationCommandOptionMetadataPrimitive.to_data)
     def to_data(self, *, defaults = False):
         data = ApplicationCommandOptionMetadataPrimitive.to_data(self, defaults = defaults)
-        put_max_length_into(self.max_length, data, defaults)
-        put_min_length_into(self.min_length, data, defaults)
+        put_max_length(self.max_length, data, defaults)
+        put_min_length(self.min_length, data, defaults)
         return data
     
     

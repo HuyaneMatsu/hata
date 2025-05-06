@@ -36,7 +36,7 @@ def test__ComponentMetadataSelectBase__to_data():
     """
     Tests whether ``ComponentMetadataSelectBase.to_data`` works as intended.
     
-    Case: include defaults.
+    Case: include defaults and internals.
     """
     custom_id = 'oriental'
     enabled = False
@@ -55,6 +55,7 @@ def test__ComponentMetadataSelectBase__to_data():
     vampytest.assert_eq(
         component_metadata.to_data(
             defaults = True,
+            include_internals = True,
         ),
         {
             'custom_id': custom_id,

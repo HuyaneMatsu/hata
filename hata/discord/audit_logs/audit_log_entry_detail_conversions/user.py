@@ -93,7 +93,7 @@ INTEGRATION_TYPE_CONVERSION = AuditLogEntryDetailConversion(
 
 @INTEGRATION_TYPE_CONVERSION.set_value_deserializer
 def integration_type_value_deserializer(value):
-    return IntegrationType.get(value)
+    return IntegrationType(value)
 
 
 @INTEGRATION_TYPE_CONVERSION.set_value_serializer

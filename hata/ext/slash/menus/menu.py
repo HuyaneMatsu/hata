@@ -551,7 +551,7 @@ class MenuStructure(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        class_attributes : `dict` of (`str`, `object`) items
+        class_attributes : `dict<str, object>`
             Class attributes of a type.
         
         Raises
@@ -742,7 +742,7 @@ def _iter_attributes(class_parents, class_attributes):
     ----------
     class_parents : `tuple` of `type`
         Parent classes.
-    class_attributes : `dict` of (`str`, `object`) items
+    class_attributes : `dict<str, object>`
         Class attributes of the source type.
     
     Yields
@@ -813,7 +813,7 @@ class MenuType(type):
             The created class's name.
         class_parents : `tuple` of `type`
             The superclasses of the creates type.
-        class_attributes : `dict` of (`str`, `object`) items
+        class_attributes : `dict<str, object>`
             The class attributes of the created type.
         
         Returns
@@ -906,7 +906,7 @@ class Menu(RichAttributeErrorBaseType, metaclass = MenuType):
         The used allowed mentions when editing the respective message.
     _canceller : None`, `CoroutineFunction`
         Canceller set as `._canceller_function``, meanwhile the gui is not cancelled.
-    _components : `None`, `tuple` of ``Component``
+    _components : ``None | tuple<Component>``
         Rendered components of the menu.
     _component_cache : `dict` of (`int`, ``ComponentProxy``) items
         A dictionary of component proxy identifiers and component proxies.
@@ -932,7 +932,7 @@ class Menu(RichAttributeErrorBaseType, metaclass = MenuType):
         +-------------------------------+-------+
     _timeouter : `None`, ``Timeouter``
         Executes the timeout feature on the menu.
-    _tracked_changes : `dict` of (`str`, `object`) items
+    _tracked_changes : `dict<str, object>`
         The tracked changes by parameter name.
     channel : ``Channel``
         The channel where the menu is executed.
@@ -1489,7 +1489,7 @@ class Menu(RichAttributeErrorBaseType, metaclass = MenuType):
                                     f'{type(raw_sub_sub_component).__name__}; {raw_sub_sub_component!r}.'
                                 )
                             
-                            if not raw_sub_sub_component.layout.nestable:
+                            if not raw_sub_sub_component.layout.nestable_into_row:
                                 raise ValueError(
                                     f'Nesting components not allowed, got {raw_sub_sub_component!r}.'
                                 )

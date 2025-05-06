@@ -21,7 +21,7 @@ def guess_rule_trigger_type_from_keyword_parameters(rule_trigger_type, keyword_p
     rule_trigger_type : ``AutoModerationRuleTriggerType``
         Already detected rule trigger type.
     
-    keyword_parameters : `dict` of (`str`, `object`) items
+    keyword_parameters : `dict<str, object>`
         Keyword parameters passed.
     
     Returns

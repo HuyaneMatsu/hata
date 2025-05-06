@@ -224,7 +224,7 @@ class CheckMeta(type):
             The created class's name.
         class_parents : `tuple` of `type`
             The superclasses of the creates type.
-        class_attributes : `dict` of (`str`, `object`) items
+        class_attributes : `dict<str, object>`
             The class attributes of the created type.
         
         Returns

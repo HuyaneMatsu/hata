@@ -4,6 +4,7 @@ import vampytest
 
 from ....component import Component, ComponentType
 from ....embed import Embed
+from ....soundboard import SoundboardSound
 from ....sticker import Sticker
 from ....user import User
 
@@ -36,6 +37,10 @@ def test__MessageSnapshot__repr():
         User.precreate(202407200047, name = 'Rin'),
     ]
     message_type = MessageType.call
+    soundboard_sounds = [
+        SoundboardSound.precreate(202501300014, name = 'whither'),
+        SoundboardSound.precreate(202501300015, name = 'Yuyuko'),
+    ]
     stickers = [
         Sticker.precreate(202409200066, name = 'Make'),
         Sticker.precreate(202409200067, name = 'Me'),
@@ -52,6 +57,7 @@ def test__MessageSnapshot__repr():
         mentioned_role_ids = mentioned_role_ids,
         mentioned_users = mentioned_users,
         message_type = message_type,
+        soundboard_sounds = soundboard_sounds,
         stickers = stickers,
     )
     
@@ -81,6 +87,10 @@ def test__MessageSnapshot__hash():
         User.precreate(202407200049, name = 'Rin'),
     ]
     message_type = MessageType.call
+    soundboard_sounds = [
+        SoundboardSound.precreate(202501300016, name = 'whither'),
+        SoundboardSound.precreate(202501300017, name = 'Yuyuko'),
+    ]
     stickers = [
         Sticker.precreate(202409200068, name = 'Make'),
         Sticker.precreate(202409200069, name = 'Me'),
@@ -97,6 +107,7 @@ def test__MessageSnapshot__hash():
         mentioned_role_ids = mentioned_role_ids,
         mentioned_users = mentioned_users,
         message_type = message_type,
+        soundboard_sounds = soundboard_sounds,
         stickers = stickers,
     )
     
@@ -150,6 +161,10 @@ def _iter_options__eq__same_type():
         User.precreate(202407200051, name = 'Rin'),
     ]
     message_type = MessageType.call
+    soundboard_sounds = [
+        SoundboardSound.precreate(202501300018, name = 'whither'),
+        SoundboardSound.precreate(202501300019, name = 'Yuyuko'),
+    ]
     stickers = [
         Sticker.precreate(202409200070, name = 'Make'),
         Sticker.precreate(202409200071, name = 'Me'),
@@ -166,6 +181,7 @@ def _iter_options__eq__same_type():
         'mentioned_role_ids': mentioned_role_ids,
         'mentioned_users': mentioned_users,
         'message_type': message_type,
+        'soundboard_sounds': soundboard_sounds,
         'stickers': stickers,
     }
     
@@ -269,6 +285,18 @@ def _iter_options__eq__same_type():
         keyword_parameters,
         {
             **keyword_parameters,
+            'soundboard_sounds': [
+                SoundboardSound.precreate(202501300020, name = 'that'),
+                SoundboardSound.precreate(202501300021, name = 'heart'),
+            ],
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
             'stickers': None,
         },
         False,
@@ -286,6 +314,7 @@ def test__messageSnapshot__eq__same_type(keyword_parameters_0, keyword_parameter
     ----------
     keyword_parameters_0 : `dict<str, object>`
         Keyword parameters to create instance with.
+    
     keyword_parameters_1 : `dict<str, object>`
         Keyword parameters to create instance with.
     

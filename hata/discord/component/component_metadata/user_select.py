@@ -9,10 +9,10 @@ class ComponentMetadataUserSelect(ComponentMetadataEntitySelectBase):
     
     Attributes
     ----------
-    custom_id : `None`, `str`
+    custom_id : `None | str`
         Custom identifier to detect which component was used by the user.
     
-    default_values : `None`, `tuple` of ``EntitySelectDefaultValue``
+    default_values : ``None | tuple<EntitySelectDefaultValue>``
         Entities presented in the select by default.
     
     enabled : `bool`
@@ -24,7 +24,7 @@ class ComponentMetadataUserSelect(ComponentMetadataEntitySelectBase):
     min_values : `int`
         The minimal amount of options to select.
     
-    placeholder : `None`, `str`
+    placeholder : `None | str`
         Placeholder text of the select.
     """
     __slots__ = ()

@@ -5,7 +5,7 @@ from ...user import Status
 
 from .fields import (
     parse_activity_name, parse_avatar_url, parse_discriminator, parse_id, parse_name, parse_status,
-    put_activity_name_into, put_avatar_url_into, put_discriminator_into, put_id_into, put_name_into, put_status_into,
+    put_activity_name, put_avatar_url, put_discriminator, put_id, put_name, put_status,
     validate_activity_name, validate_avatar_url, validate_discriminator, validate_id, validate_name, validate_status
 )
 
@@ -121,7 +121,7 @@ class GuildWidgetUser(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Guild widget user data.
         
         Returns
@@ -149,15 +149,15 @@ class GuildWidgetUser(DiscordEntity):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
-        put_activity_name_into(self.activity_name, data, defaults)
-        put_avatar_url_into(self.avatar_url, data, defaults)
-        put_discriminator_into(self.discriminator, data, defaults)
-        put_id_into(self.id, data, defaults)
-        put_name_into(self.name, data, defaults)
-        put_status_into(self.status, data, defaults)
+        put_activity_name(self.activity_name, data, defaults)
+        put_avatar_url(self.avatar_url, data, defaults)
+        put_discriminator(self.discriminator, data, defaults)
+        put_id(self.id, data, defaults)
+        put_name(self.name, data, defaults)
+        put_status(self.status, data, defaults)
         return data
     
     

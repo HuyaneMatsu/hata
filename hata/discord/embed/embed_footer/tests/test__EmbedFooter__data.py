@@ -19,12 +19,12 @@ def test__EmbedFooter__from_data():
         'text': text,
     }
     
-    field = EmbedFooter.from_data(data)
-    _assert_fields_set(field)
+    embed_footer = EmbedFooter.from_data(data)
+    _assert_fields_set(embed_footer)
     
-    vampytest.assert_eq(field.icon_url, icon_url)
-    vampytest.assert_eq(field.icon_proxy_url, icon_proxy_url)
-    vampytest.assert_eq(field.text, text)
+    vampytest.assert_eq(embed_footer.icon_url, icon_url)
+    vampytest.assert_eq(embed_footer.icon_proxy_url, icon_proxy_url)
+    vampytest.assert_eq(embed_footer.text, text)
 
 
 def test__EmbedFooter__to_data():
@@ -43,11 +43,11 @@ def test__EmbedFooter__to_data():
         'text': text,
     }
     
-    field = EmbedFooter.from_data(data)
+    embed_footer = EmbedFooter.from_data(data)
     
     expected_output = data
     
     vampytest.assert_eq(
-        field.to_data(defaults = True, include_internals = True),
+        embed_footer.to_data(defaults = True, include_internals = True),
         expected_output,
     )

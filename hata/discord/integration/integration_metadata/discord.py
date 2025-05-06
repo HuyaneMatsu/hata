@@ -6,7 +6,7 @@ from ..integration_account import IntegrationAccount
 
 from .base import IntegrationMetadataBase
 from .fields import (
-    parse_account__discord, parse_application, put_account_into__discord, put_application_into,
+    parse_account__discord, parse_application, put_account__discord, put_application,
     validate_account__discord, validate_application
 )
 
@@ -117,8 +117,8 @@ class IntegrationMetadataDiscord(IntegrationMetadataBase):
     @copy_docs(IntegrationMetadataBase.to_data)
     def to_data(self, *, defaults = False):
         data = {}
-        put_account_into__discord(self.account, data, defaults)
-        put_application_into(self.application, data, defaults)
+        put_account__discord(self.account, data, defaults)
+        put_application(self.application, data, defaults)
         return data
     
     

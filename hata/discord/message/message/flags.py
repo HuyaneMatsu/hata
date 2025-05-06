@@ -1,8 +1,6 @@
 __all__ = ('MessageFlag',)
 
-from datetime import datetime as DateTime, timezone as TimeZone
-
-from ...bases import FlagBase, FlagDeprecation as FD, FlagDescriptor as F
+from ...bases import FlagBase, FlagDescriptor as F
 
 
 class MessageFlag(FlagBase):
@@ -32,7 +30,7 @@ class MessageFlag(FlagBase):
     +-------------------------------------------+-------------------+
     | failed_to_mention_some_roles_in_thread    | 8                 |
     +-------------------------------------------+-------------------+
-    | ???                                       | 9                 |
+    | guild_feed_hidden                         | 9                 |
     +-------------------------------------------+-------------------+
     | should_show_link_not_discord_warning      | 10                |
     +-------------------------------------------+-------------------+
@@ -44,6 +42,10 @@ class MessageFlag(FlagBase):
     +-------------------------------------------+-------------------+
     | has_snapshot                              | 14                |
     +-------------------------------------------+-------------------+
+    | components_v2                             | 15                |
+    +-------------------------------------------+-------------------+
+    | created_by_social_integration             | 16                |
+    +-------------------------------------------+-------------------+
     """
     crossposted = F(0)
     crosspost = F(1)
@@ -54,11 +56,11 @@ class MessageFlag(FlagBase):
     invoking_user_only = F(6)
     loading = F(7)
     failed_to_mention_some_roles_in_thread = F(8)
-    # 9 ???
+    guild_feed_hidden = F(9)
     should_show_link_not_discord_warning = F(10)
     # 11 ???
     silent = F(12)
     voice_message = F(13)
     has_snapshot = F(14)
-
-    is_crosspost = F(1, deprecation = FD('crosspost', DateTime(2024, 12, 15, tzinfo = TimeZone.utc)))
+    components_v2 = F(15)
+    created_by_social_integration = F(16)

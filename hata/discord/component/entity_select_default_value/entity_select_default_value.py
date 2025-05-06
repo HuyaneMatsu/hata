@@ -2,7 +2,7 @@ __all__ = ('EntitySelectDefaultValue',)
 
 from scarletio import RichAttributeErrorBaseType
 
-from .fields import parse_id, parse_type, put_id_into, put_type_into, validate_id, validate_type
+from .fields import parse_id, parse_type, put_id, put_type, validate_id, validate_type
 
 
 class EntitySelectDefaultValue(RichAttributeErrorBaseType):
@@ -23,10 +23,10 @@ class EntitySelectDefaultValue(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        option_type : ``EntitySelectDefaultValueType``, `str`
+        option_type : ``str | EntitySelectDefaultValueType``
             The represented entity's type.
         
-        entity_id : `int`, `str`
+        entity_id : `int | str`
             The represented entity's identifier.
         
         Raises
@@ -79,7 +79,7 @@ class EntitySelectDefaultValue(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             String select option data.
         
         Returns
@@ -103,12 +103,12 @@ class EntitySelectDefaultValue(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         
-        put_id_into(self.id, data, defaults)
-        put_type_into(self.type, data, defaults)
+        put_id(self.id, data, defaults)
+        put_type(self.type, data, defaults)
         
         return data
     
@@ -181,10 +181,10 @@ class EntitySelectDefaultValue(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        entity_id : `int`, `str`, Optional (Keyword only)
+        entity_id : `int | str`, Optional (Keyword only)
             The represented entity's identifier.
         
-        option_type : ``EntitySelectDefaultValueType``, `str`, Optional (Keyword only)
+        option_type : ``str | EntitySelectDefaultValueType``, Optional (Keyword only)
             The represented entity's type.
         
         Returns

@@ -3,7 +3,8 @@ import vampytest
 from ....bases import Icon, IconType
 from ....color import Color
 from ....localization import Locale
-from ....user import AvatarDecoration, PremiumType, UserClan, UserFlag
+from ....guild import GuildBadge
+from ....user import AvatarDecoration, PremiumType, UserFlag
 
 from ..oauth2_user import Oauth2User
 
@@ -17,11 +18,11 @@ def test__Oauth2User__repr():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160043)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
-    clan = UserClan(guild_id = 202405180021, tag = 'miau')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'orin'
+    primary_guild_badge = GuildBadge(guild_id = 202405180021, tag = 'miau')
     email = 'rin@orindance.party'
     email_verified = True
     locale = Locale.greek
@@ -36,11 +37,11 @@ def test__Oauth2User__repr():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
-        clan = clan,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
         name = name,
+        primary_guild_badge = primary_guild_badge,
         email = email,
         email_verified = email_verified,
         locale = locale,
@@ -59,11 +60,11 @@ def test__Oauth2User__hash():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160044)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
-    clan = UserClan(guild_id = 202405180022, tag = 'miau')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'orin'
+    primary_guild_badge = GuildBadge(guild_id = 202405180022, tag = 'miau')
     email = 'rin@orindance.party'
     email_verified = True
     locale = Locale.greek
@@ -78,11 +79,11 @@ def test__Oauth2User__hash():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
-        clan = clan,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
         name = name,
+        primary_guild_badge = primary_guild_badge,
         email = email,
         email_verified = email_verified,
         locale = locale,
@@ -92,21 +93,35 @@ def test__Oauth2User__hash():
     vampytest.assert_instance(repr(user), str)
 
 
-def test__Oauth2User__eq():
+def test__Oauth2User__eq__non_partial_and_different_object():
     """
     Tests whether ``Oauth2User.__eq__`` works as intended.
-    """
-    user_id = 202302040026
     
+    Case: non partial and non user object.
+    """
+    user_id = 202504260014
+    
+    name = 'Orin'
+    
+    user = Oauth2User(name = name)
+    vampytest.assert_eq(user, user)
+    vampytest.assert_ne(user, object())
+    
+    test_user = Oauth2User._create_empty(user_id)
+    vampytest.assert_eq(test_user, test_user)
+    vampytest.assert_ne(user, test_user)
+
+
+def _iter_options__eq():
     avatar = Icon(IconType.static, 14)
-    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160045)
+    name = 'orin'
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160036)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
-    clan = UserClan(guild_id = 202405180023, tag = 'miau')
     discriminator = 2222
-    display_name = 'far'
+    display_name = 'Far'
     flags = UserFlag(1)
-    name = 'orin'
+    primary_guild_badge = GuildBadge(guild_id = 202405180009, tag = 'miau')    
     email = 'rin@orindance.party'
     email_verified = True
     locale = Locale.greek
@@ -115,14 +130,14 @@ def test__Oauth2User__eq():
     
     keyword_parameters = {
         'avatar': avatar,
+        'name': name,
         'avatar_decoration': avatar_decoration,
         'banner': banner,
         'banner_color': banner_color,
-        'clan': clan,
         'discriminator': discriminator,
         'display_name': display_name,
         'flags': flags,
-        'name': name,
+        'primary_guild_badge': primary_guild_badge,
         'email': email,
         'email_verified': email_verified,
         'locale': locale,
@@ -130,32 +145,162 @@ def test__Oauth2User__eq():
         'premium_type': premium_type,
     }
     
-    user = Oauth2User(**keyword_parameters)
-    vampytest.assert_eq(user, user)
-    vampytest.assert_ne(user, object())
-
-    test_user = Oauth2User._create_empty(user_id)
-    vampytest.assert_eq(test_user, test_user)
-    vampytest.assert_ne(user, test_user)
+    yield (
+        keyword_parameters,
+        keyword_parameters,
+        True,
+    )
     
-    for field_name, field_value in (
-        ('avatar', None),
-        ('avatar_decoration', None),
-        ('banner', None),
-        ('banner_color', None),
-        ('clan', None),
-        ('discriminator', 0),
-        ('display_name', None),
-        ('flags', UserFlag(0)),
-        ('name', 'okuu'),
-        ('email', None),
-        ('email_verified', False),
-        ('locale', Locale.dutch),
-        ('mfa_enabled', False),
-        ('premium_type', PremiumType.none),
-    ):
-        test_user = Oauth2User(**{**keyword_parameters, field_name: field_value})
-        vampytest.assert_ne(user, test_user)
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'avatar': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'name': 'okuu',
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'avatar_decoration': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'banner': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'banner_color': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'discriminator': 0,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'display_name': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'flags': UserFlag(0),
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'primary_guild_badge': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'email': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'email_verified': False,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'locale': Locale.dutch,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'mfa_enabled': False,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'premium_type': PremiumType.none,
+        },
+        False,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__eq()).returning_last())
+def test__Oauth2User__eq(keyword_parameters_0, keyword_parameters_1):
+    """
+    Tests whether ``Oauth2User.__eq__`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters_0 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    keyword_parameters_1 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    instance_0 = Oauth2User(**keyword_parameters_0)
+    instance_1 = Oauth2User(**keyword_parameters_1)
+    
+    output = instance_0 == instance_1
+    vampytest.assert_instance(output, bool)
+    return output
 
 
 def test__Oauth2User__format():
@@ -168,11 +313,11 @@ def test__Oauth2User__format():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160046)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
-    clan = UserClan(guild_id = 202405180024, tag = 'miau')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'orin'
+    primary_guild_badge = GuildBadge(guild_id = 202405180024, tag = 'miau')
     email = 'rin@orindance.party'
     email_verified = True
     locale = Locale.greek
@@ -184,11 +329,11 @@ def test__Oauth2User__format():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
-        clan = clan,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
         name = name,
+        primary_guild_badge = primary_guild_badge,
         email = email,
         email_verified = email_verified,
         locale = locale,

@@ -28,6 +28,6 @@ def test__parse_guild(input_data):
     
     Returns
     -------
-    output : `None`, ``Guild``
+    output : ``None | Guild``
     """
     return parse_guild(input_data)

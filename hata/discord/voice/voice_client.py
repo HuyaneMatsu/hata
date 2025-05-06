@@ -63,7 +63,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         Used for awaiting the connecting handshake with Discord.
     _ip : `None | str`
         The ip to what the voice client's gateway connects.
-    _port : `None`, `int`
+    _port : `None | int`
         The port to what the voice client's gateway connects.
     _preferred_volume : `float`
         The preferred volume of the voice client. can be between `0.0` and `2.0`.
@@ -1452,7 +1452,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         return GUILDS.get(self.guild_id, None)
     

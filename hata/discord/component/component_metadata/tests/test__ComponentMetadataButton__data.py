@@ -45,7 +45,7 @@ def test__ComponentMetadataButton__to_data__include_internals():
     """
     Tests whether ``ComponentMetadataButton.to_data`` works as intended.
     
-    Case: include defaults.
+    Case: include defaults and internals.
     """
     button_style = ButtonStyle.green
     custom_id = 'orin'
@@ -66,6 +66,7 @@ def test__ComponentMetadataButton__to_data__include_internals():
     vampytest.assert_eq(
         component_metadata.to_data(
             defaults = True,
+            include_internals = True,
         ),
         {
             'style': button_style.value,
@@ -104,6 +105,7 @@ def test__ComponentMetadataButton__to_data__include_internals_url():
     vampytest.assert_eq(
         component_metadata.to_data(
             defaults = True,
+            include_internals = True,
         ),
         {
             'style': button_style.value,
@@ -142,6 +144,7 @@ def test__ComponentMetadataButton__to_data__include_internals_sku_id():
     vampytest.assert_eq(
         component_metadata.to_data(
             defaults = True,
+            include_internals = True,
         ),
         {
             'style': button_style.value,

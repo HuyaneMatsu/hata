@@ -8,7 +8,7 @@ from ..action_metadata import (
 )
 
 
-class AutoModerationActionType(PreinstancedBase):
+class AutoModerationActionType(PreinstancedBase, value_type = int):
     """
     Represents an ``AutoModerationAction``'s type.
     
@@ -16,26 +16,19 @@ class AutoModerationActionType(PreinstancedBase):
     ----------
     value : `int`
         The Discord side identifier value of the auto moderation action type.
+    
     name : `str`
         The default name of the auto moderation action type.
-    metadata_type : ``AutoModerationActionMetadataBase``
+    
+    metadata_type : `type<<AutoModerationActionMetadataBase>`
         The action type's respective metadata type.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`str`, ``AutoModerationActionType``) items
-        Stores the predefined auto moderation action types. This container is accessed when translating a Discord side
-        identifier of a auto moderation action type. The identifier value is used as a key to get it's wrapper side
-        representation.
-    VALUE_TYPE : `type` = `str`
-        The auto moderation action types' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the auto moderation action types.
-    
-    Every predefined auto moderation action type is also stored as a class attribute:
+    Type Attributes
+    ---------------
+    Every predefined auto moderation action type is also stored as a type attribute:
     
     +---------------------------+---------------------------+-----------+---------------------------------------------------+-----------------------------------------------------------------------+
-    | Class attribute name      | Name                      | Value     | Metadata type                                     | Description                                                           |
+    | Type attribute name       | Name                      | Value     | Metadata type                                     | Description                                                           |
     +===========================+===========================+===========+===================================================+=======================================================================+
     | none                      | none                      | 0         | ``AutoModerationActionMetadataBase``              | N/A                                                                   |
     +---------------------------+---------------------------+-----------+---------------------------------------------------+-----------------------------------------------------------------------+
@@ -50,50 +43,28 @@ class AutoModerationActionType(PreinstancedBase):
     """
     __slots__ = ('metadata_type',)
     
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
-    @classmethod
-    def _from_value(cls, value):
+    def __new__(cls, value, name = None, metadata_type = None):
         """
-        Creates a new auto moderation action type with the given value.
-        
-        Parameters
-        ----------
-        value : `int`
-            The auto moderation action type's identifier value.
-        
-        Returns
-        -------
-        self : ``AutoModerationActionType``
-            The created instance.
-        """
-        self = object.__new__(cls)
-        self.name = cls.DEFAULT_NAME
-        self.value = value
-        self.metadata_type = AutoModerationActionMetadataBase
-        
-        return self
-    
-    
-    def __init__(self, value, name, metadata_type):
-        """
-        Creates an ``AutoModerationActionType`` and stores it at the class's `.INSTANCES` class attribute as well.
+        Creates an auto moderation action type.
         
         Parameters
         ----------
         value : `int`
             The Discord side identifier value of the auto moderation action type.
-        name : `str`
+        
+        name : `None | str` = `None`, Optional
             The default name of the auto moderation action type.
-        metadata_type : ``AutoModerationRuleTriggerMetadataBase``
+        
+        metadata_type : `None | type<AutoModerationActionMetadataBase>` = `None`, Optional
             The action type's respective metadata type.
         """
-        self.value = value
-        self.name = name
-        self.metadata_type = metadata_type
+        if metadata_type is None:
+            metadata_type = AutoModerationActionMetadataBase
         
-        self.INSTANCES[value] = self
+        self = PreinstancedBase.__new__(cls, value, name)
+        self.metadata_type = metadata_type
+        return self
+    
     
     # predefined
     none = P(0, 'none', AutoModerationActionMetadataBase)

@@ -32,6 +32,7 @@ def _assert_attributes_set(interaction_event):
     
     vampytest.assert_instance(interaction_event.application_id, int)
     vampytest.assert_instance(interaction_event.application_permissions, Permission)
+    vampytest.assert_instance(interaction_event.attachment_size_limit, int)
     vampytest.assert_instance(interaction_event.authorizer_user_ids, dict, nullable = True)
     vampytest.assert_instance(interaction_event.channel, Channel)
     vampytest.assert_instance(interaction_event.entitlements, tuple, nullable = True)
@@ -65,6 +66,7 @@ def test__InteractionEvent__new__all_fields():
     """
     application_id = 202211070000
     application_permissions = Permission(123)
+    attachment_size_limit = 10 << 20
     authorizer_user_ids = {
         ApplicationIntegrationType.user_install: 202407170000,
         ApplicationIntegrationType.guild_install: 202407170001,
@@ -83,6 +85,7 @@ def test__InteractionEvent__new__all_fields():
     interaction_event = InteractionEvent(
         application_id = application_id,
         application_permissions = application_permissions,
+        attachment_size_limit = attachment_size_limit,
         authorizer_user_ids = authorizer_user_ids,
         channel = channel,
         entitlements = entitlements,
@@ -100,6 +103,7 @@ def test__InteractionEvent__new__all_fields():
     
     vampytest.assert_eq(interaction_event.application_id, application_id)
     vampytest.assert_eq(interaction_event.application_permissions, application_permissions)
+    vampytest.assert_eq(interaction_event.attachment_size_limit, attachment_size_limit)
     vampytest.assert_eq(interaction_event.authorizer_user_ids, authorizer_user_ids)
     vampytest.assert_is(interaction_event.channel, channel)
     vampytest.assert_eq(interaction_event.entitlements, tuple(entitlements))
@@ -150,6 +154,7 @@ def test__InteractionEvent__precreate__all_fields():
     """
     application_id = 202211070012
     application_permissions = Permission(123)
+    attachment_size_limit = 10 << 20
     authorizer_user_ids = {
         ApplicationIntegrationType.user_install: 202407170002,
         ApplicationIntegrationType.guild_install: 202407170003,
@@ -171,6 +176,7 @@ def test__InteractionEvent__precreate__all_fields():
         interaction_id,
         application_id = application_id,
         application_permissions = application_permissions,
+        attachment_size_limit = attachment_size_limit,
         authorizer_user_ids = authorizer_user_ids,
         channel = channel,
         entitlements = entitlements,
@@ -189,6 +195,7 @@ def test__InteractionEvent__precreate__all_fields():
     
     vampytest.assert_eq(interaction_event.application_id, application_id)
     vampytest.assert_eq(interaction_event.application_permissions, application_permissions)
+    vampytest.assert_eq(interaction_event.attachment_size_limit, attachment_size_limit)
     vampytest.assert_eq(interaction_event.authorizer_user_ids, authorizer_user_ids)
     vampytest.assert_is(interaction_event.channel, channel)
     vampytest.assert_eq(interaction_event.entitlements, tuple(entitlements))

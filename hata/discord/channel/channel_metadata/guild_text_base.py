@@ -5,8 +5,8 @@ from scarletio import copy_docs
 from .constants import AUTO_ARCHIVE_DEFAULT, SLOWMODE_DEFAULT
 from .fields import (
     parse_default_thread_auto_archive_after, parse_default_thread_slowmode, parse_nsfw, parse_slowmode, parse_topic,
-    put_default_thread_auto_archive_after_into, put_default_thread_slowmode_into, put_nsfw_into, put_slowmode_into,
-    put_topic_into, validate_default_thread_auto_archive_after, validate_default_thread_slowmode, validate_nsfw,
+    put_default_thread_auto_archive_after, put_default_thread_slowmode, put_nsfw, put_slowmode,
+    put_topic, validate_default_thread_auto_archive_after, validate_default_thread_slowmode, validate_nsfw,
     validate_slowmode, validate_topic
 )
 
@@ -409,18 +409,18 @@ class ChannelMetadataGuildTextBase(ChannelMetadataGuildMainBase):
         data = ChannelMetadataGuildMainBase.to_data(self, defaults = defaults, include_internals = include_internals)
         
         # default_auto_archive_duration
-        put_default_thread_auto_archive_after_into(self.default_thread_auto_archive_after, data, defaults)
+        put_default_thread_auto_archive_after(self.default_thread_auto_archive_after, data, defaults)
         
         # default_thread_slowmode
-        put_default_thread_slowmode_into(self.default_thread_slowmode, data, defaults)
+        put_default_thread_slowmode(self.default_thread_slowmode, data, defaults)
         
         # nsfw
-        put_nsfw_into(self.nsfw, data, defaults)
+        put_nsfw(self.nsfw, data, defaults)
         
         # slowmode
-        put_slowmode_into(self.slowmode, data, defaults)
+        put_slowmode(self.slowmode, data, defaults)
         
         # topic
-        put_topic_into(self.topic, data, defaults)
+        put_topic(self.topic, data, defaults)
         
         return data

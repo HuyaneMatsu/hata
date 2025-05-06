@@ -6,9 +6,9 @@ from ...core import GUILDS
 
 from .fields import (
     parse_application_commands, parse_auto_moderation_rules, parse_entries, parse_integrations, parse_scheduled_events,
-    parse_threads, parse_users, parse_webhooks, put_application_commands_into, put_auto_moderation_rules_into,
-    put_entries_into, put_integrations_into, put_scheduled_events_into, put_threads_into, put_users_into,
-    put_webhooks_into, validate_application_commands, validate_auto_moderation_rules, validate_entries,
+    parse_threads, parse_users, parse_webhooks, put_application_commands, put_auto_moderation_rules,
+    put_entries, put_integrations, put_scheduled_events, put_threads, put_users,
+    put_webhooks, validate_application_commands, validate_auto_moderation_rules, validate_entries,
     validate_guild_id, validate_integrations, validate_scheduled_events, validate_threads, validate_users,
     validate_webhooks
 )
@@ -219,14 +219,14 @@ class AuditLog(RichAttributeErrorBaseType):
         data : `dict<str, object>`
         """
         data = {}
-        put_application_commands_into(self.application_commands, data, defaults)
-        put_auto_moderation_rules_into(self.auto_moderation_rules, data, defaults)
-        put_entries_into(self.entries, data, defaults)
-        put_integrations_into(self.integrations, data, defaults)
-        put_scheduled_events_into(self.scheduled_events, data, defaults)
-        put_threads_into(self.threads, data, defaults)
-        put_users_into(self.users, data, defaults)
-        put_webhooks_into(self.webhooks, data, defaults)
+        put_application_commands(self.application_commands, data, defaults)
+        put_auto_moderation_rules(self.auto_moderation_rules, data, defaults)
+        put_entries(self.entries, data, defaults)
+        put_integrations(self.integrations, data, defaults)
+        put_scheduled_events(self.scheduled_events, data, defaults)
+        put_threads(self.threads, data, defaults)
+        put_users(self.users, data, defaults)
+        put_webhooks(self.webhooks, data, defaults)
         return data
     
     
@@ -594,7 +594,7 @@ class AuditLog(RichAttributeErrorBaseType):
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         return GUILDS.get(self.guild_id, None)
     

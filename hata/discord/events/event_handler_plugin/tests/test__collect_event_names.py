@@ -48,7 +48,7 @@ def _iter_options():
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test___collect_event_names(events, parent_event_names):
+def test__collect_event_names(events, parent_event_names):
     """
     Tests whether ``_collect_event_names`` works as intended.
     

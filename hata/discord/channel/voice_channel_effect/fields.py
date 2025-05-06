@@ -23,7 +23,7 @@ from .preinstanced import VoiceChannelEffectAnimationType
 # animation_id
 
 parse_animation_id = entity_id_parser_factory('animation_id')
-put_animation_id_into = entity_id_optional_putter_factory('animation_id')
+put_animation_id = entity_id_optional_putter_factory('animation_id')
 validate_animation_id = entity_id_validator_factory('animation_id')
 
 
@@ -32,7 +32,7 @@ validate_animation_id = entity_id_validator_factory('animation_id')
 parse_animation_type = preinstanced_parser_factory(
     'animation_type', VoiceChannelEffectAnimationType, VoiceChannelEffectAnimationType.premium
 )
-put_animation_type_into = preinstanced_optional_putter_factory(
+put_animation_type = preinstanced_optional_putter_factory(
     'animation_type', VoiceChannelEffectAnimationType.premium
 )
 validate_animation_type = preinstanced_validator_factory('animation_type', VoiceChannelEffectAnimationType)
@@ -41,35 +41,35 @@ validate_animation_type = preinstanced_validator_factory('animation_type', Voice
 # channel_id
 
 parse_channel_id = entity_id_parser_factory('channel_id')
-put_channel_id_into = entity_id_putter_factory('channel_id')
+put_channel_id = entity_id_putter_factory('channel_id')
 validate_channel_id = entity_id_validator_factory('channel_id', Channel)
 
 
 # emoji
 
 parse_emoji = nullable_functional_parser_factory('emoji', create_partial_emoji_from_data)
-put_emoji_into = nullable_functional_optional_putter_factory('emoji', create_partial_emoji_data)
+put_emoji = nullable_functional_optional_putter_factory('emoji', create_partial_emoji_data)
 validate_emoji = nullable_entity_validator_factory('emoji', Emoji)
 
 
 # guild_id
 
 parse_guild_id = entity_id_parser_factory('guild_id')
-put_guild_id_into = entity_id_putter_factory('guild_id')
+put_guild_id = entity_id_putter_factory('guild_id')
 validate_guild_id = entity_id_validator_factory('guild_id', NotImplemented, include = 'Guild')
 
 
 # sound_id
 
 parse_sound_id = entity_id_parser_factory('sound_id')
-put_sound_id_into = entity_id_optional_putter_factory('sound_id')
+put_sound_id = entity_id_optional_putter_factory('sound_id')
 validate_sound_id = entity_id_validator_factory('sound_id', SoundboardSound)
 
 
 # sound_volume
 
 parse_sound_volume = float_parser_factory('sound_volume', 1.0)
-put_sound_volume_into = float_optional_putter_factory('sound_volume', 1.0)
+put_sound_volume = float_optional_putter_factory('sound_volume', 1.0)
 validate_sound_volume = float_conditional_validator_factory(
     'sound_volume',
     1.0,
@@ -81,5 +81,5 @@ validate_sound_volume = float_conditional_validator_factory(
 # user_id
 
 parse_user_id = entity_id_parser_factory('user_id')
-put_user_id_into = entity_id_putter_factory('user_id')
+put_user_id = entity_id_putter_factory('user_id')
 validate_user_id = entity_id_validator_factory('user_id', ClientUserBase)

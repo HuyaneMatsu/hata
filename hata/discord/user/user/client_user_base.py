@@ -24,33 +24,47 @@ class ClientUserBase(OrinUserBase):
     ----------
     avatar_hash : `int`
         The user's avatar's hash in `uint128`.
+    
     avatar_type : ``IconType``
         The user's avatar's type.
+    
     avatar_decoration : `None`, ``AvatarDecoration``
         The user's avatar decorations.
+    
     banner_color : `None`, ``Color``
         The user's banner color if has any.
+    
     banner_hash : `int`
         The user's banner's hash in `uint128`.
+    
     banner_type : ``IconType``
         The user's banner's type.
+    
     bot : `bool`
         Whether the user is a bot or a user account.
-    clan : `None`, ``UserClan``
-        The user's primary clan.
+    
     discriminator : `int`
         The user's discriminator. Given to avoid overlapping names.
+    
     display_name : `None`, `str`
         The user's non-unique display name.
+    
     flags : ``UserFlag``
         The user's user flags.
+    
     guild_profiles : `dict` of (`int`, ``GuildProfile``) items
         A dictionary, which contains the user's guild profiles. If a user is member of a guild, then it should
         have a respective guild profile accordingly.
+    
     id : `int`
         The user's unique identifier number.
+    
     name : str
         The user's name.
+    
+    primary_guild_badge : `None | GuildBadge`
+        The user's primary guild's badge.
+    
     thread_profiles : `None`, `dict` (``Channel``, ``ThreadProfile``) items
         A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
         Defaults to `None`.
@@ -66,11 +80,11 @@ class ClientUserBase(OrinUserBase):
         banner = ...,
         banner_color = ...,
         bot = ...,
-        clan = ...,
         discriminator = ...,
         display_name = ...,
         flags = ...,
         name = ...,
+        primary_guild_badge = ...,
     ):
         """
         Creates a new partial user with the given fields.
@@ -79,24 +93,33 @@ class ClientUserBase(OrinUserBase):
         ----------
         avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's avatar.
+        
         avatar_decoration : `None`, ``AvatarDecoration``, Optional (Keyword only)
             The user's avatar decoration.
+        
         banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's banner.
+        
         banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
             The user's banner color.
+        
         bot : `bool`, Optional (Keyword only)
             Whether the user is a bot or a user account.
-        clan : `None`, ``UserClan``, Optional (Keyword only)
-            The user's primary clan.
+        
         discriminator : `str`, `int`, Optional (Keyword only)
             The user's discriminator.
+        
         display_name : `None`, `str`, Optional (Keyword only)
             The user's non-unique display name.
+        
         flags : `int`, ``UserFlag``, Optional (Keyword only)
             The user's flags.
+        
         name : `str`, Optional (Keyword only)
             The user's name.
+        
+        primary_guild_badge : `None | GuildBadge`, Optional (Keyword only)
+            The user's primary guild's badge.
         
         Raises
         ------
@@ -117,11 +140,11 @@ class ClientUserBase(OrinUserBase):
             avatar_decoration = avatar_decoration,
             banner = banner,
             banner_color = banner_color,
-            clan = clan,
             discriminator = discriminator,
             display_name = display_name,
             flags = flags,
             name = name,
+            primary_guild_badge = primary_guild_badge,
         )
         self.bot = bot
         self.guild_profiles = {}
@@ -136,12 +159,15 @@ class ClientUserBase(OrinUserBase):
         
         Parameters
         ----------
-        user_data : `dict` of (`str`, `object`) items
+        user_data : `dict<str, object>`
             User data.
-        guild_profile_data : `None`, `dict` of (`str`, `object`) items = `None`, Optional
+        
+        guild_profile_data : `None`, `dict<str, object>` = `None`, Optional
             Guild profile data.
+        
         guild_id : `int` = `0`, Optional
             The guild's identifier to which the guild profile is bound to.
+        
         strong_cache : `bool` = `True`, Optional (Keyword only)
             Whether the instance should be put into its strong cache.
         
@@ -222,8 +248,10 @@ class ClientUserBase(OrinUserBase):
         ----------
         data : `dict<str, object>`
             Received user data.
+        
         guild_profile_data : `dict<str, object>`
             The user's guild profile's data.
+        
         guild_id : `int`
             A respective guild's identifier from where the user data was received.
             Picked up if the given data includes guild member data as well.
@@ -274,12 +302,6 @@ class ClientUserBase(OrinUserBase):
         self.banner_hash = client.banner_hash
         self.banner_type = client.banner_type
         self.bot = client.bot
-        
-        clan = client.clan
-        if (clan is not None):
-            clan = clan.copy()
-        self.clan = clan
-        
         self.discriminator = client.discriminator
         self.display_name = client.display_name
         self.flags = client.flags
@@ -299,6 +321,11 @@ class ClientUserBase(OrinUserBase):
             user_id = 0
         self.id = user_id
         self.name = client.name
+        
+        primary_guild_badge = client.primary_guild_badge
+        if (primary_guild_badge is not None):
+            primary_guild_badge = primary_guild_badge.copy()
+        self.primary_guild_badge = primary_guild_badge
         
         if include_internals:
             thread_profiles = client.thread_profiles
@@ -339,11 +366,11 @@ class ClientUserBase(OrinUserBase):
         banner = ...,
         banner_color = ...,
         bot = ...,
-        clan = ...,
         discriminator = ...,
         display_name = ...,
         flags = ...,
         name = ...,
+        primary_guild_badge = ...,
     ):
         """
         Copies the user with the given fields.
@@ -352,24 +379,33 @@ class ClientUserBase(OrinUserBase):
         ----------
         avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's avatar.
+        
         avatar_decoration : `None`, ``AvatarDecoration``, Optional (Keyword only)
             The user's avatar decoration.
+        
         banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's banner.
+        
         banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
             The user's banner color.
+        
         bot : `bool`, Optional (Keyword only)
             Whether the user is a bot or a user account.
-        clan : `None`, ``UserClan``, Optional (Keyword only)
-            The user's primary clan.
+        
         discriminator : `str`, `int`, Optional (Keyword only)
             The user's discriminator.
+        
         display_name : `None`, `str`, Optional (Keyword only)
             The user's non-unique display name.
+        
         flags : `int`, ``UserFlag``, Optional (Keyword only)
             The user's flags.
+        
         name : `str`, Optional (Keyword only)
             The user's name.
+        
+        primary_guild_badge : `None | GuildBadge`, Optional (Keyword only)
+            The user's primary guild's badge.
         
         Returns
         -------
@@ -395,11 +431,11 @@ class ClientUserBase(OrinUserBase):
             avatar_decoration = avatar_decoration,
             banner = banner,
             banner_color = banner_color,
-            clan = clan,
             discriminator = discriminator,
             display_name = display_name,
             flags = flags,
             name = name,
+            primary_guild_badge = primary_guild_badge,
         )
         new.bot = bot
         new.guild_profiles = {}

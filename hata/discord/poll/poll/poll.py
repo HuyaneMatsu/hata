@@ -12,8 +12,8 @@ from ..poll_result.utils import poll_result_sort_key
 from .constants import DURATION_DEFAULT
 from .fields import (
     parse_allow_multiple_choices, parse_answers, parse_duration, parse_expires_at, parse_finalized, parse_layout,
-    parse_question, parse_results, put_allow_multiple_choices_into, put_answers_into, put_duration_into,
-    put_expires_at_into, put_finalized_into, put_layout_into, put_question_into, put_results_into,
+    parse_question, parse_results, put_allow_multiple_choices, put_answers, put_duration,
+    put_expires_at, put_finalized, put_layout, put_question, put_results,
     validate_allow_multiple_choices, validate_answers, validate_duration, validate_expires_at, validate_finalized,
     validate_layout, validate_question, validate_results
 )
@@ -493,7 +493,7 @@ class Poll(RichAttributeErrorBaseType):
             
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -508,7 +508,7 @@ class Poll(RichAttributeErrorBaseType):
         +---------------------------+-----------------------------------+
         | duration                  | `int`                             |
         +---------------------------+-----------------------------------+
-        | expires_at                | `None`, `DateTime`                |
+        | expires_at                | `None | DateTime`                 |
         +---------------------------+-----------------------------------+
         | finalized                 | `bool`                            |
         +---------------------------+-----------------------------------+
@@ -585,17 +585,17 @@ class Poll(RichAttributeErrorBaseType):
         """
         data = {}
         
-        put_allow_multiple_choices_into(self.allow_multiple_choices, data, defaults)
-        put_answers_into(self.answers, data, defaults, include_internals = include_internals)
-        put_layout_into(self.layout, data, defaults)
-        put_question_into(self.question, data, defaults)
+        put_allow_multiple_choices(self.allow_multiple_choices, data, defaults)
+        put_answers(self.answers, data, defaults, include_internals = include_internals)
+        put_layout(self.layout, data, defaults)
+        put_question(self.question, data, defaults)
         
         if include_internals:
-            put_expires_at_into(self.expires_at, data, defaults)
-            put_finalized_into(self.finalized, data, defaults)
-            put_results_into(self.results, data, defaults)
+            put_expires_at(self.expires_at, data, defaults)
+            put_finalized(self.finalized, data, defaults)
+            put_results(self.results, data, defaults)
         else:
-            put_duration_into(self.duration, data, defaults)
+            put_duration(self.duration, data, defaults)
         
         return data
     
@@ -606,7 +606,7 @@ class Poll(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        guild : `None`, ``Guild`` = `None`, Optional
+        guild : ``None | Guild`` = `None`, Optional
             The respective guild as a context to look up guild specific names of entities.
         
         Returns

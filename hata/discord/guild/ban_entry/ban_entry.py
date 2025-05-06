@@ -2,7 +2,7 @@ __all__ = ('BanEntry',)
 
 from scarletio import RichAttributeErrorBaseType
 
-from .fields import parse_reason, parse_user, put_reason_into, put_user_into, validate_reason, validate_user
+from .fields import parse_reason, parse_user, put_reason, put_user, validate_reason, validate_user
 
 
 class BanEntry(RichAttributeErrorBaseType):
@@ -80,8 +80,8 @@ class BanEntry(RichAttributeErrorBaseType):
         data : `dict<str, object>`
         """
         data = {}
-        put_reason_into(self.reason, data, defaults)
-        put_user_into(self.user, data, defaults)
+        put_reason(self.reason, data, defaults)
+        put_user(self.user, data, defaults)
         return data
     
     

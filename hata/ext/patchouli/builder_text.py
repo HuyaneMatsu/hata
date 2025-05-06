@@ -10,7 +10,7 @@ from .graver import (
 
 INDENT_SIZE_DEFAULT = 4
 
-DO_NOT_PREVIEW_RP = re.compile('this [a-z]+ is a [a-z]+\.?', re.I)
+DO_NOT_PREVIEW_RP = re.compile('this [a-z]+ is a [a-z]+\\.?', re.I)
 
 SPACE_CHAR_DEFAULT = ' '
 SPACE_CHAR_UNICODE = (b'\xe2\xa0\x80').decode()
@@ -26,14 +26,14 @@ def sizify(words, max_length):
     
     Parameters
     ----------
-    words : `list` of `str`
+    words : `list<str>`
         The words to build the lines from.
     max_length : `int`
         The maximal length of a generated line.
     
     Returns
     -------
-    lines : `list` of `str`
+    lines : `list<str>`
     """
     lines = []
     if words is None:
@@ -138,7 +138,7 @@ def graved_to_single_graved_words(graved):
     
     Returns
     -------
-    words : `None`, `list` of `str`
+    words : `None | list<str>`
     """
     if graved is None:
         return None
@@ -181,7 +181,7 @@ def graved_to_source_words(graved):
     
     Returns
     -------
-    words : `None`, `list` of `str`
+    words : `None | list<str>`
     """
     if graved is None:
         return None
@@ -229,7 +229,7 @@ def graved_to_escaped_words(graved):
     
     Returns
     -------
-    words : `None`, `list` of `str`
+    words : `None | list<str>`
     """
     if graved is None:
         return None
@@ -249,7 +249,7 @@ def graved_to_escaped_words(graved):
             else:
                 add_space_before = False
             
-            local_words = element.replace('_', '\_').split(' ')
+            local_words = element.replace('_', '\\_').split(' ')
             if (not add_space_before) and words:
                 words[-1] = words[-1] + local_words.pop(0)
             
@@ -291,7 +291,7 @@ class BuilderContext:
     def __repr__(self):
         """Returns the builder context's representation."""
         return (
-            f'{self.__class__.__name__}(indent_size = {self.indent_size!r}, max_line_length = '
+            f'{type(self).__name__}(indent_size = {self.indent_size!r}, max_line_length = '
             f'{self.max_line_length!r}, space_char = {self.space_char!r}, word_converter = {self.word_converter!r})'
         )
 
@@ -306,7 +306,7 @@ class TableLine:
     
     Attributes
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         The lines, to what the respective table row is broken down.
     """
     def __init__(self, indent_level, line, sizes, builder_context):
@@ -317,7 +317,7 @@ class TableLine:
         ----------
         indent_level : `int`
             How much the respective table is indented.
-        line : `list` of (`None`, `str`, `list` of `str`)
+        line : `list<str | list<str>>`
             The generated line(s) of the represented line of the table.
         sizes : `list` of `int`
             The internal size for each column.
@@ -411,7 +411,7 @@ class TableConverter:
     ----------
     head_under_line : `str`
         Separator line after the first line of the table.
-    lines : `list` of `str`
+    lines : `list<str>`
         The lines of the table.
     separator_line : `str`
         Separator line between all lines of the table (expect the first two).
@@ -701,7 +701,7 @@ class TableConverter:
         
         Parameters
         ----------
-        to_extend : `list` of `str`
+        to_extend : `list<str>`
             A list to what the table should yield it's lines.
         """
         separator_line = self.separator_line
@@ -734,7 +734,7 @@ class CodeBlockConverter:
     ----------
     ender : `str`
         The last line of the code block.
-    lines : `list` of `str`
+    lines : `list<str>`
         The lines of the code block.
     starter : `str`
         The first line of the code block.
@@ -855,7 +855,7 @@ class CodeBlockConverter:
         
         Parameters
         ----------
-        lines : `list` of `str`
+        lines : `list<str>`
             The code block's lines.
         starter : `str`
             The first line of the code block.
@@ -1104,7 +1104,7 @@ class CodeBlockConverter:
         
         Parameters
         ----------
-        to_extend : `list` of `str`
+        to_extend : `list<str>`
             A list to what the code block should yield it's lines.
         """
         to_extend.append(self.starter)
@@ -1126,7 +1126,7 @@ class DescriptionConverter:
     
     Attributes
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         The lines of the description.
     indent : `int`
         The indent level of the description.
@@ -1266,7 +1266,7 @@ class DescriptionConverter:
         
         Parameters
         ----------
-        to_extend : `list` of `str`
+        to_extend : `list<str>`
             A list to what the description should yield it's lines.
         """
         to_extend.extend(self.lines)
@@ -1289,7 +1289,7 @@ class BlockQuoteConverter:
         Empty line inside of the block quote separating 2 paragraphs.
     indent : `int`
         The indent level of the block quote.
-    lines_by_paragraph : `list` of (`list` of `str`)
+    lines_by_paragraph : `list` of (`list<str>`)
         The lines of the block quote.
     """
     __slots__ = ('empty_line', 'indent', 'lines_by_paragraph', )
@@ -1489,7 +1489,7 @@ class BlockQuoteConverter:
         
         Parameters
         ----------
-        to_extend : `list` of `str`
+        to_extend : `list<str>`
             A list to what the description should yield it's lines.
         """
         lines_by_paragraph = self.lines_by_paragraph
@@ -1522,7 +1522,7 @@ class AttributeDescriptionConverter(DescriptionConverter):
     
     Attributes
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         The lines of the listing element's head.
     indent : `int`
         The indent level of the description.
@@ -1604,7 +1604,7 @@ class ListingHeadConverter(DescriptionConverter):
     
     Attributes
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         The lines of the listing element's head.
     indent : `int`
         The indent level of the description.
@@ -1701,7 +1701,7 @@ class SectionTitleConverter(DescriptionConverter):
     
     Attributes
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         The lines of the section title.
     """
     def __new__(cls, title):
@@ -2001,7 +2001,7 @@ class SectionConverter:
         
         Parameters
         ----------
-        to_extend : `list` of `str`
+        to_extend : `list<str>`
             A list to what the section should yield it's lines.
         """
         last_part = None
@@ -2021,7 +2021,7 @@ class SectionConverter:
 
 def serialize_docs_embed_sized(docs):
     """
-    Serializes the docs and returns a `list` of `str`, where each element has maximal length of the size of an embed
+    Serializes the docs and returns a `list<str>`, where each element has maximal length of the size of an embed
     description.
     
     Parameters
@@ -2031,7 +2031,7 @@ def serialize_docs_embed_sized(docs):
     
     Returns
     -------
-    result_chunks : `list` of `str`
+    result_chunks : `list<str>`
     """
     result_chunks = []
     actual_chunk = []

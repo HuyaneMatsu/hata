@@ -1,6 +1,7 @@
 __all__ = ('UserBase', )
 
 from re import I as re_ignore_case, compile as re_compile, escape as re_escape
+from warnings import warn
 
 from scarletio import include
 
@@ -11,8 +12,8 @@ from ...localization.utils import LOCALE_DEFAULT
 from ...utils import DATETIME_FORMAT_CODE
 
 from .fields import (
-    parse_name, put_avatar_decoration_into, put_banner_color_into, put_bot_into, put_clan_into, put_discriminator_into,
-    put_display_name_into, put_flags_into, put_id_into, put_name_into, validate_name
+    parse_name, put_avatar_decoration, put_banner_color, put_bot, put_discriminator, put_display_name, put_flags,
+    put_id, put_name, put_primary_guild_badge, validate_name
 )
 from .flags import UserFlag
 from .preinstanced import DefaultAvatar, PremiumType, Status
@@ -33,10 +34,13 @@ class UserBase(DiscordEntity, immortal = True):
     ----------
     avatar_hash : `int`
         The user's avatar's hash in `uint128`.
+    
     avatar_type : ``IconType``
         The user's avatar's type.
+    
     id : `int`
         The client's unique identifier number.
+    
     name : str
         The client's username.
     
@@ -97,7 +101,7 @@ class UserBase(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             User data received from Discord.
         """
         self._set_avatar(data)
@@ -111,12 +115,12 @@ class UserBase(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             User data received from Discord.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -135,8 +139,6 @@ class UserBase(DiscordEntity, immortal = True):
         +-----------------------+-------------------------------+-----------------------+
         | channel_id            | `int`                         | ``Webhook``           |
         +-----------------------+-------------------------------+-----------------------+
-        | clan                  | `None`, ``UserClan``          | ``Client``, ``User``  |
-        +-----------------------+-------------------------------+-----------------------+
         | discriminator         | `int`                         | ``Client``, ``User``  |
         +-----------------------+-------------------------------+-----------------------+
         | display_name          | `None`, `str`                 | ``Client``, ``User``  |
@@ -154,6 +156,8 @@ class UserBase(DiscordEntity, immortal = True):
         | name                  | `str`                         | all                   |
         +-----------------------+-------------------------------+-----------------------+
         | premium_type          | ``PremiumType``               | ``Client``            |
+        +-----------------------+-------------------------------+-----------------------+
+        | primary_guild_badge   | `None`, ``GuildBadge``        | ``Client``, ``User``  |
         +-----------------------+-------------------------------+-----------------------+
         """
         old_attributes = {}
@@ -204,7 +208,7 @@ class UserBase(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             User data.
         
         Returns
@@ -230,23 +234,23 @@ class UserBase(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         
         USER_AVATAR.put_into(self.avatar, data, defaults, as_data = not include_internals)
         USER_BANNER.put_into(self.banner, data, defaults, as_data = not include_internals)
-        put_avatar_decoration_into(self.avatar_decoration, data, defaults)
-        put_banner_color_into(self.banner_color, data, defaults)
-        put_discriminator_into(self.discriminator, data, defaults)
-        put_display_name_into(self.display_name, data, defaults)
-        put_name_into(self.name, data, defaults)
+        put_avatar_decoration(self.avatar_decoration, data, defaults)
+        put_banner_color(self.banner_color, data, defaults)
+        put_discriminator(self.discriminator, data, defaults)
+        put_display_name(self.display_name, data, defaults)
+        put_name(self.name, data, defaults)
         
         if include_internals:
-            put_bot_into(self.bot, data, defaults)
-            put_clan_into(self.clan, data, defaults)
-            put_id_into(self.id, data, defaults)
-            put_flags_into(self.flags, data, defaults)
+            put_bot(self.bot, data, defaults)
+            put_id(self.id, data, defaults)
+            put_flags(self.flags, data, defaults)
+            put_primary_guild_badge(self.primary_guild_badge, data, defaults)
         
         return data
     
@@ -541,10 +545,6 @@ class UserBase(DiscordEntity, immortal = True):
         if (self.bot != other.bot):
             return False
         
-        # clan
-        if (self.clan != other.clan):
-            return False
-        
         # discriminator
         if (self.discriminator != other.discriminator):
             return False
@@ -579,6 +579,10 @@ class UserBase(DiscordEntity, immortal = True):
         
         # premium_type
         if (self.premium_type is not other.premium_type):
+            return False
+        
+        # primary_guild_badge
+        if (self.primary_guild_badge != other.primary_guild_badge):
             return False
         
         # status
@@ -683,14 +687,14 @@ class UserBase(DiscordEntity, immortal = True):
         """,
     )
     
-    clan = PlaceHolder(
+    primary_guild_badge = PlaceHolder(
         None,
         """
-        Returns the user's primary clan.
+        Returns the user's primary guild's badge.
         
         Returns
         -------
-        clan : `None`, ``UserClan``
+        primary_guild_badge : ``None | GuildBadge``
         """,
     )
     
@@ -995,7 +999,7 @@ class UserBase(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        guild : `None`, ``Guild``, `int`
+        guild : ``None | int | Guild``
             The guild, where the user's color will be checked.
             
             Can be given as `None`.
@@ -1013,7 +1017,7 @@ class UserBase(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        guild : `None`, ``Guild``, `int`
+        guild : ``None | int | Guild``
             The guild, where the user's nick will be checked.
             
             Can be given as `None`.
@@ -1087,7 +1091,7 @@ class UserBase(DiscordEntity, immortal = True):
         name : `str`
             The name of the user.
         
-        guild : `None`, ``Guild``, `int`
+        guild : ``None | int | Guild``
             The guild, where the user's nick will be also checked.
             
             Can be given as `None`.
@@ -1159,7 +1163,7 @@ class UserBase(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        guild : `None`, ``Guild``, `int`
+        guild : ``None | int | Guild``
             The guild where the user's top role will be looked up.
         
         default : `object` = `None`, Optional
@@ -1218,7 +1222,7 @@ class UserBase(DiscordEntity, immortal = True):
         ----------
         user : ``User``
             The other user to check.
-        guild : ``Guild``, `None`, `int`
+        guild : ``None | int | Guild``
             The guild where the users' top roles will be checked.
             
             Can be given as `None`.
@@ -1236,12 +1240,12 @@ class UserBase(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        guild : `None`, ``Guild``, `int`
+        guild : ``None | int | Guild``
             The guild to get guild profile for.
         
         Returns
         -------
-        guild_profile : `None`, ``Guild``
+        guild_profile : `None`, ``GuildProfile``
         """
         return None
     
@@ -1284,7 +1288,7 @@ class UserBase(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        guild : `None`, ``Guild``, `int`
+        guild : ``None | int | Guild``
             The guild to get whether the user is booster of.
         
         Returns
@@ -1324,12 +1328,12 @@ class UserBase(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received guild member data.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -1354,7 +1358,7 @@ class UserBase(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received guild member data.
         """
         pass
@@ -1438,7 +1442,7 @@ class UserBase(DiscordEntity, immortal = True):
             +-------------------+-------------------------------+
             | banner            | ``Icon``                      |
             +-------------------+-------------------------------+
-            | boosts_since      | `None`, `DateTime`            |
+            | boosts_since      | `None | DateTime`             |
             +-------------------+-------------------------------+
             | flags             | `None`, ``GuildProfileFlags`` |
             +-------------------+-------------------------------+
@@ -1448,7 +1452,7 @@ class UserBase(DiscordEntity, immortal = True):
             +-------------------+-------------------------------+
             | role_ids          | `None`, `tuple` of `int`      |
             +-------------------+-------------------------------+
-            | timed_out_until   | `None`, `DateTime`            |
+            | timed_out_until   | `None | DateTime`             |
             +-------------------+-------------------------------+
         """
         raise NotImplementedError
@@ -1484,7 +1488,7 @@ class UserBase(DiscordEntity, immortal = True):
             +-------------------+-------------------------------+
             | banner            | ``Icon``                      |
             +-------------------+-------------------------------+
-            | boosts_since      | `None`, `DateTime`            |
+            | boosts_since      | `None | DateTime`             |
             +-------------------+-------------------------------+
             | flags             | `None`, ``GuildProfileFlags`` |
             +-------------------+-------------------------------+
@@ -1494,7 +1498,23 @@ class UserBase(DiscordEntity, immortal = True):
             +-------------------+-------------------------------+
             | role_ids          | `None`, `tuple` of `int`      |
             +-------------------+-------------------------------+
-            | timed_out_until   | `None`, `DateTime`            |
+            | timed_out_until   | `None | DateTime`             |
             +-------------------+-------------------------------+
         """
         raise NotImplementedError
+    
+    
+    @property
+    def clan(self):
+        """
+        Deprecated and will be removed in 2025 November. Use ``.primary_guild_badge`` instead.
+        """
+        warn(
+            (
+                f'`{type(self).__name__}.clan` is deprecated and will be removed in 2025 November. '
+                f'Please use `.primary_guild_badge` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        return self.primary_guild_badge

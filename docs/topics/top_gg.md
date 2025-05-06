@@ -3,7 +3,8 @@
 [Top.gg](https://top.gg) is a Discord Bot and Server discovery site, for spicing up your Discord experience.
 
 Discord bot listings, like [top.gg](https://top.gg) help your bot grow, but before putting your bot on one, I recommend
-reading [this article](https://github.com/KusaDaDev/Organic-Growth) as a guidance.
+reading [this article](https://github.com/BluisDev/Organic-Growth) as a guidance. 
+<!-- KusaDaDev -> BluisDev -->
 
 # Setup
 

@@ -1,5 +1,7 @@
 import vampytest
 
+from ...media_info import MediaInfo
+
 from ..media_item import MediaItem
 
 
@@ -14,8 +16,8 @@ def _assert_fields_set(media_item):
     """
     vampytest.assert_instance(media_item, MediaItem)
     vampytest.assert_instance(media_item.description, str, nullable = True)
+    vampytest.assert_instance(media_item.media, MediaInfo)
     vampytest.assert_instance(media_item.spoiler, bool)
-    vampytest.assert_instance(media_item.url, str)
 
 
 def test__MediaItem__new__no_fields():
@@ -24,12 +26,12 @@ def test__MediaItem__new__no_fields():
     
     Case: No fields given.
     """
-    url = 'https://orindance.party/'
+    media = MediaInfo('https://orindance.party/')
     
-    media_item = MediaItem(url)
+    media_item = MediaItem(media)
     _assert_fields_set(media_item)
     
-    vampytest.assert_eq(media_item.url, url)
+    vampytest.assert_eq(media_item.media, media)
 
 
 def test__MediaItem__new__all_fields():
@@ -39,16 +41,16 @@ def test__MediaItem__new__all_fields():
     Case: All fields given.
     """
     description = 'orin'
+    media = MediaInfo('https://orindance.party/')
     spoiler = True
-    url = 'https://orindance.party/'
     
     media_item = MediaItem(
+        media,
         description = description,
         spoiler = spoiler,
-        url = url,
     )
     _assert_fields_set(media_item)
     
     vampytest.assert_eq(media_item.description, description)
+    vampytest.assert_eq(media_item.media, media)
     vampytest.assert_eq(media_item.spoiler, spoiler)
-    vampytest.assert_eq(media_item.url, url)

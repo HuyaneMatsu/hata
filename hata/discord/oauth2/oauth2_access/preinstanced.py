@@ -3,7 +3,7 @@ __all__ = ('Oauth2Scope',)
 from ...bases import Preinstance as P, PreinstancedBase
 
 
-class Oauth2Scope(PreinstancedBase):
+class Oauth2Scope(PreinstancedBase, value_type = str):
     """
     Represents an oauth2 scope.
     
@@ -11,22 +11,16 @@ class Oauth2Scope(PreinstancedBase):
     ----------
     name : `str`
         The name of the oauth2 scope
+    
     value : `str`
         The identifier value the oauth2 scope.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`str`, ``Oauth2Scope``) items
-        Stores the predefined ``Oauth2Scope``-s. These can be accessed with their `value` as key.
-    VALUE_TYPE : `type` = `str`
-        The connection types' values' type.
-    DEFAULT_NAME : `str` = `'UNDEFINED'`
-        The default name of the connection types.
-    
-    Every predefined oauth2 scope can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined oauth2 scope can be accessed as type attribute as well:
     
     +-------------------------------------------+-----------------------+-------------------------------------------+
-    | Class attribute name                      | name                  | value                                     |
+    | Type attribute name                       | name                  | value                                     |
     +===========================================+=======================+===========================================+
     | activities_read                           | activities read       | activities.read                           |
     +-------------------------------------------+-----------------------+-------------------------------------------+
@@ -93,10 +87,6 @@ class Oauth2Scope(PreinstancedBase):
     | webhook_incoming                          | webhook incoming      | webhook.incoming                          |
     +-------------------------------------------+-----------------------+-------------------------------------------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = str
-    DEFAULT_NAME = 'UNDEFINED'
-    
     activities_read = P('activities.read', 'activities read')
     activities_write = P('activities.write', 'activities write')
     applications_builds_read = P('applications.builds.read', 'applications builds read')

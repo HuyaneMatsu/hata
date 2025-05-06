@@ -28,7 +28,7 @@ def test__parse_components(input_data):
     
     Returns
     -------
-    output : `None | tuple<Component>`
+    output : ``None | tuple<Component>``
     """
     output = parse_components(input_data)
     vampytest.assert_instance(output, tuple, nullable = True)

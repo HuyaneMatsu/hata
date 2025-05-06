@@ -1,7 +1,5 @@
 __all__ = ()
 
-from warnings import warn
-
 from scarletio import Compound
 
 from ...core import GUILDS
@@ -69,22 +67,6 @@ class ClientCompoundEmojiGuildEndpoints(Compound):
         return emoji
     
     
-    async def emoji_get(self, emoji, *, force_update = False):
-        """
-        Deprecated and will be removed in 2025 January.
-        """
-        warn(
-            (
-                f'`{type(self).__name__}.emoji_get` is deprecated and will be removed in 2025 January.'
-                f' Please use `.emoji_get_guild` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return await self.emoji_get_guild(emoji, force_update = force_update)
-    
-    
     async def emoji_get_all_guild(self, guild):
         """
         Requests the given guild's emojis.
@@ -93,7 +75,7 @@ class ClientCompoundEmojiGuildEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild, what's emojis will be synced.
         
         Returns
@@ -128,22 +110,6 @@ class ClientCompoundEmojiGuildEndpoints(Compound):
         return emojis
     
     
-    async def emoji_guild_get_all(self, guild):
-        """
-        Deprecated and will be removed in 2025 January.
-        """
-        warn(
-            (
-                f'`{type(self).__name__}.emoji_guild_get_all` is deprecated and will be removed in 2025 January.'
-                f' Please use `.emoji_get_all_guild` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return await self.emoji_get_all_guild(guild)
-    
-    
     async def emoji_create_guild(self, guild, image, emoji_template = None, *, reason = None, **keyword_parameters):
         """
         Creates an emoji at the given guild.
@@ -152,7 +118,7 @@ class ClientCompoundEmojiGuildEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild where the emoji will be created.
         
         image : `bytes-like`
@@ -198,22 +164,6 @@ class ClientCompoundEmojiGuildEndpoints(Compound):
         -----
         Only some characters can be in the emoji's name, so every other character is filtered out.
         """
-        if isinstance(image, str) and isinstance(emoji_template, (bytes, bytearray, memoryview)):
-            warn(
-                (
-                    f'`{type(self).__name__}.emoji_create`\'s `name` parameter is now keyword only. '
-                    f'Please check the new definition for more details. '
-                    f'Passing the name parameter as positional is deprecated and will be removed in 2025 January.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            keyword_parameters['name'] = image
-            image = emoji_template
-            emoji_template = None
-        
-        
         guild_id = get_guild_id(guild)
         data = build_create_payload(emoji_template, EMOJI_FIELD_CONVERTERS, keyword_parameters)
         data['image'] = image_to_base64(image)

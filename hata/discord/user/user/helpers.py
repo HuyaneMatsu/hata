@@ -14,7 +14,7 @@ def _try_get_guild_id(guild):
     
     Parameters
     ----------
-    guild : `None`, `int`, ``Guild``
+    guild : ``None | int | Guild``
         The guild or it's identifier.
     
     Returns
@@ -40,12 +40,12 @@ def _try_get_guild_and_id(guild):
     
     Parameters
     ----------
-    guild : `None`, `int`, ``Guild``
+    guild : ``None | int | Guild``
         The guild or it's identifier.
     
     Returns
     -------
-    guild : `None`, ``Guild``
+    guild : ``None | Guild``
         The guild if found.
     guild_id : `int`
         The guild's identifier. Defaults to `0`.

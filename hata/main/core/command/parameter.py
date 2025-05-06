@@ -65,7 +65,7 @@ def parameter_value_converter_int(value):
     
     Returns
     -------
-    value : `None`, `int`
+    value : `None | int`
         Returns `None` if conversion failed.
     """
     try:

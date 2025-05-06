@@ -17,7 +17,7 @@ class ForumTagUpdate(RichAttributeErrorBaseType):
     ----------
     forum_tag : ``ForumTag``
         The updated forum tag.
-    old_attributes : `dict` of (`str`, `object`) items
+    old_attributes : `dict<str, object>`
         The changed attributes of the forum tag in `attribute-name` - `old-value` relation. Can contain any of the
         following items:
         
@@ -41,7 +41,7 @@ class ForumTagUpdate(RichAttributeErrorBaseType):
         ----------
         forum_tag : ``ForumTag``, Optional (Keyword only)
             The updated forum tag.
-        old_attributes : `None`, `dict` of (`str`, `object`) items, Optional (Keyword only)
+        old_attributes : `None`, `dict<str, object>`, Optional (Keyword only)
             The changed attributes of the forum tag.
         
         Raises
@@ -77,7 +77,7 @@ class ForumTagUpdate(RichAttributeErrorBaseType):
         ----------
         forum_tag : ``ForumTag``
             The updated forum tag.
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             The changed attributes of the forum tag.
         
         Returns
@@ -162,7 +162,7 @@ class ForumTagUpdate(RichAttributeErrorBaseType):
         ----------
         forum_tag : ``ForumTag``, Optional (Keyword only)
             The updated forum_tag.
-        old_attributes : `None`, `dict` of (`str`, `object`) items, Optional (Keyword only)
+        old_attributes : `None`, `dict<str, object>`, Optional (Keyword only)
             The changed attributes of the forum tag.
         
         Returns

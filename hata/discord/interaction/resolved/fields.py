@@ -14,7 +14,7 @@ def parse_attachments(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Resolved data.
     
     Returns
@@ -34,7 +34,7 @@ def parse_attachments(data):
     return resolved_attachments
 
 
-def put_attachments_into(attachments, data, defaults):
+def put_attachments(attachments, data, defaults):
     """
     Puts the given `attachments` into the given `data` json serializable object.
     
@@ -43,7 +43,7 @@ def put_attachments_into(attachments, data, defaults):
     attachments : `None`, `dict` of (`int`, ``Attachment``) items
         Resolved attachments.
     
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Interaction resolved data.
     
     defaults : `bool`
@@ -51,7 +51,7 @@ def put_attachments_into(attachments, data, defaults):
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if defaults or (attachments is not None):
         resolved_attachment_datas = {}
@@ -77,7 +77,7 @@ def parse_channels(data, guild_id = 0):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Resolved data.
     
     guild_id : `int`, Optional (Keyword only)
@@ -101,7 +101,7 @@ def parse_channels(data, guild_id = 0):
     return resolved_channels
 
 
-def put_channels_into(channels, data, defaults):
+def put_channels(channels, data, defaults):
     """
     Puts the given `channels` into the given `data` json serializable object.
     
@@ -110,7 +110,7 @@ def put_channels_into(channels, data, defaults):
     channels : `None`, `dict` of (`int`, ``Channel``) items
         Resolved channels.
     
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Interaction resolved data.
     
     defaults : `bool`
@@ -118,7 +118,7 @@ def put_channels_into(channels, data, defaults):
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if defaults or (channels is not None):
         resolved_channel_datas = {}
@@ -144,7 +144,7 @@ def parse_roles(data, guild_id = 0):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Resolved data.
     
     guild_id : `int`, Optional (Keyword only)
@@ -167,7 +167,7 @@ def parse_roles(data, guild_id = 0):
     return resolved_roles
 
 
-def put_roles_into(roles, data, defaults):
+def put_roles(roles, data, defaults):
     """
     Puts the given `roles` into the given `data` json serializable object.
     
@@ -176,7 +176,7 @@ def put_roles_into(roles, data, defaults):
     roles : `None`, `dict` of (`int`, ``Role``) items
         Resolved roles.
     
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Interaction resolved data.
     
     defaults : `bool`
@@ -184,7 +184,7 @@ def put_roles_into(roles, data, defaults):
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if defaults or (roles is not None):
         resolved_role_datas = {}
@@ -210,7 +210,7 @@ def parse_messages(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Resolved data.
     
     Returns
@@ -230,7 +230,7 @@ def parse_messages(data):
     return resolved_messages
 
 
-def put_messages_into(messages, data, defaults):
+def put_messages(messages, data, defaults):
     """
     Puts the given `messages` into the given `data` json serializable object.
     
@@ -239,7 +239,7 @@ def put_messages_into(messages, data, defaults):
     messages : `None`, `dict` of (`int`, ``Message``) items
         Resolved messages.
     
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Interaction resolved data.
     
     defaults : `bool`
@@ -247,7 +247,7 @@ def put_messages_into(messages, data, defaults):
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if defaults or (messages is not None):
         resolved_message_datas = {}
@@ -273,7 +273,7 @@ def parse_users(data, guild_id = 0):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Resolved data.
     
     guild_id : `int` = `0`, Optional
@@ -304,7 +304,7 @@ def parse_users(data, guild_id = 0):
     return resolved_users
 
 
-def put_users_into(users, data, defaults, *, guild_id = 0):
+def put_users(users, data, defaults, *, guild_id = 0):
     """
     Puts the given `users` into the given `data` json serializable object.
     
@@ -313,7 +313,7 @@ def put_users_into(users, data, defaults, *, guild_id = 0):
     users : `None`, `dict` of (`int`, ``ClientUserBase``) items
         Resolved users.
     
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Interaction resolved data.
     
     defaults : `bool`
@@ -324,7 +324,7 @@ def put_users_into(users, data, defaults, *, guild_id = 0):
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if defaults or (users is not None):
         resolved_user_datas = {}

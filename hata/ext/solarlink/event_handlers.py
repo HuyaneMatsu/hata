@@ -76,7 +76,7 @@ async def handle_voice_client_update(client, voice_state, old_attributes):
         The respective client.
     voice_state : ``VoiceState``
         The client's voice state.
-    old_attributes : `dict` of (`str`, `object`) items
+    old_attributes : `dict<str, object>`
         The voice state's old, changed attributes in `attribute-name` - `old-value` relation.
     """
     guild_id = voice_state.guild_id

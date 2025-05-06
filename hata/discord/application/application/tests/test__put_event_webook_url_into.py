@@ -1,6 +1,6 @@
 import vampytest
 
-from ..fields import put_event_webhook_url_into
+from ..fields import put_event_webhook_url
 
 
 def _iter_options():
@@ -11,9 +11,9 @@ def _iter_options():
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__put_event_webhook_url_into(input_value, defaults):
+def test__put_event_webhook_url(input_value, defaults):
     """
-    Tests whether ``put_event_webhook_url_into`` is working as intended.
+    Tests whether ``put_event_webhook_url`` is working as intended.
     
     Parameters
     ----------
@@ -27,4 +27,4 @@ def test__put_event_webhook_url_into(input_value, defaults):
     -------
     output : `dict<str, object>`
     """
-    return put_event_webhook_url_into(input_value, {}, defaults)
+    return put_event_webhook_url(input_value, {}, defaults)

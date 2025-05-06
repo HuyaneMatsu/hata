@@ -1,5 +1,7 @@
 __all__ = ()
 
+from ...color import Color
+
 
 def value_deserializer_id(value):
     """
@@ -202,3 +204,40 @@ def value_serializer_description(value):
     
     return value
 
+
+def value_deserializer_html_color(value):
+    """
+    Shared `get_html_color` conversion.
+    
+    Parameters
+    ----------
+    value : `None | str`
+        Raw value to convert.
+    
+    Returns
+    -------
+    value : `None | Color`
+    """
+    if value is not None:
+        value = Color.from_html(value)
+    
+    return value
+
+
+def value_serializer_html_color(value):
+    """
+    Shared `put_html_color` conversion.
+    
+    Parameters
+    ----------
+    value : `None | Color`
+        Processed value to convert.
+    
+    Returns
+    -------
+    value : `None | str`
+    """
+    if (value is not None):
+        value = value.as_html
+    
+    return value

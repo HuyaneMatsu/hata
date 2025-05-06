@@ -1,4 +1,4 @@
-import warnings as module_warnings
+from warnings import catch_warnings, simplefilter as apply_simple_filter
 
 import vampytest
 
@@ -40,8 +40,8 @@ def test__Application__from_data__warning_and_attributes():
         'id': str(application_id),
     }
     
-    with module_warnings.catch_warnings(record = True) as warnings:
-        module_warnings.simplefilter('always')
+    with catch_warnings(record = True) as warnings:
+        apply_simple_filter('always')
         
         application = Application.from_data(data)
         _assert_fields_set(application)
@@ -62,8 +62,8 @@ def test__Application__from_data__caching():
         'id': application_id,
     }
     
-    with module_warnings.catch_warnings():
-        module_warnings.simplefilter('ignore')
+    with catch_warnings():
+        apply_simple_filter('ignore')
         
         application = Application.from_data(data)
         test_application = Application.from_data(data)
@@ -610,8 +610,8 @@ def test__Application__to_data__include_internals():
         application_id,
     )
     
-    with module_warnings.catch_warnings(record = True) as warnings:
-        module_warnings.simplefilter('always')
+    with catch_warnings(record = True) as warnings:
+        apply_simple_filter('always')
         
         data = application.to_data(defaults = True, include_internals = True)
         
@@ -649,8 +649,8 @@ def test__Application__to_data__default():
         tags = tags,
     )
     
-    with module_warnings.catch_warnings(record = True) as warnings:
-        module_warnings.simplefilter('always')
+    with catch_warnings(record = True) as warnings:
+        apply_simple_filter('always')
         
         data = application.to_data(defaults = True)
         

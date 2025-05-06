@@ -6,8 +6,8 @@ from ...utils import DATETIME_FORMAT_CODE
 
 from .fields import (
     parse_direct_message_spam_detected_at, parse_direct_messages_disabled_until, parse_invites_disabled_until,
-    parse_raid_detected_at, put_direct_message_spam_detected_at_into, put_direct_messages_disabled_until_into,
-    put_invites_disabled_until_into, put_raid_detected_at_into, validate_direct_message_spam_detected_at,
+    parse_raid_detected_at, put_direct_message_spam_detected_at, put_direct_messages_disabled_until,
+    put_invites_disabled_until, put_raid_detected_at, validate_direct_message_spam_detected_at,
     validate_direct_messages_disabled_until, validate_invites_disabled_until, validate_raid_detected_at
 )
 
@@ -18,13 +18,13 @@ class GuildIncidents(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    direct_message_spam_detected_at : `None`, `DateTime`
+    direct_message_spam_detected_at : `None | DateTime`
         When direct message spam was detected.
-    direct_messages_disabled_until : `None`, `DateTime`
+    direct_messages_disabled_until : `None | DateTime`
         Until when are the direct messages disabled in the guild.
-    invites_disabled_until : `None`, `DateTime`
+    invites_disabled_until : `None | DateTime`
        Until when are the invites disabled of the guild.
-    raid_detected_at : `None`, `DateTime`
+    raid_detected_at : `None | DateTime`
         When raid was detected.
     """
     __slots__ = (
@@ -45,13 +45,13 @@ class GuildIncidents(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        direct_message_spam_detected_at : `None`, `DateTime`, Optional (Keyword only)
+        direct_message_spam_detected_at : `None | DateTime`, Optional (Keyword only)
             When direct message spam was detected.
-        direct_messages_disabled_until : `None`, `DateTime`, Optional (Keyword only)
+        direct_messages_disabled_until : `None | DateTime`, Optional (Keyword only)
             Until when are the direct messages disabled in the guild.
-        invites_disabled_until : `None`, `DateTime`, Optional (Keyword only)
+        invites_disabled_until : `None | DateTime`, Optional (Keyword only)
            Until when are the invites disabled of the guild.
-        raid_detected_at : `None`, `DateTime`, Optional (Keyword only)
+        raid_detected_at : `None | DateTime`, Optional (Keyword only)
             When raid was detected.
         
         Raises
@@ -132,12 +132,12 @@ class GuildIncidents(RichAttributeErrorBaseType):
         data : `dict<str, object>`
         """
         data = {}
-        put_direct_messages_disabled_until_into(self.direct_messages_disabled_until, data, defaults)
-        put_invites_disabled_until_into(self.invites_disabled_until, data, defaults)
+        put_direct_messages_disabled_until(self.direct_messages_disabled_until, data, defaults)
+        put_invites_disabled_until(self.invites_disabled_until, data, defaults)
         
         if include_internals:
-            put_direct_message_spam_detected_at_into(self.direct_message_spam_detected_at, data, defaults)
-            put_raid_detected_at_into(self.raid_detected_at, data, defaults)
+            put_direct_message_spam_detected_at(self.direct_message_spam_detected_at, data, defaults)
+            put_raid_detected_at(self.raid_detected_at, data, defaults)
         
         return data
     
@@ -285,13 +285,13 @@ class GuildIncidents(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        direct_message_spam_detected_at : `None`, `DateTime`, Optional (Keyword only)
+        direct_message_spam_detected_at : `None | DateTime`, Optional (Keyword only)
             When direct message spam was detected.
-        direct_messages_disabled_until : `None`, `DateTime`, Optional (Keyword only)
+        direct_messages_disabled_until : `None | DateTime`, Optional (Keyword only)
             Until when are the direct messages disabled in the guild.
-        invites_disabled_until : `None`, `DateTime`, Optional (Keyword only)
+        invites_disabled_until : `None | DateTime`, Optional (Keyword only)
            Until when are the invites disabled of the guild.
-        raid_detected_at : `None`, `DateTime`, Optional (Keyword only)
+        raid_detected_at : `None | DateTime`, Optional (Keyword only)
             When raid was detected.
         
         Returns

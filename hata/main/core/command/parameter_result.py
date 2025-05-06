@@ -269,7 +269,7 @@ class ParameterResult(RichAttributeErrorBaseType):
         ----------
         positional_parameters : `list` of `object`
             Positional parameters to call the respective function with.
-        keyword_parameters : `dict` of (`str`, `object`) items
+        keyword_parameters : `dict<str, object>`
             Keyword parameters to call the respective function with.
         
         Returns

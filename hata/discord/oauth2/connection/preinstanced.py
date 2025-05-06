@@ -3,7 +3,7 @@ __all__ = ('ConnectionType', 'ConnectionVisibility',)
 from ...bases import Preinstance as P, PreinstancedBase
 
 
-class ConnectionType(PreinstancedBase):
+class ConnectionType(PreinstancedBase, value_type = str):
     """
     Represents a connection's type.
     
@@ -11,22 +11,16 @@ class ConnectionType(PreinstancedBase):
     ----------
     name : `str`
         The name of the connection type.
+    
     value : `str`
         The identifier value the connection type.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`str`, ``ConnectionType``) items
-        Stores the predefined ``ConnectionType``-s. These can be accessed with their `value` as key.
-    VALUE_TYPE : `type` = `str`
-        The connection types' values' type.
-    DEFAULT_NAME : `str` = `'UNDEFINED'`
-        The default name of the connection types.
-    
-    Every predefined connection type can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined connection type can be accessed as type attribute as well:
     
     +-----------------------+-----------------------+-------------------+
-    | Class attribute name  | Name                  | Value             |
+    | Type attribute name   | Name                  | Value             |
     +=======================+=======================+===================+
     | amazon_music          | Amazon Music          | amazon-music      |
     +-----------------------+-----------------------+-------------------+
@@ -85,10 +79,6 @@ class ConnectionType(PreinstancedBase):
     | youtube               | YouTube               | youtube           |
     +-----------------------+-----------------------+-------------------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = str
-    DEFAULT_NAME = 'UNDEFINED'
-    
     __slots__ = ()
     
     amazon_music = P('amazon-music', 'Amazon Music')
@@ -121,7 +111,7 @@ class ConnectionType(PreinstancedBase):
     youtube = P('youtube', 'YouTube')
 
 
-class ConnectionVisibility(PreinstancedBase):
+class ConnectionVisibility(PreinstancedBase, value_type = int):
     """
     Represents a connection visibility.
     
@@ -129,32 +119,22 @@ class ConnectionVisibility(PreinstancedBase):
     ----------
     name : `str`
         The name of the connection visibility.
-    value : `str`
+    
+    value : `int`
         The identifier value the connection visibility.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`str`, ``ConnectionVisibility``) items
-        Stores the predefined ``ConnectionVisibility``-s. These can be accessed with their `value` as key.
-    VALUE_TYPE : `type` = `str`
-        The connection visibilities' values' type.
-    DEFAULT_NAME : `str` = `'UNDEFINED'`
-        The default name of the connection visibilities.
-    
-    Every predefined connection visibility can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined connection visibility can be accessed as type attribute as well:
     
     +-----------------------+-----------------------+-------------------+
-    | Class attribute name  | Name                  | Value             |
+    | Type attribute name   | Name                  | Value             |
     +=======================+=======================+===================+
     | user_only             | user only             | 0                 |
     +-----------------------+-----------------------+-------------------+
     | everyone              | everyone              | 1                 |
     +-----------------------+-----------------------+-------------------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    DEFAULT_NAME = 'UNDEFINED'
-    
     __slots__ = ()
     
     user_only = P(0, 'user only')

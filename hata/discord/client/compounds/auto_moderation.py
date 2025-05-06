@@ -61,7 +61,7 @@ class ClientCompoundAutoModerationEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild or it's identifier.
         
         Returns
@@ -95,7 +95,7 @@ class ClientCompoundAutoModerationEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild or it's identifier.
         auto_moderation_rule : ``AutoModerationRule``
             The auto moderation rule to create one like.

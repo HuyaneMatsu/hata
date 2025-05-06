@@ -7,7 +7,7 @@ from ...core import FORUM_TAGS
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 
 from .fields import (
-    parse_emoji, parse_id, parse_moderated, parse_name, put_emoji_into, put_id_into, put_moderated_into, put_name_into,
+    parse_emoji, parse_id, parse_moderated, parse_name, put_emoji, put_id, put_moderated, put_name,
     validate_emoji, validate_id, validate_moderated, validate_name
 )
 
@@ -335,7 +335,7 @@ class ForumTag(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Forum tag data.
         
         Returns
@@ -361,7 +361,7 @@ class ForumTag(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Forum tag data.
         """
         # id
@@ -384,12 +384,12 @@ class ForumTag(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Forum tag data.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             The updated attributes.
             
             Every item in the dictionary is optional.
@@ -437,12 +437,12 @@ class ForumTag(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Forum tag data.
         
         Returns
         -------
-        forum_tag_and_difference : ``ForumTag``, (`None`, `dict` of (`str`, `object`) items)
+        forum_tag_and_difference : ``ForumTag``, (`None`, `dict<str, object>`)
         """
         forum_tag_id = parse_id(data)
         
@@ -475,22 +475,22 @@ class ForumTag(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         
         # id
         if include_internals:
-            put_id_into(self.id, data, defaults)
+            put_id(self.id, data, defaults)
         
         # emoji
-        put_emoji_into(self.emoji, data, defaults)
+        put_emoji(self.emoji, data, defaults)
         
         # name
-        put_name_into(self.name, data, defaults)
+        put_name(self.name, data, defaults)
         
         # moderated
-        put_moderated_into(self.moderated, data, defaults)
+        put_moderated(self.moderated, data, defaults)
         
         return data
     

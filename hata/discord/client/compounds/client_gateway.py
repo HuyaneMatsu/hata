@@ -270,7 +270,7 @@ class ClientCompoundClientGateway(Compound):
         
         Parameters
         ----------
-        guilds : `iterable` of (``Guild``, `int`)
+        guilds : ``iterable<Guild> | iterable<int>``
             The guilds or their identifiers to request the sounds of.
         force_request : `bool` = `False`
             Whether the sounds should be requested even if they are already cached.
@@ -338,7 +338,7 @@ class ClientCompoundClientGateway(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild, what's members will be requested.
         
         Raises
@@ -401,7 +401,7 @@ class ClientCompoundClientGateway(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild, what's members will be requested.
         name : `str`
             The received user's name or nick should start with this string.

@@ -3,7 +3,7 @@ __all__ = ('ApplicationCommandOptionMetadataNested',)
 from scarletio import copy_docs
 
 from .base import ApplicationCommandOptionMetadataBase
-from .fields import parse_options, put_options_into, validate_options
+from .fields import parse_options, put_options, validate_options
 
 
 class ApplicationCommandOptionMetadataNested(ApplicationCommandOptionMetadataBase):
@@ -65,7 +65,7 @@ class ApplicationCommandOptionMetadataNested(ApplicationCommandOptionMetadataBas
     @copy_docs(ApplicationCommandOptionMetadataBase.to_data)
     def to_data(self, *, defaults = False):
         data = {}
-        put_options_into(self.options, data, defaults)
+        put_options(self.options, data, defaults)
         return data
     
     

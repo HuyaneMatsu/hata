@@ -27,4 +27,6 @@ def test__value_deserializer_string_array(input_value):
     -------
     output : `None | tuple<int>`
     """
-    return value_deserializer_string_array(input_value)
+    output = value_deserializer_string_array(input_value)
+    vampytest.assert_instance(output, tuple, nullable = True)
+    return output

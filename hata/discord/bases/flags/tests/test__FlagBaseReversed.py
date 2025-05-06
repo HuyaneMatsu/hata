@@ -181,7 +181,7 @@ def _iter_options__set_checks():
 
 
 @vampytest._(vampytest.call_from(_iter_options__set_checks()).returning_last())
-def test___FlagBaseReversed__set_checks(value_0, value_1, set_check):
+def test__FlagBaseReversed__set_checks(value_0, value_1, set_check):
     """
     Tests whether ``FlagBaseReversed``'s set checks work as intended.
     

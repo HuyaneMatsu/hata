@@ -1,15 +1,13 @@
 __all__ = ('InteractionForm',)
 
-import reprlib
-
 from scarletio import RichAttributeErrorBaseType
 
-from ..shared_fields import (
-    parse_components, parse_custom_id, put_components_into, put_custom_id_into, validate_custom_id
-)
 from ..shared_helpers import create_auto_custom_id
 
-from .fields import parse_title, put_title_into, validate_components, validate_title
+from .fields import (
+    parse_components, parse_custom_id, parse_title, put_components, put_custom_id, put_title, validate_components,
+    validate_custom_id, validate_title
+)
 
 
 class InteractionForm(RichAttributeErrorBaseType):
@@ -18,13 +16,13 @@ class InteractionForm(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    components : `None`, `tuple` of ``Component``
+    components : ``None | tuple<Component>``
         Stored components.
     
-    custom_id : `None`, `str`
+    custom_id : `None | str`
         Custom identifier to match the form data when receiving it's interaction back.
     
-    title : `None`, `str`
+    title : `None | str`
         The form's title.
     """
     __slots__ = ('components', 'custom_id', 'title')
@@ -35,13 +33,13 @@ class InteractionForm(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        title : `None`, `str`
+        title : `None | str`
             The form's title.
         
-        components : `None`, `iterable` of ``Component``
+        components : ``None | iterable<Component | (tuple | list)<Component>>``
             Sub components.
         
-        custom_id : `None`, `str` = `None`, Optional
+        custom_id : `None | str` = `None`, Optional
              Custom identifier for the form.
         
         Raises
@@ -72,7 +70,7 @@ class InteractionForm(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Interaction form data.
         
         Returns
@@ -97,20 +95,20 @@ class InteractionForm(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`)
+        data : `dict<str, object>`
         """
         data = {}
         
-        put_components_into(self.components, data, defaults)
-        put_custom_id_into(self.custom_id, data, defaults)
-        put_title_into(self.title, data, defaults)
+        put_components(self.components, data, defaults)
+        put_custom_id(self.custom_id, data, defaults)
+        put_title(self.title, data, defaults)
         
         return data
     
 
     def __repr__(self):
         """Returns the interaction form's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         # System fields : custom_id
         
@@ -124,7 +122,7 @@ class InteractionForm(RichAttributeErrorBaseType):
             else:
                 field_added = True
             repr_parts.append(' custom_id = ')
-            repr_parts.append(reprlib.repr(custom_id))
+            repr_parts.append(repr(custom_id))
         
         # Text fields : label & placeholder
         
@@ -136,7 +134,7 @@ class InteractionForm(RichAttributeErrorBaseType):
             else:
                 field_added = True
             repr_parts.append(' title = ')
-            repr_parts.append(reprlib.repr(title))
+            repr_parts.append(repr(title))
         
         # sub-component fields : components
         
@@ -210,13 +208,13 @@ class InteractionForm(RichAttributeErrorBaseType):
         
         Other Parameters
         ----------------
-        components : `None`, `iterable` of ``Component``, Optional (Keyword only)
+        components : ``None | iterable<Component | (tuple | list)<Component>>``, Optional (Keyword only)
             Sub components.
         
-        custom_id : `None`, `str`, Optional (Keyword only)
+        custom_id : `None | str`, Optional (Keyword only)
             Custom identifier to detect which button was clicked by the user.
         
-        title : `None`, `str`, Optional (Keyword only)
+        title : `None | str`, Optional (Keyword only)
             The form's title.
         
         Returns

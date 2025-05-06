@@ -20,7 +20,7 @@ from .constants import DESCRIPTION_LENGTH_MAX, NAME_LENGTH_MAX
 # approximate_online_count
 
 parse_approximate_online_count = int_parser_factory('approximate_presence_count', 0)
-put_approximate_online_count_into = int_putter_factory('approximate_presence_count')
+put_approximate_online_count = int_putter_factory('approximate_presence_count')
 validate_approximate_online_count = int_conditional_validator_factory(
     'approximate_online_count',
     0,
@@ -31,7 +31,7 @@ validate_approximate_online_count = int_conditional_validator_factory(
 # approximate_user_count
 
 parse_approximate_user_count = int_parser_factory('approximate_member_count', 0)
-put_approximate_user_count_into = int_putter_factory('approximate_member_count')
+put_approximate_user_count = int_putter_factory('approximate_member_count')
 validate_approximate_user_count = int_conditional_validator_factory(
     'approximate_user_count',
     0,
@@ -42,7 +42,7 @@ validate_approximate_user_count = int_conditional_validator_factory(
 # description
 
 parse_description = nullable_string_parser_factory('description')
-put_description_into = nullable_string_putter_factory('description')
+put_description = nullable_string_putter_factory('description')
 validate_description = nullable_string_validator_factory('description', 0, DESCRIPTION_LENGTH_MAX)
 
 # emojis
@@ -53,7 +53,7 @@ def parse_emojis(data, entities, guild_id):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Guild preview data.
     entities : `dict` of (`int`, ``Emoji``) items
         The entity container to populate.
@@ -79,7 +79,7 @@ def parse_emojis(data, entities, guild_id):
     return entities
 
 
-def put_emojis_into(entities, data, defaults):
+def put_emojis(entities, data, defaults):
     """
     Puts the given emojis to the guild preview data.
     
@@ -87,14 +87,14 @@ def put_emojis_into(entities, data, defaults):
     ----------
     entities : `dict` of (`int`, ``Emoji``) items
         Emojis to put into the given data.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Guild preview data.
     defaults : `bool`
         Whether values with their default fields should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     data['emojis'] = [
         entity.to_data(defaults = defaults, include_internals = True) for entity in sorted(entities.values())
@@ -147,13 +147,13 @@ def validate_emojis(emojis):
 # features
 
 parse_features = preinstanced_array_parser_factory('features', NotImplemented, include = 'GuildFeature')
-put_features_into = preinstanced_array_putter_factory('features')
+put_features = preinstanced_array_putter_factory('features')
 validate_features = preinstanced_array_validator_factory('features', NotImplemented, include = 'GuildFeature')
 
 # id
 
 parse_id = entity_id_parser_factory('id')
-put_id_into = entity_id_putter_factory('id')
+put_id = entity_id_putter_factory('id')
 validate_id = entity_id_validator_factory('id', NotImplemented, include = 'Guild')
 
 # stickers
@@ -164,7 +164,7 @@ def parse_stickers(data, entities):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Guild preview data.
     entities : `dict` of (`int`, ``Sticker``) items
         The entity container to populate.
@@ -188,7 +188,7 @@ def parse_stickers(data, entities):
     return entities
 
 
-def put_stickers_into(entities, data, defaults):
+def put_stickers(entities, data, defaults):
     """
     Puts the given stickers to the guild preview data.
     
@@ -196,14 +196,14 @@ def put_stickers_into(entities, data, defaults):
     ----------
     entities : `dict` of (`int`, ``Sticker``) items
         Stickers to put into the given data.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Guild preview data.
     defaults : `bool`
         Whether values with their default fields should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     data['stickers'] = [
         entity.to_data(defaults = defaults, include_internals = True) for entity in sorted(entities.values())
@@ -262,5 +262,5 @@ def validate_stickers(stickers):
 # name
 
 parse_name = force_string_parser_factory('name')
-put_name_into = force_string_putter_factory('name')
+put_name = force_string_putter_factory('name')
 validate_name = force_string_validator_factory('name', 0, NAME_LENGTH_MAX)

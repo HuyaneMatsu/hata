@@ -3,12 +3,12 @@ __all__ = (
     'VerificationLevel'
 )
 
-from scarletio import class_property, export
+from scarletio import copy_docs, export
 
 from ...bases import Preinstance as P, PreinstancedBase
 
 
-class VerificationLevel(PreinstancedBase):
+class VerificationLevel(PreinstancedBase, value_type = int):
     """
     Represents Discord's verification level.
     
@@ -16,22 +16,16 @@ class VerificationLevel(PreinstancedBase):
     ----------
     name : `str`
         The default name of the verification level.
+    
     value : `int`
         The discord side identifier value of the verification level.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``VerificationLevel``) items
-        Stores the predefined ``VerificationLevel``-s. These can be accessed with their `value` as key.
-    VALUE_TYPE : `type` = `int`
-        The verification levels' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the verification levels.
-    
-    Every predefined verification level can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined verification level can be accessed as type attribute as well:
     
     +-----------------------+-----------+-------+
-    | Class attribute name  | name      | value |
+    | Type attribute name   | name      | value |
     +=======================+===========+=======+
     | none                  | none      | 0     |
     +-----------------------+-----------+-------+
@@ -44,9 +38,6 @@ class VerificationLevel(PreinstancedBase):
     | extreme               | extreme   | 4     |
     +-----------------------+-----------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
     __slots__ = ()
     
     # predefined
@@ -58,32 +49,24 @@ class VerificationLevel(PreinstancedBase):
 
 
 
-class ExplicitContentFilterLevel(PreinstancedBase):
+class ExplicitContentFilterLevel(PreinstancedBase, value_type = int):
     """
     Represents Discord's explicit_content filter level.
     
     Attributes
     ----------
-    value : `int`
-        The Discord side identifier value of the explicit_content filter level.
     name : `str`
         The default name of the explicit content filter level.
     
+    value : `int`
+        The Discord side identifier value of the explicit content filter level.
+    
     Class Attributes
     ----------------
-    INSTANCES : `dict` of (`int`, ``ExplicitContentFilterLevel``) items
-        Stores the predefined explicit_content filter levels. This container is accessed when translating a Discord side
-        identifier of a explicit_content filter level. The identifier value is used as a key to get it's wrapper side
-        representation.
-    VALUE_TYPE : `type` = `int`
-        The verification filter levels' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the explicit content filter levels.
-    
-    Every predefined explicit content filter level is also stored as a class attribute:
+    Every predefined explicit content filter level is also stored as a type attribute:
     
     +-----------------------+-----------+-------+
-    | Class attribute name  | name      | value |
+    | Type attribute name   | name      | value |
     +=======================+===========+=======+
     | disabled              | disabled  | 0     |
     +-----------------------+-----------+-------+
@@ -92,9 +75,6 @@ class ExplicitContentFilterLevel(PreinstancedBase):
     | everyone              | everyone  | 2     |
     +-----------------------+-----------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
     __slots__ = ()
     
     # predefined
@@ -104,31 +84,24 @@ class ExplicitContentFilterLevel(PreinstancedBase):
 
 
 @export
-class GuildFeature(PreinstancedBase):
+class GuildFeature(PreinstancedBase, value_type = str):
     """
-    Represents a ``Guild``'s feature.
+    Repents an attached features of guilds.
     
     Attributes
     ----------
     name : `str`
         The guild feature's name.
+    
     value : `str`
         The Discord side identifier value of the guild feature.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`str`, ``GuildFeature``) items
-        Stores the predefined ``GuildFeature``-s.
-    VALUE_TYPE : `type` = `str`
-        The guild features' values' type.
-    DEFAULT_NAME : `str` = `''`
-        The default name of the guild features. Guild features have the same value as name, so at their case it is not
-        applicable.
-    
-    Every predefined guild feature can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined guild feature can be accessed as type attribute as well:
     
     +---------------------------------------+---------------------------------------+---------------------------------------------------+
-    | Class attribute names                 | name                                  | value                                             |
+    | Type attribute name                   | name                                  | value                                             |
     +=======================================+=======================================+===================================================+
     | activity_list_disabled                | activity list disabled                | ACTIVITY_FEED_DISABLED_BY_USER                    |
     +---------------------------------------+---------------------------------------+---------------------------------------------------+
@@ -305,31 +278,15 @@ class GuildFeature(PreinstancedBase):
     | welcome_screen_enabled                | welcome screen enabled                | WELCOME_SCREEN_ENABLED                            |
     +---------------------------------------+---------------------------------------+---------------------------------------------------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = str
-    DEFAULT_NAME = ''
-    
     __slots__ = ()
     
-    @classmethod
-    def _from_value(cls, value):
-        """
-        Creates a new guild feature with the given value.
+    
+    @copy_docs(PreinstancedBase.__new__)
+    def __new__(cls, value, name = None):
+        if name is None:
+            name = value.casefold().replace('_', ' ')
         
-        Parameters
-        ----------
-        value : `str`
-            The guild feature's identifier value.
-        
-        Returns
-        -------
-        self : `instance<cls>`
-        """
-        self = object.__new__(cls)
-        self.value = value
-        self.name = value.lower().replace('_', ' ')
-        self.INSTANCES[value] = self
-        return self
+        return PreinstancedBase.__new__(cls, value, name)
     
     
     # predefined
@@ -424,7 +381,7 @@ class GuildFeature(PreinstancedBase):
     welcome_screen_enabled = P('WELCOME_SCREEN_ENABLED', 'welcome screen enabled')
 
 
-class NsfwLevel(PreinstancedBase):
+class NsfwLevel(PreinstancedBase, value_type = int):
     """
     Represents a guild's nsfw level.
     
@@ -432,22 +389,16 @@ class NsfwLevel(PreinstancedBase):
     ----------
     name : `str`
         The name of the nsfw filter level.
+    
     value : `int`
         The identifier value the nsfw filter level
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``NsfwLevel``) items
-        Stores the predefined ``NsfwLevel``-s. These can be accessed with their `value` as key.
-    VALUE_TYPE : `type` = `int`
-        The nsfw level' values' type.
-    DEFAULT_NAME : `str` = `'UNDEFINED'`
-        The default name of the nsfw levels.
-    
-    Every predefined nsfw level can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined nsfw level can be accessed as type attribute as well:
     
     +-----------------------+-------------------+-------+-------+
-    | Class attribute name  | Name              | Value | nsfw  |
+    | Type attribute name   | Name              | Value | nsfw  |
     +=======================+===================+=======+=======+
     | none                  | none              | 0     | False |
     +-----------------------+-------------------+-------+-------+
@@ -458,60 +409,32 @@ class NsfwLevel(PreinstancedBase):
     | age_restricted        | age_restricted    | 3     | True  |
     +-----------------------+-------------------+-------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    DEFAULT_NAME = 'UNDEFINED'
-    
     __slots__ = ('nsfw', )
     
-    def __init__(self, value, name, nsfw):
+    def __new__(cls, value, name = None, nsfw = True):
         """
         Creates a new nsfw level instance.
         
         Parameters
         ----------
-        value : ``.VALUE_TYPE``
+        value : `int`
             The value of the nsfw level.
-        name : `str`
+        
+        name : `None | str` = `None`, Optional
             The nsfw level name.
-        nsfw : `bool`
+        
+        nsfw : `bool` = `False`, Optional
             Whether the nsfw level refers to being actually nsfw.
         """
-        self.value = value
-        self.name = name
+        self = PreinstancedBase.__new__(cls, value, name)
         self.nsfw = nsfw
-        
-        self.INSTANCES[value] = self
-    
-    
-    @classmethod
-    def _from_value(cls, value):
-        """
-        Creates a new nsfw level from the given value
-        
-        Parameters
-        ----------
-        value : `int`
-            The nsfw level's identifier value.
-        
-        Returns
-        -------
-        self : ``NsfwLevel``
-            The created nsfw level.
-        """
-        self = object.__new__(cls)
-        
-        self.value = value
-        self.name = ''
-        self.nsfw = True
-        self.INSTANCES[value] = self
-        
         return self
     
     
-    def __repr__(self):
-        """Returns the nsfw level's representation."""
-        return f'{self.__class__.__name__}(value = {self.value!r}, name = {self.name!r}, nsfw = {self.nsfw!r})'
+    @copy_docs(PreinstancedBase._put_repr_parts_into)
+    def _put_repr_parts_into(self, repr_parts):
+        repr_parts.append(', nsfw = ')
+        repr_parts.append(repr(self.nsfw))
     
     
     none = P(0, 'none', False)
@@ -520,55 +443,45 @@ class NsfwLevel(PreinstancedBase):
     age_restricted = P(3, 'age_restricted', True)
 
 
-class MessageNotificationLevel(PreinstancedBase):
+class MessageNotificationLevel(PreinstancedBase, value_type = int):
     """
     Represents the message notification level of a ``Guild``.
     Only used to represents its default message notification level.
     
     Attributes
     ----------
-    value : `int`
-        The Discord side identifier value of the message notification level.
     name : `str`
         The default name of the message notification level.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``MessageNotificationLevel``) items
-        Stores the predefined message notification levels. This container is accessed when translating message
-        notification level's value to it's representation.
-    VALUE_TYPE : `type` = `int`
-        The notification levels' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the notification levels.
+    value : `int`
+        The Discord side identifier value of the message notification level.
     
-    Each predefined message notification level can also be accessed as a class attribute:
+    Type Attributes
+    ---------------
+    Each predefined message notification level can also be accessed as a type attribute:
     
     +-----------------------+---------------+-------+
-    | Class attribute name  | name          | value |
+    | Type attribute name   | name          | value |
     +=======================+===============+=======+
-    | all_messages          | all_messages  | 0     |
+    | all_messages          | all messages  | 0     |
     +-----------------------+---------------+-------+
-    | only_mentions         | only_mentions | 1     |
+    | only_mentions         | only mentions | 1     |
     +-----------------------+---------------+-------+
-    | no_message            | no_messages   | 2     |
+    | no_message            | no messages   | 2     |
     +-----------------------+---------------+-------+
     | none                  | none          | 3     |
     +-----------------------+---------------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
     __slots__ = ()
     
     # predefined
-    all_messages = P(0, 'all_messages')
-    only_mentions = P(1, 'only_mentions')
-    no_messages = P(2, 'no_messages')
+    all_messages = P(0, 'all messages')
+    only_mentions = P(1, 'only mentions')
+    no_messages = P(2, 'no messages')
     none = P(3, 'none')
 
 
-class MfaLevel(PreinstancedBase):
+class MfaLevel(PreinstancedBase, value_type = int):
     """
     Represents Discord's Multi-Factor Authentication's levels.
     
@@ -576,32 +489,22 @@ class MfaLevel(PreinstancedBase):
     ----------
     name : `str`
         The default name of the mfa level.
+    
     value : `int`
         The Discord side identifier value of the Mfa level.
     
-    Class Attributes
+    Type Attributes
     ----------------
-    INSTANCES : `dict` of (`int`, ``MfaLevel``) items
-        Stores the predefined mfa level. This container is accessed when converting an Mfa level's value to
-        it's wrapper side representation.
-    VALUE_TYPE : `type` = `int`
-        The mfa levels' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the mfa levels.
-    
-    Each predefined mfa can also be accessed as class attribute:
+    Each predefined mfa can also be accessed as type attribute:
     
     +-----------------------+-----------+-------+
-    | Class attribute name  | name      | value |
+    | Type attribute name   | name      | value |
     +=======================+===========+=======+
     | none                  | none      | 0     |
     +-----------------------+-----------+-------+
     | elevated              | elevated  | 1     |
     +-----------------------+-----------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
     __slots__ = ()
     
     # Predefined
@@ -609,7 +512,7 @@ class MfaLevel(PreinstancedBase):
     elevated = P(1, 'elevated')
 
 
-class VerificationFieldPlatform(PreinstancedBase):
+class VerificationFieldPlatform(PreinstancedBase, value_type = str):
     """
     Represents the verification field platform of a verification screen.
     
@@ -617,67 +520,29 @@ class VerificationFieldPlatform(PreinstancedBase):
     ----------
     name : `str`
         The name of the verification field platform.
+    
     value : `str`
         The Discord side identifier value of the verification field platform.
     
-
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`str`, ``VerificationFieldPlatform``) items
-        Stores the predefined ``VerificationFieldPlatform``-s.
-    VALUE_TYPE : `type` = `str`
-        The verification field platforms' values' type.
-    DEFAULT_NAME : `str` = `''`
-        The default name of the verification field platforms. Verification field platforms have their name generated from
-        their value, so at their case it is not applicable.
-    
-    Every predefined verification field platform can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined verification field platform can be accessed as type attribute as well:
     
     +-----------------------+-----------+-----------+
-    | Class attribute names | Name      | Value     |
+    | Type attribute name   | Name      | Value     |
     +=======================+===========+===========+
     | email                 | email     | email     |
     +-----------------------+-----------+-----------+
     | phone                 | phone     | phone     |
     +-----------------------+-----------+-----------+
     """
-    
-    INSTANCES = {}
-    VALUE_TYPE = str
-    DEFAULT_NAME = ''
-    
     __slots__ = ()
-    
-    @classmethod
-    def _from_value(cls, value):
-        """
-        Creates a new verification field platform from the given value.
-        
-        Parameters
-        ----------
-        value : `str`
-            The verification field platform's identifier value.
-        
-        Returns
-        -------
-        self : ``VerificationFieldPlatform``
-            The verification field platform.
-        """
-        self = object.__new__(cls)
-        self.value = value
-        self.name = value
-        self.INSTANCES[value] = self
-        return self
-    
-    def __repr__(self):
-        """Returns the representation of the verification field platform."""
-        return f'{self.__class__.__name__}(value = {self.value!r})'
     
     email = P('email', 'email')
     phone = P('phone', 'phone')
 
 
-class HubType(PreinstancedBase):
+class HubType(PreinstancedBase, value_type = int):
     """
     Represents Discord's guild's hub type.
     
@@ -685,23 +550,16 @@ class HubType(PreinstancedBase):
     ----------
     name : `str`
         The default name of the hub type
+    
     value : `int`
         The Discord side identifier value of the hub type
     
-    Class Attributes
+    Type Attributes
     ----------------
-    INSTANCES : `dict` of (`int`, ``HubType``) items
-        Stores the predefined Hub types. This container is accessed when converting an Hub types' value to
-        it's wrapper side representation.
-    VALUE_TYPE : `type` = `int`
-        The hub types' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the hub types
-    
-    Each predefined hub type can also be accessed as class attribute:
+    Each predefined hub type can also be accessed as type attribute:
     
     +-----------------------+---------------+-------+
-    | Class attribute name  | name          | value |
+    | Type attribute name   | name          | value |
     +=======================+===============+=======+
     | none                  | none          | 0     |
     +-----------------------+---------------+-------+
@@ -710,9 +568,6 @@ class HubType(PreinstancedBase):
     | college               | college       | 2     |
     +-----------------------+---------------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
     __slots__ = ()
     
     # Predefined

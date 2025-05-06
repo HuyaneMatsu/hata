@@ -89,11 +89,11 @@ class ClientCompoundMessageEndpoints(Compound):
             The channel from where we want to request the messages.
         limit : `int` = `100`, Optional
             The amount of messages to request. Can be between 1 and 100.
-        after : `None`, `int`, ``DiscordEntity``, `DateTime` = `None`, Optional (Keyword only)
+        after : ``None | int | DiscordEntity | DateTime`` = `None`, Optional (Keyword only)
             The timestamp after the requested messages were created.
-        around : `None`, `int`, ``DiscordEntity``, `DateTime` = `None`, Optional (Keyword only)
+        around : ``None | int | DiscordEntity | DateTime`` = `None`, Optional (Keyword only)
             The timestamp around the requested messages were created.
-        before : `None`, `int`, ``DiscordEntity``, `DateTime` = `None`, Optional (Keyword only)
+        before : ``None | int | DiscordEntity | DateTime`` = `None`, Optional (Keyword only)
             The timestamp before the requested messages were created.
         
         Returns
@@ -709,11 +709,11 @@ class ClientCompoundMessageEndpoints(Compound):
         ----------
         channel : ``Channel``
             The channel, where the deletion should take place.
-        after : `None`, `int`, ``DiscordEntity``, `DateTime` = `None`, Optional (Keyword only)
+        after : ``None | int | DiscordEntity | DateTime`` = `None`, Optional (Keyword only)
             The timestamp after the messages were created, which will be deleted.
-        before : `None`, `int`, ``DiscordEntity``, `DateTime` = `None`, Optional (Keyword only)
+        before : ``None | int | DiscordEntity | DateTime`` = `None`, Optional (Keyword only)
             The timestamp before the messages were created, which will be deleted.
-        limit : `None`, `int` = `None`, Optional (Keyword only)
+        limit : `None | int` = `None`, Optional (Keyword only)
             The maximal amount of messages to delete.
         filter : `None`, `callable` = `None`, Optional (Keyword only)
             A callable filter, what should accept a message object as parameter and return either `True`, `False`.
@@ -1061,11 +1061,11 @@ class ClientCompoundMessageEndpoints(Compound):
         ----------
         channel : ``Channel``
             The channel, where the deletion should take place.
-        after : `None`, `int`, ``DiscordEntity``, `DateTime` = `None`, Optional (Keyword only)
+        after : ``None | int | DiscordEntity | DateTime`` = `None`, Optional (Keyword only)
             The timestamp after the messages were created, which will be deleted.
-        before : `None`, `int`, ``DiscordEntity``, `DateTime` = `None`, Optional (Keyword only)
+        before : ``None | int | DiscordEntity | DateTime`` = `None`, Optional (Keyword only)
             The timestamp before the messages were created, which will be deleted.
-        limit : `None`, `int` = `None`, Optional (Keyword only)
+        limit : `None | int` = `None`, Optional (Keyword only)
             The maximal amount of messages to delete.
         filter : `None`, `callable` = `None`, Optional (Keyword only)
             A callable filter, what should accept a message object as parameter and return either `True`, `False`.

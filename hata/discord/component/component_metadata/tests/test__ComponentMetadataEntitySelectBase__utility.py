@@ -1,10 +1,41 @@
 import vampytest
 
+from ....guild import Guild
+
 from ...entity_select_default_value import EntitySelectDefaultValue, EntitySelectDefaultValueType
 
 from ..entity_select_base import ComponentMetadataEntitySelectBase
 
 from .test__ComponentMetadataEntitySelectBase__constructor import _assert_fields_set
+
+
+def test__ComponentMetadataEntitySelectBase__clean_copy():
+    """
+    Tests whether ``ComponentMetadataEntitySelectBase.clean_copy`` works as intended.
+    """
+    guild_id = 202505030018
+    guild = Guild.precreate(guild_id)
+    
+    custom_id = 'oriental'
+    enabled = False
+    max_values = 10
+    min_values = 9
+    placeholder = 'swing'
+    default_values = [EntitySelectDefaultValue(EntitySelectDefaultValueType.user, 202505030019)]
+    
+    component_metadata = ComponentMetadataEntitySelectBase(
+        custom_id = custom_id,
+        enabled = enabled,
+        max_values = max_values,
+        min_values = min_values,
+        placeholder = placeholder,
+        default_values = default_values,
+    )
+    copy = component_metadata.clean_copy(guild)
+    
+    _assert_fields_set(copy)
+    vampytest.assert_is_not(copy, component_metadata)
+    vampytest.assert_eq(copy, component_metadata)
 
 
 def test__ComponentMetadataEntitySelectBase__copy():
@@ -196,3 +227,53 @@ def test__ComponentMetadataEntitySelectBase__copy_with_keyword_parameters__all_f
     vampytest.assert_eq(copy.min_values, new_min_values)
     vampytest.assert_eq(copy.placeholder, new_placeholder)
     vampytest.assert_eq(copy.default_values, tuple(new_default_values))
+
+
+def _iter_options__iter_contents():
+    custom_id = 'oriental'
+    enabled = False
+    max_values = 10
+    min_values = 9
+    placeholder = 'swing'
+    default_values = [EntitySelectDefaultValue(EntitySelectDefaultValueType.user, 202505030001)]
+    
+    yield (
+        {},
+        [],
+    )
+    
+    yield (
+        {
+            'custom_id': custom_id,
+            'enabled': enabled,
+            'max_values': max_values,
+            'min_values': min_values,
+            'placeholder': placeholder,
+            'default_values': default_values,
+        },
+        [],
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_contents()).returning_last())
+def test__ComponentMetadataEntitySelectBase__iter_contents(keyword_parameters):
+    """
+    Tests whether ``ComponentMetadataEntitySelectBase.iter_contents`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `list<str>`
+    """
+    component_metadata = ComponentMetadataEntitySelectBase(**keyword_parameters)
+    output = [*component_metadata.iter_contents()]
+    
+    for element in output:
+        vampytest.assert_instance(element, str)
+    
+    return output
+

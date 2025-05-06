@@ -38,7 +38,7 @@ EXPIRE_BEHAVIOR_CONVERSION = AuditLogEntryChangeConversion(
 
 @EXPIRE_BEHAVIOR_CONVERSION.set_value_deserializer
 def expire_behavior_value_deserializer(value):
-    return IntegrationExpireBehavior.get(value)
+    return IntegrationExpireBehavior(value)
 
 
 @EXPIRE_BEHAVIOR_CONVERSION.set_value_serializer
@@ -83,7 +83,7 @@ TYPE_CONVERSION = AuditLogEntryChangeConversion(
 
 @TYPE_CONVERSION.set_value_deserializer
 def type_value_deserializer(value):
-    return IntegrationType.get(value)
+    return IntegrationType(value)
 
 
 @TYPE_CONVERSION.set_value_serializer

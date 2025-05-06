@@ -19,7 +19,7 @@ def guess_action_type_from_keyword_parameters(action_type, keyword_parameters):
     action_type : ``AutoModerationActionType``
         Already detected action type.
     
-    keyword_parameters : `dict` of (`str`, `object`) items
+    keyword_parameters : `dict<str, object>`
         Keyword parameters passed.
     
     Returns

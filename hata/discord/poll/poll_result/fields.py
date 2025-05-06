@@ -9,14 +9,14 @@ from ...user import ClientUserBase
 # answer_id
 
 parse_answer_id = entity_id_parser_factory('id')
-put_answer_id_into = entity_id_putter_factory('id')
+put_answer_id = entity_id_putter_factory('id')
 validate_answer_id = entity_id_validator_factory('answer_id')
 
 
 # count
 
 parse_count = int_parser_factory('count', 0)
-put_count_into = int_putter_factory('count')
+put_count = int_putter_factory('count')
 validate_count = int_conditional_validator_factory(
     'count',
     0,

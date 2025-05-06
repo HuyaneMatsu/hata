@@ -60,7 +60,7 @@ def get_message_enabled_user_ids(message_data):
     
     Parameters
     ----------
-    message_data : `dict` of (`str`, `object`) items
+    message_data : `dict<str, object>`
         Received message data.
     
     Returns
@@ -115,7 +115,7 @@ def filter_content_intent_client(clients, message_data, me):
     ----------
     clients : `list` of ``Client``
         A list of client to search from.
-    message_data : `dict` of (`str`, `object`) items
+    message_data : `dict<str, object>`
         Received message data.
     me : ``Client``
         The client who received the respective event.
@@ -273,7 +273,7 @@ def first_content_intent_client(clients, message_data, me):
     ----------
     clients : `list` of ``Client``
         A list of client to search from.
-    message_data : `dict` of (`str`, `object`) items
+    message_data : `dict<str, object>`
         Received message data.
     me : ``Client``
         The client who received the respective event.

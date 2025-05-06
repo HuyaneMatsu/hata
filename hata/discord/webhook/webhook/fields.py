@@ -22,41 +22,41 @@ from .preinstanced import WebhookType
 # application_id
 
 parse_application_id = entity_id_parser_factory('application_id')
-put_application_id_into = entity_id_optional_putter_factory('application_id')
+put_application_id = entity_id_optional_putter_factory('application_id')
 validate_application_id = entity_id_validator_factory('application_id', NotImplemented, include = 'Application')
 
 # channel_id
 
 parse_channel_id = entity_id_parser_factory('channel_id')
-put_channel_id_into = entity_id_optional_putter_factory('channel_id')
+put_channel_id = entity_id_optional_putter_factory('channel_id')
 validate_channel_id = entity_id_validator_factory('channel_id', NotImplemented, include = 'Channel')
 
 # source_channel
 
 parse_source_channel = nullable_entity_parser_factory('source_channel', WebhookSourceChannel)
-put_source_channel_into = nullable_entity_optional_putter_factory('source_channel', WebhookSourceChannel)
+put_source_channel = nullable_entity_optional_putter_factory('source_channel', WebhookSourceChannel)
 validate_source_channel = nullable_entity_validator_factory('source_channel', WebhookSourceChannel)
 
 # source_guild
 
 parse_source_guild = nullable_entity_parser_factory('source_guild', WebhookSourceGuild)
-put_source_guild_into = nullable_entity_optional_putter_factory('source_guild', WebhookSourceGuild)
+put_source_guild = nullable_entity_optional_putter_factory('source_guild', WebhookSourceGuild)
 validate_source_guild = nullable_entity_validator_factory('source_guild', WebhookSourceGuild)
 
 # token
 
 parse_token = force_string_parser_factory('token')
-put_token_into = force_string_putter_factory('token')
+put_token = force_string_putter_factory('token')
 validate_token = force_string_validator_factory('token', 0, 4096)
 
 # type
 
 parse_type = preinstanced_parser_factory('type', WebhookType, WebhookType.none)
-put_type_into = preinstanced_putter_factory('type')
+put_type = preinstanced_putter_factory('type')
 validate_type = preinstanced_validator_factory('webhook_type', WebhookType)
 
 # user
 
 parse_user = default_entity_parser_factory('user', User, default = ZEROUSER)
-put_user_into = default_entity_putter_factory('user', ClientUserBase, ZEROUSER, force_include_internals = True)
+put_user = default_entity_putter_factory('user', ClientUserBase, ZEROUSER, force_include_internals = True)
 validate_user = default_entity_validator_factory('user', ClientUserBase, default = ZEROUSER)

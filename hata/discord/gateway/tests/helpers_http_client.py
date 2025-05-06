@@ -52,11 +52,11 @@ class TestHTTPClient(HTTPClient):
         return self
         
     
-    async def _request(self, method, url, headers, data, params):
+    async def _request(self, method, url, headers, data, query):
         if method == 'GET' and GATEWAY_URL_RP.fullmatch(url) is not None:
             return TestClientResponse('{"url": "wss://orin.nyan/"}')
         
-        raise RuntimeError('Unexpected request', method, url, headers, data, params)
+        raise RuntimeError('Unexpected request', method, url, headers, data, query)
 
     
     async def connect_web_socket(self, url):

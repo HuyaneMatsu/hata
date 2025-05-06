@@ -90,7 +90,7 @@ class EmbedFieldBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Embed field data.
         
         Returns
@@ -108,12 +108,13 @@ class EmbedFieldBase(RichAttributeErrorBaseType):
         ----------
         defaults : `bool` = `False`, Optional (Keyword only)
             Whether default values should be included as well.
+        
         include_internals : `bool` = `False`, Optional (Keyword only)
             Whether we want to include identifiers as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         return {}
     
@@ -124,7 +125,7 @@ class EmbedFieldBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        guild : `None`, ``Guild`` = `None`, Optional
+        guild : ``None | Guild`` = `None`, Optional
             The respective guild as a context to look up guild specific names of entities.
         
         Returns
@@ -170,7 +171,7 @@ class EmbedFieldBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        contents : `list` of `str`
+        contents : `list<str>`
         """
         return [*self.iter_contents()]
     

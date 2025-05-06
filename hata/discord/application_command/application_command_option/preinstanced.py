@@ -10,7 +10,7 @@ from ..application_command_option_metadata import (
 )
 
 
-class ApplicationCommandOptionType(PreinstancedBase):
+class ApplicationCommandOptionType(PreinstancedBase, value_type = int):
     """
     Represents an application command option's type.
     
@@ -18,25 +18,19 @@ class ApplicationCommandOptionType(PreinstancedBase):
     ----------
     name : `str`
         The name of the application command option type.
+    
     value : `int`
         The identifier value the application command option type.
+    
     metadata_type : `type<ApplicationCommandOptionMetadataBase>`
         The option type's respective metadata type.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``ApplicationCommandOptionType``) items
-        Stores the predefined ``ApplicationCommandOptionType``-s. These can be accessed with their `value` as
-        key.
-    VALUE_TYPE : `type` = `int`
-        The application command option types' values' type.
-    DEFAULT_NAME : `str` = `'UNDEFINED'`
-        The default name of the application command option types.
-    
-    Every predefined application command option type can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined application command option type can be accessed as type attribute as well:
     
     +-----------------------+-------------------+-------+---------------------------------------------------+
-    | Class attribute name  | Name              | Value | Metadata type                                     |
+    | Type attribute name   | Name              | Value | Metadata type                                     |
     +=======================+===================+=======+===================================================+
     | none                  | none              | 0     | ``ApplicationCommandOptionMetadataBase``          |
     +-----------------------+-------------------+-------+---------------------------------------------------+
@@ -63,54 +57,29 @@ class ApplicationCommandOptionType(PreinstancedBase):
     | attachment            | attachment        | 11    | ``ApplicationCommandOptionMetadataParameter``     |
     +-----------------------+-------------------+-------+---------------------------------------------------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    DEFAULT_NAME = 'UNDEFINED'
-    
     __slots__ = ('metadata_type',)
     
-
-    @classmethod
-    def _from_value(cls, value):
+    def __new__(cls, value, name = None, metadata_type = None):
         """
-        Creates a new application command option type with the given value.
-        
-        Parameters
-        ----------
-        value : `int`
-            The application command option type's identifier value.
-        
-        Returns
-        -------
-        self : `instance<cls>`
-            The created instance.
-        """
-        self = object.__new__(cls)
-        self.name = cls.DEFAULT_NAME
-        self.value = value
-        self.metadata_type = ApplicationCommandOptionMetadataBase
-        
-        return self
-    
-    
-    def __init__(self, value, name, metadata_type):
-        """
-        Creates a new application command option type and stores it at the class's `.INSTANCES` class attribute as well.
+        Creates a new application command option type.
         
         Parameters
         ----------
         value : `int`
             The Discord side identifier value of the application command option type.
-        name : `str`
+        
+        name : `None | str` = `None`, Optional
             The default name of the application command option type.
-        metadata_type : `type<ApplicationCommandOptionMetadataBase>`
+        
+        metadata_type : `None | type<ApplicationCommandOptionMetadataBase>` = `None`, Optional
             The option type's respective metadata type.
         """
-        self.value = value
-        self.name = name
-        self.metadata_type = metadata_type
+        if metadata_type is None:
+            metadata_type = ApplicationCommandOptionMetadataBase
         
-        self.INSTANCES[value] = self
+        self = PreinstancedBase.__new__(cls, value, name)
+        self.metadata_type = metadata_type
+        return self
     
     
     none = P(0, 'none', ApplicationCommandOptionMetadataBase)

@@ -4,6 +4,7 @@ import vampytest
 
 from ....component import Component, ComponentType
 from ....embed import Embed
+from ....soundboard import SoundboardSound
 from ....sticker import Sticker
 from ....user import User
 
@@ -34,6 +35,7 @@ def _assert_fields_set(message_snapshot):
     vampytest.assert_instance(message_snapshot.flags, MessageFlag)
     vampytest.assert_instance(message_snapshot.mentioned_role_ids, tuple, nullable = True)
     vampytest.assert_instance(message_snapshot.mentioned_users, tuple, nullable = True)
+    vampytest.assert_instance(message_snapshot.soundboard_sounds, tuple, nullable = True)
     vampytest.assert_instance(message_snapshot.stickers, tuple, nullable = True)
     vampytest.assert_instance(message_snapshot.type, MessageType)
 
@@ -73,6 +75,10 @@ def test__MessageSnapshot__new__all_fields():
         User.precreate(202407200041, name = 'Rin'),
     ]
     message_type = MessageType.call
+    soundboard_sounds = [
+        SoundboardSound.precreate(202501300006, name = 'whither'),
+        SoundboardSound.precreate(202501300007, name = 'Yuyuko'),
+    ]
     stickers = [
         Sticker.precreate(202409200060, name = 'Make'),
         Sticker.precreate(202409200061, name = 'Me'),
@@ -89,6 +95,7 @@ def test__MessageSnapshot__new__all_fields():
         mentioned_role_ids = mentioned_role_ids,
         mentioned_users = mentioned_users,
         message_type = message_type,
+        soundboard_sounds = soundboard_sounds,
         stickers = stickers,
     )
     _assert_fields_set(message_snapshot)
@@ -102,5 +109,6 @@ def test__MessageSnapshot__new__all_fields():
     vampytest.assert_eq(message_snapshot.flags, flags)
     vampytest.assert_eq(message_snapshot.mentioned_role_ids, tuple(mentioned_role_ids))
     vampytest.assert_eq(message_snapshot.mentioned_users, tuple(mentioned_users))
+    vampytest.assert_eq(message_snapshot.soundboard_sounds, tuple(soundboard_sounds))
     vampytest.assert_eq(message_snapshot.stickers, tuple(stickers))
     vampytest.assert_is(message_snapshot.type, message_type)

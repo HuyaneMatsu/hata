@@ -1,9 +1,11 @@
 __all__ = ('VerificationScreenStepType',)
 
+from scarletio import copy_docs
+
 from ...bases import Preinstance as P, PreinstancedBase
 
 
-class VerificationScreenStepType(PreinstancedBase):
+class VerificationScreenStepType(PreinstancedBase, value_type = str):
     """
     Represents a type of a ``VerificationScreenStep``.
 
@@ -11,23 +13,16 @@ class VerificationScreenStepType(PreinstancedBase):
     ----------
     name : `str`
         The verification screen step type's name.
+    
     value : `str`
         The Discord side identifier value of the verification step types.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`str`, ``VerificationScreenStepType``) items
-        Stores the predefined ``VerificationScreenStepType``-s.
-    VALUE_TYPE : `type` = `str`
-        The verification screen steps' values' type.
-    DEFAULT_NAME : `str` = `''`
-        The default name of the verification screen step types. New verification screen step types have their name
-        generated from their value, so it is not applicable for them.
-    
-    Every predefined verification screen step type can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined verification screen step type can be accessed as type attribute as well:
     
     +-----------------------+-------------------+-------------------+
-    | Class attribute names | Name              | Value             |
+    | Type attribute name   | Name              | Value             |
     +=======================+===================+===================+
     | none                  | none              |                   |
     +-----------------------+-------------------+-------------------+
@@ -42,37 +37,14 @@ class VerificationScreenStepType(PreinstancedBase):
     | verification          | verification      | VERIFICATION      |
     +-----------------------+-------------------+-------------------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = str
-    DEFAULT_NAME = ''
-    
     __slots__ = ()
     
-    @classmethod
-    def _from_value(cls, value):
-        """
-        Creates a new verification screen type with the given value.
+    @copy_docs(PreinstancedBase.__new__)
+    def __new__(cls, value, name = None):
+        if name is None:
+            name = value.lower().replace('_', ' ')
         
-        Parameters
-        ----------
-        value : `str`
-            The verification screen type's identifier value.
-        
-        Returns
-        -------
-        self : ``VerificationScreenStepType``
-            The verification screen type.
-        """
-        self = object.__new__(cls)
-        self.value = value
-        self.name = value.lower().replace('_', ' ')
-        self.INSTANCES[value] = self
-        return self
-    
-    
-    def __repr__(self):
-        """Returns the representation of the verification screen type."""
-        return f'{self.__class__.__name__}(value = {self.value!r})'
+        return PreinstancedBase.__new__(cls, value, name)
     
     
     none = P('', 'none')

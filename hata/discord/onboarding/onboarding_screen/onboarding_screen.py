@@ -7,8 +7,8 @@ from ...core import GUILDS
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 
 from .fields import (
-    parse_default_channel_ids, parse_enabled, parse_guild_id, parse_mode, parse_prompts, put_default_channel_ids_into,
-    put_enabled_into, put_guild_id_into, put_mode_into, put_prompts_into, validate_default_channel_ids,
+    parse_default_channel_ids, parse_enabled, parse_guild_id, parse_mode, parse_prompts, put_default_channel_ids,
+    put_enabled, put_guild_id, put_mode, put_prompts, validate_default_channel_ids,
     validate_enabled, validate_guild_id, validate_mode, validate_prompts
 )
 from .preinstanced import OnboardingMode
@@ -107,7 +107,7 @@ class OnboardingScreen(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Auto moderation rule trigger metadata payload.
         
         Returns
@@ -136,16 +136,16 @@ class OnboardingScreen(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
-        put_default_channel_ids_into(self.default_channel_ids, data, defaults)
-        put_enabled_into(self.enabled, data, defaults)
-        put_mode_into(self.mode, data, defaults)
-        put_prompts_into(self.prompts, data, defaults, include_internals = include_internals)
+        put_default_channel_ids(self.default_channel_ids, data, defaults)
+        put_enabled(self.enabled, data, defaults)
+        put_mode(self.mode, data, defaults)
+        put_prompts(self.prompts, data, defaults, include_internals = include_internals)
         
         if include_internals:
-            put_guild_id_into(self.guild_id, data, defaults)
+            put_guild_id(self.guild_id, data, defaults)
         
         return data
     
@@ -472,7 +472,7 @@ class OnboardingScreen(RichAttributeErrorBaseType):
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         guild_id = self.guild_id
         if guild_id:

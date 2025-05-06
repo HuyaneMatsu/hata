@@ -22,6 +22,7 @@ def _iter_options__passing():
 
 def _iter_options__type_error():
     yield 12.6
+    yield [12.6]
 
 
 @vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
@@ -30,9 +31,14 @@ def test__validate_components(input_value):
     """
     Tests whether `validate_components` works as intended.
     
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
+    
     Returns
     -------
-    output : `None | tuple<InteractionComponent>`
+    output : ``None | tuple<InteractionComponent>``
     
     Raises
     ------

@@ -5,8 +5,8 @@ from scarletio import RichAttributeErrorBaseType
 from ...utils import DATETIME_FORMAT_CODE
 
 from .fields import (
-    parse_label_type, parse_labelled_until, parse_release_phase, put_label_type_into, put_labelled_until_into,
-    put_release_phase_into, validate_label_type, validate_labelled_until, validate_release_phase
+    parse_label_type, parse_labelled_until, parse_release_phase, put_label_type, put_labelled_until,
+    put_release_phase, validate_label_type, validate_labelled_until, validate_release_phase
 )
 from .preinstanced import LabelType, ReleasePhase
 
@@ -107,9 +107,9 @@ class ClientPlatformConfiguration(RichAttributeErrorBaseType):
         data : `dict<str, object>`
         """
         data = {}
-        put_label_type_into(self.label_type, data, defaults)
-        put_labelled_until_into(self.labelled_until, data, defaults)
-        put_release_phase_into(self.release_phase, data, defaults)
+        put_label_type(self.label_type, data, defaults)
+        put_labelled_until(self.labelled_until, data, defaults)
+        put_release_phase(self.release_phase, data, defaults)
         return data
     
     

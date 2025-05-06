@@ -5,7 +5,7 @@ from scarletio import copy_docs
 from ..activity_field_base import ActivityFieldBase
 
 from .fields import (
-    parse_join, parse_match, parse_spectate, put_join_into, put_match_into, put_spectate_into, validate_join,
+    parse_join, parse_match, parse_spectate, put_join, put_match, put_spectate, validate_join,
     validate_match, validate_spectate
 )
 
@@ -84,9 +84,9 @@ class ActivitySecrets(ActivityFieldBase):
     @copy_docs(ActivityFieldBase.to_data)
     def to_data(self, *, defaults = False):
         data = {}
-        put_join_into(self.join, data, defaults)
-        put_match_into(self.match, data, defaults)
-        put_spectate_into(self.spectate, data, defaults)
+        put_join(self.join, data, defaults)
+        put_match(self.match, data, defaults)
+        put_spectate(self.spectate, data, defaults)
         return data
     
     

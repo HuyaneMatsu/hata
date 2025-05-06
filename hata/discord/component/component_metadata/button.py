@@ -1,22 +1,17 @@
 __all__ = ('ComponentMetadataButton', )
 
-import reprlib
-
 from scarletio import copy_docs
 
 from ...utils import url_cutter
 
-from ..shared_fields import (
-    parse_custom_id, parse_emoji, put_custom_id_into, put_emoji_into, validate_custom_id, validate_emoji
-)
 from ..shared_helpers import create_auto_custom_id
 
 from .base import ComponentMetadataBase
 from .constants import BUTTON_STYLE_DEFAULT
 from .fields import (
-    parse_button_style, parse_enabled, parse_label, parse_sku_id, parse_url, put_button_style_into, put_enabled_into,
-    put_label_into, put_sku_id_into, put_url_into, validate_button_style, validate_enabled, validate_label,
-    validate_sku_id, validate_url
+    parse_button_style, parse_custom_id, parse_emoji, parse_enabled, parse_label, parse_sku_id, parse_url,
+    put_button_style, put_custom_id, put_emoji, put_enabled, put_label, put_sku_id, put_url, validate_button_style,
+    validate_custom_id, validate_emoji, validate_enabled, validate_label, validate_sku_id, validate_url
 )
 from .preinstanced import ButtonStyle
 
@@ -30,18 +25,18 @@ class ComponentMetadataButton(ComponentMetadataBase):
     button_style : ``ButtonStyle``
         The button's style.
     
-    custom_id : `None`, `str`
+    custom_id : `None | str`
         Custom identifier to detect which button was clicked by the user.
         
         > Mutually exclusive with the `sku_id` and `url` fields.
     
-    emoji : `None`, ``Emoji``
+    emoji : ``None | Emoji``
         Emoji of the button if applicable.
     
     enabled : `bool`
         Whether the component is enabled.
     
-    label : `None`, `str`
+    label : `None | str`
         Label of the component.
     
     sku_id : `int`
@@ -49,7 +44,7 @@ class ComponentMetadataButton(ComponentMetadataBase):
         
         > Mutually exclusive with the `custom_id` and `url` fields.
     
-    url : `None`, `str`
+    url : `None | str`
         Url to redirect to when clicking on the button.
         
         > Mutually exclusive with the `custom_id` and `sku_id` fields.
@@ -73,29 +68,29 @@ class ComponentMetadataButton(ComponentMetadataBase):
         
         Parameters
         ----------
-        button_style : ``ButtonStyle``, `int`, Optional (Keyword only)
+        button_style : ``int | ButtonStyle``, Optional (Keyword only)
             The button's style.
         
-        custom_id : `None`, `str`, Optional (Keyword only)
+        custom_id : `None | str`, Optional (Keyword only)
             Custom identifier to detect which button was clicked by the user.
             
             > Mutually exclusive with the `sku_id` and `url` fields.
         
-        emoji : `None`, ``Emoji``, Optional (Keyword only)
+        emoji : ``None | Emoji``, Optional (Keyword only)
             Emoji of the button if applicable.
         
         enabled : `bool`, Optional (Keyword only)
             Whether the component is enabled.
         
-        label : `None`, `str`, Optional (Keyword only)
+        label : `None | str`, Optional (Keyword only)
             Label of the component.
         
-        sku_id : `int`, ``SKU``, Optional (Keyword only)
+        sku_id : ``int | SKU``, Optional (Keyword only)
             Purchasable stock keeping unit identifier.
             
             > Mutually exclusive with the `custom_id` and `url` fields.
         
-        url : `None`, `str`, Optional (Keyword only)
+        url : `None | str`, Optional (Keyword only)
             Url to redirect to when clicking on the button.
             
             > Mutually exclusive with the `custom_id` and `sku_id` fields.
@@ -213,7 +208,7 @@ class ComponentMetadataButton(ComponentMetadataBase):
         custom_id = self.custom_id
         if (custom_id is not None):
             repr_parts.append(', custom_id = ')
-            repr_parts.append(reprlib.repr(custom_id))
+            repr_parts.append(repr(custom_id))
         
         # Text fields : emoji & label
         
@@ -227,7 +222,7 @@ class ComponentMetadataButton(ComponentMetadataBase):
         label = self.label
         if (label is not None):
             repr_parts.append(', label = ')
-            repr_parts.append(reprlib.repr(label))
+            repr_parts.append(repr(label))
         
         
         # Optional descriptive fields: url & enabled
@@ -341,18 +336,33 @@ class ComponentMetadataButton(ComponentMetadataBase):
     
     
     @copy_docs(ComponentMetadataBase.to_data)
-    def to_data(self, *, defaults = False):
+    def to_data(self, *, defaults = False, include_internals = False):
         data = {}
         
-        put_button_style_into(self.button_style, data, defaults)
-        put_custom_id_into(self.custom_id, data, defaults)
-        put_emoji_into(self.emoji, data, defaults)
-        put_enabled_into(self.enabled, data, defaults)
-        put_label_into(self.label, data, defaults)
-        put_sku_id_into(self.sku_id, data, defaults)
-        put_url_into(self.url, data, defaults)
+        put_button_style(self.button_style, data, defaults)
+        put_custom_id(self.custom_id, data, defaults)
+        put_emoji(self.emoji, data, defaults)
+        put_enabled(self.enabled, data, defaults)
+        put_label(self.label, data, defaults)
+        put_sku_id(self.sku_id, data, defaults)
+        put_url(self.url, data, defaults)
         
         return data
+    
+    
+    @copy_docs(ComponentMetadataBase.clean_copy)
+    def clean_copy(self, guild = None):
+        new = object.__new__(type(self))
+        
+        new.button_style = self.button_style
+        new.custom_id = self.custom_id
+        new.emoji = self.emoji
+        new.enabled = self.enabled
+        new.label = self.label
+        new.sku_id = self.sku_id
+        new.url = self.url
+        
+        return new
     
     
     @copy_docs(ComponentMetadataBase.copy)
@@ -386,29 +396,29 @@ class ComponentMetadataButton(ComponentMetadataBase):
         
         Parameters
         ----------
-        button_style : ``ButtonStyle``, `int`, Optional (Keyword only)
+        button_style : ``int | ButtonStyle``, Optional (Keyword only)
             The button's style.
         
-        custom_id : `None`, `str`, Optional (Keyword only)
+        custom_id : `None | str`, Optional (Keyword only)
             Custom identifier to detect which button was clicked by the user.
             
             > Mutually exclusive with the `sku_id` and `url`fields.
         
-        emoji : `None`, ``Emoji``, Optional (Keyword only)
+        emoji : ``None | Emoji``, Optional (Keyword only)
             Emoji of the button if applicable.
         
         enabled : `bool`, Optional (Keyword only)
             Whether the component is enabled.
         
-        label : `None`, `str`, Optional (Keyword only)
+        label : `None | str`, Optional (Keyword only)
             Label of the component.
         
-        sku_id : `int`, ``SKU``, Optional (Keyword only)
+        sku_id : ``int | SKU``, Optional (Keyword only)
             Purchasable stock keeping unit identifier.
             
             > Mutually exclusive with the `custom_id` and `url` fields.
         
-        url : `None`, `str`, Optional (Keyword only)
+        url : `None | str`, Optional (Keyword only)
             Url to redirect to when clicking on the button.
             
             > Mutually exclusive with the `custom_id` and `sku_id` fields.

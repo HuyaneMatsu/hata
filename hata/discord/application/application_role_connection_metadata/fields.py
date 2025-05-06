@@ -24,7 +24,7 @@ from .preinstanced import ApplicationRoleConnectionMetadataType
 # description 
 
 parse_description = nullable_string_parser_factory('description')
-put_description_into = nullable_string_putter_factory('description')
+put_description = nullable_string_putter_factory('description')
 validate_description = nullable_string_validator_factory('description', DESCRIPTION_LENGTH_MIN, DESCRIPTION_LENGTH_MAX)
 
 # description_localizations
@@ -32,7 +32,7 @@ validate_description = nullable_string_validator_factory('description', DESCRIPT
 parse_description_localizations = nullable_functional_parser_factory(
     'description_localizations', build_locale_dictionary
 )
-put_description_localizations_into = nullable_functional_optional_putter_factory(
+put_description_localizations = nullable_functional_optional_putter_factory(
     'description_localizations', destroy_locale_dictionary
 )
 validate_description_localizations = partial_func(
@@ -42,13 +42,13 @@ validate_description_localizations = partial_func(
 # key 
 
 parse_key = force_string_parser_factory('key')
-put_key_into = force_string_putter_factory('key')
+put_key = force_string_putter_factory('key')
 validate_key = force_string_validator_factory('key', KEY_LENGTH_MIN, KEY_LENGTH_MAX)
 
 # name 
 
 parse_name = force_string_parser_factory('name')
-put_name_into = force_string_putter_factory('name')
+put_name = force_string_putter_factory('name')
 validate_name = force_string_validator_factory('name', NAME_LENGTH_MIN, NAME_LENGTH_MAX)
 
 # name_localizations
@@ -56,7 +56,7 @@ validate_name = force_string_validator_factory('name', NAME_LENGTH_MIN, NAME_LEN
 parse_name_localizations = nullable_functional_parser_factory(
     'name_localizations', build_locale_dictionary
 )
-put_name_localizations_into = nullable_functional_optional_putter_factory(
+put_name_localizations = nullable_functional_optional_putter_factory(
     'name_localizations', destroy_locale_dictionary
 )
 validate_name_localizations = partial_func(
@@ -68,5 +68,5 @@ validate_name_localizations = partial_func(
 parse_type = preinstanced_parser_factory(
     'type', ApplicationRoleConnectionMetadataType, ApplicationRoleConnectionMetadataType.none
 )
-put_type_into = preinstanced_putter_factory('type')
+put_type = preinstanced_putter_factory('type')
 validate_type = preinstanced_validator_factory('type', ApplicationRoleConnectionMetadataType)

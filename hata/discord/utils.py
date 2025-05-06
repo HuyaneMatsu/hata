@@ -552,7 +552,7 @@ def log_time_converter(value):
     
     Parameters
     ----------
-    value : `None`, `int`, ``DiscordEntity``, `DateTime`
+    value : ``None | int | DiscordEntity | DateTime``
         If the value is given as `int`, returns it. If given as a ``DiscordEntity``, then returns it's id and if it
         is given as a `DateTime` object, then converts that to snowflake then returns it.
     
@@ -578,8 +578,8 @@ def log_time_converter(value):
         return datetime_to_id(value)
     
     raise TypeError(
-        f'Expected `None`, `int`, `{DiscordEntity.__name__}`, `DateTime`, got '
-        f'{value.__class__.__name__}; {value!r}.'
+        f'Expected `None | int | {DiscordEntity.__name__} | DateTime`, got '
+        f'{type(value).__name__}; {value!r}.'
     )
 
 
@@ -1050,12 +1050,19 @@ else:
             If `delta` was not passed as `DateTime`, `RelativeDelta`.
         """
         if isinstance(delta, DateTime):
-            delta = RelativeDelta(DateTime.now(TimeZone.utc), delta)
+            # apparently it matters in which order you do this or perhaps it is a bug
+            now = DateTime.now(TimeZone.utc)
+            if delta > now:
+                delta = RelativeDelta(delta, now)
+            else:
+                delta = RelativeDelta(now, delta)
+        
         elif isinstance(delta, RelativeDelta):
             pass
+        
         else:
             raise TypeError(
-                f'Expected, `RelativeDelta`, `DateTime`, got {delta.__class__.__name__}; {delta!r}.'
+                f'Expected, `RelativeDelta`, `DateTime`, got {type(delta).__name__}; {delta!r}.'
             )
         
         return _relative_delta_to_elapsed_time(delta, limit, names)
@@ -1111,18 +1118,18 @@ class Relationship:
         ----------
         client : ``Client``
             The client, who's relationship is created.
-        data : `dict` of (`str`, `object`)
+        data : `dict<str, object>`
             Relationship data.
         user_id : `int`
             The relationship's target user's id.
         """
         self.user = create_partial_user_from_id(user_id)
-        self.type = RelationshipType.get(data['type'])
+        self.type = RelationshipType.decode(data['type'])
         client.relationships[user_id] = self
     
     def __repr__(self):
         """Returns the representation of the relationship."""
-        return f'<{self.__class__.__name__} {self.type.name} user = {self.user.full_name!r}>'
+        return f'<{type(self).__name__} {self.type.name} user = {self.user.full_name!r}>'
 
 
 class Unknown(DiscordEntity):
@@ -1176,7 +1183,7 @@ class Unknown(DiscordEntity):
     
     def __repr__(self):
         """Returns the representation of the entity."""
-        return f'<{self.__class__.__name__} type={self.type} id = {self.id} name = {self.name!r}>'
+        return f'<{type(self).__name__} type = {self.type} id = {self.id} name = {self.name!r}>'
     
     def __gt__(self, other):
         """Returns whether this entity's respective type matches with the other's and it's id is greater than the
@@ -1185,7 +1192,7 @@ class Unknown(DiscordEntity):
             if self.type != other.type:
                 return NotImplemented
         elif isinstance(other, DiscordEntity):
-            if self.type not in other.__class__.__name__:
+            if self.type not in type(other).__name__:
                 return NotImplemented
         else:
             return NotImplemented
@@ -1199,7 +1206,7 @@ class Unknown(DiscordEntity):
             if self.type != other.type:
                 return NotImplemented
         elif isinstance(other, DiscordEntity):
-            if self.type not in other.__class__.__name__:
+            if self.type not in type(other).__name__:
                 return NotImplemented
         else:
             return NotImplemented
@@ -1212,7 +1219,7 @@ class Unknown(DiscordEntity):
             if self.type != other.type:
                 return NotImplemented
         elif isinstance(other, DiscordEntity):
-            if self.type not in other.__class__.__name__:
+            if self.type not in type(other).__name__:
                 return NotImplemented
         else:
             return NotImplemented
@@ -1226,7 +1233,7 @@ class Unknown(DiscordEntity):
             if self.type != other.type:
                 return NotImplemented
         elif isinstance(other, DiscordEntity):
-            if self.type not in other.__class__.__name__:
+            if self.type not in type(other).__name__:
                 return NotImplemented
         else:
             return NotImplemented
@@ -1240,7 +1247,7 @@ class Unknown(DiscordEntity):
             if self.type != other.type:
                 return NotImplemented
         elif isinstance(other, DiscordEntity):
-            if self.type not in other.__class__.__name__:
+            if self.type not in type(other).__name__:
                 return NotImplemented
         else:
             return NotImplemented
@@ -1254,7 +1261,7 @@ class Unknown(DiscordEntity):
             if self.type != other.type:
                 return NotImplemented
         elif isinstance(other, DiscordEntity):
-            if self.type not in other.__class__.__name__:
+            if self.type not in type(other).__name__:
                 return NotImplemented
         else:
             return NotImplemented
@@ -1281,7 +1288,7 @@ class Gift:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Gift data received from Discord.
         """
         self.uses = data['uses']
@@ -1525,14 +1532,14 @@ def sanitize_mentions(content, guild = None):
     
     Parameters
     ----------
-    content : `None`, `str`
+    content : `None | str`
         The content to sanitize.
-    guild : `None`, ``Guild`` = `None`, Optional
+    guild : ``None | Guild`` = `None`, Optional
         Respective context to look up guild specific names of entities.
     
     Returns
     -------
-    content : `None`, `str`
+    content : `None | str`
     """
     if (content is None) or (not content):
         return content
@@ -1582,14 +1589,14 @@ def sanitize_content(content, guild = None):
     
     Parameters
     ----------
-    content : `None`, `str`
+    content : `None | str`
         The content to sanitize.
-    guild : `None`, ``Guild`` = `None`, Optional
+    guild : ``None | Guild`` = `None`, Optional
         Respective context to look up guild specific names of entities.
     
     Returns
     -------
-    content : `None`, `str`
+    content : `None | str`
     """
     content = sanitize_mentions(content, guild = guild)
     content = escape_markdown(content)
@@ -1605,12 +1612,12 @@ def escape_markdown(content):
     
     Parameters
     ----------
-    content : `None`, `str`
+    content : `None | str`
         The content to sanitize.
     
     Returns
     -------
-    content : `None`, `str`
+    content : `None | str`
     """
     if (content is None) or (not content):
         return content
@@ -1631,7 +1638,7 @@ def parse_date_header_to_datetime(date_data):
     
     Parameters
     ----------
-    date_data : ``str``
+    date_data : `str`
         Date value inside of a header.
 
     Returns
@@ -1806,7 +1813,7 @@ def format_datetime(date_time, style = None):
     ----------
     date_time : `DateTime`
         The date time to format.
-    style : `None`, `str` = `None`, Optional
+    style : `None | str` = `None`, Optional
         Format code to use. They are listed within ``TIMESTAMP_STYLES``.
     
     Returns
@@ -1826,7 +1833,7 @@ def format_id(id_, style = None):
     ----------
     id_ : `int`
         The Discord identifier to format.
-    style : `None`, `str` = `None`, Optional
+    style : `None | str` = `None`, Optional
         Format code to use. They are listed within ``TIMESTAMP_STYLES``.
     
     Returns
@@ -1846,7 +1853,7 @@ def format_loop_time(loop_time, style = None):
     ----------
     loop_time : `float`
         Monotonic loop time.
-    style : `None`, `str` = `None`, Optional
+    style : `None | str` = `None`, Optional
         Format code to use. They are listed within ``TIMESTAMP_STYLES``.
     
     Returns
@@ -1866,7 +1873,7 @@ def format_unix_time(unix_time, style = None):
     ----------
     unix_time : `int`
         The date time to format.
-    style : `None`, `str` = `None`, Optional
+    style : `None | str` = `None`, Optional
         Format code to use. They are listed within ``TIMESTAMP_STYLES``.
     
     Returns

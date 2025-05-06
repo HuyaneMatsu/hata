@@ -5,7 +5,7 @@ from scarletio import RichAttributeErrorBaseType
 from ...user import ZEROUSER
 
 from .fields import (
-    parse_role, parse_state, parse_user, put_role_into, put_state_into, put_user_into,
+    parse_role, parse_state, parse_user, put_role, put_state, put_user,
     validate_role, validate_state, validate_user
 )
 from .preinstanced import TeamMemberRole, TeamMembershipState
@@ -107,14 +107,14 @@ class TeamMember(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
-        put_role_into(self.role, data, defaults)
-        put_state_into(self.state, data, defaults)
+        put_role(self.role, data, defaults)
+        put_state(self.state, data, defaults)
         
         if include_internals:
-            put_user_into(self.user, data, defaults)
+            put_user(self.user, data, defaults)
         
         return data
     

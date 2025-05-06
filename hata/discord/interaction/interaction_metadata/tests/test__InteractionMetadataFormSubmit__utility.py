@@ -4,7 +4,7 @@ from ...interaction_component import InteractionComponent
 
 from ..form_submit import InteractionMetadataFormSubmit
 
-from .test__InteractionMetadataFormSubmit__constructor import _check_is_all_field_set
+from .test__InteractionMetadataFormSubmit__constructor import _assert_fields_set
 
 
 def test__InteractionMetadataFormSubmit__copy():
@@ -19,7 +19,7 @@ def test__InteractionMetadataFormSubmit__copy():
         components = components,
     )
     copy = interaction_metadata.copy()
-    _check_is_all_field_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(copy, interaction_metadata)
     vampytest.assert_eq(copy, interaction_metadata)
 
@@ -38,7 +38,7 @@ def test__InteractionMetadataFormSubmit__copy_with__0():
         components = components,
     )
     copy = interaction_metadata.copy_with()
-    _check_is_all_field_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(copy, interaction_metadata)
     vampytest.assert_eq(copy, interaction_metadata)
 
@@ -63,7 +63,7 @@ def test__InteractionMetadataFormSubmit__copy_with__1():
         custom_id = new_custom_id,
         components = new_components,
     )
-    _check_is_all_field_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(copy, interaction_metadata)
     
     vampytest.assert_eq(copy.custom_id, new_custom_id)

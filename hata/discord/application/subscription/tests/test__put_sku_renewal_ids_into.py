@@ -1,6 +1,6 @@
 import vampytest
 
-from ..fields import put_renewal_sku_ids_into
+from ..fields import put_renewal_sku_ids
 
 
 def _iter_options():
@@ -13,9 +13,9 @@ def _iter_options():
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__put_renewal_sku_ids_into(input_value, defaults):
+def test__put_renewal_sku_ids(input_value, defaults):
     """
-    Tests whether ``put_renewal_sku_ids_into`` is working as intended.
+    Tests whether ``put_renewal_sku_ids`` is working as intended.
     
     Parameters
     ----------
@@ -28,4 +28,4 @@ def test__put_renewal_sku_ids_into(input_value, defaults):
     -------
     output : `dict<str, object>`
     """
-    return put_renewal_sku_ids_into(input_value, {}, defaults)
+    return put_renewal_sku_ids(input_value, {}, defaults)

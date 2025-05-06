@@ -16,10 +16,10 @@ def test__EmbedFooter__clean_copy():
     icon_url = 'attachment://orin.png'
     text = user.mention
     
-    field = EmbedFooter(text = text, icon_url = icon_url)
-    copy = field.clean_copy()
+    embed_footer = EmbedFooter(text = text, icon_url = icon_url)
+    copy = embed_footer.clean_copy()
     _assert_fields_set(copy)
-    vampytest.assert_is_not(field, copy)
+    vampytest.assert_is_not(embed_footer, copy)
     
     vampytest.assert_eq(copy.icon_url, icon_url)
     vampytest.assert_eq(copy.text, f'@{user.name}')
@@ -32,12 +32,12 @@ def test__EmbedFooter__copy():
     icon_url = 'attachment://orin.png'
     text = 'orin'
     
-    field = EmbedFooter(text = text, icon_url = icon_url)
-    copy = field.copy()
+    embed_footer = EmbedFooter(text = text, icon_url = icon_url)
+    copy = embed_footer.copy()
     _assert_fields_set(copy)
-    vampytest.assert_is_not(field, copy)
+    vampytest.assert_is_not(embed_footer, copy)
     
-    vampytest.assert_eq(field, copy)
+    vampytest.assert_eq(embed_footer, copy)
 
 
 def test__EmbedFooter__copy_with__0():
@@ -49,12 +49,12 @@ def test__EmbedFooter__copy_with__0():
     icon_url = 'attachment://orin.png'
     text = 'orin'
     
-    field = EmbedFooter(text = text, icon_url = icon_url)
-    copy = field.copy_with()
+    embed_footer = EmbedFooter(text = text, icon_url = icon_url)
+    copy = embed_footer.copy_with()
     _assert_fields_set(copy)
-    vampytest.assert_is_not(field, copy)
+    vampytest.assert_is_not(embed_footer, copy)
     
-    vampytest.assert_eq(field, copy)
+    vampytest.assert_eq(embed_footer, copy)
 
 
 def test__EmbedFooter__copy_with__1():
@@ -69,13 +69,13 @@ def test__EmbedFooter__copy_with__1():
     new_icon_url = 'attachment://rin.png'
     new_text = 'rin'
     
-    field = EmbedFooter(text = old_text, icon_url = old_icon_url)
-    copy = field.copy_with(
+    embed_footer = EmbedFooter(text = old_text, icon_url = old_icon_url)
+    copy = embed_footer.copy_with(
         icon_url = new_icon_url,
         text = new_text,
     )
     _assert_fields_set(copy)
-    vampytest.assert_is_not(field, copy)
+    vampytest.assert_is_not(embed_footer, copy)
     
     vampytest.assert_eq(copy.icon_url, new_icon_url)
     vampytest.assert_eq(copy.text, new_text)
@@ -105,8 +105,8 @@ def test__EmbedFooter__contents(keyword_parameters):
     -------
     output : `set<str>`
     """
-    field = EmbedFooter(**keyword_parameters)
-    output = field.contents
+    embed_footer = EmbedFooter(**keyword_parameters)
+    output = embed_footer.contents
     vampytest.assert_instance(output, list)
     return {*output}
 
@@ -135,5 +135,5 @@ def test__EmbedFooter__iter_contents(keyword_parameters):
     -------
     output : `set<str>`
     """
-    field = EmbedFooter(**keyword_parameters)
-    return {*field.iter_contents()}
+    embed_footer = EmbedFooter(**keyword_parameters)
+    return {*embed_footer.iter_contents()}

@@ -2,7 +2,7 @@ __all__ = ('ChannelMetadataPrivateBase',)
 
 from scarletio import copy_docs
 
-from .fields import parse_users, put_users_into, validate_users
+from .fields import parse_users, put_users, validate_users
 
 from .base import ChannelMetadataBase
 
@@ -183,6 +183,6 @@ class ChannelMetadataPrivateBase(ChannelMetadataBase):
         
         # users
         if include_internals:
-            put_users_into(self.users, data, defaults)
+            put_users(self.users, data, defaults)
         
         return data

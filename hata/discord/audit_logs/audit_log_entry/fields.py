@@ -100,7 +100,7 @@ def parse_changes(data, entry_type = AuditLogEntryType.none):
     return changes
 
 
-def put_changes_into(changes, data, defaults, *, entry_type = AuditLogEntryType.none):
+def put_changes(changes, data, defaults, *, entry_type = AuditLogEntryType.none):
     """
     Serialises the given changes.
     
@@ -281,7 +281,7 @@ def parse_details(data, entry_type = AuditLogEntryType.none):
     return details
 
 
-def put_details_into(details, data, defaults, *, entry_type = AuditLogEntryType.none):
+def put_details(details, data, defaults, *, entry_type = AuditLogEntryType.none):
     """
     Serialises the given details.
     
@@ -416,13 +416,13 @@ def parse_guild_id(data, parent = None):
     return guild_id
 
 
-put_guild_id_into = entity_id_putter_factory('guild_id')
+put_guild_id = entity_id_putter_factory('guild_id')
 validate_guild_id = entity_id_validator_factory('guild_id', Guild)
 
 # id
 
 parse_id = entity_id_parser_factory('id')
-put_id_into = entity_id_putter_factory('id')
+put_id = entity_id_putter_factory('id')
 validate_id = entity_id_validator_factory('entry_id')
 
 # parent
@@ -432,23 +432,23 @@ validate_parent = nullable_entity_validator_factory('parent', NotImplemented, in
 # reason
 
 parse_reason = nullable_string_parser_factory('reason')
-put_reason_into = nullable_string_optional_putter_factory('reason')
+put_reason = nullable_string_optional_putter_factory('reason')
 validate_reason = nullable_string_validator_factory('reason', REASON_LENGTH_MIN, REASON_LENGTH_MAX)
 
 # target_id
 
 parse_target_id = entity_id_parser_factory('target_id')
-put_target_id_into = entity_id_optional_putter_factory('target_id')
+put_target_id = entity_id_optional_putter_factory('target_id')
 validate_target_id = entity_id_validator_factory('target_id')
 
 # type
 
 parse_type = preinstanced_parser_factory('action_type', AuditLogEntryType, AuditLogEntryType.none)
-put_type_into = preinstanced_putter_factory('action_type')
+put_type = preinstanced_putter_factory('action_type')
 validate_type = preinstanced_validator_factory('entry_type', AuditLogEntryType)
 
 # user_id
 
 parse_user_id = entity_id_parser_factory('user_id')
-put_user_id_into = entity_id_optional_putter_factory('user_id')
+put_user_id = entity_id_optional_putter_factory('user_id')
 validate_user_id = entity_id_validator_factory('user_id', ClientUserBase)

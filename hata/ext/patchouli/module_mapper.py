@@ -434,7 +434,7 @@ class UnitBase:
         
         Returns
         -------
-        docs : `None`, `list` of `str`
+        docs : `None | list<str>`
         """
         docs = self.docs
         if docs is None:
@@ -573,7 +573,7 @@ def direct_lookup_in(object_, reference_parts):
     ----------
     object_ : ``UnitBase``
         The directory to lookup up from.
-    reference_parts : `list` of `str`
+    reference_parts : `list<str>`
         Reference parts to lookup.
         
         The given `reference_parts` should be reversed from their original state.
@@ -611,7 +611,7 @@ def lookup_from(directory, reference_parts):
     ----------
     directory : ``UnitBase``
         The directory to look up from.
-    reference_parts : `list` of `str`
+    reference_parts : `list<str>`
         Reference parts to lookup.
         
         The given `reference_parts` should be reversed from their original state.
@@ -1114,7 +1114,7 @@ class CachedSearcher:
     ----------------
     _cached_relations : `dict` of (``QualPath``, (``QualPath``, `list` of ``QualPath``)) items
         Path shortening, path relations used when translating found patches back.
-    _cached_possibilities : `list` of `str`
+    _cached_possibilities : `list<str>`
         The cached possibilities.
     _cache_valid : `bool`
         Whether the searcher cache is valid.
@@ -1130,7 +1130,7 @@ class CachedSearcher:
         
         Returns
         -------
-        possibilities : `list` of `str`
+        possibilities : `list<str>`
             The cached possibilities.
         relations : `dict` of (``QualPath``, (``QualPath``, `list` of ``QualPath``)) items
             Path shortening, path relations used when translating found patches back.

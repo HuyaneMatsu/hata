@@ -13,6 +13,7 @@ from ...embed_thumbnail import EmbedThumbnail
 from ...embed_video import EmbedVideo
 
 from ..embed import Embed
+from ..flags import EmbedFlag
 from ..preinstanced import EmbedType
 
 
@@ -29,6 +30,7 @@ def _assert_fields_set(embed):
     vampytest.assert_instance(embed.color, Color, nullable = True)
     vampytest.assert_instance(embed.description, str, nullable = True)
     vampytest.assert_instance(embed.fields, list, nullable = True)
+    vampytest.assert_instance(embed.flags, EmbedFlag, nullable = True)
     vampytest.assert_instance(embed.footer, EmbedFooter, nullable = True)
     vampytest.assert_instance(embed.image, EmbedImage, nullable = True)
     vampytest.assert_instance(embed.provider, EmbedProvider, nullable = True)
@@ -61,6 +63,7 @@ def test__Embed__new__all_fields():
     description = 'embed description'
     embed_type = EmbedType.video
     fields = [EmbedField('komeiji', 'koishi'), EmbedField('komeiji', 'satori', inline = True)]
+    flags = EmbedFlag(3)
     footer = EmbedFooter('footer text')
     image = EmbedImage('attachment://image')
     provider = EmbedProvider('provider name')
@@ -76,6 +79,7 @@ def test__Embed__new__all_fields():
         description = description,
         embed_type = embed_type,
         fields = fields,
+        flags = flags,
         footer = footer,
         image = image,
         provider = provider,
@@ -91,6 +95,7 @@ def test__Embed__new__all_fields():
     vampytest.assert_eq(embed.color, color)
     vampytest.assert_eq(embed.description, description)
     vampytest.assert_eq(embed.fields, fields)
+    vampytest.assert_eq(embed.flags, flags)
     vampytest.assert_eq(embed.footer, footer)
     vampytest.assert_eq(embed.image, image)
     vampytest.assert_eq(embed.provider, provider)

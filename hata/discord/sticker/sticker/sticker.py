@@ -10,9 +10,9 @@ from ...utils import DATETIME_FORMAT_CODE
 from .constants import SORT_VALUE_DEFAULT
 from .fields import (
     parse_available, parse_description, parse_format, parse_guild_id, parse_id, parse_name, parse_pack_id,
-    parse_sort_value, parse_tags, parse_type, parse_user, put_available_into, put_description_into, put_format_into,
-    put_guild_id_into, put_id_into, put_name_into, put_pack_id_into, put_sort_value_into, put_tags_into, put_type_into,
-    put_user_into, validate_available, validate_description, validate_format, validate_guild_id, validate_id,
+    parse_sort_value, parse_tags, parse_type, parse_user, put_available, put_description, put_format,
+    put_guild_id, put_id, put_name, put_pack_id, put_sort_value, put_tags, put_type,
+    put_user, validate_available, validate_description, validate_format, validate_guild_id, validate_id,
     validate_name, validate_pack_id, validate_sort_value, validate_tags, validate_type, validate_user
 )
 from .preinstanced import StickerFormat, StickerType
@@ -194,7 +194,7 @@ class Sticker(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Sticker data.
         
         Returns
@@ -249,24 +249,24 @@ class Sticker(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         
-        put_description_into(self.description, data, defaults)
-        put_name_into(self.name, data, defaults)
-        put_tags_into(self.tags, data, defaults)
+        put_description(self.description, data, defaults)
+        put_name(self.name, data, defaults)
+        put_tags(self.tags, data, defaults)
         
         if include_internals:
-            put_available_into(self.available, data, defaults)
-            put_sort_value_into(self.sort_value, data, defaults)
-            put_format_into(self.format, data, defaults)
-            put_guild_id_into(self.guild_id, data, defaults)
-            put_id_into(self.id, data, defaults)
-            put_pack_id_into(self.pack_id, data, defaults)
-            put_sort_value_into(self.sort_value, data, defaults)
-            put_type_into(self.type, data, defaults)
-            put_user_into(self.user, data, defaults)
+            put_available(self.available, data, defaults)
+            put_sort_value(self.sort_value, data, defaults)
+            put_format(self.format, data, defaults)
+            put_guild_id(self.guild_id, data, defaults)
+            put_id(self.id, data, defaults)
+            put_pack_id(self.pack_id, data, defaults)
+            put_sort_value(self.sort_value, data, defaults)
+            put_type(self.type, data, defaults)
+            put_user(self.user, data, defaults)
         
         return data
     
@@ -291,9 +291,9 @@ class Sticker(DiscordEntity, immortal = True):
             Whether the sticker is available.
         description : `None`, `str`, Optional (Keyword only)
             The sticker's description.
-        guild : ``Guild``, `int`, Optional (Keyword only)
+        guild : ``int | Guild``, Optional (Keyword only)
             Alternative for `guild_id`.
-        guild_id : ``Guild``, `int`, Optional (Keyword only)
+        guild_id : ``int | Guild``, Optional (Keyword only)
              The sticker's guild's identifier.
         name : `str`, Optional (Keyword only)
             The sticker's name.
@@ -666,7 +666,7 @@ class Sticker(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Sticker data.
         """
         self.format = parse_format(data)
@@ -684,7 +684,7 @@ class Sticker(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Sticker data.
         """
         self.available = parse_available(data)
@@ -706,12 +706,12 @@ class Sticker(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Sticker data.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             All item in the returned dictionary is optional.
             
             +-----------------------+-----------------------------------+

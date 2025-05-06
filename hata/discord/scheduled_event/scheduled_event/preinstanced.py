@@ -7,7 +7,7 @@ from ..scheduled_event_entity_metadata import (
 )
 
 
-class ScheduledEventStatus(PreinstancedBase):
+class ScheduledEventStatus(PreinstancedBase, value_type = int):
     """
     Represents a scheduled event's status.
     
@@ -15,22 +15,16 @@ class ScheduledEventStatus(PreinstancedBase):
     ----------
     name : `str`
         The name of the scheduled event status.
+    
     value : `int`
         The identifier value the scheduled event status.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``ScheduledEventStatus``) items
-        Stores the predefined ``ScheduledEventStatus``-s. These can be accessed with their `value` as key.
-    VALUE_TYPE : `type` = `int`
-        The scheduled event status' values' type.
-    DEFAULT_NAME : `str` = `'UNDEFINED'`
-        The default name of the scheduled event statuses.
-    
-    Every predefined scheduled event can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined scheduled event can be accessed as type attribute as well:
     
     +-----------------------+---------------+-------+
-    | Class attribute name  | Name          | Value |
+    | Type attribute name   | Name          | Value |
     +=======================+===============+=======+
     | none                  | none          | 0     |
     +-----------------------+---------------+-------+
@@ -43,10 +37,6 @@ class ScheduledEventStatus(PreinstancedBase):
     | cancelled             | cancelled     | 4     |
     +-----------------------+---------------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    DEFAULT_NAME = 'UNDEFINED'
-    
     __slots__ = ()
     
     none = P(0, 'none')
@@ -56,7 +46,7 @@ class ScheduledEventStatus(PreinstancedBase):
     cancelled = P(4, 'cancelled')
 
 
-class ScheduledEventEntityType(PreinstancedBase):
+class ScheduledEventEntityType(PreinstancedBase, value_type = int):
     """
     Represents a scheduled event's entity's type.
     
@@ -64,24 +54,19 @@ class ScheduledEventEntityType(PreinstancedBase):
     ----------
     name : `str`
         The name of the scheduled event's entity's type.
-    value : `int`
-        The identifier value the scheduled event's entity type.
-    metadata_type : `None`, ``ScheduledEventEntityMetadata`` subclass
+    
+    metadata_type : `type<ScheduledEventEntityMetadata>`
         The scheduled event's metadata's applicable type.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``ScheduledEventEntityType``) items
-        Stores the predefined ``ScheduledEventEntityType``-s. These can be accessed with their `value` as key.
-    VALUE_TYPE : `type` = `int`
-        The scheduled event's entity's type's values' type.
-    DEFAULT_NAME : `str` = `'UNDEFINED'`
-        The default name of the scheduled event entity types.
+    value : `int`
+        The identifier value the scheduled event's entity type.
     
-    Every predefined scheduled event can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined scheduled event can be accessed as type attribute as well:
     
     +-----------------------+---------------+-------+---------------------------------------------+
-    | Class attribute name  | Name          | Value | Metadata type                               |
+    | Type attribute name   | Name          | Value | Metadata type                               |
     +=======================+===============+=======+=============================================+
     | none                  | none          | 0     | ``ScheduledEventEntityMetadataBase``        |
     +-----------------------+---------------+-------+---------------------------------------------+
@@ -92,38 +77,10 @@ class ScheduledEventEntityType(PreinstancedBase):
     | location              | location      | 3     | ``ScheduledEventEntityMetadataLocation``    |
     +-----------------------+---------------+-------+---------------------------------------------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    DEFAULT_NAME = 'UNDEFINED'
-    
     __slots__ = ('metadata_type',)
     
-
-    @classmethod
-    def _from_value(cls, value):
-        """
-        Creates a scheduled event entity type from the given id and stores it at class's `.INSTANCES`.
-        
-        Called by `.get` when no scheduled event entity type was found with the given id.
-        
-        Parameters
-        ----------
-        value : `int`
-            The identifier of the scheduled event entity type.
-        
-        Returns
-        -------
-        self : `instance<cls>`
-        """
-        self = object.__new__(cls)
-        self.name = cls.DEFAULT_NAME
-        self.metadata_type = None
-        
-        self.INSTANCES[value] = self
-        return self
     
-    
-    def __init__(self, value, name, metadata_type):
+    def __new__(cls, value, name = None, metadata_type = None):
         """
         Creates a new scheduled event entity type instance from the given parameters.
         
@@ -131,15 +88,19 @@ class ScheduledEventEntityType(PreinstancedBase):
         ----------
         value : `int`
             The unique identifier of the scheduled event entity type.
-        name : `str`
+        
+        name : `None | str` = `None`, Optional
             The name of the scheduled event entity type.
-        metadata_type : `type<ScheduledEventEntityMetadata>`
+        
+        metadata_type : `None | type<ScheduledEventEntityMetadata>` = `None`, Optional
             The scheduled event's metadata's applicable type.
         """
-        self.name = name
-        self.value = value
+        if metadata_type is None:
+            metadata_type = ScheduledEventEntityMetadataBase
+        
+        self = PreinstancedBase.__new__(cls, value, name)
         self.metadata_type = metadata_type
-        self.INSTANCES[value] = self
+        return self
     
     
     none = P(0, 'none', ScheduledEventEntityMetadataBase)
@@ -148,8 +109,7 @@ class ScheduledEventEntityType(PreinstancedBase):
     location = P(3, 'location', ScheduledEventEntityMetadataLocation)
 
 
-
-class PrivacyLevel(PreinstancedBase):
+class PrivacyLevel(PreinstancedBase, value_type = int):
     """
     Represents a stage channel's privacy level.
     
@@ -157,36 +117,29 @@ class PrivacyLevel(PreinstancedBase):
     ----------
     name : `str`
         The name of the privacy level.
+    
     value : `int`
         The identifier value the privacy level.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``PrivacyLevel``) items
-        Stores the predefined ``PrivacyLevel``-s. These can be accessed with their `value` as key.
-    VALUE_TYPE : `type` = `int`
-        The privacy level' values' type.
-    DEFAULT_NAME : `str` = `'UNDEFINED'`
-        The default name of the privacy levels.
+    Type Attributes
+    ---------------
+    Every predefined privacy level can be accessed as type attribute as well:
     
-    Every predefined privacy level can be accessed as class attribute as well:
-    
-    +-----------------------+---------------+-------+
-    | Class attribute name  | Name          | Value |
-    +=======================+===============+=======+
-    | none                  | none          | 0     |
-    +-----------------------+---------------+-------+
-    | public                | public        | 1     |
-    +-----------------------+---------------+-------+
-    | guild_only            | guild_only    | 2     |
-    +-----------------------+---------------+-------+
+    +---------------------------+---------------------------+-------+
+    | Type attribute name       | Name                      | Value |
+    +===========================+===========================+=======+
+    | none                      | none                      | 0     |
+    +---------------------------+---------------------------+-------+
+    | public                    | public                    | 1     |
+    +---------------------------+---------------------------+-------+
+    | guild_only                | guild only                | 2     |
+    +---------------------------+---------------------------+-------+
+    | public_with_join_request  | public with join request  | 3     |
+    +---------------------------+---------------------------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    DEFAULT_NAME = 'UNDEFINED'
-    
     __slots__ = ()
     
     none = P(0, 'none')
     public = P(1, 'public')
-    guild_only = P(2, 'guild_only')
+    guild_only = P(2, 'guild only')
+    public_with_join_request = P(3, 'public with join request')

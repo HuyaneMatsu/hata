@@ -2,7 +2,7 @@ __all__ = ('ComponentMetadataStringSelect', )
 
 from scarletio import copy_docs
 
-from .fields import parse_options, put_options_into, validate_options
+from .fields import parse_options, put_options, validate_options
 from .select_base import ComponentMetadataSelectBase
 
 
@@ -24,7 +24,7 @@ class ComponentMetadataStringSelect(ComponentMetadataSelectBase):
     min_values : `int`
         The minimal amount of options to select.
     
-    options : `None`, `tuple` of ``StringSelectOption``
+    options : ``None | tuple<StringSelectOption>``
         Options of the select.
     
     placeholder : `None`, `str`
@@ -169,12 +169,25 @@ class ComponentMetadataStringSelect(ComponentMetadataSelectBase):
     
     
     @copy_docs(ComponentMetadataSelectBase.to_data)
-    def to_data(self, *, defaults = False):
-        data = ComponentMetadataSelectBase.to_data(self)
+    def to_data(self, *, defaults = False, include_internals = False):
+        data = ComponentMetadataSelectBase.to_data(self, defaults = defaults, include_internals = include_internals)
         
-        put_options_into(self.options, data, defaults)
+        put_options(self.options, data, defaults)
         
         return data
+    
+    
+    @copy_docs(ComponentMetadataSelectBase.clean_copy)
+    def clean_copy(self, guild = None):
+        new = ComponentMetadataSelectBase.clean_copy(self, guild)
+        
+        # options
+        options = self.options
+        if (options is not None):
+            options = tuple(option.copy() for option in options)
+        new.options = options
+        
+        return new
     
     
     @copy_docs(ComponentMetadataSelectBase.copy)

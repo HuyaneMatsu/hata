@@ -28,7 +28,7 @@ class ClientCompoundIntegrationEndpoints(Compound):
             
             Parameters
             ----------
-            guild : ``Guild``, `int`
+            guild : ``int | Guild``
                 The guild, what's integrations will be requested.
             
             Returns
@@ -58,7 +58,7 @@ class ClientCompoundIntegrationEndpoints(Compound):
             
             Parameters
             ----------
-            guild : ``Guild``, `int`
+            guild : ``int | Guild``
                 The guild, what's integrations will be requested.
             
             Returns
@@ -88,7 +88,7 @@ class ClientCompoundIntegrationEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild to what the integration will be attached to.
         integration_id : ``int``
             The integration's id.

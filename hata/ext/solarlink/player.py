@@ -19,7 +19,7 @@ class SolarPlayer(SolarPlayerBase):
     
     Attributes
     ----------
-    _forward_data : `None`, `dict` of (`str`, `object`) items
+    _forward_data : `None`, `dict<str, object>`
         Json to forward to the player's node as necessary.
     _position : `float`
         The position of the current track.
@@ -123,7 +123,7 @@ class SolarPlayer(SolarPlayerBase):
             Where the track will start in seconds.
         end_time : `float` = `0.0`, Optional
             Where the track will start in seconds.
-        **added_attributes : `dict` of (`str`, `object`)
+        **added_attributes : `dict<str, object>`
             Additional user defined attributes.
         
         Returns

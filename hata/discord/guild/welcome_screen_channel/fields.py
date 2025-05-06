@@ -15,13 +15,13 @@ from .constants import DESCRIPTION_LENGTH_MAX
 # channel_id
 
 parse_channel_id = entity_id_parser_factory('channel_id')
-put_channel_id_into = entity_id_putter_factory('channel_id')
+put_channel_id = entity_id_putter_factory('channel_id')
 validate_channel_id = entity_id_validator_factory('channel_id', Channel)
 
 # description
 
 parse_description = nullable_string_parser_factory('description')
-put_description_into = nullable_string_putter_factory('description')
+put_description = nullable_string_putter_factory('description')
 validate_description = nullable_string_validator_factory('description', 0, DESCRIPTION_LENGTH_MAX)
 
 # emoji
@@ -29,22 +29,24 @@ validate_description = nullable_string_validator_factory('description', 0, DESCR
 parse_emoji = create_partial_emoji_from_inline_data
 
 
-def put_emoji_into(emoji, data, defaults):
+def put_emoji(emoji, data, defaults):
     """
     Puts the emoji into the given `data` json serializable object.
     
     Parameters
     ----------
-    emoji : `None`, ``Emoji``
+    emoji : ``None | Emoji``
         The emoji.
-    data : `dict` of (`str`, `object`) items
+    
+    data : `dict<str, object>`
         Json serializable dictionary.
+    
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if defaults or (emoji is not None):
         put_partial_emoji_inline_data_into(emoji, data)

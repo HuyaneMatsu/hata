@@ -9,11 +9,11 @@ from .flags import ThreadProfileFlag
 # flags
 
 parse_flags = flag_parser_factory('flags', ThreadProfileFlag)
-put_flags_into = flag_optional_putter_factory('flags', ThreadProfileFlag())
+put_flags = flag_optional_putter_factory('flags', ThreadProfileFlag())
 validate_flags = flag_validator_factory('flags', ThreadProfileFlag)
 
 # joined_at
 
 parse_joined_at = nullable_date_time_parser_factory('joined_at')
-put_joined_at_into = nullable_date_time_optional_putter_factory('joined_at')
+put_joined_at = nullable_date_time_optional_putter_factory('joined_at')
 validate_joined_at = nullable_date_time_validator_factory('joined_at')

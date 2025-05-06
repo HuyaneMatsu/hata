@@ -3,7 +3,7 @@ __all__ = ('ReactionType',)
 from ...bases import Preinstance as P, PreinstancedBase
 
 
-class ReactionType(PreinstancedBase):
+class ReactionType(PreinstancedBase, value_type = int):
     """
     Represents a reaction's type.
     
@@ -11,22 +11,16 @@ class ReactionType(PreinstancedBase):
     ----------
     name : `str`
         The default name of the reaction type.
+    
     value : `int`
-        The discord side identifier value of the reaction type.    Class Attributes
+        The discord side identifier value of the reaction type.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``ReactionType``) items
-        Stores the predefined ``ReactionType``-s. These can be accessed with their `value` as key.
-    VALUE_TYPE : `type` = `int`
-        The reaction type' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the reaction type.
-    
-    Every predefined reaction type can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined reaction type can be accessed as type attribute as well:
     
     +-----------------------+---------------+-------+
-    | Class attribute name  | name          | value |
+    | Type attribute name   | name          | value |
     +======================+================+=======+
     | standard              | standard      | 0     |
     +-----------------------+---------------+-------+
@@ -34,9 +28,6 @@ class ReactionType(PreinstancedBase):
     +-----------------------+---------------+-------+
     """
     __slots__ = ()
-    
-    INSTANCES = {}
-    VALUE_TYPE = int
     
     standard = P(0, 'standard')
     burst = P(1, 'burst')

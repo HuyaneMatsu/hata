@@ -10,6 +10,7 @@ from ....embed import Embed
 from ....emoji import Reaction, ReactionMapping, ReactionMappingLine, ReactionType
 from ....interaction import Resolved
 from ....poll import Poll
+from ....soundboard import SoundboardSound
 from ....sticker import Sticker, create_partial_sticker_data
 from ....user import User
 from ....utils import datetime_to_timestamp
@@ -84,6 +85,10 @@ def test__Message__from_data__all_fields():
         MessageSnapshot(content = 'Kazami'),
         MessageSnapshot(content = 'Yuuka'),
     ]
+    soundboard_sounds = [
+        SoundboardSound.precreate(202501290010, name = 'whither'),
+        SoundboardSound.precreate(202501290011, name = 'Yuyuko'),
+    ]
     stickers = [
         Sticker.precreate(202305030052, name = 'Kirisame'),
         Sticker.precreate(202305030053, name = 'Marisa'),
@@ -120,6 +125,9 @@ def test__Message__from_data__all_fields():
         'resolved': resolved.to_data(),
         'role_subscription_data': role_subscription.to_data(),
         'message_snapshots': [snapshot.to_data(guild_id = guild_id) for snapshot in snapshots],
+        'soundboard_sounds': [
+            soundboard_sound.to_data(include_internals = True) for soundboard_sound in soundboard_sounds
+        ],
         'sticker_items': [create_partial_sticker_data(sticker) for sticker in stickers],
         'thread': thread.to_data(include_internals = True),
         
@@ -159,6 +167,7 @@ def test__Message__from_data__all_fields():
     vampytest.assert_eq(message.resolved, resolved)
     vampytest.assert_eq(message.role_subscription, role_subscription)
     vampytest.assert_eq(message.snapshots, tuple(snapshots))
+    vampytest.assert_eq(message.soundboard_sounds, tuple(soundboard_sounds))
     vampytest.assert_eq(message.stickers, tuple(stickers))
     vampytest.assert_eq(message.thread, thread)
     vampytest.assert_eq(message.tts, tts)
@@ -331,6 +340,10 @@ def test__Message__to_data():
         MessageSnapshot(content = 'Kazami'),
         MessageSnapshot(content = 'Yuuka'),
     ]
+    soundboard_sounds = [
+        SoundboardSound.precreate(202501290012, name = 'whither'),
+        SoundboardSound.precreate(202501290013, name = 'Yuyuko'),
+    ]
     stickers = [
         Sticker.precreate(202310110024, name = 'Kirisame'),
         Sticker.precreate(202310110025, name = 'Marisa'),
@@ -368,6 +381,10 @@ def test__Message__to_data():
         'resolved': resolved.to_data(defaults = True),
         'role_subscription_data': role_subscription.to_data(defaults = True),
         'message_snapshots': [snapshots.to_data(defaults = True, guild_id = guild_id) for snapshots in snapshots],
+        'soundboard_sounds': [
+            soundboard_sound.to_data(defaults = True, include_internals = True)
+            for soundboard_sound in soundboard_sounds
+        ],
         'sticker_items': [create_partial_sticker_data(sticker) for sticker in stickers],
         'thread': thread.to_data(defaults = True, include_internals = True),
         'type': message_type.value,
@@ -410,6 +427,7 @@ def test__Message__to_data():
         resolved = resolved,
         role_subscription = role_subscription,
         snapshots = snapshots,
+        soundboard_sounds = soundboard_sounds,
         stickers = stickers,
         thread = thread,
         tts = tts,
@@ -641,7 +659,7 @@ def test__Message__set_attributes__caching():
     vampytest.assert_ne(old_mentioned_channels, new_mentioned_channels)
 
 
-def test__message__late_init__loading():
+def test__Message__late_init__loading():
     """
     Tests whether ``Message._late_init`` works as intended.
     
@@ -662,7 +680,7 @@ def test__message__late_init__loading():
     vampytest.assert_eq(message.call, call)
 
 
-def test__message__late_init__not_loading_but_receiving_interaction():
+def test__Message__late_init__not_loading_but_receiving_interaction():
     """
     Tests whether ``Message._late_init`` works as intended.
     

@@ -12,7 +12,7 @@ from ...field_validators import entity_id_validator_factory
 # answer_id
 
 parse_answer_id = entity_id_parser_factory('answer_id')
-put_answer_id_into = entity_id_putter_factory('answer_id')
+put_answer_id = entity_id_putter_factory('answer_id')
 validate_answer_id = entity_id_validator_factory('answer_id')
 
 Message = include('Message')
@@ -25,7 +25,7 @@ def parse_message(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Vote event data.
     
     Returns
@@ -35,7 +35,7 @@ def parse_message(data):
     return Message._create_from_partial_data(data)
 
 
-def put_message_into(message, data, defaults):
+def put_message(message, data, defaults):
     """
     Puts the given message's representation into the given vote event data.
     
@@ -43,14 +43,14 @@ def put_message_into(message, data, defaults):
     ----------
     message : ``Message``
         The message to serialize.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Vote event data.
     defaults : `bool`
         Whether fields with their default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     data['message_id'] = str(message.id)
     data['channel_id'] = str(message.channel_id)
@@ -93,5 +93,5 @@ def parse_user(data):
 # user_id
 
 parse_user_id = entity_id_parser_factory('user_id')
-put_user_id_into = entity_id_putter_factory('user_id')
+put_user_id = entity_id_putter_factory('user_id')
 validate_user_id = entity_id_validator_factory('user_id', ClientUserBase)

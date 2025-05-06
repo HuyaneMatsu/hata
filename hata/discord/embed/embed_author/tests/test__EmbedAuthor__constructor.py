@@ -3,20 +3,20 @@ import vampytest
 from ..author import EmbedAuthor
 
 
-def _assert_fields_set(field):
+def _assert_fields_set(embed_author):
     """
     Checks whether every fields of the given embed author are set.
     
     Parameters
     ----------
-    field : ``EmbedAuthor``
+    embed_author : ``EmbedAuthor``
         The field to check.
     """
-    vampytest.assert_instance(field, EmbedAuthor)
-    vampytest.assert_instance(field.icon_url, str, nullable = True)
-    vampytest.assert_instance(field.icon_proxy_url, str, nullable = True)
-    vampytest.assert_instance(field.name, str, nullable = True)
-    vampytest.assert_instance(field.url, str, nullable = True)
+    vampytest.assert_instance(embed_author, EmbedAuthor)
+    vampytest.assert_instance(embed_author.icon_url, str, nullable = True)
+    vampytest.assert_instance(embed_author.icon_proxy_url, str, nullable = True)
+    vampytest.assert_instance(embed_author.name, str, nullable = True)
+    vampytest.assert_instance(embed_author.url, str, nullable = True)
 
 
 def test__EmbedAuthor__new__no_fields():
@@ -25,8 +25,8 @@ def test__EmbedAuthor__new__no_fields():
     
     Case: Minimal amount of parameters.
     """
-    field = EmbedAuthor()
-    _assert_fields_set(field)
+    embed_author = EmbedAuthor()
+    _assert_fields_set(embed_author)
 
 
 def test__EmbedAuthor__new__all_fields():
@@ -39,12 +39,12 @@ def test__EmbedAuthor__new__all_fields():
     name = 'orin'
     url = 'https://orindance.party/'
     
-    field = EmbedAuthor(name = name, icon_url = icon_url, url = url)
-    _assert_fields_set(field)
+    embed_author = EmbedAuthor(name = name, icon_url = icon_url, url = url)
+    _assert_fields_set(embed_author)
     
-    vampytest.assert_eq(field.icon_url, icon_url)
-    vampytest.assert_eq(field.name, name)
-    vampytest.assert_eq(field.url, url)
+    vampytest.assert_eq(embed_author.icon_url, icon_url)
+    vampytest.assert_eq(embed_author.name, name)
+    vampytest.assert_eq(embed_author.url, url)
 
 
 def test__EmbedAuthor__new__string_conversion():
@@ -55,7 +55,7 @@ def test__EmbedAuthor__new__string_conversion():
     """
     name = 123
     
-    field = EmbedAuthor(name = name)
-    _assert_fields_set(field)
+    embed_author = EmbedAuthor(name = name)
+    _assert_fields_set(embed_author)
     
-    vampytest.assert_eq(field.name, str(name))
+    vampytest.assert_eq(embed_author.name, str(name))

@@ -1,22 +1,25 @@
 import vampytest
 
+from ...embed_field_base import EmbedMediaFlag
+
 from ..thumbnail import EmbedThumbnail
 
 
-def _assert_fields_set(field):
+def _assert_fields_set(embed_thumbnail):
     """
     Checks whether every fields of the given embed thumbnail are set.
     
     Parameters
     ----------
-    field : ``EmbedThumbnail``
+    embed_thumbnail : ``EmbedThumbnail``
         The field to check.
     """
-    vampytest.assert_instance(field, EmbedThumbnail)
-    vampytest.assert_instance(field.height, int)
-    vampytest.assert_instance(field.url, str, nullable = True)
-    vampytest.assert_instance(field.proxy_url, str, nullable = True)
-    vampytest.assert_instance(field.width, int)
+    vampytest.assert_instance(embed_thumbnail, EmbedThumbnail)
+    vampytest.assert_instance(embed_thumbnail.flags, EmbedMediaFlag)
+    vampytest.assert_instance(embed_thumbnail.height, int)
+    vampytest.assert_instance(embed_thumbnail.url, str, nullable = True)
+    vampytest.assert_instance(embed_thumbnail.proxy_url, str, nullable = True)
+    vampytest.assert_instance(embed_thumbnail.width, int)
 
 
 def test__EmbedThumbnail__new():
@@ -25,7 +28,7 @@ def test__EmbedThumbnail__new():
     """
     url = 'https://orindance.party/'
     
-    field = EmbedThumbnail(url)
-    _assert_fields_set(field)
+    embed_thumbnail = EmbedThumbnail(url)
+    _assert_fields_set(embed_thumbnail)
     
-    vampytest.assert_eq(field.url, url)
+    vampytest.assert_eq(embed_thumbnail.url, url)

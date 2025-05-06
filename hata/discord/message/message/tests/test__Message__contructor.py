@@ -9,6 +9,7 @@ from ....embed import Embed
 from ....emoji import Reaction, ReactionMapping, ReactionMappingLine, ReactionType
 from ....interaction import Resolved
 from ....poll import Poll
+from ....soundboard import SoundboardSound
 from ....sticker import Sticker
 from ....user import User, UserBase
 
@@ -65,6 +66,7 @@ def _assert_fields_set(message):
     vampytest.assert_instance(message.resolved, Resolved, nullable = True)
     vampytest.assert_instance(message.role_subscription, MessageRoleSubscription, nullable = True)
     vampytest.assert_instance(message.snapshots, tuple, nullable = True)
+    vampytest.assert_instance(message.soundboard_sounds, tuple, nullable = True)
     vampytest.assert_instance(message.stickers, tuple, nullable = True)
     vampytest.assert_instance(message.thread, Channel, nullable = True)
     vampytest.assert_instance(message.tts, bool)
@@ -134,6 +136,10 @@ def test__Message__new__all_fields():
         MessageSnapshot(content = 'Kazami'),
         MessageSnapshot(content = 'Yuuka'),
     ]
+    soundboard_sounds = [
+        SoundboardSound.precreate(202501290006, name = 'whither'),
+        SoundboardSound.precreate(202501290007, name = 'Yuyuko'),
+    ]
     stickers = [
         Sticker.precreate(202305030013, name = 'Kirisame'),
         Sticker.precreate(202305030014, name = 'Marisa'),
@@ -168,6 +174,7 @@ def test__Message__new__all_fields():
         resolved = resolved,
         role_subscription = role_subscription,
         snapshots = snapshots,
+        soundboard_sounds = soundboard_sounds,
         stickers = stickers,
         thread = thread,
         tts = tts,
@@ -199,6 +206,7 @@ def test__Message__new__all_fields():
     vampytest.assert_eq(message.resolved, resolved)
     vampytest.assert_eq(message.role_subscription, role_subscription)
     vampytest.assert_eq(message.snapshots, tuple(snapshots))
+    vampytest.assert_eq(message.soundboard_sounds, tuple(soundboard_sounds))
     vampytest.assert_eq(message.stickers, tuple(stickers))
     vampytest.assert_eq(message.thread, thread)
     vampytest.assert_eq(message.tts, tts)
@@ -290,6 +298,10 @@ def test__Message__precreate__all_fields():
         MessageSnapshot(content = 'Kazami'),
         MessageSnapshot(content = 'Yuuka'),
     ]
+    soundboard_sounds = [
+        SoundboardSound.precreate(202501290008, name = 'whither'),
+        SoundboardSound.precreate(202501290009, name = 'Yuyuko'),
+    ]
     stickers = [
         Sticker.precreate(202305030033, name = 'Kirisame'),
         Sticker.precreate(202305030034, name = 'Marisa'),
@@ -331,6 +343,7 @@ def test__Message__precreate__all_fields():
         resolved = resolved,
         role_subscription = role_subscription,
         snapshots = snapshots,
+        soundboard_sounds = soundboard_sounds,
         stickers = stickers,
         thread = thread,
         tts = tts,
@@ -362,6 +375,7 @@ def test__Message__precreate__all_fields():
     vampytest.assert_eq(message.resolved, resolved)
     vampytest.assert_eq(message.role_subscription, role_subscription)
     vampytest.assert_eq(message.snapshots, tuple(snapshots))
+    vampytest.assert_eq(message.soundboard_sounds, tuple(soundboard_sounds))
     vampytest.assert_eq(message.stickers, tuple(stickers))
     vampytest.assert_eq(message.thread, thread)
     vampytest.assert_eq(message.tts, tts)

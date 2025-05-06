@@ -1,4 +1,4 @@
-import warnings as module_warnings
+from warnings import catch_warnings, simplefilter as apply_simple_filter
 
 import vampytest
 
@@ -14,8 +14,8 @@ def test__EventHandlerManager__clear():
     client = Client('token_20220718')
     
     try:
-        with module_warnings.catch_warnings(record = True) as warnings:
-            module_warnings.simplefilter('always')
+        with catch_warnings(record = True) as warnings:
+            apply_simple_filter('always')
             
             client.events.clear()
             

@@ -100,7 +100,7 @@ class ParserState(RichAttributeErrorBaseType):
         Where the current line is started.
     position : `int`
         The current position.
-    value : `list` of `str`
+    value : `list<str>`
         The value to parse by character.
     """
     __slots__ = ('end', 'line_index', 'line_start', 'position', 'value')
@@ -166,14 +166,14 @@ def render_escaped_string_into(into, string):
     
     Parameters
     ----------
-    into : `list` of `str`
+    into : `list<str>`
         String parts to extend.
     string : `str`
         The string to render.
     
     Returns
     -------
-    into : `list` of `str`
+    into : `list<str>`
     """
     for character in string:
         try:
@@ -194,7 +194,7 @@ def render_string_hidden_representation_into(into, string, cut_at):
     
     Parameters
     ----------
-    into : `list` of `str`
+    into : `list<str>`
         String parts to extend.
     string : `str`
         The string to render.
@@ -203,7 +203,7 @@ def render_string_hidden_representation_into(into, string, cut_at):
     
     Returns
     -------
-    into : `list` of `str`
+    into : `list<str>`
     """
     string_length = len(string)
     
@@ -355,7 +355,7 @@ class ParserFailureInfo(RichAttributeErrorBaseType):
         
         Returns
         -------
-        error_message : `None`, `str`
+        error_message : `None | str`
         """
         return ERROR_MESSAGES.get(self.error_code, None)
 
@@ -836,7 +836,7 @@ def parse_key_unquoted(parser_state):
     -------
     parsed_state : `int`
         Bitwise flag containing the state how the operation went.
-    value : `None`, `str`
+    value : `None | str`
         The parsed out value.
     """
     parser_state_position = parser_state.position
@@ -879,7 +879,7 @@ def parse_value_unquoted(parser_state):
     -------
     parsed_state : `int`
         Bitwise flag containing the state how the operation went.
-    value : `None`, `str`
+    value : `None | str`
         The parsed out value.
     """
     parser_state_position = parser_state.position
@@ -907,7 +907,7 @@ def parse_next(parser_state):
     -------
     parsed_state : `int`
         Bitwise flag containing the state how the operation went.
-    value : `None`, `str`
+    value : `None | str`
         The parsed out value.
     """
     if is_at_end(parser_state):
@@ -934,7 +934,7 @@ def parse_quoted_content(parser_state, expected_ending):
     -------
     parsed_state : `int`
         Bitwise flag containing the state how the operation went.
-    value : `None`, `str`
+    value : `None | str`
         The parsed out value.
     """
     value_parts = []
@@ -988,7 +988,7 @@ def parse_key_or_value(parser_state, parsing_key):
     -------
     parsed_state : `int`
         Bitwise flag containing the state how the operation went.
-    value : `None`, `str`
+    value : `None | str`
         The parsed out value.
     """
     # Should not happen -> do not embed error message
@@ -1015,9 +1015,9 @@ def maybe_build_item(key, value):
     
     Parameters
     ----------
-    key : `None`, `str`
+    key : `None | str`
         Parsed key.
-    value : `None`, `str`
+    value : `None | str`
         The parsed out value.
     
     Returns
@@ -1036,9 +1036,9 @@ def parse_item_part_end(parser_state, key, value):
     ----------
     parser_state : ``ParserState``
         The parser state to exhaust characters from.
-    key : `None`, `str`
+    key : `None | str`
         Already parsed out key.
-    value : `None`, `str`
+    value : `None | str`
         Already parsed out value.
     
     Returns

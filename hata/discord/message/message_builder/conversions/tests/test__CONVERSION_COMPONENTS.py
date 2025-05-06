@@ -98,51 +98,58 @@ def test__CONVERSION_COMPONENTS__set_validator(input_value):
     return [*CONVERSION_COMPONENTS.set_validator(input_value)]
 
 
-def _iter_options__serializer_optional():
+def _iter_options__serializer_putter():
     component_0 = create_button('hey', custom_id = '12')
     component_1 = create_button('mister', custom_id = '13')
     
-    yield None, []
+    yield (
+        None,
+        False,
+        {},
+    )
     
-    yield [create_row(component_0)], [[create_row(component_0).to_data()]]
+    yield (
+        [create_row(component_0)],
+        False,
+        {
+            'components' : [create_row(component_0).to_data()],
+        },
+    )
+     
     yield (
         [create_row(component_0), create_row(component_1)],
-        [[create_row(component_0).to_data(), create_row(component_1).to_data()]],
+        False,
+        {
+            'components': [create_row(component_0).to_data(), create_row(component_1).to_data()],
+        },
+    )
+    yield (
+        None,
+        True,
+        {
+            'components': [],
+        },
+    )
+    
+    yield (
+        [create_row(component_0)],
+        True,
+        {
+            'components' : [create_row(component_0).to_data()],
+        },
+    )
+     
+    yield (
+        [create_row(component_0), create_row(component_1)],
+        True,
+        {
+            'components': [create_row(component_0).to_data(), create_row(component_1).to_data()],
+        },
     )
 
 
-@vampytest._(vampytest.call_from(_iter_options__serializer_optional()).returning_last())
-def test__CONVERSION_COMPONENTS__serializer_optional(input_value):
-    """
-    Tests whether ``CONVERSION_COMPONENTS.serializer_optional`` works as intended.
-    
-    Parameters
-    ----------
-    input_value : `None | list<Component>`
-        Value to test.
-    
-    Returns
-    -------
-    output : `list<list<dict<str, object>>>`
-    """
-    return [*CONVERSION_COMPONENTS.serializer_optional(input_value)]
-
-
-def _iter_options__serializer_required():
-    component_0 = create_button('hey', custom_id = '12')
-    component_1 = create_button('mister', custom_id = '13')
-    
-    yield None, []
-    
-    yield [create_row(component_0)], [create_row(component_0).to_data()]
-    yield (
-        [create_row(component_0), create_row(component_1)],
-        [create_row(component_0).to_data(), create_row(component_1).to_data()],
-    )
-
-
-@vampytest._(vampytest.call_from(_iter_options__serializer_required()).returning_last())
-def test__CONVERSION_COMPONENTS__serializer_required(input_value):
+@vampytest._(vampytest.call_from(_iter_options__serializer_putter()).returning_last())
+def test__CONVERSION_COMPONENTS__serializer_putter(input_value, defaults):
     """
     Tests whether ``CONVERSION_COMPONENTS.serializer_required`` works as intended.
     
@@ -151,8 +158,11 @@ def test__CONVERSION_COMPONENTS__serializer_required(input_value):
     input_value : `None | list<Component>`
         Value to test.
     
+    defaults : `bool`
+        Whether values as their defaults should be included as well.
+    
     Returns
     -------
     output : `list<dict<str, object>>`
     """
-    return CONVERSION_COMPONENTS.serializer_required(input_value)
+    return CONVERSION_COMPONENTS.serializer_putter({}, defaults, input_value)

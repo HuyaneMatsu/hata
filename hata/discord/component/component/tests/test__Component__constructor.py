@@ -6,7 +6,7 @@ from ..component import Component
 from ..preinstanced import ComponentType
 
 
-def _check_is_all_field_set(component):
+def _assert_fields_set(component):
     """
     Checks whether all fields of the component are set.
     
@@ -28,6 +28,6 @@ def test__Component__new():
     custom_id = 'chen'
     
     component = Component(component_type, custom_id = custom_id)
-    _check_is_all_field_set(component)
+    _assert_fields_set(component)
     vampytest.assert_is(component.type, component_type)
     vampytest.assert_eq(component.custom_id, custom_id)

@@ -1,7 +1,5 @@
 __all__ = ('AuditLogIterator', )
 
-from warnings import warn
-
 from scarletio import RichAttributeErrorBaseType, Task, shield
 
 from ...core import KOKORO
@@ -20,16 +18,22 @@ class AuditLogIterator(RichAttributeErrorBaseType):
     ----------
     _audit_log_entry_index : `int`
         The index of the entry in an audit to return next.
+    
     _audit_log_index : `int`
         The index of the audit log to return entry from.
+    
     _data : `dict<str, object>`
         Data to make request with.
-    _load_one_task : `None | Task<bool>`
+    
+    _load_one_task : ``None | Task<bool>``
         Synchronised task among consumers to request a new audit log.
-    audit_logs : `list` of ``AuditLog``
+    
+    audit_logs : ``list<AuditLog>``
         The requested audit logs.
+    
     client : ``Client``
         Client to request with.
+    
     guild_id : `int`
         The respective guild's identifier.
     """
@@ -37,7 +41,7 @@ class AuditLogIterator(RichAttributeErrorBaseType):
         '_audit_log_entry_index', '_audit_log_index', '_data', '_load_one_task', 'audit_logs', 'client', 'guild_id'
     )
     
-    def __new__(cls, client, guild_id, *, entry_type = ..., user_id = ..., user = ...):
+    def __new__(cls, client, guild_id, *, entry_type = ..., user_id = ...):
         """
         Creates an audit log iterator with the given parameters.
         
@@ -45,20 +49,16 @@ class AuditLogIterator(RichAttributeErrorBaseType):
         ----------
         client : ``Client``
             The client, who will execute the api requests.
-        guild_id : ``Guild``, `int`
+        
+        guild_id : ``int | Guild``
             The guild what's audit logs will be requested.
+        
         entry_type : ``AuditLogEntryType``, `int`, `None`, Optional
             Whether the audit logs should be filtered only on the given event.
-        user_id : `int`, `None`, ``ClientUserBase``, Optional
+        
+        user_id : ``None | int | ClientUserBase``, Optional
             Whether the audit logs should be filtered only to those, which were created by the given user.
         """
-        if user is not ...:
-            warn(
-                f'`{cls.__name__}.__new__`\'s `user` parameter is deprecated and will be removed in 2024 December. '
-                f'Please use `user_id` instead.'
-            )
-            user_id = user
-        
         # guild_id
         guild_id = validate_guild_id(guild_id)
         

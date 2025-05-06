@@ -31,7 +31,7 @@ class AutoModerationActionMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
            Auto moderation action metadata payload.
         
         Returns
@@ -52,7 +52,7 @@ class AutoModerationActionMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         return {}
     
@@ -135,7 +135,7 @@ class AutoModerationActionMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        channel : `None`, ``Channel``
+        channel : ``None | Channel``
         """
         channel_id = self.channel_id
         if channel_id:

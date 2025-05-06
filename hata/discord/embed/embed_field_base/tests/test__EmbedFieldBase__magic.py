@@ -7,33 +7,51 @@ def test__EmbedFieldBase__repr():
     """
     Tests whether ``EmbedFieldBase.__repr__`` works as intended.
     """
-    field = EmbedFieldBase()
-    vampytest.assert_instance(repr(field), str)
+    field_base = EmbedFieldBase()
+    vampytest.assert_instance(repr(field_base), str)
 
 
 def test__EmbedFieldBase__hash():
     """
     Tests whether ``EmbedFieldBase.__hash__`` works as intended.
     """
-    field = EmbedFieldBase()
-    vampytest.assert_instance(hash(field), int)
+    field_base = EmbedFieldBase()
+    vampytest.assert_instance(hash(field_base), int)
 
 
-def test__EmbedFieldBase__eq():
-    """
-    Tests whether ``EmbedFieldBase.__eq__`` works as intended.
-    """
+def _iter_options__eq():
     keyword_parameters = {}
     
-    field = EmbedFieldBase(**keyword_parameters)
+    yield (
+        keyword_parameters,
+        keyword_parameters,
+        True,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__eq()).returning_last())
+def test__EmbedFieldBase__eq(keyword_parameters_0, keyword_parameters_1):
+    """
+    Tests whether ``EmbedFieldBase.__eq__`` works as intended.
     
-    vampytest.assert_eq(field, field)
-    vampytest.assert_ne(field, object())
+    Parameters
+    ----------
+    keyword_parameters_0 : `dict<str, object>`
+        Keyword parameters to create instance with.
     
-    for field_name, field_value in (
-    ):
-        test_field = EmbedFieldBase(**{**keyword_parameters, field_name: field_value})
-        vampytest.assert_ne(field, test_field)
+    keyword_parameters_1 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    guild_profile_0 = EmbedFieldBase(**keyword_parameters_0)
+    guild_profile_1 = EmbedFieldBase(**keyword_parameters_1)
+    
+    output = guild_profile_0 == guild_profile_1
+    vampytest.assert_instance(output, bool)
+    return output
 
 
 def _iter_options__bool():
@@ -54,8 +72,8 @@ def test__EmbedFieldBase__bool(keyword_parameters):
     -------
     output : `bool`
     """
-    field = EmbedFieldBase(**keyword_parameters)
-    output = bool(field)
+    field_base = EmbedFieldBase(**keyword_parameters)
+    output = bool(field_base)
     vampytest.assert_instance(output, bool)
     return output
 
@@ -69,7 +87,7 @@ def test__EmbedFieldBase__len(keyword_parameters):
     """
     Tests whether ``EmbedFieldBase.__len__`` works as intended.
     """
-    field = EmbedFieldBase(**keyword_parameters)
-    output = len(field)
+    field_base = EmbedFieldBase(**keyword_parameters)
+    output = len(field_base)
     vampytest.assert_instance(output, int)
     return output

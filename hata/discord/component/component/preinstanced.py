@@ -1,21 +1,35 @@
 __all__ = ('ComponentType',)
 
+from scarletio import export
+
 from ...bases import Preinstance as P, PreinstancedBase
 
 from ..component_metadata import (
-    ComponentMetadataBase, ComponentMetadataButton, ComponentMetadataChannelSelect, ComponentMetadataMediaGallery,
-    ComponentMetadataMentionableSelect, ComponentMetadataRoleSelect, ComponentMetadataRow,
-    ComponentMetadataStringSelect, ComponentMetadataSeparator, ComponentMetadataText, ComponentMetadataTextInput,
-    ComponentMetadataUserSelect
+    ComponentMetadataAttachmentMedia, ComponentMetadataBase, ComponentMetadataButton, ComponentMetadataChannelSelect,
+    ComponentMetadataContainer, ComponentMetadataMediaGallery, ComponentMetadataMentionableSelect,
+    ComponentMetadataRoleSelect, ComponentMetadataRow, ComponentMetadataSection, ComponentMetadataSeparator,
+    ComponentMetadataStringSelect, ComponentMetadataTextDisplay, ComponentMetadataTextInput,
+    ComponentMetadataThumbnailMedia, ComponentMetadataUserSelect
 )
 
 from .flags import ComponentTypeLayoutFlag
 
 
-COMPONENT_TYPE_LAYOUT_FLAGS_ALL = ComponentTypeLayoutFlag().update_by_keys(top_level = True, nestable = True)
+COMPONENT_TYPE_LAYOUT_FLAGS_ALL = ComponentTypeLayoutFlag().update_by_keys(
+    allowed_in_message = True,
+    allowed_in_form = True,
+    top_level = True,
+    nestable_into_row = True,
+    nestable_into_container = True,
+    nestable_into_section = True,
+    section_thumbnail = True,
+    version_1 = True,
+    version_2 = True,
+)
 
 
-class ComponentType(PreinstancedBase):
+@export
+class ComponentType(PreinstancedBase, value_type = int):
     """
     Represents a component's type.
     
@@ -24,7 +38,7 @@ class ComponentType(PreinstancedBase):
     layout_flags : ``ComponentTypeLayoutFlag``
         Flags about the component's layout information.
     
-    metadata_type : `type<ComponentMetadataBase>`
+    metadata_type : ``type<ComponentMetadataBase>``
         Metadata type.
     
     name : `str`
@@ -33,21 +47,12 @@ class ComponentType(PreinstancedBase):
     value : `int`
         The identifier value the component type.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``ComponentType``) items
-        Stores the predefined ``ComponentType``-s. These can be accessed with their `value` as key.
-    
-    VALUE_TYPE : `type` = `int`
-        The component type's type.
-    
-    DEFAULT_NAME : `str` = `'UNDEFINED'`
-        The default name of the component types.
-    
-    Every predefined component type can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined component type can be accessed as type attribute as well:
     
     +-----------------------+-------------------------------+-------+
-    | Class attribute name  | Name                          | Value |
+    | Type attribute name   | Name                          | Value |
     +=======================+===============================+=======+
     | none                  | none                          | 0     |
     +-----------------------+-------------------------------+-------+
@@ -67,15 +72,15 @@ class ComponentType(PreinstancedBase):
     +-----------------------+-------------------------------+-------+
     | channel_select        | channel select                | 8     |
     +-----------------------+-------------------------------+-------+
-    | ???                   | ???                           | 9     |
+    | section               | section                       | 9     |
     +-----------------------+-------------------------------+-------+
-    | text                  | text                          | 10    |
+    | text_display          | text display                  | 10    |
     +-----------------------+-------------------------------+-------+
-    | ???                   | ???                           | 11    |
+    | thumbnail_media       | thumbnail media               | 11    |
     +-----------------------+-------------------------------+-------+
     | media_gallery         | media gallery                 | 12    |
     +-----------------------+-------------------------------+-------+
-    | ???                   | ???                           | 13    |
+    | attachment_media      | attachment media              | 13    |
     +-----------------------+-------------------------------+-------+
     | separator             | separator                     | 14    |
     +-----------------------+-------------------------------+-------+
@@ -83,62 +88,40 @@ class ComponentType(PreinstancedBase):
     +-----------------------+-------------------------------+-------+
     | ???                   | activity content inventory    | 16    |
     +-----------------------+-------------------------------+-------+
+    | container             | container                     | 17    |
+    +-----------------------+-------------------------------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    DEFAULT_NAME = 'UNDEFINED'
-    
     __slots__ = ('layout_flags', 'metadata_type', )
     
-
-    @classmethod
-    def _from_value(cls, value):
-        """
-        Creates a new component type with the given value.
-        
-        Parameters
-        ----------
-        value : `int`
-            The channel type's identifier value.
-        
-        Returns
-        -------
-        self : ``ChannelType``
-            The created instance.
-        """
-        self = object.__new__(cls)
-        self.name = cls.DEFAULT_NAME
-        self.value = value
-        self.layout_flags = COMPONENT_TYPE_LAYOUT_FLAGS_ALL
-        self.metadata_type = ComponentMetadataBase
-        
-        return self
     
-    
-    def __init__(self, value, name, metadata_type, layout_flags):
+    def __new__(cls, value, name = None, metadata_type = None, layout_flags = ...):
         """
-        Creates a new component type and stores it at the class's `.INSTANCES` class attribute as well.
+        Creates a new component type.
         
         Parameters
         ----------
         value : `int`
             The Discord side identifier value of the channel type.
         
-        name : `str`
+        name : `None | str` = `None`, Optional
             The default name of the channel type.
         
-        metadata_type : `type<ComponentMetadataBase>`
+        metadata_type : `None | type<ComponentMetadataBase>` = `None`, Optional
             The component type's respective metadata type.
         
-        layout_flags : ``ComponentTypeLayoutFlag``
+        layout_flags : ``ComponentTypeLayoutFlag``, Optional
             Flags about the component's layout information.
         """
-        self.value = value
-        self.name = name
+        if metadata_type is None:
+            metadata_type = ComponentMetadataBase
+        
+        if layout_flags is ...:
+            layout_flags = COMPONENT_TYPE_LAYOUT_FLAGS_ALL
+        
+        self = PreinstancedBase.__new__(cls, value, name)
         self.layout_flags = layout_flags
         self.metadata_type = metadata_type
-        
-        self.INSTANCES[value] = self
+        return self
     
     
     none = P(
@@ -147,71 +130,181 @@ class ComponentType(PreinstancedBase):
         ComponentMetadataBase,
         ComponentTypeLayoutFlag(),
     )
+    
     row = P(
         1,
         'row',
         ComponentMetadataRow,
-        ComponentTypeLayoutFlag().update_by_keys(top_level = True),
+        ComponentTypeLayoutFlag().update_by_keys(
+            allowed_in_message = True,
+            allowed_in_form = True,
+            top_level = True,
+            nestable_into_container = True,
+            version_1 = True,
+        ),
     )
+    
     button = P(
         2,
         'button',
         ComponentMetadataButton,
-        ComponentTypeLayoutFlag().update_by_keys(nestable = True),
+        ComponentTypeLayoutFlag().update_by_keys(
+            allowed_in_message = True,
+            nestable_into_row = True,
+            section_thumbnail = True,
+            version_1 = True,
+        ),
     )
+    
     string_select = P(
         3,
         'string select',
         ComponentMetadataStringSelect,
-        ComponentTypeLayoutFlag().update_by_keys(nestable = True),
+        ComponentTypeLayoutFlag().update_by_keys(
+            allowed_in_message = True,
+            nestable_into_row = True,
+            version_1 = True,
+        ),
     )
+    
     text_input = P(
         4,
         'text input',
         ComponentMetadataTextInput,
-        ComponentTypeLayoutFlag().update_by_keys(nestable = True),
+        ComponentTypeLayoutFlag().update_by_keys(
+            allowed_in_form = True,
+            nestable_into_row = True,
+            version_1 = True,
+        ),
     )
+    
     user_select = P(
         5,
         'user select',
         ComponentMetadataUserSelect,
-        ComponentTypeLayoutFlag().update_by_keys(nestable = True),
+        ComponentTypeLayoutFlag().update_by_keys(
+            allowed_in_message = True,
+            nestable_into_row = True,
+            version_1 = True,
+        ),
     )
+    
     role_select = P(
         6,
         'role select',
         ComponentMetadataRoleSelect,
-        ComponentTypeLayoutFlag().update_by_keys(nestable = True),
+        ComponentTypeLayoutFlag().update_by_keys(
+            allowed_in_message = True,
+            nestable_into_row = True,
+            version_1 = True,
+        ),
     )
+    
     mentionable_select = P(
         7,
         'mentionable select',
         ComponentMetadataMentionableSelect,
-        ComponentTypeLayoutFlag().update_by_keys(nestable = True),
+        ComponentTypeLayoutFlag().update_by_keys(
+            allowed_in_message = True,
+            nestable_into_row = True,
+            version_1 = True,
+        ),
     )
+    
     channel_select = P(
         8,
         'channel select',
         ComponentMetadataChannelSelect,
-        ComponentTypeLayoutFlag().update_by_keys(nestable = True),
+        ComponentTypeLayoutFlag().update_by_keys(
+            allowed_in_message = True,
+            nestable_into_row = True,
+            version_1 = True,
+        ),
     )
     
-    # Not released, so we do not know their layout
-    text = P(
-        10,
-        'text',
-        ComponentMetadataText,
-        COMPONENT_TYPE_LAYOUT_FLAGS_ALL,
+    section = P(
+        9,
+        'section',
+        ComponentMetadataSection,
+        ComponentTypeLayoutFlag().update_by_keys(
+            allowed_in_message = True,
+            top_level = True,
+            nestable_into_container = True,
+            version_2 = True,
+        ),
     )
+    
+    text_display = P(
+        10,
+        'text display',
+        ComponentMetadataTextDisplay,
+        ComponentTypeLayoutFlag().update_by_keys(
+            allowed_in_message = True,
+            top_level = True,
+            nestable_into_container = True,
+            nestable_into_section = True,
+            version_2 = True,
+        ),
+    )
+    
+    thumbnail_media = P(
+        11,
+        'thumbnail media',
+        ComponentMetadataThumbnailMedia,
+        ComponentTypeLayoutFlag().update_by_keys(
+            allowed_in_message = True,
+            section_thumbnail = True,
+            version_2 = True,
+        ),
+    )
+    
     media_gallery = P(
         12,
         'media gallery',
         ComponentMetadataMediaGallery,
-        COMPONENT_TYPE_LAYOUT_FLAGS_ALL,
+        ComponentTypeLayoutFlag().update_by_keys(
+            allowed_in_message = True,
+            top_level = True,
+            nestable_into_container = True,
+            version_2 = True,
+        ),
     )
+    
+    attachment_media = P(
+        13,
+        'attachment media',
+        ComponentMetadataAttachmentMedia,
+        ComponentTypeLayoutFlag().update_by_keys(
+            allowed_in_message = True,
+            top_level = True,
+            nestable_into_container = True,
+            version_2 = True,
+        ),
+    )
+    
     separator = P(
         14,
         'separator',
         ComponentMetadataSeparator,
-        COMPONENT_TYPE_LAYOUT_FLAGS_ALL,
+        ComponentTypeLayoutFlag().update_by_keys(
+            allowed_in_message = True,
+            top_level = True,
+            nestable_into_container = True,
+            version_2 = True,
+        ),
+    )
+    
+    # 15 ???
+    
+    # 16 ???
+    
+    container = P(
+        17,
+        'container',
+        ComponentMetadataContainer,
+        ComponentTypeLayoutFlag().update_by_keys(
+            allowed_in_message = True,
+            top_level = True,
+            version_2 = True,
+        ),
     )

@@ -4,7 +4,7 @@ from scarletio import copy_docs
 
 from .constants import BITRATE_DEFAULT, USER_LIMIT_DEFAULT
 from .fields import (
-    parse_bitrate, parse_region, parse_user_limit, put_bitrate_into, put_region_into, put_user_limit_into,
+    parse_bitrate, parse_region, parse_user_limit, put_bitrate, put_region, put_user_limit,
     validate_bitrate, validate_region, validate_user_limit
 )
 from .preinstanced import VoiceRegion
@@ -317,12 +317,12 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
         data = ChannelMetadataGuildMainBase.to_data(self, defaults = defaults, include_internals = include_internals)
         
         # bitrate
-        put_bitrate_into(self.bitrate, data, defaults)
+        put_bitrate(self.bitrate, data, defaults)
         
         # region
-        put_region_into(self.region, data, defaults)
+        put_region(self.region, data, defaults)
         
         # user_limit
-        put_user_limit_into(self.user_limit, data, defaults)
+        put_user_limit(self.user_limit, data, defaults)
         
         return data

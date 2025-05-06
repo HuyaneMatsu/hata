@@ -4,7 +4,7 @@ from scarletio import RichAttributeErrorBaseType
 
 from .fields import (
     parse_application_command_id, parse_application_id, parse_guild_id, parse_permission_overwrites,
-    put_application_command_id_into, put_application_id_into, put_guild_id_into, put_permission_overwrites_into,
+    put_application_command_id, put_application_id, put_guild_id, put_permission_overwrites,
     validate_application_command_id, validate_permission_overwrites
 )
 
@@ -78,7 +78,7 @@ class ApplicationCommandPermission(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Application command data.
         
         Returns
@@ -107,15 +107,15 @@ class ApplicationCommandPermission(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
-        put_application_command_id_into(self.application_command_id, data, defaults)
-        put_permission_overwrites_into(self.permission_overwrites, data, defaults)
+        put_application_command_id(self.application_command_id, data, defaults)
+        put_permission_overwrites(self.permission_overwrites, data, defaults)
         
         if include_internals:
-            put_application_id_into(self.application_id, data, defaults)
-            put_guild_id_into(self.guild_id, data, defaults)
+            put_application_id(self.application_id, data, defaults)
+            put_guild_id(self.guild_id, data, defaults)
         
         return data
     

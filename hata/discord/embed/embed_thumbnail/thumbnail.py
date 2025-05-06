@@ -2,11 +2,11 @@ __all__ = ('EmbedThumbnail',)
 
 from scarletio import copy_docs
 
-from ..embed_field_base import EmbedFieldBase
+from ..embed_field_base import EmbedFieldBase, EmbedMediaFlag
 
 from .fields import (
-    parse_height, parse_proxy_url, parse_url, parse_width, put_height_into, put_proxy_url_into, put_url_into,
-    put_width_into, validate_url
+    parse_flags, parse_height, parse_proxy_url, parse_url, parse_width, put_flags, put_height,
+    put_proxy_url, put_url, put_width, validate_url
 )
 
 
@@ -16,16 +16,22 @@ class EmbedThumbnail(EmbedFieldBase):
     
     Attributes
     ----------
+    flags : ``EmbedMediaFlag``
+        The embed image's flags.
+    
     height : `int`
         The height of the thumbnail. Defaults to `0`.
+    
     proxy_url : `None`, `str`
         A proxied url of the thumbnail.
+    
     url : `None`, `str`
         The url of the thumbnail.
+    
     width : `int`
         The width of the thumbnail. Defaults to `0`.
     """
-    __slots__ = ('height', 'proxy_url', 'url', 'width',)
+    __slots__ = ('flags', 'height', 'proxy_url', 'url', 'width',)
     
     def __new__(cls, url = ...):
         """
@@ -33,7 +39,7 @@ class EmbedThumbnail(EmbedFieldBase):
         
         Parameters
         ----------
-        url : `None`, `str`, Optional
+        url : `None | str`, Optional
             The url of the thumbnail. Can be http(s) or attachment.
         
         Raises
@@ -50,6 +56,7 @@ class EmbedThumbnail(EmbedFieldBase):
             url = validate_url(url)
         
         self = object.__new__(cls)
+        self.flags = EmbedMediaFlag()
         self.height = 0
         self.proxy_url = None
         self.url = url
@@ -104,6 +111,10 @@ class EmbedThumbnail(EmbedFieldBase):
         
         # proxy_url -> ignore
         if (self.proxy_url is not None) and (other.proxy_url is not None):
+            # flags
+            if self.flags != other.flags:
+                return False
+            
             # height
             if self.height != other.height:
                 return False
@@ -119,6 +130,7 @@ class EmbedThumbnail(EmbedFieldBase):
     @copy_docs(EmbedFieldBase.from_data)
     def from_data(cls, data):
         self = object.__new__(cls)
+        self.flags = parse_flags(data)
         self.height = parse_height(data)
         self.url = parse_url(data)
         self.proxy_url = parse_proxy_url(data)
@@ -130,12 +142,13 @@ class EmbedThumbnail(EmbedFieldBase):
     def to_data(self, *, defaults = False, include_internals = False):
         data = {}
         
-        put_url_into(self.url, data, defaults)
+        put_url(self.url, data, defaults)
         
         if include_internals:
-            put_height_into(self.height, data, defaults)
-            put_proxy_url_into(self.proxy_url, data, defaults)
-            put_width_into(self.width, data, defaults)
+            put_flags(self.flags, data, defaults)
+            put_height(self.height, data, defaults)
+            put_proxy_url(self.proxy_url, data, defaults)
+            put_width(self.width, data, defaults)
         
         return data
     
@@ -143,6 +156,7 @@ class EmbedThumbnail(EmbedFieldBase):
     @copy_docs(EmbedFieldBase.clean_copy)
     def clean_copy(self, guild = None):
         new = object.__new__(type(self))
+        new.flags = self.flags
         new.height = self.height
         new.proxy_url = self.proxy_url
         new.url = self.url
@@ -153,6 +167,7 @@ class EmbedThumbnail(EmbedFieldBase):
     @copy_docs(EmbedFieldBase.copy)
     def copy(self):
         new = object.__new__(type(self))
+        new.flags = self.flags
         new.height = self.width
         new.proxy_url = self.proxy_url
         new.url = self.url
@@ -166,7 +181,7 @@ class EmbedThumbnail(EmbedFieldBase):
         
         Parameters
         ----------
-        url : `None`, `str`, Optional (Keyword only)
+        url : `None | str`, Optional (Keyword only)
             The url of the thumbnail. Can be http(s) or attachment.
         
         Returns
@@ -182,17 +197,20 @@ class EmbedThumbnail(EmbedFieldBase):
         """
         # url
         if url is ...:
+            flags = self.flags
             url = self.url
             height = self.height
             proxy_url = self.proxy_url
             width = self.width
         else:
+            flags = EmbedMediaFlag()
             url = validate_url(url)
             height = 0
             proxy_url = None
             width = 0
         
         new = object.__new__(type(self))
+        new.flags = flags
         new.height = height
         new.proxy_url = proxy_url
         new.url = url

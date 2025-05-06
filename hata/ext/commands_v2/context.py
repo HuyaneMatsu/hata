@@ -22,7 +22,7 @@ class CommandContext:
         Trace of command categories till to the command to invoke if applicable.
     command_function : `None`, ``CommandFunction``
         The command's function to run.
-    command_keyword_parameters : `dict` of (`str`, `object`) items
+    command_keyword_parameters : `dict<str, object>`
         Keyword parameters to pass to the command function.
     command_positional_parameters : `list` of `object`
         Positional parameters to pass to the command function.
@@ -30,7 +30,7 @@ class CommandContext:
         The message's content after prefix.
     message : ``Message``
         The received message.
-    parameters : `None`, `dict` of (`str`, `object`)
+    parameters : `None | dict<str, object>`
         The parsed parameters.
     prefix : `str`
         The matched prefix or the client's prefix for the given respective message.
@@ -113,7 +113,7 @@ class CommandContext:
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         return self.message.guild
     
@@ -178,7 +178,7 @@ class CommandContext:
             
             If given as ``Embed``, then is sent as the message's embed.
             
-        embed : ``Embed``, `list` of ``Embed``, Optional (Keyword only)
+        embed : ``Embed | list<Embed>``, Optional (Keyword only)
             The embedded content of the message.
             
             If `embed` and `content` parameters are both given as  ``Embed``, then `TypeError` is raised.
@@ -245,7 +245,7 @@ class CommandContext:
             
             If given as ``Embed``, then is sent as the message's embed.
             
-        embed : ``Embed``, `list` of ``Embed``, Optional (Keyword only)
+        embed : ``Embed | list<Embed>``, Optional (Keyword only)
             The embedded content of the message.
             
             If `embed` and `content` parameters are both given as  ``Embed``, then `TypeError` is raised.

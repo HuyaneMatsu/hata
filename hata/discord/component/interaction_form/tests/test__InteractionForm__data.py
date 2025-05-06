@@ -13,7 +13,7 @@ def test__InteractionForm__from_data():
     Test whether ``InteractionForm.from_data`` works as intended.
     """
     title = 'important'
-    components = [Component(ComponentType.button, label = 'chata')]
+    components = [Component(ComponentType.text_input, label = 'chata')]
     custom_id = 'lie'
     
     rows = tuple(Component(ComponentType.row, components = [component]) for component in components)
@@ -40,7 +40,7 @@ def test__InteractionForm__to_data():
     Case: include defaults.
     """
     title = 'important'
-    components = [Component(ComponentType.button, label = 'chata')]
+    components = [Component(ComponentType.text_input, label = 'chata')]
     custom_id = 'lie'
     
     rows = tuple(Component(ComponentType.row, components = [component]) for component in components)

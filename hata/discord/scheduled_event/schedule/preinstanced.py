@@ -3,27 +3,21 @@ __all__ = ('ScheduleFrequency', 'ScheduleMonth', )
 from ...bases import Preinstance as P, PreinstancedBase
 
 
-class ScheduleFrequency(PreinstancedBase):
+class ScheduleFrequency(PreinstancedBase, value_type = int):
     """
     Represents how often a scheduled event occurs.
     
     Attributes
     ----------
-    value : `int`
-        The unique identifier of the text decoration.
     name : `str`
-        The default name of the text decoration.
+        The name of the schedule frequency.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`str`, ``ScheduleFrequency``) items
-        The predefined schedule frequencies stored in `.value` - `object` relation.
-    VALUE_TYPE : `type` = `int`
-        Schedule frequencies' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name to use as the preinstanced objects'.
+    value : `int`
+        The unique identifier of the schedule frequency.
     
-    Each schedule frequency is stored as a class attribute:
+    Type Attributes
+    ---------------
+    Each schedule frequency is stored as a type attribute:
     
     +-----------------------+-----------+-----------------------+
     | Class Attribute name  | value     | name                  |
@@ -39,36 +33,27 @@ class ScheduleFrequency(PreinstancedBase):
     """
     __slots__ = ()
     
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
     yearly = P(0, 'yearly')
     monthly = P(1, 'monthly')
     weekly = P(2, 'weekly')
     daily = P(3, 'daily')
 
 
-class ScheduleMonth(PreinstancedBase):
+class ScheduleMonth(PreinstancedBase, value_type = int):
     """
     Represents a day of a week.
     
     Attributes
     ----------
-    value : `int`
-        The unique identifier of the text decoration.
     name : `str`
-        The default name of the text decoration.
+        The name of the schedule month.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`str`, ``ScheduleMonth``) items
-        The predefined schedule months stored in `.value` - `object` relation.
-    VALUE_TYPE : `type` = `int`
-        Schedule months' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name to use as the preinstanced objects'.
+    value : `int`
+        The unique identifier of the schedule month.
     
-    Each schedule month is stored as a class attribute:
+    Type Attributes
+    ---------------
+    Each schedule month is stored as a type attribute:
     
     +-----------------------+-----------+-----------------------+
     | Class Attribute name  | value     | name                  |
@@ -99,9 +84,6 @@ class ScheduleMonth(PreinstancedBase):
     +-----------------------+-----------+-----------------------+
     """
     __slots__ = ()
-    
-    INSTANCES = {}
-    VALUE_TYPE = int
     
     january = P(1, 'january')
     february = P(2, 'february')

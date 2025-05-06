@@ -6,7 +6,7 @@ from ...utils import DATETIME_FORMAT_CODE
 
 from .base import _pop_empty_name, ActivityMetadataBase
 from .fields import (
-    parse_created_at, parse_emoji, parse_state, put_created_at_into, put_emoji_into, put_state_into,
+    parse_created_at, parse_emoji, parse_state, put_created_at, put_emoji, put_state,
     validate_created_at, validate_emoji, validate_state
 )
 
@@ -174,12 +174,12 @@ class ActivityMetadataCustom(ActivityMetadataBase):
         data = {}
         
         if (not user) or include_internals:
-            put_state_into(self.state, data, defaults)
+            put_state(self.state, data, defaults)
         
         if include_internals:
             data['name'] = 'Custom Status'
-            put_created_at_into(self.created_at, data, defaults)
-            put_emoji_into(self.emoji, data, defaults)
+            put_created_at(self.created_at, data, defaults)
+            put_emoji(self.emoji, data, defaults)
         
         return data
     

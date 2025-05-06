@@ -154,7 +154,7 @@ DEFAULT_FORUM_LAYOUT_CONVERSION = AuditLogEntryChangeConversion(
 
 @DEFAULT_FORUM_LAYOUT_CONVERSION.set_value_deserializer
 def default_forum_layout_value_deserializer(value):
-    return ForumLayout.get(value)
+    return ForumLayout(value)
 
 
 @DEFAULT_FORUM_LAYOUT_CONVERSION.set_value_serializer
@@ -173,7 +173,7 @@ DEFAULT_SORT_ORDER_CONVERSION = AuditLogEntryChangeConversion(
 
 @DEFAULT_SORT_ORDER_CONVERSION.set_value_deserializer
 def default_sort_order_value_deserializer(value):
-    return SortOrder.get(value)
+    return SortOrder(value)
 
 
 @DEFAULT_SORT_ORDER_CONVERSION.set_value_serializer
@@ -393,7 +393,7 @@ REGION_CONVERSION = AuditLogEntryChangeConversion(
 
 @REGION_CONVERSION.set_value_deserializer
 def region_value_deserializer(value):
-    return VoiceRegion.get(value)
+    return VoiceRegion(value)
 
 
 @REGION_CONVERSION.set_value_serializer
@@ -456,7 +456,7 @@ TYPE_CONVERSION = AuditLogEntryChangeConversion(
 
 @TYPE_CONVERSION.set_value_deserializer
 def type_value_deserializer(value):
-    return ChannelType.get(value)
+    return ChannelType(value)
 
 
 @TYPE_CONVERSION.set_value_serializer
@@ -475,7 +475,7 @@ VIDEO_QUALITY_MODE_CONVERSION = AuditLogEntryChangeConversion(
 
 @VIDEO_QUALITY_MODE_CONVERSION.set_value_deserializer
 def video_quality_mode_value_deserializer(value):
-    return VideoQualityMode.get(value)
+    return VideoQualityMode(value)
 
 
 @VIDEO_QUALITY_MODE_CONVERSION.set_value_serializer

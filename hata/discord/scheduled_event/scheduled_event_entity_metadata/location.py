@@ -3,7 +3,7 @@ __all__ = ('ScheduledEventEntityMetadataLocation',)
 from scarletio import copy_docs
 
 from .base import ScheduledEventEntityMetadataBase
-from .fields import parse_location, put_location_into, validate_location
+from .fields import parse_location, put_location, validate_location
 
 
 class ScheduledEventEntityMetadataLocation(ScheduledEventEntityMetadataBase):
@@ -64,7 +64,7 @@ class ScheduledEventEntityMetadataLocation(ScheduledEventEntityMetadataBase):
     @copy_docs(ScheduledEventEntityMetadataBase.to_data)
     def to_data(self, *, defaults = False):
         data = {}
-        put_location_into(self.location, data, defaults)
+        put_location(self.location, data, defaults)
         return data
     
     

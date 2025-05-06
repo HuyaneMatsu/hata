@@ -3,7 +3,7 @@ __all__ = ('ApplicationCommandPermissionOverwriteTargetType',)
 from ...bases import Preinstance as P, PreinstancedBase
 
 
-class ApplicationCommandPermissionOverwriteTargetType(PreinstancedBase):
+class ApplicationCommandPermissionOverwriteTargetType(PreinstancedBase, value_type = int):
     """
     Represents an application command's permission's type.
     
@@ -11,23 +11,16 @@ class ApplicationCommandPermissionOverwriteTargetType(PreinstancedBase):
     ----------
     name : `str`
         The name of the application command permission overwrite type.
+    
     value : `int`
         The identifier value the application command permission overwrite type.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``ApplicationCommandPermissionOverwriteTargetType``) items
-        Stores the predefined ``ApplicationCommandPermissionOverwriteTargetType``-s. These can be accessed with their
-        `value` as key.
-    VALUE_TYPE : `type` = `int`
-        The application command permission overwrite types' values' type.
-    DEFAULT_NAME : `str` = `'UNDEFINED'`
-        The default name of the application command permission overwrite types.
-    
-    Every predefined application command permission overwrite type can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined application command permission overwrite type can be accessed as type attribute as well:
     
     +-----------------------+-----------+-------+
-    | Class attribute name  | Name      | Value |
+    | Type attribute name   | Name      | Value |
     +=======================+===========+=======+
     | none                  | none      | 0     |
     +-----------------------+-----------+-------+
@@ -38,10 +31,6 @@ class ApplicationCommandPermissionOverwriteTargetType(PreinstancedBase):
     | channel               | channel   | 3     |
     +-----------------------+-----------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    DEFAULT_NAME = 'UNDEFINED'
-    
     __slots__ = ()
     
     none = P(0, 'none',)

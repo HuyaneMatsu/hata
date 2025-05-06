@@ -6,7 +6,7 @@ from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 from ...user import ZEROUSER
 
 from .fields import (
-    parse_bot, parse_description, parse_id, parse_name, put_bot_into, put_description_into, put_id_into, put_name_into,
+    parse_bot, parse_description, parse_id, parse_name, put_bot, put_description, put_id, put_name,
     validate_bot, validate_description, validate_id, validate_name
 )
 
@@ -50,7 +50,7 @@ class IntegrationApplication(DiscordEntity):
         
         Parameters
         ----------
-        bot : `None`, ``ClientUserBase``, Optional (Keyword only)
+        bot : ``None | ClientUserBase``, Optional (Keyword only)
             The application's bot if applicable.
         
         icon : `None`, `bytes`, `bytearray`, `memoryview`, ``Icon``, Optional (Keyword only)
@@ -118,7 +118,7 @@ class IntegrationApplication(DiscordEntity):
         
         Other Parameters
         ----------------
-        bot : `None`, ``ClientUserBase``, Optional (Keyword only)
+        bot : ``None | ClientUserBase``, Optional (Keyword only)
             The application's bot if applicable.
         
         description : `None`, `str`, Optional (Keyword only)
@@ -190,7 +190,7 @@ class IntegrationApplication(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Application data included within integration payload.
         
         Returns
@@ -219,17 +219,17 @@ class IntegrationApplication(DiscordEntity):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         
         if include_internals:
-            put_id_into(self.id, data, defaults)
+            put_id(self.id, data, defaults)
         
-        put_bot_into(self.bot, data, defaults, include_internals = include_internals)
-        put_description_into(self.description, data, defaults)
+        put_bot(self.bot, data, defaults, include_internals = include_internals)
+        put_description(self.description, data, defaults)
         type(self).icon.put_into(self.icon, data, defaults, as_data = not include_internals)
-        put_name_into(self.name, data, defaults)
+        put_name(self.name, data, defaults)
         
         return data
     
@@ -375,7 +375,7 @@ class IntegrationApplication(DiscordEntity):
         
         Parameters
         ----------
-        bot : `None`, ``ClientUserBase``, Optional (Keyword only)
+        bot : ``None | ClientUserBase``, Optional (Keyword only)
             The application's bot if applicable.
         
         icon : `None`, `bytes`, `bytearray`, `memoryview`, ``Icon``, Optional (Keyword only)

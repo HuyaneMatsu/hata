@@ -4,9 +4,15 @@ from ...field_parsers import nullable_string_parser_factory
 from ...field_putters import nullable_string_optional_putter_factory
 from ...field_validators import nullable_string_validator_factory
 
-from ..component import Component, ComponentType
+from ..component import Component, ComponentType, ComponentTypeLayoutFlag
+from ..shared_fields import parse_components, parse_custom_id, put_components, put_custom_id, validate_custom_id
 
-from .constants import TITLE_LENGTH_MIN, TITLE_LENGTH_MAX
+from .constants import TITLE_LENGTH_MAX, TITLE_LENGTH_MIN
+
+
+COMPONENT_TYPE_LAYOUT_FLAG_TOP_LEVEL = ComponentTypeLayoutFlag().update_by_keys(top_level = True)
+COMPONENT_TYPE_LAYOUT_FLAG_ALLOWED_IN_FORM = ComponentTypeLayoutFlag().update_by_keys(allowed_in_form = True)
+
 
 # components
 
@@ -16,12 +22,12 @@ def validate_components(components):
     
     Parameters
     ----------
-    components : `None | iterable<Component>`
+    components : ``None | iterable<Component | (tuple | list)<Component>>``
         The components to validate.
     
     Returns
     -------
-    components : `None | tuple<Component>`
+    components : ``None | tuple<Component>``
     
     Raises
     ------
@@ -48,7 +54,13 @@ def validate_components(components):
                 f'{type(component).__name__}; {component!r}; components = {components!r}.'
             )
         
-        if not component.type.layout_flags.top_level:
+        flags = component.type.layout_flags
+        if not flags & COMPONENT_TYPE_LAYOUT_FLAG_ALLOWED_IN_FORM:
+            raise ValueError(
+                f'Component {component!r} is not allowed to be in a form.',
+            )
+        
+        if not flags & COMPONENT_TYPE_LAYOUT_FLAG_TOP_LEVEL:
             component = Component(ComponentType.row, components = [component])
         
         if (components_processed is None):
@@ -65,5 +77,5 @@ def validate_components(components):
 # title
 
 parse_title = nullable_string_parser_factory('title')
-put_title_into = nullable_string_optional_putter_factory('title')
+put_title = nullable_string_optional_putter_factory('title')
 validate_title = nullable_string_validator_factory('title', TITLE_LENGTH_MIN, TITLE_LENGTH_MAX)

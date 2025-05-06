@@ -1999,7 +1999,7 @@ def nullable_entity_optional_putter_factory(
     return putter
 
 
-def entity_putter_factory(field_key, entity_type, *, force_include_internals = False):
+def entity_putter_factory(field_key, entity_type, *, can_include_internals = ..., force_include_internals = False):
     """
     Returns a new entity putter.
     
@@ -2010,10 +2010,12 @@ def entity_putter_factory(field_key, entity_type, *, force_include_internals = F
     
     entity_type : `object` with `{to_data}`
         The expected entity type.
-        
+    
+    can_include_internals : `bool`, Optional (Keyword only)
+        Whether the `field_type.to_data` implements the `include_internals` parameter.
+    
     force_include_internals : `bool`, Optional (Keyword only)
         Whether `include_internals` should be passed as `True` always.
-    
     
     Returns
     -------
@@ -2045,7 +2047,10 @@ def entity_putter_factory(field_key, entity_type, *, force_include_internals = F
             
             return data
     
-    elif _has_entity_include_internals_parameter(entity_type):
+    elif (
+        ((can_include_internals is not ...) and can_include_internals) or
+        ((entity_type is not NotImplemented) and _has_entity_include_internals_parameter(entity_type))
+    ):
         def putter(entity, data, defaults, *, include_internals = False):
             """
             Puts the given entity into the given `data` json serializable object.

@@ -9,6 +9,7 @@ from ....embed import EmbedAuthor, Embed, EmbedField, EmbedFooter, EmbedProvider
 from ....emoji import Reaction, ReactionMapping, ReactionMappingLine, ReactionType
 from ....interaction import Resolved
 from ....poll import Poll, PollAnswer, PollQuestion
+from ....soundboard import SoundboardSound
 from ....sticker import Sticker
 from ....user import User
 
@@ -76,6 +77,10 @@ def test__Message__repr():
         MessageSnapshot(content = 'Kazami'),
         MessageSnapshot(content = 'Yuuka'),
     ]
+    soundboard_sounds = [
+        SoundboardSound.precreate(202501290014, name = 'whither'),
+        SoundboardSound.precreate(202501290015, name = 'Yuyuko'),
+    ]
     stickers = [
         Sticker.precreate(202305040033, name = 'Kirisame'),
         Sticker.precreate(202305040034, name = 'Marisa'),
@@ -109,6 +114,7 @@ def test__Message__repr():
         'resolved': resolved,
         'role_subscription': role_subscription,
         'snapshots': snapshots,
+        'soundboard_sounds': soundboard_sounds,
         'stickers': stickers,
         'thread': thread,
         'tts': tts,
@@ -185,6 +191,10 @@ def test__Message__hash():
         MessageSnapshot(content = 'Kazami'),
         MessageSnapshot(content = 'Yuuka'),
     ]
+    soundboard_sounds = [
+        SoundboardSound.precreate(202501290016, name = 'whither'),
+        SoundboardSound.precreate(202501290017, name = 'Yuyuko'),
+    ]
     stickers = [
         Sticker.precreate(202305040051, name = 'Kirisame'),
         Sticker.precreate(202305040052, name = 'Marisa'),
@@ -218,6 +228,7 @@ def test__Message__hash():
         'resolved': resolved,
         'role_subscription': role_subscription,
         'snapshots': snapshots,
+        'soundboard_sounds': soundboard_sounds,
         'stickers': stickers,
         'thread': thread,
         'tts': tts,
@@ -391,6 +402,10 @@ def _iter_options__eq__same_type():
         MessageSnapshot(content = 'Kazami'),
         MessageSnapshot(content = 'Yuuka'),
     ]
+    soundboard_sounds = [
+        SoundboardSound.precreate(202501290018, name = 'whither'),
+        SoundboardSound.precreate(202501290019, name = 'Yuyuko'),
+    ]
     stickers = [
         Sticker.precreate(202305040073, name = 'Kirisame'),
         Sticker.precreate(202305040074, name = 'Marisa'),
@@ -424,6 +439,7 @@ def _iter_options__eq__same_type():
         'resolved': resolved,
         'role_subscription': role_subscription,
         'snapshots': snapshots,
+        'soundboard_sounds': soundboard_sounds,
         'stickers': stickers,
         'thread': thread,
         'tts': tts,
@@ -686,6 +702,18 @@ def _iter_options__eq__same_type():
         keyword_parameters,
         {
             **keyword_parameters,
+            'soundboard_sounds': [
+                SoundboardSound.precreate(202501290020, name = 'that'),
+                SoundboardSound.precreate(202501290021, name = 'heart'),
+            ],
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
             'stickers': [
                 Sticker.precreate(202305040089, name = 'Magic'),
                 Sticker.precreate(202305040090, name = 'Witch'),
@@ -758,6 +786,8 @@ def test__Message__len__all_contents():
     poll_question_text = 'marisa'
     poll_answer_0_text = 'junko'
     poll_answer_1_text = 'clown'
+    component_0_content = 'mayumi'
+    component_1_content = 'keiki'
     
     embed_0 = Embed(title = embed_0_title, description = embed_0_description)
     embed_0.author = EmbedAuthor(embed_0_author_name)
@@ -775,13 +805,29 @@ def test__Message__len__all_contents():
         question = PollQuestion(text = poll_question_text),
     )
     
-    message = Message(content = message_content, embeds = [embed_0, embed_1], poll = poll)
+    component_0 = Component(
+        ComponentType.text_display,
+        content = component_0_content,
+    )
+    
+    component_1 = Component(
+        ComponentType.text_display,
+        content = component_1_content,
+    )
+    
+    message = Message(
+        components = [component_0, component_1],
+        content = message_content,
+        embeds = [embed_0, embed_1],
+        poll = poll,
+    )
     
     length = sum(
         len(value) for value in (
             embed_0_title, embed_0_author_name, embed_0_description, embed_0_field_0_name, embed_0_field_0_value,
             embed_0_field_1_name, embed_0_field_1_value, embed_0_footer_text, embed_0_provider_name,
-            message_content, embed_1_title, poll_question_text, poll_answer_0_text, poll_answer_1_text
+            message_content, embed_1_title, poll_question_text, poll_answer_0_text, poll_answer_1_text,
+            component_0_content, component_1_content
         )
     )
     

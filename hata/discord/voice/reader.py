@@ -1,7 +1,6 @@
 __all__ = ()
 
 from collections import deque
-from warnings import warn
 
 from scarletio import CancelledError, Task, sleep, write_exception_async
 
@@ -27,7 +26,7 @@ class AudioStream(AudioSource):
         A queue of received voice packets.
     done : `bool`
         Whether the audio stream is stopped.
-    source : `None`, `int`
+    source : `None | int`
         Identifier value of the respective user.
     user : ``ClientUserBase``
         The user, who's audio is received.
@@ -45,7 +44,7 @@ class AudioStream(AudioSource):
     """
     __slots__ = ('buffer', 'done', 'source', 'user', 'yield_decoded', 'voice_client')
     
-    def __init__(self, voice_client, user, *, auto_decode = ..., yield_decoded = False):
+    def __init__(self, voice_client, user, *, yield_decoded = False):
         """
         Creates a new audio stream instance.
         
@@ -58,13 +57,6 @@ class AudioStream(AudioSource):
         yield_decoded : `bool` = `False`, Optional (Keyword only)
             Whether the audio stream should yield decoded data.
         """
-        if (auto_decode is not ...):
-            warn(
-                f'`{type(self).__name__}.__init__`\'s `auto_decode` parameter is deprecated. '
-                f'The packets are decoded now as accessed. '
-                f'The parameter will be removed at 2025 February.'
-            )
-        
         try:
             audio_source = voice_client._audio_sources[user.id]
         except KeyError:

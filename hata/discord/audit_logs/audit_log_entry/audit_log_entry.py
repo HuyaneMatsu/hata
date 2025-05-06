@@ -9,8 +9,8 @@ from ..conversion_helpers.helpers import _hash_dict
 
 from .fields import (
     parse_changes, parse_details, parse_guild_id, parse_id, parse_reason, parse_target_id, parse_type, parse_user_id,
-    put_changes_into, put_details_into, put_guild_id_into, put_id_into, put_reason_into, put_target_id_into,
-    put_type_into, put_user_id_into, validate_changes, validate_details, validate_guild_id, validate_id,
+    put_changes, put_details, put_guild_id, put_id, put_reason, put_target_id,
+    put_type, put_user_id, validate_changes, validate_details, validate_guild_id, validate_id,
     validate_parent, validate_reason, validate_target_id, validate_type, validate_user_id
 )
 from .preinstanced import AuditLogEntryType
@@ -98,7 +98,7 @@ class AuditLogEntry(DiscordEntity):
         target_id : `int`, Optional (Keyword only)
             The entry's target's identifier.
         
-        user_id : `int`, `None`, ``ClientUserBase```, Optional (Keyword only)
+        user_id : `int`, ``None | ClientUserBase```, Optional (Keyword only)
             The user's identifier who triggered the event.
         
         Raises
@@ -171,7 +171,7 @@ class AuditLogEntry(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Data received from Discord.
         
         parent : `None`, ``AuditLog`` = `None`, Optional
@@ -226,14 +226,14 @@ class AuditLogEntry(DiscordEntity):
         """
         data = {}
         entry_type = self.type
-        put_changes_into(self.changes, data, defaults, entry_type = entry_type)
-        put_details_into(self.details, data, defaults, entry_type = entry_type)
-        put_guild_id_into(self.guild_id, data, defaults)
-        put_id_into(self.id, data, defaults)
-        put_reason_into(self.reason, data, defaults)
-        put_target_id_into(self.target_id, data, defaults)
-        put_type_into(entry_type, data, defaults)
-        put_user_id_into(self.user_id, data, defaults)
+        put_changes(self.changes, data, defaults, entry_type = entry_type)
+        put_details(self.details, data, defaults, entry_type = entry_type)
+        put_guild_id(self.guild_id, data, defaults)
+        put_id(self.id, data, defaults)
+        put_reason(self.reason, data, defaults)
+        put_target_id(self.target_id, data, defaults)
+        put_type(entry_type, data, defaults)
+        put_user_id(self.user_id, data, defaults)
         return data
     
     
@@ -265,7 +265,7 @@ class AuditLogEntry(DiscordEntity):
         Other Parameters
         ----------------
         
-        guild : `int`, `None`, ``Guild``, Optional (Keyword only)
+        guild : `int`, ``None | Guild``, Optional (Keyword only)
             Alternative for `guild_id`.
         
         guild_id : `int`, `None`, ``Guild``, Optional (Keyword only)
@@ -277,10 +277,10 @@ class AuditLogEntry(DiscordEntity):
         target_id : `int`, Optional (Keyword only)
             The entry's target's identifier.
         
-        user : `int`, `None`, ``ClientUserBase```, Optional (Keyword only)
+        user : `int`, ``None | ClientUserBase```, Optional (Keyword only)
             Alternative for `user_id`.
         
-        user_id : `int`, `None`, ``ClientUserBase```, Optional (Keyword only)
+        user_id : `int`, ``None | ClientUserBase```, Optional (Keyword only)
             The user's identifier who triggered the event.
         
         Returns
@@ -416,7 +416,7 @@ class AuditLogEntry(DiscordEntity):
         target_id : `int`, Optional (Keyword only)
             The entry's target's identifier.
         
-        user_id : `int`, `None`, ``ClientUserBase```, Optional (Keyword only)
+        user_id : `int`, ``None | ClientUserBase```, Optional (Keyword only)
             The user's identifier who triggered the event.
         Returns
         -------
@@ -536,7 +536,7 @@ class AuditLogEntry(DiscordEntity):
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         guild_id = self.guild_id
         if guild_id:
@@ -550,7 +550,7 @@ class AuditLogEntry(DiscordEntity):
         
         Returns
         -------
-        user : `None`, ``ClientUserBase``
+        user : ``None | ClientUserBase``
             Returns ˙None` if not an user triggered it.
         """
         user_id = self.user_id

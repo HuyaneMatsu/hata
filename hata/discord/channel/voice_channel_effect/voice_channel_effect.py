@@ -11,10 +11,10 @@ from ..channel import ChannelType, create_partial_channel_from_id
 
 from .fields import (
     parse_animation_id, parse_animation_type, parse_channel_id, parse_emoji, parse_guild_id, parse_user_id,
-    put_animation_id_into, put_animation_type_into, put_channel_id_into, put_emoji_into, put_guild_id_into,
-    put_user_id_into, validate_animation_id, validate_animation_type, validate_channel_id, validate_emoji,
-    validate_guild_id, validate_user_id, parse_sound_id, put_sound_id_into, validate_sound_id,
-    parse_sound_volume, put_sound_volume_into, validate_sound_volume
+    put_animation_id, put_animation_type, put_channel_id, put_emoji, put_guild_id,
+    put_user_id, validate_animation_id, validate_animation_type, validate_channel_id, validate_emoji,
+    validate_guild_id, validate_user_id, parse_sound_id, put_sound_id, validate_sound_id,
+    parse_sound_volume, put_sound_volume, validate_sound_volume
 )
 from .preinstanced import VoiceChannelEffectAnimationType
 
@@ -155,7 +155,7 @@ class VoiceChannelEffect(EventBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Voice channel effect event data.
         
         Returns
@@ -188,19 +188,19 @@ class VoiceChannelEffect(EventBase):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
-        put_animation_id_into(self.animation_id, data, defaults)
-        put_animation_type_into(self.animation_type, data, defaults)
-        put_emoji_into(self.emoji, data, defaults)
-        put_sound_id_into(self.sound_id, data, defaults)
-        put_sound_volume_into(self.sound_volume, data, defaults)
+        put_animation_id(self.animation_id, data, defaults)
+        put_animation_type(self.animation_type, data, defaults)
+        put_emoji(self.emoji, data, defaults)
+        put_sound_id(self.sound_id, data, defaults)
+        put_sound_volume(self.sound_volume, data, defaults)
         
         if include_internals:
-            put_channel_id_into(self.channel_id, data, defaults)
-            put_guild_id_into(self.guild_id, data, defaults)
-            put_user_id_into(self.user_id, data, defaults)
+            put_channel_id(self.channel_id, data, defaults)
+            put_guild_id(self.guild_id, data, defaults)
+            put_user_id(self.user_id, data, defaults)
         
         return data
     
@@ -475,7 +475,7 @@ class VoiceChannelEffect(EventBase):
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         guild_id = self.guild_id
         if guild_id:

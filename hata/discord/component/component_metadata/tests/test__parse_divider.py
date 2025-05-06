@@ -24,4 +24,6 @@ def test__parse_divider(input_data):
     -------
     output : `bool`
     """
-    return parse_divider(input_data)
+    output = parse_divider(input_data)
+    vampytest.assert_instance(output, bool)
+    return output

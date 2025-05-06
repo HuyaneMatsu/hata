@@ -4,7 +4,7 @@ import vampytest
 
 from ....application import Application
 from ....channel import Channel
-from ....guild import Guild
+from ....guild import Guild, GuildActivityOverview
 from ....user import User
 
 from ..flags import InviteFlag
@@ -23,6 +23,7 @@ def test__Invite__repr():
     created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     flags = InviteFlag(11)
     guild = Guild.precreate(202308060079)
+    guild_activity_overview = GuildActivityOverview.precreate(202308060079)
     inviter = User.precreate(202308060080)
     max_age = 3600
     max_uses = 100
@@ -41,6 +42,7 @@ def test__Invite__repr():
         created_at = created_at,
         flags = flags,
         guild = guild,
+        guild_activity_overview = guild_activity_overview,
         inviter = inviter,
         max_age = max_age,
         max_uses = max_uses,
@@ -66,6 +68,7 @@ def test__Invite__hash():
     created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     flags = InviteFlag(11)
     guild = Guild.precreate(202308070002)
+    guild_activity_overview = GuildActivityOverview.precreate(202308070002)
     inviter = User.precreate(202308070003)
     max_age = 3600
     max_uses = 100
@@ -96,6 +99,7 @@ def test__Invite__hash():
         created_at = created_at,
         flags = flags,
         guild = guild,
+        guild_activity_overview = guild_activity_overview,
         inviter = inviter,
         max_age = max_age,
         max_uses = max_uses,
@@ -110,11 +114,26 @@ def test__Invite__hash():
     vampytest.assert_instance(hash(invite), int)
 
 
-def test__Invite__eq():
+def test__Invite__eq__non_partial_and_other():
     """
-    Tests whether ``Invite.__eq__`` works asi intended.
+    tests whether ``Invite.__eq__`` works as intended.
+    
+    Case: non partial and other objects.
     """
     code = '202308070006'
+    
+    flags = InviteFlag(11)
+    
+    invite = Invite.precreate(code, flags = flags)
+    
+    vampytest.assert_eq(invite, invite)
+    vampytest.assert_ne(invite, object())
+    
+    test_invite = Invite(flags = flags)
+    vampytest.assert_eq(invite, test_invite)
+
+
+def _iter_options__eq():
     flags = InviteFlag(11)
     max_age = 3600
     max_uses = 100
@@ -133,23 +152,96 @@ def test__Invite__eq():
         'temporary': temporary,
     }
     
-    invite = Invite.precreate(code, **keyword_parameters)
+    yield (
+        keyword_parameters,
+        keyword_parameters,
+        True,
+    )
     
-    vampytest.assert_eq(invite, invite)
-    vampytest.assert_ne(invite, object())
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'flags': InviteFlag(12),
+        },
+        False,
+    )
     
-    test_invite = Invite(**keyword_parameters)
-    vampytest.assert_eq(invite, test_invite)
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'max_age': 7200,
+        },
+        False,
+    )
     
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'max_uses': 200,
+        },
+        False,
+    )
     
-    for field_name, field_value in (
-        ('flags', InviteFlag(12)),
-        ('max_age', 7200),
-        ('max_uses', 200),
-        ('target_application', None),
-        ('target_type', InviteTargetType.embedded_application),
-        ('target_user', None),
-        ('temporary', False),
-    ):
-        test_invite = Invite(**{**keyword_parameters, field_name: field_value})
-        vampytest.assert_ne(invite, test_invite)
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'target_application': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'target_type': InviteTargetType.embedded_application,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'target_user': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'temporary': False,
+        },
+        False,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__eq()).returning_last())
+def test__Invite__eq(keyword_parameters_0, keyword_parameters_1):
+    """
+    Tests whether ``Invite.__eq__`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters_0 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    keyword_parameters_1 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    invite_0 = Invite(**keyword_parameters_0)
+    invite_1 = Invite(**keyword_parameters_1)
+    
+    output = invite_0 == invite_1
+    vampytest.assert_instance(output, bool)
+    return output

@@ -35,7 +35,7 @@ def _name_getter_custom(activity):
     return name
 
 
-class HangType(PreinstancedBase):
+class HangType(PreinstancedBase, value_type = str):
     """
     Represents a hanging activity' type.
     
@@ -50,22 +50,12 @@ class HangType(PreinstancedBase):
     value : `str`
         The Discord side identifier value of the hang type.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`str`, ``HangType``) items
-        Stores the predefined ``HangType``-s.
-    
-    VALUE_TYPE : `type` = `str`
-        The hang types' values' type.
-    
-    DEFAULT_NAME : `str` = `''`
-        The default name of the hang types. Guild features have the same value as name, so at their case it is not
-        applicable.
-    
-    Every predefined hang type can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined hang type can be accessed as type attribute as well:
     
     +-----------------------+---------------+---------------+
-    | Class attribute names | name          | value         |
+    | Type attribute name   | name          | value         |
     +=======================+===============+===============+
     | none                  | none          |               |
     +-----------------------+---------------+---------------+
@@ -86,59 +76,38 @@ class HangType(PreinstancedBase):
     | watching              | watching      | watching      |
     +-----------------------+---------------+---------------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = str
-    DEFAULT_NAME = ''
-    DEFAULT_NAME_GETTER = lambda activity: ACTIVITY_NAME_HANGING_DEFAULT
+    NAME_GETTER_DEFAULT = lambda activity: ACTIVITY_NAME_HANGING_DEFAULT
     
     __slots__ = ('name_getter', )
     
-    @classmethod
-    def _from_value(cls, value):
+    def __new__(cls, value, name = None, name_getter = None):
         """
         Creates a new hang type.
         
         Parameters
         ----------
         value : `str`
-            The hang type's identifier value.
+            The Discord side identifier value of the hang type.
         
-        Returns
-        -------
-        self : `instance<cls>`
+        name : `None | str` = `None`, Optional
+            The name of the hang type.
+        
+        name_getter : `None | FunctionType` = `None`, Optional
+            The hang type's name getter.
         """
-        self = object.__new__(cls)
-        self.value = value
-        self.name = value.casefold().replace('-', ' ')
-        self.name_getter = cls.DEFAULT_NAME_GETTER
-        self.INSTANCES[value] = self
+        if name is None:
+            name = value.casefold().replace('-', ' ')
+        
+        if name_getter is None:
+            name_getter = cls.NAME_GETTER_DEFAULT
+        
+        self = PreinstancedBase.__new__(cls, value, name)
+        self.name_getter = name_getter
         return self
     
     
-    def __init__(self, value, name, name_getter):
-        """
-        Creates a hang type and stores it at the class's `.INSTANCES` class attribute as well.
-        
-        Parameters
-        ----------
-        value : `str`
-            The Discord side identifier value of the hang type.
-        
-        name : `str`
-            The name of the hang type.
-        
-        metadata_type : `FunctionType`
-            The hang type's name getter.
-        """
-        self.name = name
-        self.name_getter = name_getter
-        self.value = value
-        
-        self.INSTANCES[value] = self
-    
-    
     # predefined
-    none = P('', 'none', DEFAULT_NAME_GETTER)
+    none = P('', 'none', NAME_GETTER_DEFAULT)
     be_right_back = P('brb', 'be right back', (lambda activity: 'Gonna BRB'))
     chilling = P('chilling', 'chilling', (lambda activity: 'Chilling'))
     custom = P('custom', 'custom', _name_getter_custom)

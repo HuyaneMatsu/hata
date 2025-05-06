@@ -3,7 +3,7 @@ __all__ = ('EmbeddedActivityLocation', )
 from scarletio import RichAttributeErrorBaseType
 
 from .fields import (
-    parse_channel_id, parse_guild_id, parse_type, put_channel_id_into, put_guild_id_into, put_type_into,
+    parse_channel_id, parse_guild_id, parse_type, put_channel_id, put_guild_id, put_type,
     validate_channel_id, validate_guild_id, validate_type
 )
 from .preinstanced import EmbeddedActivityLocationType
@@ -35,7 +35,7 @@ class EmbeddedActivityLocation(RichAttributeErrorBaseType):
         channel_id : `int | Channel`, Optional (Keyword only)
             The location's channel's identifier.
     
-        guild_id : `int | Guild`, Optional (Keyword only)
+        guild_id : ``int | Guild``, Optional (Keyword only)
             The location's guild's identifier.
     
         location_type : `EmbeddedActivityLocationType | str`, Optional (Keyword only)
@@ -110,9 +110,9 @@ class EmbeddedActivityLocation(RichAttributeErrorBaseType):
         data : `dict<str, object>`
         """
         data = {}
-        put_type_into(self.type, data, defaults)
-        put_channel_id_into(self.channel_id, data, defaults)
-        put_guild_id_into(self.guild_id, data, defaults)
+        put_type(self.type, data, defaults)
+        put_channel_id(self.channel_id, data, defaults)
+        put_guild_id(self.guild_id, data, defaults)
         return data
     
     
@@ -194,10 +194,10 @@ class EmbeddedActivityLocation(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        channel_id : `int | Channel`, Optional (Keyword only)
+        channel_id : ``int | Channel``, Optional (Keyword only)
             The location's channel's identifier.
     
-        guild_id : `int | Guild`, Optional (Keyword only)
+        guild_id : ``int | Guild``, Optional (Keyword only)
             The location's guild's identifier.
     
         location_type : `EmbeddedActivityLocationType | str`, Optional (Keyword only)

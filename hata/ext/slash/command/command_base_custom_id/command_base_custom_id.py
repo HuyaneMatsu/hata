@@ -19,7 +19,7 @@ class CommandBaseCustomId(CommandInterface, CommandBase):
     _exception_handlers : `None | list<CoroutineFunction>`
         Exception handlers added with ``.error`` to the interaction handler.
     
-    _parameter_converters : `tuple<ParameterConverter>`
+    _parameter_converters : `tuple<ParameterConverterBase>`
         Parsers to parse command parameters.
     
     _parent_reference : `None | WeakReferer<SelfReferenceInterface>`

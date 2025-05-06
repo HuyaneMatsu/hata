@@ -2,7 +2,6 @@ from .connection import *
 from .oauth2_access import *
 from .oauth2_user import *
 
-from .achievement import *
 from .helpers import *
 
 
@@ -11,7 +10,6 @@ __all__ = (
     *oauth2_access.__all__,
     *oauth2_user.__all__,
     
-    *achievement.__all__,
     *helpers.__all__,
 )
 

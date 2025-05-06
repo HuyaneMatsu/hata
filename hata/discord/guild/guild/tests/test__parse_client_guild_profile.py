@@ -67,7 +67,7 @@ def test__parse_client_guild_profile__cache_presence(input_data, user_in_cache):
     ----------
     input_data : `dict<str, object>`
         Data to pass.
-    user_in_cache : `None`, ``ClientUserBase``
+    user_in_cache : ``None | ClientUserBase``
         Additional parameter just to make sure that the user is kept cache.
     
     Returns
@@ -139,7 +139,7 @@ def test__parse_client_guild_profile__no_cache_presence(input_data, user_in_cach
     ----------
     input_data : `dict<str, object>`
         Data to pass.
-    user_in_cache : `None`, ``ClientUserBase``
+    user_in_cache : ``None | ClientUserBase``
         Additional parameter just to make sure that the user is kept cache.
     
     Returns

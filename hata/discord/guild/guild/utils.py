@@ -4,7 +4,6 @@ __all__ = (
 )
 
 from functools import partial as partial_func
-from warnings import warn
 
 from scarletio import export
 
@@ -12,14 +11,14 @@ from ...core import GUILDS
 
 from .fields import (
     parse_available, parse_description, parse_features, parse_id, parse_locale, parse_name, parse_nsfw_level,
-    parse_verification_level, put_afk_channel_id_into, put_afk_timeout_into, put_available_into,
-    put_boost_progress_bar_enabled_into, put_channels_and_channel_datas_into,
-    put_default_message_notification_level_into, put_description_into, put_explicit_content_filter_level_into,
-    put_features_into, put_hub_type_into, put_id_into, put_locale_into, put_mfa_level_into, put_name_into,
-    put_nsfw_level_into, put_owner_id_into, put_public_updates_channel_id_into, put_roles_and_role_datas_into,
-    put_rules_channel_id_into, put_safety_alerts_channel_id_into, put_system_channel_flags_into,
-    put_system_channel_id_into, put_vanity_code_into, put_verification_level_into, put_widget_channel_id_into,
-    put_widget_enabled_into, validate_afk_channel_id, validate_afk_timeout, validate_boost_progress_bar_enabled,
+    parse_verification_level, put_afk_channel_id, put_afk_timeout, put_available,
+    put_boost_progress_bar_enabled, put_channels_and_channel_datas,
+    put_default_message_notification_level, put_description, put_explicit_content_filter_level,
+    put_features, put_hub_type, put_id, put_locale, put_mfa_level, put_name,
+    put_nsfw_level, put_owner_id, put_public_updates_channel_id, put_roles_and_role_datas,
+    put_rules_channel_id, put_safety_alerts_channel_id, put_system_channel_flags,
+    put_system_channel_id, put_vanity_code, put_verification_level, put_widget_channel_id,
+    put_widget_enabled, validate_afk_channel_id, validate_afk_timeout, validate_boost_progress_bar_enabled,
     validate_channels_and_channel_datas, validate_default_message_notification_level, validate_description,
     validate_explicit_content_filter_level, validate_features, validate_hub_type, validate_locale, validate_mfa_level,
     validate_name, validate_nsfw_level, validate_owner_id, validate_public_updates_channel_id,
@@ -33,24 +32,24 @@ from .preinstanced import ExplicitContentFilterLevel, MessageNotificationLevel, 
 
 
 GUILD_FIELD_CONVERTERS = {
-    'afk_channel_id': (validate_afk_channel_id, put_afk_channel_id_into),
-    'afk_timeout': (validate_afk_timeout, put_afk_timeout_into),
+    'afk_channel_id': (validate_afk_channel_id, put_afk_channel_id),
+    'afk_timeout': (validate_afk_timeout, put_afk_timeout),
     'banner': (
         partial_func(GUILD_BANNER.validate_icon, allow_data = True),
         partial_func(GUILD_BANNER.put_into, as_data = True),
     ),
-    'boost_progress_bar_enabled': (validate_boost_progress_bar_enabled, put_boost_progress_bar_enabled_into),
+    'boost_progress_bar_enabled': (validate_boost_progress_bar_enabled, put_boost_progress_bar_enabled),
     'default_message_notification_level': (
-        validate_default_message_notification_level, put_default_message_notification_level_into)
+        validate_default_message_notification_level, put_default_message_notification_level)
     ,
-    'description': (validate_description, put_description_into),
+    'description': (validate_description, put_description),
     'discovery_splash': (
         partial_func(GUILD_DISCOVERY_SPLASH.validate_icon, allow_data = True),
         partial_func(GUILD_DISCOVERY_SPLASH.put_into, as_data = True),
     ),
-    'explicit_content_filter_level': (validate_explicit_content_filter_level, put_explicit_content_filter_level_into),
-    'features': (validate_features, put_features_into),
-    'hub_type': (validate_hub_type, put_hub_type_into),
+    'explicit_content_filter_level': (validate_explicit_content_filter_level, put_explicit_content_filter_level),
+    'features': (validate_features, put_features),
+    'hub_type': (validate_hub_type, put_hub_type),
     'icon': (
         partial_func(GUILD_ICON.validate_icon, allow_data = True),
         partial_func(GUILD_ICON.put_into, as_data = True),
@@ -59,20 +58,20 @@ GUILD_FIELD_CONVERTERS = {
         partial_func(GUILD_INVITE_SPLASH.validate_icon, allow_data = True),
         partial_func(GUILD_INVITE_SPLASH.put_into, as_data = True),
     ),
-    'locale': (validate_locale, put_locale_into),
-    'mfa_level': (validate_mfa_level, put_mfa_level_into),
-    'name': (validate_name, put_name_into),
-    'nsfw_level': (validate_nsfw_level, put_nsfw_level_into),
-    'owner_id': (validate_owner_id, put_owner_id_into),
-    'public_updates_channel_id': (validate_public_updates_channel_id, put_public_updates_channel_id_into),
-    'rules_channel_id': (validate_rules_channel_id, put_rules_channel_id_into),
-    'safety_alerts_channel_id': (validate_safety_alerts_channel_id, put_safety_alerts_channel_id_into),
-    'system_channel_flags': (validate_system_channel_flags, put_system_channel_flags_into),
-    'system_channel_id': (validate_system_channel_id, put_system_channel_id_into),
-    'vanity_code': (validate_vanity_code, put_vanity_code_into),
-    'verification_level': (validate_verification_level, put_verification_level_into),
-    'widget_channel_id': (validate_widget_channel_id, put_widget_channel_id_into),
-    'widget_enabled': (validate_widget_enabled, put_widget_enabled_into),
+    'locale': (validate_locale, put_locale),
+    'mfa_level': (validate_mfa_level, put_mfa_level),
+    'name': (validate_name, put_name),
+    'nsfw_level': (validate_nsfw_level, put_nsfw_level),
+    'owner_id': (validate_owner_id, put_owner_id),
+    'public_updates_channel_id': (validate_public_updates_channel_id, put_public_updates_channel_id),
+    'rules_channel_id': (validate_rules_channel_id, put_rules_channel_id),
+    'safety_alerts_channel_id': (validate_safety_alerts_channel_id, put_safety_alerts_channel_id),
+    'system_channel_flags': (validate_system_channel_flags, put_system_channel_flags),
+    'system_channel_id': (validate_system_channel_id, put_system_channel_id),
+    'vanity_code': (validate_vanity_code, put_vanity_code),
+    'verification_level': (validate_verification_level, put_verification_level),
+    'widget_channel_id': (validate_widget_channel_id, put_widget_channel_id),
+    'widget_enabled': (validate_widget_enabled, put_widget_enabled),
 }
 
 
@@ -85,7 +84,7 @@ def create_partial_guild_from_data(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Partial channel data received from Discord.
     
     Returns
@@ -141,16 +140,16 @@ def create_partial_guild_data(guild):
     """
     data = {}
     
-    put_available_into(guild.available, data, True)
-    put_description_into(guild.description, data, True)
+    put_available(guild.available, data, True)
+    put_description(guild.description, data, True)
     type(guild).discovery_splash.put_into(guild.discovery_splash, data, True, as_data = False)
-    put_features_into(guild.features, data, True)
-    put_id_into(guild.id, data, True)
+    put_features(guild.features, data, True)
+    put_id(guild.id, data, True)
     type(guild).icon.put_into(guild.icon, data, True, as_data = False)
     type(guild).invite_splash.put_into(guild.invite_splash, data, True, as_data = False)
-    put_name_into(guild.name, data, True)
-    put_nsfw_level_into(guild.nsfw_level, data, True)
-    put_verification_level_into(guild.verification_level, data, True)
+    put_name(guild.name, data, True)
+    put_nsfw_level(guild.nsfw_level, data, True)
+    put_verification_level(guild.verification_level, data, True)
     
     return data
 
@@ -185,8 +184,6 @@ def create_new_guild_data(
     afk_channel_id = ...,
     afk_timeout = ...,
     channels = ...,
-    content_filter = ...,
-    message_notification = ...,
     default_message_notification_level = ...,
     explicit_content_filter_level = ...,
     icon = ...,
@@ -201,10 +198,10 @@ def create_new_guild_data(
     
     Parameters
     ----------
-    afk_channel_id : `None`, `int`, Optional (Keyword only)
+    afk_channel_id : `None | int`, Optional (Keyword only)
         The id of the guild's afk channel. The id should be one of the channel's id from `channels`.
     
-    afk_timeout : `None`, `int` = `None`, Optional (Keyword only)
+    afk_timeout : `None | int` = `None`, Optional (Keyword only)
         The afk timeout for the users at the guild's afk channel.
     
     channels : `None`, `list` of `dict`, Optional (Keyword only)
@@ -263,37 +260,11 @@ def create_new_guild_data(
     else:
         channels = validate_channels_and_channel_datas(channels)
     
-    
-    if message_notification is not ...:
-        warn(
-            (
-                f'`{create_new_guild_data.__name__}`\'s `message_notification` parameter is deprecated. '
-                f'And will be removed in 2024 April. '
-                f'Please use `default_message_notification_level` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        default_message_notification_level = message_notification
-    
     # default_message_notification_level
     if default_message_notification_level is ...:
         default_message_notification_level = MessageNotificationLevel.all_messages
     else:
         default_message_notification_level = validate_default_message_notification_level(default_message_notification_level)
-    
-    
-    if content_filter is not ...:
-        warn(
-            (
-                f'`{create_new_guild_data.__name__}`\'s `content_filter` parameter is deprecated. '
-                f'And will be removed in 2024 April. '
-                f'Please use `explicit_content_filter_level` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        explicit_content_filter_level = content_filter
     
     # explicit_content_filter_level
     if explicit_content_filter_level is ...:
@@ -337,17 +308,17 @@ def create_new_guild_data(
         verification_level = validate_verification_level(verification_level)
     
     data = {}
-    put_name_into(name, data, True)
-    put_afk_channel_id_into(afk_channel_id, data, True)
-    put_afk_timeout_into(afk_timeout, data, False)
-    put_channels_and_channel_datas_into(channels, data, True)
-    put_explicit_content_filter_level_into(explicit_content_filter_level, data, True)
+    put_name(name, data, True)
+    put_afk_channel_id(afk_channel_id, data, True)
+    put_afk_timeout(afk_timeout, data, False)
+    put_channels_and_channel_datas(channels, data, True)
+    put_explicit_content_filter_level(explicit_content_filter_level, data, True)
     GUILD_ICON.put_into(icon, data, defaults = True, as_data = True)
-    put_roles_and_role_datas_into(roles, data,  True)
-    put_default_message_notification_level_into(default_message_notification_level, data, True)
-    put_system_channel_id_into(system_channel_id, data, True)
-    put_system_channel_flags_into(system_channel_flags, data, True)
-    put_verification_level_into(verification_level, data, True)
+    put_roles_and_role_datas(roles, data,  True)
+    put_default_message_notification_level(default_message_notification_level, data, True)
+    put_system_channel_id(system_channel_id, data, True)
+    put_system_channel_flags(system_channel_flags, data, True)
+    put_verification_level(verification_level, data, True)
     return data
 
 
@@ -392,8 +363,8 @@ def create_interaction_guild_data(guild):
     """
     data = {}
     
-    put_id_into(guild.id, data, True)
-    put_locale_into(guild.locale, data, True)
-    put_features_into(guild.features, data, True)
+    put_id(guild.id, data, True)
+    put_locale(guild.locale, data, True)
+    put_features(guild.features, data, True)
     
     return data

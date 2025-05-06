@@ -2,11 +2,9 @@ __all__ = ('MediaItem',)
 
 from scarletio import RichAttributeErrorBaseType
 
-from ...utils import url_cutter
-
 from .fields import (
-    parse_description, parse_spoiler, parse_url, put_description_into, put_spoiler_into, put_url_into,
-    validate_description, validate_spoiler, validate_url,
+    parse_description, parse_media, parse_spoiler, put_description, put_media, put_spoiler, validate_description,
+    validate_media, validate_spoiler
 )
 
 
@@ -16,25 +14,29 @@ class MediaItem(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    description : `None`, `str`
+    description : `None | str`
         The media item's description.
+    
+    media : ``MediaInfo``
+        The item's media.
+    
     spoiler : `bool`
         Whether the media should be spoilered.
-    url : `str`
-        The media's url.
     """
-    __slots__ = ('description', 'spoiler', 'url')
+    __slots__ = ('description', 'media', 'spoiler')
     
-    def __new__(cls, url, *, description = ..., spoiler = ...):
+    def __new__(cls, media, *, description = ..., spoiler = ...):
         """
         Creates a new media item with the given parameters.
         
         Parameters
         ----------
-        url : `str`
-            The media's url.
-        description : `None`, `str`, Optional (Keyword only)
+        media : ``str | MediaInfo``
+            The item's media.
+        
+        description : `None | str`, Optional (Keyword only)
             The item's description.
+        
         spoiler : `bool`, Optional (Keyword only)
             Whether the media should be spoilered.
         
@@ -45,8 +47,8 @@ class MediaItem(RichAttributeErrorBaseType):
         ValueError
             - If a parameter's value is incorrect.
         """
-        # url
-        url = validate_url(url)
+        # media
+        media = validate_media(media)
         
         # description
         if description is ...:
@@ -64,16 +66,17 @@ class MediaItem(RichAttributeErrorBaseType):
         self = object.__new__(cls)
         self.description = description
         self.spoiler = spoiler
-        self.url = url
+        self.media = media
         return self
     
     
     def __repr__(self):
+        """Returns repr(self)."""
         repr_parts = ['<', type(self).__name__]
         
-        # url
-        repr_parts.append(' url = ')
-        repr_parts.append(repr(url_cutter(self.url)))
+        # media
+        repr_parts.append(' media = ')
+        repr_parts.append(repr((self.media)))
         
         # description
         description = self.description
@@ -92,7 +95,7 @@ class MediaItem(RichAttributeErrorBaseType):
     
     
     def __hash__(self):
-        """Returns the media item's hash value."""
+        """Returns hash(self)."""
         hash_value = 0
         
         # description
@@ -100,17 +103,18 @@ class MediaItem(RichAttributeErrorBaseType):
         if (description is not None):
             hash_value ^= hash(description)
         
-        # spoiler
-        hash_value ^= self.spoiler
+        # media
+        hash_value ^= hash(self.media)
         
-        # url
-        hash_value ^= hash(self.url)
+        # spoiler
+        hash_value ^= self.spoiler << 11
+        
         
         return hash_value
     
     
     def __eq__(self, other):
-        """Returns whether the two media items are equal."""
+        """Returns self == other."""
         if type(self) is not type(other):
             return NotImplemented
         
@@ -122,8 +126,8 @@ class MediaItem(RichAttributeErrorBaseType):
         if self.spoiler != other.spoiler:
             return False
         
-        # url
-        if self.url != other.url:
+        # media
+        if self.media != other.media:
             return False
         
         return True
@@ -145,12 +149,12 @@ class MediaItem(RichAttributeErrorBaseType):
         """
         self = object.__new__(cls)
         self.description = parse_description(data)
+        self.media = parse_media(data)
         self.spoiler = parse_spoiler(data)
-        self.url = parse_url(data)
         return self
     
     
-    def to_data(self, *, defaults = False):
+    def to_data(self, *, defaults = False, include_internals = False):
         """
         Returns the media item as a json serializable representation.
         
@@ -159,14 +163,17 @@ class MediaItem(RichAttributeErrorBaseType):
         defaults : `bool` = `False`, Optional (Keyword only)
             Whether fields with their default values should be included as well.
         
+        include_internals : `bool` = `False`, Optional (Keyword only)
+            Whether internal fields should be included as well.
+        
         Returns
         -------
         data : `dict<str, object>`
         """
         data = {}
-        put_description_into(self.description, data, defaults)
-        put_spoiler_into(self.spoiler, data, defaults)
-        put_url_into(self.url, data, defaults)
+        put_description(self.description, data, defaults)
+        put_media(self.media, data, defaults, include_internals = include_internals)
+        put_spoiler(self.spoiler, data, defaults)
         return data
     
     
@@ -180,23 +187,25 @@ class MediaItem(RichAttributeErrorBaseType):
         """
         new = object.__new__(type(self))
         new.description = self.description
+        new.media = self.media.copy()
         new.spoiler = self.spoiler
-        new.url = self.url
         return new
     
     
-    def copy_with(self, *, description = ..., spoiler = ..., url = ...):
+    def copy_with(self, *, description = ..., media = ..., spoiler = ...):
         """
         Copies the media item with the given parameters.
         
         Parameters
         ----------
-        description : `None`, `str`, Optional (Keyword only)
+        description : `None | str`, Optional (Keyword only)
             The item's description.
+        
+        media : ``str | MediaInfo``, Optional (Keyword only)
+            The item's media.
+        
         spoiler : `bool`, Optional (Keyword only)
             Whether the media should be spoilered.
-        url : `str`, Optional (Keyword only)
-            The media's url.
         
         Returns
         -------
@@ -215,21 +224,33 @@ class MediaItem(RichAttributeErrorBaseType):
         else:
             description = validate_description(description)
         
+        # media
+        if media is ...:
+            media = self.media.copy()
+        else:
+            media = validate_media(media)
+        
         # spoiler
         if spoiler is ...:
             spoiler = self.spoiler
         else:
             spoiler = validate_spoiler(spoiler)
         
-        # url
-        if url is ...:
-            url = self.url
-        else:
-            url = validate_url(url)
-        
         # Construct
         new = object.__new__(type(self))
         new.description = description
+        new.media = media
         new.spoiler = spoiler
-        new.url = url
         return new
+    
+    
+    @property
+    def url(self):
+        """
+        Returns the media's url.
+        
+        Returns
+        -------
+        url : `str`
+        """
+        return self.media.url

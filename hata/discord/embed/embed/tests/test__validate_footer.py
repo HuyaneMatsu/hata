@@ -5,30 +5,36 @@ from ...embed_footer import EmbedFooter
 from ..fields import validate_footer
 
 
-def test__validate_footer__0():
-    """
-    Tests whether `validate_footer` works as intended.
-    
-    Case: passing.
-    """
+def _iter_options__passing():
     footer = EmbedFooter(text = 'hell')
     
-    for input_value, expected_output in (
-        (None, None),
-        (footer, footer),
-    ):
-        output = validate_footer(input_value)
-        vampytest.assert_eq(output, expected_output)
+    yield None, None
+    yield footer, footer
 
 
-def test__validate_footer__1():
+def _iter_options__type_error():
+    yield 12.6
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_footer(input_value):
     """
     Tests whether `validate_footer` works as intended.
     
-    Case: `TypeError`.
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
+    
+    Returns
+    -------
+    output : ``None | EmbedFooter``
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_footer(input_value)
+    output = validate_footer(input_value)
+    vampytest.assert_instance(output, EmbedFooter, nullable = True)
+    return output

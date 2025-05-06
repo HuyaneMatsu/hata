@@ -2,7 +2,7 @@ __all__ = ()
 
 from itertools import chain
 
-from ...bases.entity import _get_direct_parents_and_merge_slots
+from ...bases.entity.slotted_meta import _get_direct_parent, _inherit_hash, _merge_type_slots
 
 from ..core import DEFAULT_EVENT_HANDLER
 
@@ -265,7 +265,10 @@ class EventHandlerPluginMeta(type):
         RuntimeError
             - If there is a duplicate event entry.
         """
-        direct_parent, slots = _get_direct_parents_and_merge_slots(type_name, type_parents, type_attributes)
+        direct_parent = _get_direct_parent(cls, type_name, type_parents)
+        final_slots = _merge_type_slots(direct_parent, type_parents, type_attributes)
+        _inherit_hash(direct_parent, type_attributes)
+        
         (
             parent_event_names,
             parent_default_handlers,
@@ -279,7 +282,7 @@ class EventHandlerPluginMeta(type):
         type_attributes['_plugin_event_deprecations'] = _collect_event_deprecations(
             events_deprecated, parent_event_deprecations
         )
-        type_attributes['__slots__'] = _finalize_slots(events, slots)
+        type_attributes['__slots__'] = _finalize_slots(events, final_slots)
         type_attributes.update(
             (event_name, EventDeprecationDescriptor(event_name, event.deprecation))
             for event_name, event in events_deprecated

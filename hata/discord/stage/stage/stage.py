@@ -10,8 +10,8 @@ from ...scheduled_event import PrivacyLevel
 
 from .fields import (
     parse_channel_id, parse_discoverable, parse_guild_id, parse_id, parse_invite_code, parse_privacy_level,
-    parse_scheduled_event_id, parse_topic, put_channel_id_into, put_discoverable_into, put_guild_id_into, put_id_into,
-    put_invite_code_into, put_privacy_level_into, put_scheduled_event_id_into, put_topic_into, validate_channel_id,
+    parse_scheduled_event_id, parse_topic, put_channel_id, put_discoverable, put_guild_id, put_id,
+    put_invite_code, put_privacy_level, put_scheduled_event_id, put_topic, validate_channel_id,
     validate_discoverable, validate_guild_id, validate_id, validate_invite_code, validate_privacy_level,
     validate_scheduled_event_id, validate_topic
 )
@@ -120,7 +120,7 @@ class Stage(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Stage data.
         strong_cache : `bool` = `True`, Optional (Keyword only)
             Whether the instance should be put into its strong cache.
@@ -172,19 +172,19 @@ class Stage(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) Items
+        data : `dict<str, object>`
         """
         data = {}
-        put_privacy_level_into(self.privacy_level, data, defaults)
-        put_scheduled_event_id_into(self.scheduled_event_id, data, defaults)
-        put_topic_into(self.topic, data, defaults)
+        put_privacy_level(self.privacy_level, data, defaults)
+        put_scheduled_event_id(self.scheduled_event_id, data, defaults)
+        put_topic(self.topic, data, defaults)
         
         if include_internals:
-            put_channel_id_into(self.channel_id, data, defaults)
-            put_discoverable_into(self.discoverable, data, defaults)
-            put_guild_id_into(self.guild_id, data, defaults)
-            put_id_into(self.id, data, defaults)
-            put_invite_code_into(self.invite_code, data, defaults)
+            put_channel_id(self.channel_id, data, defaults)
+            put_discoverable(self.discoverable, data, defaults)
+            put_guild_id(self.guild_id, data, defaults)
+            put_id(self.id, data, defaults)
+            put_invite_code(self.invite_code, data, defaults)
         
         return data
     
@@ -195,7 +195,7 @@ class Stage(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Stage data.
         """
         self.channel_id = parse_channel_id(data)
@@ -211,7 +211,7 @@ class Stage(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Stage data.
         """
         self.discoverable = parse_discoverable(data)
@@ -227,12 +227,12 @@ class Stage(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Stage data.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             The changed attributes of the stage.
             
             Each item in the returned dictionary is optional.
@@ -604,7 +604,7 @@ class Stage(DiscordEntity, immortal = True):
         
         Returns
         -------
-        channel : `None`, ``Channel``
+        channel : ``None | Channel``
         """
         return create_partial_channel_from_id(self.channel_id, ChannelType.guild_stage, self.guild_id)
     
@@ -616,7 +616,7 @@ class Stage(DiscordEntity, immortal = True):
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         guild_id = self.guild_id
         if guild_id:

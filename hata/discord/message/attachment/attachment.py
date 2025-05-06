@@ -5,18 +5,23 @@ from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 
 from .constants import DURATION_DEFAULT
 from .fields import (
-    parse_content_type, parse_description, parse_duration, parse_flags, parse_height, parse_id, parse_name,
-    parse_proxy_url, parse_size, parse_temporary, parse_title, parse_url, parse_waveform, parse_width,
-    put_content_type_into, put_description_into, put_duration_into, put_flags_into, put_height_into, put_id_into,
-    put_name_into, put_proxy_url_into, put_size_into, put_temporary_into, put_title_into, put_url_into,
-    put_waveform_into, put_width_into, validate_content_type, validate_description, validate_duration, validate_flags,
-    validate_height, validate_id, validate_name, validate_proxy_url, validate_size, validate_temporary, validate_title,
-    validate_url, validate_waveform, validate_width
+    parse_application, parse_clip_created_at, parse_clip_users, parse_content_type, parse_description, parse_duration,
+    parse_flags, parse_height, parse_id, parse_name, parse_proxy_url, parse_size, parse_temporary, parse_title,
+    parse_url, parse_waveform, parse_width, put_application, put_clip_created_at, put_clip_users,
+    put_content_type, put_description, put_duration, put_flags, put_height, put_id,
+    put_name, put_proxy_url, put_size, put_temporary, put_title, put_url,
+    put_waveform, put_width, validate_application, validate_clip_created_at, validate_clip_users,
+    validate_content_type, validate_description, validate_duration, validate_flags, validate_height, validate_id,
+    validate_name, validate_proxy_url, validate_size, validate_temporary, validate_title, validate_url,
+    validate_waveform, validate_width
 )
 from .flags import AttachmentFlag
 
 
 PRECREATE_FIELDS = {
+    'application': ('application', validate_application),
+    'clip_created_at': ('clip_created_at', validate_clip_created_at),
+    'clip_users': ('clip_users', validate_clip_users),
     'content_type': ('content_type', validate_content_type),
     'description': ('description', validate_description),
     'duration': ('duration', validate_duration),
@@ -39,8 +44,14 @@ class Attachment(DiscordEntity):
     
     Attributes
     ----------
-    id : `int`
-        The unique identifier number of the attachment.
+    application : `None | Application`
+        The application in the attachment if recognized. (Only for clips for now.)
+    
+    clip_created_at : `None | DateTime`
+        When the clip was created. Applicable if the attachment is a clip.
+    
+    clip_users : `None | tuple<ClientUserBase>`
+        The users in the clip. Applicable if the attachment is a clip.
     
     content_type : `None`, `str`
         The attachment's media type.
@@ -62,6 +73,9 @@ class Attachment(DiscordEntity):
         The height of the attachment if applicable.
         
         > Defaults to `0`.
+    
+    id : `int`
+        The unique identifier number of the attachment.
     
     name : `str`
         The name of the attachment.
@@ -98,13 +112,16 @@ class Attachment(DiscordEntity):
         > Defaults to `0`.
     """
     __slots__ = (
-        'content_type', 'description', 'duration', 'flags', 'height', 'name', 'proxy_url', 'size', 'temporary',
-        'title', 'url', 'waveform', 'width'
+        'application', 'clip_created_at', 'clip_users', 'content_type', 'description', 'duration', 'flags', 'height',
+        'name', 'proxy_url', 'size', 'temporary', 'title', 'url', 'waveform', 'width'
     )
     
     def __new__(
         cls,
         *,
+        application = ...,
+        clip_created_at = ...,
+        clip_users = ...,
         content_type = ...,
         description = ...,
         duration = ...,
@@ -123,6 +140,15 @@ class Attachment(DiscordEntity):
         
         Parameters
         ----------
+        application : `None | Application`, Optional (Keyword only)
+            The application in the attachment if recognized.
+        
+        clip_created_at : `None | DateTime`, Optional (Keyword only)
+            When the clip was created. Applicable if the attachment is a clip.
+        
+        clip_users : `None | iterable<ClientUserBase>`, Optional (Keyword only)
+            The users in the clip. Applicable if the attachment is a clip.
+        
         content_type : `None`, `str`, Optional (Keyword only)
             The attachment's media type.
         
@@ -166,6 +192,24 @@ class Attachment(DiscordEntity):
         ValueError
             - If a parameter's value is incorrect.
         """
+        # application
+        if application is ...:
+            application = None
+        else:
+            application = validate_application(application)
+        
+        # clip_created_at
+        if clip_created_at is ...:
+            clip_created_at = None
+        else:
+            clip_created_at = validate_clip_created_at(clip_created_at)
+        
+        # clip_users
+        if clip_users is ...:
+            clip_users = None
+        else:
+            clip_users = validate_clip_users(clip_users)
+        
         # content_type
         if content_type is ...:
             content_type = None
@@ -241,6 +285,9 @@ class Attachment(DiscordEntity):
         # Construct
         
         self = object.__new__(cls)
+        self.application = application
+        self.clip_created_at = clip_created_at
+        self.clip_users = clip_users
         self.content_type = content_type
         self.description = description
         self.duration = duration
@@ -265,10 +312,17 @@ class Attachment(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received attachment data.
+        
+        Returns
+        -------
+        self : `instance<cls>`
         """
         self = object.__new__(cls)
+        self.application = parse_application(data)
+        self.clip_created_at = parse_clip_created_at(data)
+        self.clip_users = parse_clip_users(data)
         self.content_type = parse_content_type(data)
         self.description = parse_description(data)
         self.duration = parse_duration(data)
@@ -288,9 +342,7 @@ class Attachment(DiscordEntity):
     
     def __repr__(self):
         """Returns the representation of the attachment."""
-        repr_parts = [
-            '<', type(self).__name__,
-        ]
+        repr_parts = ['<', type(self).__name__,]
         
         attachment_id = self.id
         if attachment_id:
@@ -352,7 +404,19 @@ class Attachment(DiscordEntity):
             # proxy_url
             if self.proxy_url != other.proxy_url:
                 return False
-            
+        
+        # application
+        if self.application != other.application:
+            return False
+        
+        # clip_created_at
+        if self.clip_created_at != other.clip_created_at:
+            return False
+        
+        # clip_users
+        if self.clip_users != other.clip_users:
+            return False
+        
         # content_type
         if self.content_type != other.content_type:
             return False
@@ -407,6 +471,23 @@ class Attachment(DiscordEntity):
     def __hash__(self):
         """Returns the hash value of the attachment."""
         hash_value = 0
+        
+        # application
+        application = self.application
+        if (application is not None):
+            hash_value ^= hash(application)
+        
+        # clip_created_at
+        clip_created_at = self.clip_created_at
+        if (clip_created_at is not None):
+            hash_value ^= hash(clip_created_at)
+        
+        # clip_users
+        clip_users = self.clip_users
+        if (clip_users is not None):
+            hash_value ^= len(clip_users) << 16
+            for clip_user in clip_users:
+                hash_value ^= hash(clip_user)
         
         # content_type
         content_type = self.content_type
@@ -484,26 +565,29 @@ class Attachment(DiscordEntity):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`)
+        data : `dict<str, object>`
         """
         data = {}
         
-        put_content_type_into(self.content_type, data, defaults)
-        put_description_into(self.description, data, defaults)
-        put_duration_into(self.duration, data, defaults)
-        put_flags_into(self.flags, data, defaults)
-        put_height_into(self.height, data, defaults)
-        put_name_into(self.name, data, defaults)
-        put_size_into(self.size, data, defaults)
-        put_temporary_into(self.temporary, data, defaults)
-        put_title_into(self.title, data, defaults)
-        put_url_into(self.url, data, defaults)
-        put_waveform_into(self.waveform, data, defaults)
-        put_width_into(self.width, data, defaults)
+        put_application(self.application, data, defaults)
+        put_clip_created_at(self.clip_created_at, data, defaults)
+        put_clip_users(self.clip_users, data, defaults)
+        put_content_type(self.content_type, data, defaults)
+        put_description(self.description, data, defaults)
+        put_duration(self.duration, data, defaults)
+        put_flags(self.flags, data, defaults)
+        put_height(self.height, data, defaults)
+        put_name(self.name, data, defaults)
+        put_size(self.size, data, defaults)
+        put_temporary(self.temporary, data, defaults)
+        put_title(self.title, data, defaults)
+        put_url(self.url, data, defaults)
+        put_waveform(self.waveform, data, defaults)
+        put_width(self.width, data, defaults)
         
         if include_internals:
-            put_id_into(self.id, data, defaults)
-            put_proxy_url_into(self.proxy_url, data, defaults)
+            put_id(self.id, data, defaults)
+            put_proxy_url(self.proxy_url, data, defaults)
         
         return data
     
@@ -519,6 +603,14 @@ class Attachment(DiscordEntity):
         new : `instance<type<self>>`
         """
         new = object.__new__(type(self))
+        new.application = self.application
+        new.clip_created_at = self.clip_created_at
+        
+        clip_users = self.clip_users
+        if (clip_users is not None):
+            clip_users = (*clip_users,)
+        new.clip_users = clip_users
+        
         new.content_type = self.content_type
         new.description = self.description
         new.duration = self.duration
@@ -539,6 +631,9 @@ class Attachment(DiscordEntity):
     def copy_with(
         self,
         *,
+        application = ...,
+        clip_created_at = ...,
+        clip_users = ...,
         content_type = ...,
         description = ...,
         duration = ...,
@@ -559,6 +654,15 @@ class Attachment(DiscordEntity):
         
         Parameters
         ----------
+        application : `None | Application`, Optional (Keyword only)
+            The application in the attachment if recognized.
+        
+        clip_created_at : `None | DateTime`, Optional (Keyword only)
+            When the clip was created. Applicable if the attachment is a clip.
+        
+        clip_users : `None | iterable<ClientUserBase>`, Optional (Keyword only)
+            The users in the clip. Applicable if the attachment is a clip.
+        
         content_type : `None`, `str`, Optional (Keyword only)
             The attachment's media type.
         
@@ -599,6 +703,26 @@ class Attachment(DiscordEntity):
         -------
         new : `instance<type<self>>`
         """
+        # application
+        if application is ...:
+            application = self.application
+        else:
+            application = validate_application(application)
+        
+        # clip_created_at
+        if clip_created_at is ...:
+            clip_created_at = self.clip_created_at
+        else:
+            clip_created_at = validate_clip_created_at(clip_created_at)
+        
+        # clip_users
+        if clip_users is ...:
+            clip_users = self.clip_users
+            if (clip_users is not None):
+                clip_users = (*clip_users,)
+        else:
+            clip_users = validate_clip_users(clip_users)
+        
         # content_type
         if content_type is ...:
             content_type = self.content_type
@@ -674,6 +798,9 @@ class Attachment(DiscordEntity):
         # Construct
         
         new = object.__new__(type(self))
+        new.application = application
+        new.clip_created_at = clip_created_at
+        new.clip_users = clip_users
         new.content_type = content_type
         new.description = description
         new.duration = duration
@@ -710,6 +837,15 @@ class Attachment(DiscordEntity):
         
         Other Parameters
         ----------------
+        application : `None | Application`, Optional (Keyword only)
+            The application in the attachment if recognized.
+        
+        clip_created_at : `None | DateTime`, Optional (Keyword only)
+            When the clip was created. Applicable if the attachment is a clip.
+        
+        clip_users : `None | iterable<ClientUserBase>`, Optional (Keyword only)
+            The users in the clip. Applicable if the attachment is a clip.
+        
         content_type : `None`, `str`, Optional (Keyword only)
             The attachment's media type.
         
@@ -771,6 +907,9 @@ class Attachment(DiscordEntity):
         # Construct
         
         self = object.__new__(cls)
+        self.application = None
+        self.clip_created_at = None
+        self.clip_users = None
         self.content_type = None
         self.description = None
         self.duration = DURATION_DEFAULT
@@ -798,12 +937,56 @@ class Attachment(DiscordEntity):
         """
         Returns the displayed name of the attachment.
         
+        Displayed name is not the upload name, but something hata tries to construct to imitate it as close as possible.
+        `attachment.name` do not include unicodes and `attachment.title` that was added to address this issue is
+        not including the extension. So if there are any unicodes in extension they are omitted.
+        To make this worse, uploaded attachment through interaction commands do not even have `.title`.
+        
+        Include a lot of cursing in this section.
+        
         Returns
         -------
         display_name : `str`
         """
         title = self.title
-        if (title is not None):
+        name = self.name
+        
+        if (title is None):
+            return name
+        
+        extension_dot_index = name.find('.')
+        if extension_dot_index == -1:
             return title
         
-        return self.name
+        return title + name[extension_dot_index:]
+    
+    
+    @property
+    def content_created_at(self):
+        """
+        Returns when the attachment's content was created if known.
+        
+        Returns
+        -------
+        modified_at : `DateTime`
+        """
+        content_created_at = self.clip_created_at
+        if (content_created_at is not None):
+            return content_created_at
+        
+        return self.created_at
+    
+    
+    def iter_clip_users(self):
+        """
+        Iterates over the users in the clip. Applicable if the attachment is a clip.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        clip_user : ``ClientUserBase``
+        """
+        clip_users = self.clip_users
+        if (clip_users is not None):
+            yield from clip_users

@@ -22,6 +22,7 @@ def test__InteractionEvent__from_data():
     """
     application_id = 202211070005
     application_permissions = Permission(123)
+    attachment_size_limit = 10 << 20
     authorizer_user_ids = {
         ApplicationIntegrationType.user_install: 202407170004,
         ApplicationIntegrationType.guild_install: 202407170005,
@@ -43,6 +44,7 @@ def test__InteractionEvent__from_data():
     data = {
         'application_id': str(application_id),
         'app_permissions': format(application_permissions, 'd'),
+        'attachment_size_limit': attachment_size_limit,
         'authorizing_integration_owners': {
             str(integration_type.value): str(user_id) for integration_type, user_id in authorizer_user_ids.items()
         },
@@ -68,6 +70,7 @@ def test__InteractionEvent__from_data():
     
     vampytest.assert_eq(interaction_event.application_id, application_id)
     vampytest.assert_eq(interaction_event.application_permissions, application_permissions)
+    vampytest.assert_eq(interaction_event.attachment_size_limit, attachment_size_limit)
     vampytest.assert_eq(interaction_event.authorizer_user_ids, authorizer_user_ids)
     vampytest.assert_is(interaction_event.channel, channel)
     vampytest.assert_eq(interaction_event.entitlements, tuple(entitlements))
@@ -91,6 +94,7 @@ def test__InteractionEvent__to_data():
     """
     application_id = 202211070019
     application_permissions = Permission(123)
+    attachment_size_limit = 10 << 20
     authorizer_user_ids = {
         ApplicationIntegrationType.user_install: 202407170006,
         ApplicationIntegrationType.guild_install: 202407170007,
@@ -114,6 +118,7 @@ def test__InteractionEvent__to_data():
         interaction_id,
         application_id = application_id,
         application_permissions = application_permissions,
+        attachment_size_limit = attachment_size_limit,
         authorizer_user_ids = authorizer_user_ids,
         channel = channel,
         entitlements = entitlements,
@@ -130,6 +135,7 @@ def test__InteractionEvent__to_data():
     expected_output = {
         'application_id': str(application_id),
         'app_permissions': format(application_permissions, 'd'),
+        'attachment_size_limit': attachment_size_limit,
         'authorizing_integration_owners': {
             str(integration_type.value): str(user_id) for integration_type, user_id in authorizer_user_ids.items()
         },

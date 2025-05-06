@@ -11,7 +11,7 @@ from ...guild import create_partial_guild_from_data
 from ...http import DiscordApiClient
 from ...oauth2 import Connection, Oauth2Access, Oauth2Scope, Oauth2User
 from ...oauth2.oauth2_access.fields import (
-    put_scopes_into as put_oauth2_scopes_into, validate_scopes as validate_oauth2_scopes
+    put_scopes as put_oauth2_scopes, validate_scopes as validate_oauth2_scopes
 )
 from ...payload_building import build_edit_payload
 from ...role import Role
@@ -120,7 +120,7 @@ class ClientCompoundOauth2Endpoints(Compound):
             'redirect_uri': redirect_url,
         }
         
-        put_oauth2_scopes_into(scopes, data, True)
+        put_oauth2_scopes(scopes, data, True)
         
         
         data = await self.api.oauth2_token(data, IgnoreCaseMultiValueDictionary())
@@ -171,7 +171,7 @@ class ClientCompoundOauth2Endpoints(Compound):
             'grant_type': 'client_credentials',
         }
         
-        put_oauth2_scopes_into(scopes, data, True)
+        put_oauth2_scopes(scopes, data, True)
         
         headers = IgnoreCaseMultiValueDictionary()
         headers[AUTHORIZATION] = BasicAuthorization(str(self.id), self.secret).encode()
@@ -300,7 +300,7 @@ class ClientCompoundOauth2Endpoints(Compound):
                 'grant_type': 'client_credentials',
             }
         
-        put_oauth2_scopes_into(access.scopes, data, True)
+        put_oauth2_scopes(access.scopes, data, True)
         
         data = await self.api.oauth2_token(data, IgnoreCaseMultiValueDictionary())
         
@@ -317,13 +317,13 @@ class ClientCompoundOauth2Endpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild, where the user is going to be added.
         
         access: ``Oauth2Access``, ``Oauth2User``, `str`
             The access of the user, who will be added.
         
-        user : `None`, ```ClientUserBase`` = `None`, `int`, Optional
+        user : `None`, ```ClientUserBase`` = `None`, Optional
             Defines which user will be added to the guild. The `access` must refer to this specified user.
             
             This field is optional if access is passed as an ``Oauth2User`` object.
@@ -343,7 +343,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         Raises
         ------
         TypeError:
-            - If `user` was not given neither as `None`, ``ClientUserBase``, `int`.
+            - If `user` is not ``None | int | ClientUserBase``.
             - If `user` was passed as `None` and `access` was passed as ``Oauth2Access``, `str`.
             - If `access` was not given as ``Oauth2Access``, ``Oauth2User``, nether as `str`.
             - If the given `access` not grants `'guilds.join'` scope.

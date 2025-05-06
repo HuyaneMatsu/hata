@@ -7,7 +7,7 @@ from ...utils import sanitize_mentions
 from ..embed_field_base import EmbedFieldBase
 
 from .fields import (
-    parse_icon_proxy_url, parse_icon_url, parse_text, put_icon_proxy_url_into, put_icon_url_into, put_text_into,
+    parse_icon_proxy_url, parse_icon_url, parse_text, put_icon_proxy_url, put_icon_url, put_text,
     validate_icon_url, validate_text
 )
 
@@ -152,11 +152,11 @@ class EmbedFooter(EmbedFieldBase):
     def to_data(self, *, defaults = False, include_internals = False):
         data = {}
         
-        put_icon_url_into(self.icon_url, data, defaults)
-        put_text_into(self.text, data, defaults)
+        put_icon_url(self.icon_url, data, defaults)
+        put_text(self.text, data, defaults)
         
         if include_internals:
-            put_icon_proxy_url_into(self.icon_proxy_url, data, defaults)
+            put_icon_proxy_url(self.icon_proxy_url, data, defaults)
         
         return data
     

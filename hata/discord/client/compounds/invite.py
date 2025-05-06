@@ -59,7 +59,7 @@ def _get_preferred_channel_for_invite(client, guild):
     
     Returns
     -------
-    channel : `None`, ``Channel``
+    channel : ``None | Channel``
     """
     for channel in _iter_channels_in_preference_order(guild):
         if channel.cached_permissions_for(client) & PERMISSION_MASK_CREATE_INSTANT_INVITE:
@@ -79,7 +79,7 @@ class ClientCompoundInviteEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild, what's invite will be returned.
         
         Returns
@@ -175,7 +175,7 @@ class ClientCompoundInviteEndpoints(Compound):
         target_application_id : `int`, ``Application``, Optional (Keyword only)
             The invite's target application.
         
-        target_type : ``InviteTargetType``, `int`, Optional (Keyword only)
+        target_type : ``None | int | InviteTargetType``, Optional (Keyword only)
             The invite's target type.
         
         target_user : `int`, ``ClientUserBase``, Optional (Keyword only)
@@ -335,7 +335,7 @@ class ClientCompoundInviteEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild, what's invites will be requested.
         
         Returns

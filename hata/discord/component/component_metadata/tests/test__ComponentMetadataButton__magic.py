@@ -118,7 +118,7 @@ def test__ComponentMetadataButton__hash__sku_id():
     vampytest.assert_instance(hash(component_metadata), int)
 
 
-def test__ComponentMetadataButton__different_type():
+def test__ComponentMetadataButton__eq__different_type():
     """
     Tests whether ``ComponentMetadataButton.__eq__`` works as intended.
     

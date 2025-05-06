@@ -16,11 +16,13 @@ def test__value_serializer_description(input_value):
     
     Parameters
     ----------
-    input_value : `str`
+    input_value : `None | str`
         Processed value.
     
     Returns
     -------
     output : `str`
     """
-    return value_serializer_description(input_value)
+    output = value_serializer_description(input_value)
+    vampytest.assert_instance(output, str)
+    return output

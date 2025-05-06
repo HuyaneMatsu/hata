@@ -97,3 +97,13 @@ __all__ = (
     *precreate_helpers.__all__,
     *utils.__all__,
 )
+
+
+# Deprecations
+
+from ..utils.module_deprecation import deprecated_import
+
+# 2025-04-25
+deprecated_import(GuildBadge, 'UserClan')
+
+del deprecated_import

@@ -4,28 +4,35 @@ from ..fields import validate_text_input_style
 from ..preinstanced import TextInputStyle
 
 
-def test__validate_text_input_style__0():
-    """
-    Tests whether `validate_text_input_style` works as intended.
-    
-    Case: passing.
-    """
-    for input_value, expected_output in (
-        (TextInputStyle.short, TextInputStyle.short),
-        (TextInputStyle.paragraph.value, TextInputStyle.paragraph)
-    ):
-        output = validate_text_input_style(input_value)
-        vampytest.assert_eq(output, expected_output)
+def _iter_options__passing():
+    yield None, TextInputStyle.none
+    yield TextInputStyle.short, TextInputStyle.short
+    yield TextInputStyle.short.value, TextInputStyle.short
 
 
-def test__validate_text_input_style__1():
+def _iter_options__type_error():
+    yield 12.6
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_text_input_style(input_value):
     """
-    Tests whether `validate_text_input_style` works as intended.
+    Validates whether ``validate_text_input_style`` works as intended.
     
-    Case: `TypeError`.
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
+    
+    Returns
+    -------
+    output : ``TextInputStyle``
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_text_input_style(input_value)
+    output = validate_text_input_style(input_value)
+    vampytest.assert_instance(output, TextInputStyle)
+    return output

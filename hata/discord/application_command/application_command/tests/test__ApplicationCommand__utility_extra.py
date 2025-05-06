@@ -203,7 +203,7 @@ def test__ApplicationCommand__guild(application_command_id, guild_id):
     
     Returns
     -------
-    guild : `None | Guild`
+    guild : ``None | Guild``
     """
     application_command = ApplicationCommand.precreate(application_command_id, name = 'kimi', guild_id = guild_id)
     return application_command.guild

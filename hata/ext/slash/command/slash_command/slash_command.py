@@ -175,7 +175,7 @@ class SlashCommand(
         description : `str | object`, Optional (Keyword only)
             Description to use instead of the function's docstring.
         
-        guild : `int | Guild | (list | set)<int | Guild>`, Optional (Keyword only)
+        guild : ``int | Guild | (list | set)<int | Guild>``, Optional (Keyword only)
             To which guild(s) the command is bound to.
         
         integration_context_types : `None | ApplicationCommandIntegrationContextType | int | str | \

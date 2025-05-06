@@ -20,7 +20,7 @@ class CakeEater:
         self.tummy_size = tummy_size
     
     def __repr__(self):
-        return f'{self.__class__.__name__}({self.type!r}, {self.tummy_size:.{TUMMY_REPR_ACCURACY}f})'
+        return f'{type(self).__name__}({self.type!r}, {self.tummy_size:.{TUMMY_REPR_ACCURACY}f})'
     
     async def throw(self):
         # No one would ever expect this.
@@ -31,7 +31,7 @@ print(CakeEater('dream eater', 2.111))
 """
 __all__ = ('HIGHLIGHT_TOKEN_TYPES', 'set_highlight_html_class', )
 
-from scarletio.utils.highlight import HIGHLIGHT_TOKEN_TYPES, HighlightFormatterContext
+from scarletio.utils.highlight import FormatterDetailHTML, HIGHLIGHT_TOKEN_TYPES, HighlightFormatterContext
 
 PATCHOULI_FORMATTER_CONTEXT = HighlightFormatterContext()
 PATCHOULI_FORMATTER_CONTEXT.set_highlight_html_all()
@@ -48,7 +48,8 @@ def set_highlight_html_class(token_type_identifier, html_class):
     ----------
     token_type_identifier : `int`
         The node's identifier.
-    html_class : `None`, `str`
+    
+    html_class : `None | str`
         The html class to set.
     
     Raises
@@ -60,4 +61,4 @@ def set_highlight_html_class(token_type_identifier, html_class):
         If `token_type_identifier` was not given as any of the predefined values. Check ``TOKEN_TYPES`` for more
             details.
     """
-    PATCHOULI_FORMATTER_CONTEXT.set_highlight_html_class(token_type_identifier, html_class)
+    PATCHOULI_FORMATTER_CONTEXT.set_highlight_detail(token_type_identifier, FormatterDetailHTML(html_class))

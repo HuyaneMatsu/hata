@@ -114,6 +114,7 @@ def test__InteractionEvent__copy():
     """
     application_id = 202211070052
     application_permissions = Permission(123)
+    attachment_size_limit = 10 << 22
     authorizer_user_ids = {
         ApplicationIntegrationType.user_install: 202407170017,
         ApplicationIntegrationType.guild_install: 202407170018,
@@ -135,6 +136,7 @@ def test__InteractionEvent__copy():
         interaction_id,
         application_id = application_id,
         application_permissions = application_permissions,
+        attachment_size_limit = attachment_size_limit,
         authorizer_user_ids = authorizer_user_ids,
         channel = channel,
         entitlements = entitlements,
@@ -163,6 +165,7 @@ def test__InteractionEvent__copy__with__no_fields():
     """
     application_id = 202211070058
     application_permissions = Permission(123)
+    attachment_size_limit = 10 << 20
     authorizer_user_ids = {
         ApplicationIntegrationType.user_install: 202407170019,
         ApplicationIntegrationType.guild_install: 202407170020,
@@ -184,6 +187,7 @@ def test__InteractionEvent__copy__with__no_fields():
         interaction_id,
         application_id = application_id,
         application_permissions = application_permissions,
+        attachment_size_limit = attachment_size_limit,
         authorizer_user_ids = authorizer_user_ids,
         channel = channel,
         entitlements = entitlements,
@@ -212,6 +216,7 @@ def test__InteractionEvent__copy__with__all_fields():
     """
     old_application_id = 202211070064
     old_application_permissions = Permission(123)
+    old_attachment_size_limit = 10 << 20
     old_authorizer_user_ids = {
         ApplicationIntegrationType.user_install: 202407170021,
         ApplicationIntegrationType.guild_install: 202407170022,
@@ -229,6 +234,7 @@ def test__InteractionEvent__copy__with__all_fields():
     
     new_application_id = 202211070065
     new_application_permissions = Permission(951)
+    new_attachment_size_limit = 11 << 20
     new_authorizer_user_ids = {
         ApplicationIntegrationType.user_install: 202407170023,
         ApplicationIntegrationType.guild_install: 202407170024,
@@ -247,6 +253,7 @@ def test__InteractionEvent__copy__with__all_fields():
     interaction_event = InteractionEvent(
         application_id = old_application_id,
         application_permissions = old_application_permissions,
+        attachment_size_limit = old_attachment_size_limit,
         authorizer_user_ids = old_authorizer_user_ids,
         channel = old_channel,
         entitlements = old_entitlements,
@@ -263,6 +270,7 @@ def test__InteractionEvent__copy__with__all_fields():
     copy = interaction_event.copy_with(
         application_id = new_application_id,
         application_permissions = new_application_permissions,
+        attachment_size_limit = new_attachment_size_limit,
         authorizer_user_ids = new_authorizer_user_ids,
         channel = new_channel,
         entitlements = new_entitlements,
@@ -280,6 +288,7 @@ def test__InteractionEvent__copy__with__all_fields():
 
     vampytest.assert_eq(copy.application_id, new_application_id)
     vampytest.assert_eq(copy.application_permissions, new_application_permissions)
+    vampytest.assert_eq(copy.attachment_size_limit, new_attachment_size_limit)
     vampytest.assert_eq(copy.authorizer_user_ids, new_authorizer_user_ids)
     vampytest.assert_is(copy.channel, new_channel)
     vampytest.assert_eq(copy.entitlements, tuple(new_entitlements))

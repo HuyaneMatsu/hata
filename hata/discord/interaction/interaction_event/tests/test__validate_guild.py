@@ -21,12 +21,12 @@ def test__validate_guild__passing(input_value):
     
     Parameters
     ----------
-    input_value : `None`, ``Guild``
+    input_value : ``None | Guild``
         The guild to validate.
     
     Returns
     -------
-    output : `None`, ``Guild``
+    output : ``None | Guild``
     """
     return validate_guild(input_value)
 

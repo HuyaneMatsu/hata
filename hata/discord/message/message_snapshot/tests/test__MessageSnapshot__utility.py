@@ -5,6 +5,7 @@ import vampytest
 from ....channel import Channel
 from ....component import Component, ComponentType
 from ....embed import Embed
+from ....soundboard import SoundboardSound
 from ....role import Role
 from ....sticker import Sticker
 from ....user import User
@@ -40,6 +41,10 @@ def test__MessageSnapshot__copy():
         User.precreate(202407200053, name = 'Rin'),
     ]
     message_type = MessageType.call
+    soundboard_sounds = [
+        SoundboardSound.precreate(202501300022, name = 'whither'),
+        SoundboardSound.precreate(202501300023, name = 'Yuyuko'),
+    ]
     stickers = [
         Sticker.precreate(202409200072, name = 'Make'),
         Sticker.precreate(202409200073, name = 'Me'),
@@ -56,6 +61,7 @@ def test__MessageSnapshot__copy():
         mentioned_role_ids = mentioned_role_ids,
         mentioned_users = mentioned_users,
         message_type = message_type,
+        soundboard_sounds = soundboard_sounds,
         stickers = stickers,
     )
     copy = message_snapshot.copy()
@@ -91,6 +97,10 @@ def test__MessageSnapshot__copy_with__no_fields():
         User.precreate(202407200055, name = 'Rin'),
     ]
     message_type = MessageType.call
+    soundboard_sounds = [
+        SoundboardSound.precreate(202501300024, name = 'whither'),
+        SoundboardSound.precreate(202501300025, name = 'Yuyuko'),
+    ]
     stickers = [
         Sticker.precreate(202409200074, name = 'Make'),
         Sticker.precreate(202409200075, name = 'Me'),
@@ -107,6 +117,7 @@ def test__MessageSnapshot__copy_with__no_fields():
         mentioned_role_ids = mentioned_role_ids,
         mentioned_users = mentioned_users,
         message_type = message_type,
+        soundboard_sounds = soundboard_sounds,
         stickers = stickers,
     )
     copy = message_snapshot.copy_with()
@@ -142,6 +153,10 @@ def test__MessageSnapshot__copy_with__all_fields():
         User.precreate(202407200057, name = 'Rin'),
     ]
     old_message_type = MessageType.call
+    old_soundboard_sounds = [
+        SoundboardSound.precreate(202501300026, name = 'whither'),
+        SoundboardSound.precreate(202501300027, name = 'Yuyuko'),
+    ]
     old_stickers = [
         Sticker.precreate(202409200076, name = 'Make'),
         Sticker.precreate(202409200077, name = 'Me'),
@@ -166,6 +181,10 @@ def test__MessageSnapshot__copy_with__all_fields():
         User.precreate(202407200059, name = 'Rin'),
     ]
     new_message_type = MessageType.user_add
+    new_soundboard_sounds = [
+        SoundboardSound.precreate(202501300028, name = 'that'),
+        SoundboardSound.precreate(202501300029, name = 'heart'),
+    ]
     new_stickers = [
         Sticker.precreate(202409200078, name = 'Come'),
         Sticker.precreate(202409200079, name = 'Alive'),
@@ -182,6 +201,7 @@ def test__MessageSnapshot__copy_with__all_fields():
         mentioned_role_ids = old_mentioned_role_ids,
         mentioned_users = old_mentioned_users,
         message_type = old_message_type,
+        soundboard_sounds = old_soundboard_sounds,
         stickers = old_stickers,
     )
     copy = message_snapshot.copy_with(
@@ -195,6 +215,7 @@ def test__MessageSnapshot__copy_with__all_fields():
         mentioned_role_ids = new_mentioned_role_ids,
         mentioned_users = new_mentioned_users,
         message_type = new_message_type,
+        soundboard_sounds = new_soundboard_sounds,
         stickers = new_stickers,
     )
     
@@ -210,6 +231,7 @@ def test__MessageSnapshot__copy_with__all_fields():
     vampytest.assert_eq(copy.flags, new_flags)
     vampytest.assert_eq(copy.mentioned_role_ids, tuple(new_mentioned_role_ids))
     vampytest.assert_eq(copy.mentioned_users, tuple(new_mentioned_users))
+    vampytest.assert_eq(copy.soundboard_sounds, tuple(new_soundboard_sounds))
     vampytest.assert_eq(copy.stickers, tuple(new_stickers))
     vampytest.assert_is(copy.type, new_message_type)
 
@@ -275,6 +297,38 @@ def test__MessageSnapshot__attachment(attachments):
     
     output = message_snapshot.attachment
     vampytest.assert_instance(output, Attachment, nullable = True)
+    return output
+
+
+def _iter_options__soundboard_sound():
+    soundboard_sound_0 = SoundboardSound.precreate(202501300030, name = 'whither')
+    soundboard_sound_1 = SoundboardSound.precreate(202501300031, name = 'Yuyuko')
+    
+    yield None, None
+    yield [soundboard_sound_1], soundboard_sound_1
+    yield [soundboard_sound_0, soundboard_sound_1], soundboard_sound_0
+
+
+@vampytest._(vampytest.call_from(_iter_options__soundboard_sound()).returning_last())
+def test__MessageSnapshot__soundboard_sound(soundboard_sounds):
+    """
+    Tests whether ``MessageSnapshot.soundboard_sound`` works as intended.
+    
+    Parameters
+    ----------
+    soundboard_sounds : `None | list<SoundboardSound>`
+        Stickers to test with.
+    
+    Returns
+    -------
+    soundboard_sound : `None | SoundboardSound`
+    """
+    message_snapshot = MessageSnapshot(
+        soundboard_sounds = soundboard_sounds,
+    )
+    
+    output = message_snapshot.soundboard_sound
+    vampytest.assert_instance(output, SoundboardSound, nullable = True)
     return output
 
 
@@ -566,6 +620,36 @@ def test__MessageSnapshot__iter_mentioned_channels(input_value):
     return [*message_snapshot.iter_mentioned_channels()]
 
 
+def _iter_options__iter_soundboard_sounds():
+    soundboard_sound_0 = SoundboardSound.precreate(202501300032, name = 'whither')
+    soundboard_sound_1 = SoundboardSound.precreate(202501300033, name = 'Yuyuko')
+    
+    yield None, []
+    yield [soundboard_sound_0], [soundboard_sound_0]
+    yield [soundboard_sound_0, soundboard_sound_1], [soundboard_sound_0, soundboard_sound_1]
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_soundboard_sounds()).returning_last())
+def test__MessageSnapshot__iter_soundboard_sounds(soundboard_sounds):
+    """
+    Tests whether ``MessageSnapshot.iter_soundboard_sounds`` works as intended.
+    
+    Parameters
+    ----------
+    soundboard_sounds : `None | list<SoundboardSound>`
+        Stickers to test with.
+    
+    Returns
+    -------
+    output : `list<SoundboardSound>`
+    """
+    message_snapshot = MessageSnapshot(
+        soundboard_sounds = soundboard_sounds,
+    )
+    
+    return [*message_snapshot.iter_soundboard_sounds()]
+
+
 def _iter_options__iter_stickers():
     sticker_0 = Sticker.precreate(202409200082, name = 'orin')
     sticker_1 = Sticker.precreate(202409200083, name = 'miau')
@@ -587,7 +671,7 @@ def test__MessageSnapshot__iter_stickers(stickers):
     
     Returns
     -------
-    sticker : `None | Sticker`
+    output : `list<Sticker>`
     """
     message_snapshot = MessageSnapshot(
         stickers = stickers,

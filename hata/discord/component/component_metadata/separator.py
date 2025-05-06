@@ -5,7 +5,7 @@ from scarletio import copy_docs
 from .constants import SEPARATOR_SPACING_SIZE_DEFAULT
 from .base import ComponentMetadataBase
 from .fields import (
-    parse_divider, parse_spacing_size, put_divider_into, put_spacing_size_into, validate_divider, validate_spacing_size
+    parse_divider, parse_spacing_size, put_divider, put_spacing_size, validate_divider, validate_spacing_size
 )
 
 
@@ -17,6 +17,7 @@ class ComponentMetadataSeparator(ComponentMetadataBase):
     ----------
     divider : `bool`
         Whether the separator should contain a divider.
+    
     spacing_size : ``SeparatorSpacingSize``
         The separator's spacing's size.
     """
@@ -35,7 +36,8 @@ class ComponentMetadataSeparator(ComponentMetadataBase):
         ----------
         divider : `bool`, Optional (Keyword only)
             Whether the separator should contain a divider.
-        spacing_size : ``SeparatorSpacingSize``, `int`, Optional (Keyword only)
+        
+        spacing_size : ``int | SeparatorSpacingSize``, Optional (Keyword only)
             The separator's spacing's size.
         
         Raises
@@ -139,13 +141,23 @@ class ComponentMetadataSeparator(ComponentMetadataBase):
     
     
     @copy_docs(ComponentMetadataBase.to_data)
-    def to_data(self, *, defaults = False):
+    def to_data(self, *, defaults = False, include_internals = False):
         data = {}
         
-        put_divider_into(self.divider, data, defaults)
-        put_spacing_size_into(self.spacing_size, data, defaults)
+        put_divider(self.divider, data, defaults)
+        put_spacing_size(self.spacing_size, data, defaults)
         
         return data
+    
+    
+    @copy_docs(ComponentMetadataBase.clean_copy)
+    def clean_copy(self, guild = None):
+        new = object.__new__(type(self))
+        
+        new.divider = self.divider
+        new.spacing_size = self.spacing_size
+        
+        return new
     
     
     @copy_docs(ComponentMetadataBase.copy)
@@ -171,7 +183,8 @@ class ComponentMetadataSeparator(ComponentMetadataBase):
         ----------
         divider : `bool`, Optional (Keyword only)
             Whether the separator should contain a divider.
-        spacing_size : ``SeparatorSpacingSize``, `int`, Optional (Keyword only)
+        
+        spacing_size : ``int | SeparatorSpacingSize``, Optional (Keyword only)
             The separator's spacing's size.
         
         Returns

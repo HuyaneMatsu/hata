@@ -1,6 +1,5 @@
 __all__ = ('InteractionMetadataApplicationCommand',)
 
-from warnings import warn
 
 from scarletio import copy_docs
 
@@ -8,7 +7,7 @@ from ...application_command import ApplicationCommandTargetType
 
 from .application_command_autocomplete import InteractionMetadataApplicationCommandAutocomplete
 from .fields import (
-    parse_resolved, parse_target_id, parse_target_type, put_resolved_into, put_target_id_into, put_target_type_into,
+    parse_resolved, parse_target_id, parse_target_type, put_resolved, put_target_id, put_target_type,
     validate_resolved, validate_target_id, validate_target_type
 )
 
@@ -140,7 +139,6 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
         self,
         *,
         application_command_id = ...,
-        id = ...,
         name = ...,
         options = ...,
         resolved = ...,
@@ -181,20 +179,6 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
         ValueError
             - If a parameter's value is incorrect.
         """
-        # id - Deprecated
-        if id is not ...:
-            warn(
-                (
-                    f'`{type(self).__name__}.copy_with`\' `id` parameter is deprecated '
-                    f'and will be removed in 2024 December. '
-                    f'Please use `application_command_id` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            application_command_id = id
-        
         # resolved
         if resolved is ...:
             resolved = self.resolved
@@ -243,9 +227,9 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
         data = InteractionMetadataApplicationCommandAutocomplete.to_data(
             self, defaults = defaults, guild_id = guild_id
         )
-        put_resolved_into(self.resolved, data, defaults, guild_id = guild_id)
-        put_target_id_into(self.target_id, data, defaults)
-        put_target_type_into(self.target_type, data, defaults)
+        put_resolved(self.resolved, data, defaults, guild_id = guild_id)
+        put_target_id(self.target_id, data, defaults)
+        put_target_type(self.target_type, data, defaults)
         return data
     
     

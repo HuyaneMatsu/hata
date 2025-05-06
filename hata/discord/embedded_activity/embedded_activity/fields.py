@@ -13,35 +13,35 @@ from ..embedded_activity_user_state import EmbeddedActivityUserState
 # application_id
 
 parse_application_id = entity_id_parser_factory('application_id')
-put_application_id_into = entity_id_putter_factory('application_id')
+put_application_id = entity_id_putter_factory('application_id')
 validate_application_id = entity_id_validator_factory('application_id', NotImplemented, include = 'Application')
 
 
 # guild_id
 
 parse_guild_id = entity_id_parser_factory('guild_id')
-put_guild_id_into = entity_id_optional_putter_factory('guild_id')
+put_guild_id = entity_id_optional_putter_factory('guild_id')
 validate_guild_id = entity_id_validator_factory('guild_id', NotImplemented, include = 'Guild')
 
 
 # id
 
 parse_id = entity_id_parser_factory('instance_id')
-put_id_into = entity_id_putter_factory('instance_id')
+put_id = entity_id_putter_factory('instance_id')
 validate_id = entity_id_validator_factory('id')
 
 
 # launch_id
 
 parse_launch_id = entity_id_parser_factory('launch_id')
-put_launch_id_into = entity_id_putter_factory('launch_id')
+put_launch_id = entity_id_putter_factory('launch_id')
 validate_launch_id = entity_id_validator_factory('launch_id')
 
 
 # location
 
 parse_location = nullable_entity_parser_factory('location', EmbeddedActivityLocation)
-put_location_into = nullable_entity_putter_factory('location', EmbeddedActivityLocation)
+put_location = nullable_entity_putter_factory('location', EmbeddedActivityLocation)
 validate_location = nullable_entity_validator_factory('location', EmbeddedActivityLocation)
 
 
@@ -49,7 +49,7 @@ validate_location = nullable_entity_validator_factory('location', EmbeddedActivi
 
 def parse_user_states(data, user_states, guild_id = 0):
     """
-    Parses the embedded activity user states from teh given data.
+    Parses the embedded activity user states from the given data.
     
     
     Parameters
@@ -79,9 +79,9 @@ def parse_user_states(data, user_states, guild_id = 0):
     return user_states
 
 
-def put_user_states_into(user_states, data, defaults, *, guild_id = 0):
+def put_user_states(user_states, data, defaults, *, guild_id = 0):
     """
-    Parses the embedded activity user states from teh given data.
+    Parses the embedded activity user states from the given data.
     
     
     Parameters

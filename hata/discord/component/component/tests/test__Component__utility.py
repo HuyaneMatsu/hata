@@ -1,5 +1,8 @@
 import vampytest
 
+from ....guild import Guild
+from ....user import GuildProfile, User
+
 from ...component_metadata import ButtonStyle, TextInputStyle
 from ...entity_select_default_value import EntitySelectDefaultValue, EntitySelectDefaultValueType
 from ...media_item import MediaItem
@@ -8,7 +11,91 @@ from ...string_select_option import StringSelectOption
 from ..component import Component
 from ..preinstanced import ComponentType
 
-from .test__Component__constructor import _check_is_all_field_set
+from .test__Component__constructor import _assert_fields_set
+
+
+def test__Component__clean_copy():
+    """
+    Tests whether ``Component.clean_copy`` works as intended.
+    """
+    guild_id = 202505030040
+    guild = Guild.precreate(guild_id)
+    
+    user_0 = User.precreate(202505030041, name = 'koishi')
+    user_0.guild_profiles[guild_id] = GuildProfile(nick = 'koi')
+    user_1 = User.precreate(202505030042, name = 'rin')
+    user_1.guild_profiles[guild_id] = GuildProfile(nick = 'orin')
+    user_2 = User.precreate(202505030043, name = 'utsuho')
+    user_2.guild_profiles[guild_id] = GuildProfile(nick = 'okuu')
+    
+    content_0 = f'{user_0.mention}'
+    content_1 = f'{user_1.mention}'
+    content_2 = f'{user_2.mention}'
+    
+    component_type = ComponentType.container
+    
+    component = Component(
+        component_type,
+        components = [
+            Component(
+                ComponentType.section,
+                components = [
+                    Component(
+                        ComponentType.text_display,
+                        content = content_0,
+                    ),
+                ],
+            ),
+            Component(
+                ComponentType.text_display,
+                content = content_1,
+            ),
+            Component(
+                ComponentType.section,
+                components = [
+                    Component(
+                        ComponentType.text_display,
+                        content = content_2,
+                    ),
+                ],
+            ),
+        ],
+    )
+    
+    copy = component.clean_copy(guild)
+    
+    _assert_fields_set(copy)
+    vampytest.assert_is_not(copy, component)
+    vampytest.assert_ne(copy, component)
+    
+    vampytest.assert_is(copy.type, component_type)
+    vampytest.assert_eq(
+        copy.components,
+        (
+            Component(
+                ComponentType.section,
+                components = [
+                    Component(
+                        ComponentType.text_display,
+                        content = f'@{user_0.name_at(guild)}',
+                    ),
+                ],
+            ),
+            Component(
+                ComponentType.text_display,
+                content = f'@{user_1.name_at(guild)}',
+            ),
+            Component(
+                ComponentType.section,
+                components = [
+                    Component(
+                        ComponentType.text_display,
+                        content = f'@{user_2.name_at(guild)}',
+                    ),
+                ],
+            ),
+        ),
+    )
 
 
 def test__Component__copy():
@@ -21,7 +108,7 @@ def test__Component__copy():
     component = Component(component_type, custom_id = custom_id)
     
     copy = component.copy()
-    _check_is_all_field_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_not_is(component, copy)
     vampytest.assert_is(copy.type, component_type)
     vampytest.assert_is(copy.custom_id, custom_id)
@@ -39,7 +126,7 @@ def test__Component__cop_with__no_fields():
     component = Component(component_type, custom_id = custom_id)
     
     copy = component.copy_with()
-    _check_is_all_field_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_not_is(component, copy)
     vampytest.assert_is(copy.type, component_type)
     vampytest.assert_is(copy.custom_id, custom_id)
@@ -58,7 +145,7 @@ def test__Component__copy_with__fields():
     component = Component(component_type, custom_id = old_custom_id)
     
     copy = component.copy_with(custom_id = new_custom_id)
-    _check_is_all_field_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_not_is(component, copy)
     vampytest.assert_is(copy.type, component_type)
     vampytest.assert_is(copy.custom_id, new_custom_id)
@@ -225,3 +312,135 @@ def test__Component__style__write(input_value, value, attribute_name):
     component = input_value.copy()
     component.style = value
     return getattr(component, attribute_name)
+
+
+def _iter_options__iter_contents():
+    content_0 = 'yukari'
+    content_1 = 'chen'
+    content_2 = 'ran'
+    
+    yield (
+        {
+            'component_type': ComponentType.button,
+            'label': 'pop',
+        },
+        [],
+    )
+    
+    yield (
+        {
+            'component_type': ComponentType.text_display,
+            'content': content_0,
+        },
+        [
+            content_0,
+        ],
+    )
+    
+    yield (
+        {
+            'component_type': ComponentType.container,
+            'components': [
+                Component(
+                    ComponentType.section,
+                    components = [
+                        Component(
+                            ComponentType.text_display,
+                            content = content_0,
+                        ),
+                    ],
+                ),
+                Component(
+                    ComponentType.text_display,
+                    content = content_1,
+                ),
+                Component(
+                    ComponentType.section,
+                    components = [
+                        Component(
+                            ComponentType.text_display,
+                            content = content_2,
+                        ),
+                    ],
+                ),
+            ],
+        },
+        [
+            content_0,
+            content_1,
+            content_2,
+        ],
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_contents()).returning_last())
+def test__Component__iter_contents(keyword_parameters):
+    """
+    Tests whether ``Component.iter_contents`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `list<str>`
+    """
+    component = Component(**keyword_parameters)
+    
+    output = [*component.iter_contents()]
+    
+    for element in output:
+        vampytest.assert_instance(element, str)
+    
+    return output
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_contents()).returning_last())
+def test__Component__contents(keyword_parameters):
+    """
+    Tests whether ``Component.contents`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `list<str>`
+    """
+    component = Component(**keyword_parameters)
+    
+    output = component.contents
+    
+    vampytest.assert_instance(output, list)
+    for element in output:
+        vampytest.assert_instance(element, str)
+    
+    return output
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_contents()).returning_last())
+def test__Component__iter_contents(keyword_parameters):
+    """
+    Tests whether ``Component.iter_contents`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `list<str>`
+    """
+    component = Component(**keyword_parameters)
+    
+    output = [*component.iter_contents()]
+    
+    for element in output:
+        vampytest.assert_instance(element, str)
+    
+    return output

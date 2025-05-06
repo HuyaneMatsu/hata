@@ -166,7 +166,7 @@ class SolarClient(RichAttributeErrorBaseType):
             headers = {
                 AUTHORIZATION: node._password,
             },
-            params = {
+            query = {
                 'identifier': query,
             },
         ) as response:
@@ -224,7 +224,7 @@ class SolarClient(RichAttributeErrorBaseType):
             headers = {
                 AUTHORIZATION: node._password,
             },
-            params = {
+            query = {
                 'track': track
             },
         ) as response:

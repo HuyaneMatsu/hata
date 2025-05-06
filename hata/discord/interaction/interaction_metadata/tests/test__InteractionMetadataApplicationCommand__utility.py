@@ -8,7 +8,7 @@ from ...resolved import Resolved
 
 from ..application_command import InteractionMetadataApplicationCommand
 
-from .test__InteractionMetadataApplicationCommand__constructor import _check_is_all_field_set
+from .test__InteractionMetadataApplicationCommand__constructor import _assert_fields_set
 
 
 def test__InteractionMetadataApplicationCommand__copy():
@@ -31,7 +31,7 @@ def test__InteractionMetadataApplicationCommand__copy():
         target_type = target_type,
     )
     copy = interaction_metadata.copy()
-    _check_is_all_field_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(copy, interaction_metadata)
     vampytest.assert_eq(copy, interaction_metadata)
 
@@ -58,7 +58,7 @@ def test__InteractionMetadataApplicationCommand__copy_with__0():
         target_type = target_type,
     )
     copy = interaction_metadata.copy_with()
-    _check_is_all_field_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(copy, interaction_metadata)
     vampytest.assert_eq(copy, interaction_metadata)
 
@@ -99,7 +99,7 @@ def test__InteractionMetadataApplicationCommand__copy_with__1():
         target_id = new_target_id,
         target_type = new_target_type,
     )
-    _check_is_all_field_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(copy, interaction_metadata)
     
     vampytest.assert_eq(copy.id, new_application_command_id)

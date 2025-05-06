@@ -306,7 +306,8 @@ class ClientCompoundInteractionEndpoints(Compound):
         ----------
         interaction_event : ``InteractionEvent``
             Interaction to acknowledge.
-        choices : `None`, `iterable` of `str`
+        
+        choices : `None | iterable<str | int | float | (str, str | int | float)>
             Choices to show for the user.
         
         Raises

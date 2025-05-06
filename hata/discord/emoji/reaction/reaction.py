@@ -4,7 +4,7 @@ from scarletio import RichAttributeErrorBaseType
 
 from ..emoji import Emoji
 
-from .fields import parse_emoji, parse_type, put_emoji_into, put_type_into, validate_emoji, validate_type
+from .fields import parse_emoji, parse_type, put_emoji, put_type, validate_emoji, validate_type
 from .preinstanced import ReactionType
 
 
@@ -114,8 +114,8 @@ class Reaction(RichAttributeErrorBaseType):
         data : `dict<str, object>`
         """
         data = {}
-        put_emoji_into(self.emoji, data, defaults)
-        put_type_into(self.type, data, defaults)
+        put_emoji(self.emoji, data, defaults)
+        put_type(self.type, data, defaults)
         return data
     
     

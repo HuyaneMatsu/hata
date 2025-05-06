@@ -66,7 +66,6 @@ def test__Guild__format__wrong_code(code):
 
 
 def _iter_options__eq():
-    
     afk_channel_id = 202306220134
     afk_timeout = 1800
     banner = Icon(IconType.animated, 12)
@@ -75,6 +74,7 @@ def _iter_options__eq():
     description = 'Koishi'
     discovery_splash = Icon(IconType.animated, 14)
     features = [GuildFeature.animated_icon]
+    home_splash = Icon(IconType.animated, 36)
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
     invite_splash = Icon(IconType.animated, 18)
@@ -103,6 +103,7 @@ def _iter_options__eq():
         'description': description,
         'discovery_splash': discovery_splash,
         'features': features,
+        'home_splash': home_splash,
         'hub_type': hub_type,
         'icon': icon,
         'invite_splash': invite_splash,
@@ -204,6 +205,15 @@ def _iter_options__eq():
         {
             **keyword_parameters,
             'features': [GuildFeature.animated_banner],
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'home_splash': Icon(IconType.animated, 37),
         },
         False,
     )
@@ -432,6 +442,7 @@ def test__Guild__hash():
     description = 'Koishi'
     discovery_splash = Icon(IconType.animated, 14)
     features = [GuildFeature.animated_icon]
+    home_splash = Icon(IconType.animated, 36)
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
     invite_splash = Icon(IconType.animated, 18)
@@ -460,6 +471,7 @@ def test__Guild__hash():
         'description': description,
         'discovery_splash': discovery_splash,
         'features': features,
+        'home_splash': home_splash,
         'hub_type': hub_type,
         'icon': icon,
         'invite_splash': invite_splash,

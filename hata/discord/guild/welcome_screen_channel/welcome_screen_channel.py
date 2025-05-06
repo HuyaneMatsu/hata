@@ -5,7 +5,7 @@ from scarletio import RichAttributeErrorBaseType
 from ...channel import Channel, ChannelType, create_partial_channel_from_id
 
 from .fields import (
-    parse_channel_id, parse_description, parse_emoji, put_channel_id_into, put_description_into, put_emoji_into,
+    parse_channel_id, parse_description, parse_emoji, put_channel_id, put_description, put_emoji,
     validate_channel_id, validate_description, validate_emoji
 )
 
@@ -78,7 +78,7 @@ class WelcomeScreenChannel(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Welcome channel data.
         
         Returns
@@ -106,9 +106,9 @@ class WelcomeScreenChannel(RichAttributeErrorBaseType):
         data : `str`
         """
         data = {}
-        put_channel_id_into(self.channel_id, data, defaults)
-        put_description_into(self.description, data, defaults)
-        put_emoji_into(self.emoji, data, defaults)
+        put_channel_id(self.channel_id, data, defaults)
+        put_description(self.description, data, defaults)
+        put_emoji(self.emoji, data, defaults)
         return data
     
     

@@ -18,7 +18,7 @@ class ActivityUpdate(RichAttributeErrorBaseType):
     activity : ``Activity``
         The updated activity.
     
-    old_attributes : `dict` of (`str`, `object`) items
+    old_attributes : `dict<str, object>`
         The changed attributes of the activity in `attribute-name` - `old-value` relation. Can contain any of the
         following items:
         
@@ -69,7 +69,7 @@ class ActivityUpdate(RichAttributeErrorBaseType):
         activity : ``Activity``, Optional (Keyword only)
             The updated activity.
         
-        old_attributes : `None`, `dict` of (`str`, `object`) items, Optional (Keyword only)
+        old_attributes : `None`, `dict<str, object>`, Optional (Keyword only)
             The changed attributes of the activity.
         
         Raises
@@ -105,7 +105,7 @@ class ActivityUpdate(RichAttributeErrorBaseType):
         ----------
         activity : ``Activity``
             The updated activity.
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             The changed attributes of the activity.
         
         Returns
@@ -201,7 +201,7 @@ class ActivityUpdate(RichAttributeErrorBaseType):
         activity : ``Activity``, Optional (Keyword only)
             The updated activity.
         
-        old_attributes : `None`, `dict` of (`str`, `object`) items, Optional (Keyword only)
+        old_attributes : `None`, `dict<str, object>`, Optional (Keyword only)
             The changed attributes of the activity.
         
         Returns

@@ -8,7 +8,7 @@ __all__ = (
 from ...bases import Preinstance as P, PreinstancedBase
 
 
-class ApplicationDiscoverabilityState(PreinstancedBase):
+class ApplicationDiscoverabilityState(PreinstancedBase, value_type = int):
     """
     Represents an application's discoverability state.
     
@@ -16,23 +16,16 @@ class ApplicationDiscoverabilityState(PreinstancedBase):
     ----------
     name : `str`
         The name of the application discoverability state.
+    
     value : `int`
         The Discord side identifier value of the application discoverability state.
         
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``ApplicationDiscoverabilityState``) items
-        Stores the created application discoverability state instances. This container is accessed when translating a
-        Discord application discoverability state's value to it's representation.
-    VALUE_TYPE : `type` = `int`
-        The application discoverability states' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the application discoverability states.
-    
-    Every predefined application discoverability state can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined application discoverability state can be accessed as type attribute as well:
     
     +---------------------------+---------------------------+-------+
-    | Class attribute name      | name                      | value |
+    | Type attribute name       | name                      | value |
     +===========================+===========================+=======+
     | none                      | none                      | 0     |
     +---------------------------+---------------------------+-------+
@@ -47,9 +40,6 @@ class ApplicationDiscoverabilityState(PreinstancedBase):
     | blocked                   | blocked                   | 5     |
     +---------------------------+---------------------------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
     __slots__ = ()
     
     # predefined
@@ -61,7 +51,7 @@ class ApplicationDiscoverabilityState(PreinstancedBase):
     blocked = P(5, 'blocked')
 
 
-class ApplicationEventWebhookEventType(PreinstancedBase):
+class ApplicationEventWebhookEventType(PreinstancedBase, value_type = str):
     """
     Represents an application's event webhook event type.
     
@@ -73,20 +63,12 @@ class ApplicationEventWebhookEventType(PreinstancedBase):
     value : `str`
         The Discord side identifier value of the application event webhook event type.
         
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``ApplicationDiscoverabilityState``) items
-        Stores the created application event webhook event type instances. This container is accessed when translating a
-        Discord application event webhook event type's value to it's representation.
-    VALUE_TYPE : `type` = `int`
-        The application event webhook event types' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the application event webhook event types.
-    
-    Every predefined application event webhook event type can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined application event webhook event type can be accessed as type attribute as well:
     
     +---------------------------+---------------------------+---------------------------+
-    | Class attribute name      | name                      | value                     |
+    | Type attribute name       | name                      | value                     |
     +===========================+===========================+===========================+
     | application_authorization | application authorization | 'APPLICATION_AUTHORIZED'  |
     +---------------------------+---------------------------+---------------------------+
@@ -95,9 +77,6 @@ class ApplicationEventWebhookEventType(PreinstancedBase):
     | quest_enrollment          | quest enrollment          | 'QUEST_USER_ENROLLMENT'   |
     +---------------------------+---------------------------+---------------------------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = str
-    
     __slots__ = ()
     
     # predefined
@@ -106,7 +85,7 @@ class ApplicationEventWebhookEventType(PreinstancedBase):
     quest_enrollment = P('QUEST_USER_ENROLLMENT', 'quest enrollment')
 
 
-class ApplicationEventWebhookState(PreinstancedBase):
+class ApplicationEventWebhookState(PreinstancedBase, value_type = int):
     """
     Represents an application's event webhook state.
     
@@ -118,20 +97,12 @@ class ApplicationEventWebhookState(PreinstancedBase):
     value : `int`
         The Discord side identifier value of the application event webhook state.
         
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``ApplicationDiscoverabilityState``) items
-        Stores the created application event webhook state instances. This container is accessed when translating a
-        Discord application event webhook state's value to it's representation.
-    VALUE_TYPE : `type` = `int`
-        The application event webhook states' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the application event webhook states.
-    
-    Every predefined application event webhook state can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined application event webhook state can be accessed as type attribute as well:
     
     +---------------------------+---------------------------+-------+
-    | Class attribute name      | name                      | value |
+    | Type attribute name       | name                      | value |
     +===========================+===========================+=======+
     | none                      | none                      | 0     |
     +---------------------------+---------------------------+-------+
@@ -142,9 +113,6 @@ class ApplicationEventWebhookState(PreinstancedBase):
     | auto_disabled             | auto-disabled             | 3     |
     +---------------------------+---------------------------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
     __slots__ = ()
     
     # predefined
@@ -154,7 +122,7 @@ class ApplicationEventWebhookState(PreinstancedBase):
     auto_disabled = P(3, 'auto-disabled')
 
 
-class ApplicationExplicitContentFilterLevel(PreinstancedBase):
+class ApplicationExplicitContentFilterLevel(PreinstancedBase, value_type = int):
     """
     Represents an application's explicit content filter level.
     
@@ -162,32 +130,22 @@ class ApplicationExplicitContentFilterLevel(PreinstancedBase):
     ----------
     name : `str`
         The name of the application explicit content filter level.
+    
     value : `int`
         The Discord side identifier value of the application explicit content filter level.
         
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``ApplicationExplicitContentFilterLevel``) items
-        Stores the created application explicit content filter level instances. This container is accessed when translating a
-        Discord application explicit content filter level's value to it's representation.
-    VALUE_TYPE : `type` = `int`
-        The application explicit content filter levels' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the application explicit content filter levels.
-    
-    Every predefined application explicit content filter level can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined application explicit content filter level can be accessed as type attribute as well:
     
     +---------------------------+---------------------------+-------+
-    | Class attribute name      | name                      | value |
+    | Type attribute name       | name                      | value |
     +===========================+===========================+=======+
     | none                      | none                      | 0     |
     +---------------------------+---------------------------+-------+
     | filtered                  | filtered                  | 1     |
     +---------------------------+---------------------------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
     __slots__ = ()
     
     # predefined
@@ -195,7 +153,7 @@ class ApplicationExplicitContentFilterLevel(PreinstancedBase):
     filtered = P(1, 'filtered')
 
 
-class ApplicationIntegrationType(PreinstancedBase):
+class ApplicationIntegrationType(PreinstancedBase, value_type = int):
     """
     Represents how an application can be integrated.
     
@@ -203,32 +161,22 @@ class ApplicationIntegrationType(PreinstancedBase):
     ----------
     name : `str`
         The name of the application integration type.
+    
     value : `int`
         The Discord side identifier value of the application integration type.
         
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``ApplicationIntegrationType``) items
-        Stores the created application integration type instances. This container is accessed when translating a
-        Discord application integration type's value to it's representation.
-    VALUE_TYPE : `type` = `int`
-        The application integration types' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the application integration types.
-    
-    Every predefined application integration type can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined application integration type can be accessed as type attribute as well:
     
     +---------------------------+---------------------------+-------+
-    | Class attribute name      | name                      | value |
+    | Type attribute name       | name                      | value |
     +===========================+===========================+=======+
     | guild_install             | guild install             | 0     |
     +---------------------------+---------------------------+-------+
     | user_install              | user install              | 1     |
     +---------------------------+---------------------------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
     __slots__ = ()
     
     # predefined
@@ -236,7 +184,7 @@ class ApplicationIntegrationType(PreinstancedBase):
     user_install = P(1, 'user install')
 
 
-class ApplicationInteractionEventType(PreinstancedBase):
+class ApplicationInteractionEventType(PreinstancedBase, value_type = str):
     """
     Represents an application's interaction event type.
     
@@ -244,37 +192,27 @@ class ApplicationInteractionEventType(PreinstancedBase):
     ----------
     name : `str`
         The name of the application interaction event type.
-    value : `int`
+    
+    value : `str`
         The Discord side identifier value of the application interaction event type.
         
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``ApplicationInteractionEventType``) items
-        Stores the created application interaction event type instances. This container is accessed when translating a
-        Discord application interaction event type's value to it's representation.
-    VALUE_TYPE : `type` = `str`
-        The application interaction event types' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the application interaction event types.
-    
-    Every predefined application interaction event type can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined application interaction event type can be accessed as type attribute as well:
     
     +---------------------------+---------------------------+-------+
-    | Class attribute name      | name                      | value |
+    | Type attribute name       | name                      | value |
     +===========================+===========================+=======+
     | none                      | none                      | `''`  |
     +---------------------------+---------------------------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = str
-    
     __slots__ = ()
     
     # predefined
     none = P('', 'none')
 
 
-class ApplicationInteractionVersion(PreinstancedBase):
+class ApplicationInteractionVersion(PreinstancedBase, value_type = int):
     """
     Represents an application interaction version.
     
@@ -282,23 +220,16 @@ class ApplicationInteractionVersion(PreinstancedBase):
     ----------
     name : `str`
         The name of the application interaction version.
+    
     value : `int`
         The Discord side identifier value of the application interaction version.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``ApplicationInteractionVersion``) items
-        Stores the created application interaction version instances. This container is accessed when translating a
-        Discord application interaction version's value to it's representation.
-    VALUE_TYPE : `type` = `int`
-        The application interaction versions' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the application interaction versions.
-    
-    Every predefined application interaction version can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined application interaction version can be accessed as type attribute as well:
     
     +---------------------------+---------------------------+-------+
-    | Class attribute name      | name                      | value |
+    | Type attribute name       | name                      | value |
     +===========================+===========================+=======+
     | none                      | none                      | 0     |
     +---------------------------+---------------------------+-------+
@@ -307,9 +238,6 @@ class ApplicationInteractionVersion(PreinstancedBase):
     | selective                 | selective                 | 2     |
     +---------------------------+---------------------------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
     __slots__ = ()
     
     # predefined
@@ -318,7 +246,7 @@ class ApplicationInteractionVersion(PreinstancedBase):
     selective = P(2, 'selective')
 
 
-class ApplicationInternalGuildRestriction(PreinstancedBase):
+class ApplicationInternalGuildRestriction(PreinstancedBase, value_type = int):
     """
     Represents an application's internal guild restriction.
     
@@ -328,32 +256,22 @@ class ApplicationInternalGuildRestriction(PreinstancedBase):
     ----------
     name : `str`
         The name of the application internal guild restriction.
+    
     value : `int`
         The Discord side identifier value of the application internal guild restriction.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``ApplicationInternalGuildRestriction``) items
-        Stores the created application internal guild restriction instances. This container is accessed when
-        translating a Discord application internal guild restriction's value to it's representation.
-    VALUE_TYPE : `type` = `int`
-        The application internal guild restrictions' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the application internal guild restrictions.
-    
-    Every predefined application internal guild restriction can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined application internal guild restriction can be accessed as type attribute as well:
     
     +---------------------------+---------------------------+-------+
-    | Class attribute name      | name                      | value |
+    | Type attribute name       | name                      | value |
     +===========================+===========================+=======+
     | none                      | none                      | 0     |
     +---------------------------+---------------------------+-------+
     | restricted                | restricted                | 1     |
     +---------------------------+---------------------------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
     __slots__ = ()
     
     # predefined
@@ -361,38 +279,33 @@ class ApplicationInternalGuildRestriction(PreinstancedBase):
     restricted = P(1, 'restricted')
 
 
-class ApplicationMonetizationState(PreinstancedBase):
+class ApplicationMonetizationState(PreinstancedBase, value_type = int):
     """
     Represents an application's monetization state.
     
     Attributes
     ----------
-    value : `int`
-        The Discord side identifier value of the monetization state.
-    name : `str`
-        The default name of the monetization state.
     enabled : `bool`
         Whether monetization is enabled.
+    
     locked : `bool`
         Whether monetization actions are locked.
+    
+    name : `str`
+        The default name of the monetization state.
+    
     settable : `bool`
         Whether the monetization state can be set.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`str`, ``ApplicationMonetizationState``) items
-        Stores the predefined monetization states. This container is accessed when translating a Discord side
-        identifier of a monetization state. The identifier value is used as a key to get it's wrapper side
-        representation.
-    VALUE_TYPE : `state` = `str`
-        The monetization states' values' state.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the monetization states.
+    value : `int`
+        The Discord side identifier value of the monetization state.
     
-    Every predefined monetization state is also stored as a class attribute:
+    Type Attributes
+    ---------------
+    Every predefined monetization state is also stored as a type attribute:
     
     +-----------------------+-----------------------+-----------+-----------+-----------+-----------+
-    | Class attribute name  | Name                  | Value     | Enabled   | Locked    | Settable  |
+    | Type attribute name   | Name                  | Value     | Enabled   | Locked    | Settable  |
     +=======================+=======================+===========+===========+===========+===========+
     | none                  | none                  | 0         | `False`   | `False`   | `False`   |
     +-----------------------+-----------------------+-----------+-----------+-----------+-----------+
@@ -409,58 +322,32 @@ class ApplicationMonetizationState(PreinstancedBase):
     """
     __slots__ = ('enabled', 'locked', 'settable')
     
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
-    @classmethod
-    def _from_value(cls, value):
+    def __new__(cls, value, name = None, enabled = False, locked = False, settable = False):
         """
-        Creates a new monetization state with the given value.
-        
-        Parameters
-        ----------
-        value : `int`
-            The monetization state's identifier value.
-        
-        Returns
-        -------
-        self : `instance<cls>`
-            The created instance.
-        """
-        self = object.__new__(cls)
-        self.name = cls.DEFAULT_NAME
-        self.value = value
-        self.enabled = False
-        self.locked = False
-        self.settable = False
-        
-        return self
-    
-    
-    def __init__(self, value, name, enabled, locked, settable):
-        """
-        Creates a monetization state and stores it at the class's `.INSTANCES` class attribute as well.
+        Creates a monetization state.
         
         Parameters
         ----------
         value : `int`
             The Discord side identifier value of the monetization state.
-        name : `str`
+        
+        name : `None | str` = `None`, Optional
             The default name of the monetization state.
-        enabled : `bool`
+        
+        enabled : `bool` = `False`, Optional
             Whether monetization is enabled.
-        locked : `bool`
+        
+        locked : `bool` = `False`, Optional
             Whether monetization actions are locked.
-        settable : `bool`
+        
+        settable : `bool` = `False`, Optional
             Whether the monetization state can be set.
         """
-        self.value = value
-        self.name = name
+        self = PreinstancedBase.__new__(cls, value, name)
         self.enabled = enabled
         self.locked = locked
         self.settable = settable
-        
-        self.INSTANCES[value] = self
+        return self
     
     # predefined
     none = P(0, 'none', False, False, False)
@@ -471,7 +358,7 @@ class ApplicationMonetizationState(PreinstancedBase):
     blocked = P(5, 'blocked', False, True, False)
 
 
-class ApplicationRPCState(PreinstancedBase):
+class ApplicationRPCState(PreinstancedBase, value_type = int):
     """
     Represents an application rpc state.
     
@@ -479,23 +366,16 @@ class ApplicationRPCState(PreinstancedBase):
     ----------
     name : `str`
         The name of the application rpc state.
+    
     value : `int`
         The Discord side identifier value of the application rpc state.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``ApplicationRPCState``) items
-        RPCs the created application rpc state instances. This container is accessed when translating a
-        Discord application rpc state's value to it's representation.
-    VALUE_TYPE : `type` = `int`
-        The application rpc states' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the application rpc states.
-    
-    Every predefined application rpc state can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined application rpc state can be accessed as type attribute as well:
     
     +---------------------------+---------------------------+-------+
-    | Class attribute name      | name                      | value |
+    | Type attribute name       | name                      | value |
     +===========================+===========================+=======+
     | none                      | none                      | 0     |
     +---------------------------+---------------------------+-------+
@@ -508,9 +388,6 @@ class ApplicationRPCState(PreinstancedBase):
     | rejected                  | rejected                  | 4     |
     +---------------------------+---------------------------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
     __slots__ = ()
     
     # predefined
@@ -521,7 +398,7 @@ class ApplicationRPCState(PreinstancedBase):
     rejected = P(4, 'rejected')
 
 
-class ApplicationStoreState(PreinstancedBase):
+class ApplicationStoreState(PreinstancedBase, value_type = int):
     """
     Represents an application store state.
     
@@ -529,23 +406,16 @@ class ApplicationStoreState(PreinstancedBase):
     ----------
     name : `str`
         The name of the application store state.
+    
     value : `int`
         The Discord side identifier value of the application store state.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``ApplicationStoreState``) items
-        Stores the created application store state instances. This container is accessed when translating a
-        Discord application store state's value to it's representation.
-    VALUE_TYPE : `type` = `int`
-        The application store states' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the application store states.
-    
-    Every predefined application store state can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined application store state can be accessed as type attribute as well:
     
     +---------------------------+---------------------------+-------+
-    | Class attribute name      | name                      | value |
+    | Type attribute name       | name                      | value |
     +===========================+===========================+=======+
     | none                      | none                      | 0     |
     +---------------------------+---------------------------+-------+
@@ -560,9 +430,6 @@ class ApplicationStoreState(PreinstancedBase):
     | rejected                  | rejected                  | 5     |
     +---------------------------+---------------------------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
     __slots__ = ()
     
     # predefined
@@ -574,7 +441,7 @@ class ApplicationStoreState(PreinstancedBase):
     rejected = P(5, 'rejected')
 
 
-class ApplicationType(PreinstancedBase):
+class ApplicationType(PreinstancedBase, value_type = int):
     """
     Represents an application type.
     
@@ -582,23 +449,16 @@ class ApplicationType(PreinstancedBase):
     ----------
     name : `str`
         The name of the application type.
+    
     value : `int`
         The Discord side identifier value of the application type.
         
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``ApplicationType``) items
-        Stores the created application type instances. This container is accessed when translating a Discord
-        application type's value to it's representation.
-    VALUE_TYPE : `type` = `int`
-        The application types' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the application types.
-    
-    Every predefined application type can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined application type can be accessed as type attribute as well:
     
     +---------------------------+---------------------------+-------+
-    | Class attribute name      | name                      | value |
+    | Type attribute name       | name                      | value |
     +===========================+===========================+=======+
     | none                      | none                      | 0     |
     +---------------------------+---------------------------+-------+
@@ -611,9 +471,6 @@ class ApplicationType(PreinstancedBase):
     | guild_role_subscription   | guild role subscription   | 4     |
     +---------------------------+---------------------------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
     __slots__ = ()
     
     # predefined
@@ -624,7 +481,7 @@ class ApplicationType(PreinstancedBase):
     guild_role_subscription = P(4, 'guild role subscription')
 
 
-class ApplicationVerificationState(PreinstancedBase):
+class ApplicationVerificationState(PreinstancedBase, value_type = int):
     """
     Represents an application's verification state.
     
@@ -632,23 +489,16 @@ class ApplicationVerificationState(PreinstancedBase):
     ----------
     name : `str`
         The name of the application verification state.
+    
     value : `int`
         The Discord side identifier value of the application verification state.
-        
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``ApplicationVerificationState``) items
-        Stores the created application verification state instances. This container is accessed when translating a
-        Discord application verification state's value to it's representation.
-    VALUE_TYPE : `type` = `int`
-        The application verification states' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the application verification states.
     
-    Every predefined application verification state can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined application verification state can be accessed as type attribute as well:
     
     +---------------------------+---------------------------+-------+
-    | Class attribute name      | name                      | value |
+    | Type attribute name       | name                      | value |
     +===========================+===========================+=======+
     | none                      | none                      | 0     |
     +---------------------------+---------------------------+-------+
@@ -663,9 +513,6 @@ class ApplicationVerificationState(PreinstancedBase):
     | blocked                   | blocked                   | 5     |
     +---------------------------+---------------------------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
     __slots__ = ()
     
     # predefined

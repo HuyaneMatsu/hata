@@ -16,9 +16,9 @@ from ..role_manager_metadata import RoleManagerMetadataBase
 from .constants import ROLE_MANAGER_DEFAULT
 from .fields import (
     parse_color, parse_flags, parse_id, parse_manager, parse_mentionable, parse_name, parse_permissions, parse_position,
-    parse_separated, parse_unicode_emoji, put_color_into, put_flags_into, put_id_into, put_manager_into,
-    put_mentionable_into, put_name_into, put_permissions_into, put_position_into, put_separated_into,
-    put_unicode_emoji_into, validate_color, validate_flags, validate_id, validate_manager, validate_manager_metadata,
+    parse_separated, parse_unicode_emoji, put_color, put_flags, put_id, put_manager,
+    put_mentionable, put_name, put_permissions, put_position, put_separated,
+    put_unicode_emoji, validate_color, validate_flags, validate_id, validate_manager, validate_manager_metadata,
     validate_manager_type, validate_mentionable, validate_name, validate_permissions, validate_position,
     validate_separated, validate_unicode_emoji, validate_guild_id
 )
@@ -268,7 +268,7 @@ class Role(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Role data received from Discord.
         guild_id : `int` = `0`, Optional
             The owner guild's identifier.
@@ -322,44 +322,44 @@ class Role(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         
         # color
-        put_color_into(self.color, data, defaults)
+        put_color(self.color, data, defaults)
         
         # flags
-        put_flags_into(self.flags, data, defaults)
+        put_flags(self.flags, data, defaults)
         
         # icon
         type(self).icon.put_into(self.icon, data, defaults, as_data = not include_internals)
         
         # id
         if include_internals:
-            put_id_into(self.id, data, defaults)
+            put_id(self.id, data, defaults)
         
         # manager
         if include_internals:
-            put_manager_into((self.manager_type, self.manager_metadata), data, defaults)
+            put_manager((self.manager_type, self.manager_metadata), data, defaults)
         
         # mentionable
-        put_mentionable_into(self.mentionable, data, defaults)
+        put_mentionable(self.mentionable, data, defaults)
         
         # name
-        put_name_into(self.name, data, defaults)
+        put_name(self.name, data, defaults)
         
         # permissions
-        put_permissions_into(self.permissions, data, defaults)
+        put_permissions(self.permissions, data, defaults)
         
         # position
-        put_position_into(self.position, data, defaults)
+        put_position(self.position, data, defaults)
         
         # separated
-        put_separated_into(self.separated, data, defaults)
+        put_separated(self.separated, data, defaults)
         
         # unicode_emoji
-        put_unicode_emoji_into(self.unicode_emoji, data, defaults)
+        put_unicode_emoji(self.unicode_emoji, data, defaults)
         
         return data
     
@@ -372,7 +372,7 @@ class Role(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received role data.
         """
         self.color = parse_color(data)
@@ -531,7 +531,7 @@ class Role(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Role data received from Discord.
         """
         clear_cache_permission = False
@@ -615,12 +615,12 @@ class Role(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Role data received from Discord.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -892,7 +892,7 @@ class Role(DiscordEntity, immortal = True):
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         guild_id = self.guild_id
         if guild_id:

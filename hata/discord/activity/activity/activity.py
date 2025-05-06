@@ -10,7 +10,7 @@ from .constants import (
     ACTIVITY_COLOR_GAME, ACTIVITY_COLOR_NONE, ACTIVITY_COLOR_SPOTIFY, ACTIVITY_COLOR_STREAM, ACTIVITY_CUSTOM_IDS,
     ACTIVITY_CUSTOM_ID_DEFAULT
 )
-from .fields import parse_type, put_type_into, validate_type
+from .fields import parse_type, put_type, validate_type
 from .preinstanced import ActivityType
 
 
@@ -176,7 +176,7 @@ class Activity(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `None`, `dict` of (`str`, `object`) items
+        data : `None`, `dict<str, object>`
             Activity data received from Discord.
         
         Returns
@@ -215,7 +215,7 @@ class Activity(RichAttributeErrorBaseType):
         data : `dict<str, object>`
         """
         data = self.metadata.to_data(defaults = defaults, include_internals = include_internals, user = user)
-        put_type_into(self.type, data, defaults)
+        put_type(self.type, data, defaults)
         data['type'] = self.type.value
         
         if include_internals:
@@ -232,7 +232,7 @@ class Activity(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Data received from Discord.
         """
         activity_type = parse_type(data)
@@ -254,12 +254,12 @@ class Activity(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Data received from Discord.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -272,7 +272,7 @@ class Activity(RichAttributeErrorBaseType):
         +-------------------+-----------------------------------+
         | buttons           | `None`, `tuple` of `str`          |
         +-------------------+-----------------------------------+
-        | created_at        | `None`, `DateTime`                |
+        | created_at        | `None | DateTime`                 |
         +-------------------+-----------------------------------+
         | details           | `None`, `str`                     |
         +-------------------+-----------------------------------+
@@ -801,7 +801,7 @@ class Activity(RichAttributeErrorBaseType):
         
         Returns
         -------
-        start : `None`, `DateTime`
+        start : `None | DateTime`
         """
         timestamps = self.timestamps
         if (timestamps is not None):
@@ -815,7 +815,7 @@ class Activity(RichAttributeErrorBaseType):
         
         Returns
         -------
-        start : `None`, `DateTime`
+        start : `None | DateTime`
         """
         timestamps = self.timestamps
         if (timestamps is not None):

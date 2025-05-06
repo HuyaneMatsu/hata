@@ -26,7 +26,7 @@ def test__ComponentMetadataMediaGallery__to_data():
     """
     Tests whether ``ComponentMetadataMediaGallery.to_data`` works as intended.
     
-    Case: include defaults.
+    Case: include defaults and internals.
     """
     items = [MediaItem('https://orindance.party/')]
     
@@ -37,8 +37,12 @@ def test__ComponentMetadataMediaGallery__to_data():
     vampytest.assert_eq(
         component_metadata.to_data(
             defaults = True,
+            include_internals = True,
         ),
         {
-            'items': [component.to_data(defaults = True) for component in items]
+            'items': [
+                component.to_data(defaults = True, include_internals = True)
+                for component in items
+            ],
         },
     )

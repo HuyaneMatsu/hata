@@ -6,8 +6,8 @@ from ..discovery_category import DiscoveryCategory
 
 from .fields import (
     parse_application_actioned, parse_application_requested, parse_emoji_discovery, parse_keywords,
-    parse_primary_category, parse_sub_categories, put_application_actioned_into, put_application_requested_into,
-    put_emoji_discovery_into, put_keywords_into, put_primary_category_into, put_sub_categories_into,
+    parse_primary_category, parse_sub_categories, put_application_actioned, put_application_requested,
+    put_emoji_discovery, put_keywords, put_primary_category, put_sub_categories,
     validate_application_actioned, validate_application_requested, validate_emoji_discovery, validate_keywords,
     validate_primary_category, validate_sub_categories
 )
@@ -131,7 +131,7 @@ class GuildDiscovery(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Guild discovery data.
         
         Returns
@@ -166,13 +166,13 @@ class GuildDiscovery(RichAttributeErrorBaseType):
         data = {}
         
         if include_internals:
-            put_application_actioned_into(self.application_actioned, data, defaults)
-            put_application_requested_into(self.application_requested, data, defaults)
+            put_application_actioned(self.application_actioned, data, defaults)
+            put_application_requested(self.application_requested, data, defaults)
         
-        put_emoji_discovery_into(self.emoji_discovery, data, defaults)
-        put_keywords_into(self.keywords, data, defaults)
-        put_primary_category_into(self.primary_category, data, defaults)
-        put_sub_categories_into(self.sub_categories, data, defaults)
+        put_emoji_discovery(self.emoji_discovery, data, defaults)
+        put_keywords(self.keywords, data, defaults)
+        put_primary_category(self.primary_category, data, defaults)
+        put_sub_categories(self.sub_categories, data, defaults)
         
         return data
     

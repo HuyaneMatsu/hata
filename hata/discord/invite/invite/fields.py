@@ -20,7 +20,9 @@ from ...field_validators import (
     force_string_validator_factory, int_conditional_validator_factory, nullable_date_time_validator_factory,
     nullable_entity_validator_factory, preinstanced_validator_factory
 )
-from ...guild import Guild, create_partial_guild_data, create_partial_guild_from_data, create_partial_guild_from_id
+from ...guild import (
+    Guild, GuildActivityOverview, create_partial_guild_data, create_partial_guild_from_data, create_partial_guild_from_id
+)
 from ...user import ClientUserBase, User, ZEROUSER
 
 from .flags import InviteFlag
@@ -30,7 +32,7 @@ from .preinstanced import InviteTargetType, InviteType
 # approximate_online_count
 
 parse_approximate_online_count = int_parser_factory('approximate_presence_count', 0)
-put_approximate_online_count_into = int_putter_factory('approximate_presence_count')
+put_approximate_online_count = int_putter_factory('approximate_presence_count')
 validate_approximate_online_count = int_conditional_validator_factory(
     'approximate_online_count',
     0,
@@ -41,7 +43,7 @@ validate_approximate_online_count = int_conditional_validator_factory(
 # approximate_user_count
 
 parse_approximate_user_count = int_parser_factory('approximate_member_count', 0)
-put_approximate_user_count_into = int_putter_factory('approximate_member_count')
+put_approximate_user_count = int_putter_factory('approximate_member_count')
 validate_approximate_user_count = int_conditional_validator_factory(
     'approximate_user_count',
     0,
@@ -64,7 +66,7 @@ def parse_channel(data, guild_id = 0):
     
     Returns
     -------
-    channel : `None`, ``Channel``
+    channel : ``None | Channel``
     """
     channel_data = data.get('channel', None)
     if (channel_data is not None):
@@ -78,13 +80,13 @@ def parse_channel(data, guild_id = 0):
     return None
 
 
-def put_channel_into(channel, data, defaults):
+def put_channel(channel, data, defaults):
     """
     Puts the invite's channel into the given data.
     
     Parameters
     ----------
-    channel : `None`, ``Channel``
+    channel : ``None | Channel``
         The channel to serialize.
     data : `dict<str, object>` items
         Json serializable dictionary.
@@ -112,25 +114,25 @@ validate_channel = nullable_entity_validator_factory('channel', Channel)
 
 # channel_id
 
-put_channel_id_into = entity_id_putter_factory('channel_id')
+put_channel_id = entity_id_putter_factory('channel_id')
 validate_channel_id = entity_id_validator_factory('channel_id', Channel)
 
 # code
 
 parse_code = force_string_parser_factory('code')
-put_code_into = force_string_putter_factory('code')
+put_code = force_string_putter_factory('code')
 validate_code = force_string_validator_factory('invite_code', 0, 1024)
 
 # created_at
 
 parse_created_at = nullable_date_time_parser_factory('created_at')
-put_created_at_into = nullable_date_time_optional_putter_factory('created_at')
+put_created_at = nullable_date_time_optional_putter_factory('created_at')
 validate_created_at = nullable_date_time_validator_factory('created_at')
 
 # flags
 
 parse_flags = flag_parser_factory('flags', InviteFlag)
-put_flags_into = flag_optional_putter_factory('flags', InviteFlag())
+put_flags = flag_optional_putter_factory('flags', InviteFlag())
 validate_flags = flag_validator_factory('flags', InviteFlag)
 
 # guild
@@ -146,7 +148,7 @@ def parse_guild(data):
     
     Returns
     -------
-    guild : `None`, ``Guild``
+    guild : ``None | Guild``
     """
     guild_data = data.get('guild', None)
     if (guild_data is not None):
@@ -160,13 +162,13 @@ def parse_guild(data):
     return None
 
 
-def put_guild_into(guild, data, defaults):
+def put_guild(guild, data, defaults):
     """
     Puts the invite's guild into the given data.
     
     Parameters
     ----------
-    guild : `None`, ``Guild``
+    guild : ``None | Guild``
         The guild to serialize.
     data : `dict<str, object>` items
         Json serializable dictionary.
@@ -192,14 +194,24 @@ def put_guild_into(guild, data, defaults):
 
 validate_guild = nullable_entity_validator_factory('guild', Guild)
 
+
+# guild_activity_overview
+
+parse_guild_activity_overview = nullable_entity_parser_factory('profile', GuildActivityOverview)
+put_guild_activity_overview = nullable_entity_optional_putter_factory(
+    'profile', GuildActivityOverview, force_include_internals = True
+)
+validate_guild_activity_overview = nullable_entity_validator_factory('guild_activity_overview', GuildActivityOverview)
+
+
 # guild_id
 
-put_guild_id_into = entity_id_putter_factory('guild_id')
+put_guild_id = entity_id_putter_factory('guild_id')
 
 # inviter
 
 parse_inviter = default_entity_parser_factory('inviter', User, default = ZEROUSER)
-put_inviter_into = default_entity_putter_factory('inviter', ClientUserBase, ZEROUSER, force_include_internals = True)
+put_inviter = default_entity_putter_factory('inviter', ClientUserBase, ZEROUSER, force_include_internals = True)
 validate_inviter = default_entity_validator_factory('inviter', ClientUserBase, default = ZEROUSER)
 
 # inviter_id | extra for audit logs
@@ -209,7 +221,7 @@ validate_inviter_id = entity_id_validator_factory('inviter_id', ClientUserBase)
 # max_age
 
 parse_max_age = nullable_int_parser_factory('max_age')
-put_max_age_into = nullable_field_optional_putter_factory('max_age')
+put_max_age = nullable_field_optional_putter_factory('max_age')
 validate_max_age = int_conditional_validator_factory(
     'max_age',
     None,
@@ -220,7 +232,7 @@ validate_max_age = int_conditional_validator_factory(
 # max_uses
 
 parse_max_uses = nullable_int_parser_factory('max_uses')
-put_max_uses_into = nullable_field_optional_putter_factory('max_uses')
+put_max_uses = nullable_field_optional_putter_factory('max_uses')
 validate_max_uses = int_conditional_validator_factory(
     'max_uses',
     None,
@@ -233,13 +245,13 @@ validate_max_uses = int_conditional_validator_factory(
 parse_target_application = nullable_functional_parser_factory('target_application', Application.from_data_invite)
 
 
-def put_target_application_into(target_application, data, defaults):
+def put_target_application(target_application, data, defaults):
     """
     Puts the invite's target application into the given data.
     
     Parameters
     ----------
-    target_application : `None`, ``Application``
+    target_application : ``None | Application``
         The application to serialize.
     data : `dict<str, object>` items
         Json serializable dictionary.
@@ -263,9 +275,9 @@ def put_target_application_into(target_application, data, defaults):
 
 validate_target_application = nullable_entity_validator_factory('target_application', Application)
 
-# put_target_application_id_into
+# put_target_application_id
 
-put_target_application_id_into = entity_id_optional_putter_factory('target_application_id')
+put_target_application_id = entity_id_optional_putter_factory('target_application_id')
 validate_target_application_id = entity_id_validator_factory('target_application_id', Application)
 
 # target_type
@@ -275,7 +287,7 @@ parse_target_type = preinstanced_parser_factory(
 )
 
 
-def put_target_type_into(target_type, data, defaults):
+def put_target_type(target_type, data, defaults):
     """
     Puts the invite's target type into the given data.
     
@@ -303,37 +315,37 @@ validate_target_type = preinstanced_validator_factory('target_type', InviteTarge
 # target_user
 
 parse_target_user = nullable_entity_parser_factory('target_user', User)
-put_target_user_into = nullable_entity_optional_putter_factory(
+put_target_user = nullable_entity_optional_putter_factory(
     'target_user', ClientUserBase, force_include_internals = True
 )
 validate_target_user = nullable_entity_validator_factory('target_user', ClientUserBase)
 
-# put_target_user_id_into
+# put_target_user_id
 
-put_target_user_id_into = entity_id_optional_putter_factory('target_user_id')
+put_target_user_id = entity_id_optional_putter_factory('target_user_id')
 validate_target_user_id = entity_id_validator_factory('target_user_id', ClientUserBase)
 
 # temporary
 
 parse_temporary = bool_parser_factory('temporary', False)
-put_temporary_into = bool_optional_putter_factory('temporary', False)
+put_temporary = bool_optional_putter_factory('temporary', False)
 validate_temporary = bool_validator_factory('temporary', False)
 
 # type
 
 parse_type = preinstanced_parser_factory('type', InviteType, InviteType.guild)
-put_type_into = preinstanced_putter_factory('type')
+put_type = preinstanced_putter_factory('type')
 validate_type = preinstanced_validator_factory('invite_type', InviteType)
 
 # validate_unique
 
-put_unique_into = bool_optional_putter_factory('unique', False)
+put_unique = bool_optional_putter_factory('unique', False)
 validate_unique = bool_validator_factory('unique', False)
 
 # uses
 
 parse_uses = nullable_int_parser_factory('uses')
-put_uses_into = nullable_field_optional_putter_factory('uses')
+put_uses = nullable_field_optional_putter_factory('uses')
 validate_uses = int_conditional_validator_factory(
     'uses',
     None,

@@ -148,7 +148,7 @@ def _value_deserializer_emoji_custom(value):
     
     Returns
     -------
-    emoji : `None | Emoji`
+    emoji : ``None | Emoji``
     """
     if value is None:
         emoji = None
@@ -169,7 +169,7 @@ def _value_deserializer_emoji_unicode(value):
     
     Returns
     -------
-    emoji : `None | Emoji`
+    emoji : ``None | Emoji``
     """
     if value is None:
         emoji = None

@@ -35,4 +35,6 @@ def test__validate_title(input_value):
     ------
     TypeError
     """
-    return validate_title(input_value)
+    output = validate_title(input_value)
+    vampytest.assert_instance(output, str, nullable = True)
+    return output

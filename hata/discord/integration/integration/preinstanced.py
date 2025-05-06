@@ -8,30 +8,27 @@ from ..integration_metadata import IntegrationMetadataBase, IntegrationMetadataS
 
 
 @export
-class IntegrationType(PreinstancedBase):
+class IntegrationType(PreinstancedBase, value_type = str):
     """
     Represents an ``Integration``'s type.
     
     Attributes
     ----------
+    metadata_type : `type<IntegrationMetadataBase>`
+        The integration's metadata's type.
+        
     name : `str`
         The name of the integration type.
+    
     value : `str`
         The Discord side identifier value of the integration type.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`str`, ``IntegrationType``) items
-        Stores the predefined ``IntegrationType``-s. These can be accessed with their `value` as key.
-    VALUE_TYPE : `type` = `int`
-        The integration type' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the integration types.
-    
-    Every predefined integration type can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined integration type can be accessed as type attribute as well:
     
     +-----------------------+-----------------------+---------------------------+---------------------------------------+
-    | Class attribute name  | Name                  | Value                     | Metadata type                         |
+    | Type attribute name   | Name                  | Value                     | Metadata type                         |
     +=======================+=======================+===========================+=======================================+
     | none                  | none                  | `''`                      | ``IntegrationMetadataBase``           |
     +-----------------------+-----------------------+---------------------------+---------------------------------------+
@@ -43,54 +40,30 @@ class IntegrationType(PreinstancedBase):
     +-----------------------+-----------------------+---------------------------+---------------------------------------+
     | guild_subscription    | guild subscription    | `'guild_subscription'`    | ``IntegrationMetadataSubscription``   |
     +-----------------------+-----------------------+---------------------------+---------------------------------------+
-    
     """
-    INSTANCES = {}
-    VALUE_TYPE = str
-    
     __slots__ = ('metadata_type',)
     
-
-    @classmethod
-    def _from_value(cls, value):
+    def __new__(cls, value, name = None, metadata_type = None):
         """
-        Creates a new integration type with the given value.
-        
-        Parameters
-        ----------
-        value : `str`
-            The integration's type.
-        
-        Returns
-        -------
-        self : ``IntegrationType``
-            The created instance.
-        """
-        self = object.__new__(cls)
-        self.name = value
-        self.value = value
-        self.metadata_type = IntegrationMetadataSubscription
-        return self
-    
-
-    
-    def __init__(self, value, name, metadata_type):
-        """
-        Creates a new scheduled event entity type instance from the given parameters.
+        Creates a new integration type.
         
         Parameters
         ----------
         value : `str`
             The unique identifier of the scheduled event entity type.
-        name : `str`
+        
+        name : `None | str` = `None`, Optional
             The name of the scheduled event entity type.
-        metadata_type : `None`, ``IntegrationMetadataBase`` subclass
+        
+        metadata_type : `None | type<IntegrationMetadataBase>` = `None`, Optional
             The integration's metadata's type.
         """
-        self.name = name
-        self.value = value
+        if metadata_type is None:
+            metadata_type = IntegrationMetadataBase
+        
+        self = PreinstancedBase.__new__(cls, value, name)
         self.metadata_type = metadata_type
-        self.INSTANCES[value] = self
+        return self
     
     
     # predefined

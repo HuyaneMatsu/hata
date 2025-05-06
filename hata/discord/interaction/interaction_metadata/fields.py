@@ -29,31 +29,31 @@ from ..resolved import Resolved
 # component_type
 
 parse_component_type = preinstanced_parser_factory('component_type', ComponentType, ComponentType.none)
-put_component_type_into = preinstanced_putter_factory('component_type')
+put_component_type = preinstanced_putter_factory('component_type')
 validate_component_type = preinstanced_validator_factory('component_type', ComponentType)
 
 # components
 
 parse_components = nullable_object_array_parser_factory('components', InteractionComponent)
-put_components_into = nullable_object_array_optional_putter_factory('components')
+put_components = nullable_object_array_optional_putter_factory('components')
 validate_components = nullable_object_array_validator_factory('components', InteractionComponent)
 
 # custom_id
 
 parse_custom_id = nullable_string_parser_factory('custom_id')
-put_custom_id_into = url_optional_putter_factory('custom_id')
+put_custom_id = url_optional_putter_factory('custom_id')
 validate_custom_id = nullable_string_validator_factory('custom_id', 0, CUSTOM_ID_LENGTH_MAX)
 
 # id
 
 parse_id = entity_id_parser_factory('id')
-put_id_into = entity_id_putter_factory('id')
+put_id = entity_id_putter_factory('id')
 validate_id = entity_id_validator_factory('id', ApplicationCommand)
 
 # name
 
 parse_name = force_string_parser_factory('name')
-put_name_into = force_string_putter_factory('name')
+put_name = force_string_putter_factory('name')
 validate_name = force_string_validator_factory(
     'name', APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_NAME_LENGTH_MAX
 )
@@ -61,7 +61,7 @@ validate_name = force_string_validator_factory(
 # options
 
 parse_options = nullable_object_array_parser_factory('options', InteractionOption)
-put_options_into = nullable_object_array_optional_putter_factory('options')
+put_options = nullable_object_array_optional_putter_factory('options')
 validate_options = nullable_object_array_validator_factory('options', InteractionOption)
 
 # resolved
@@ -72,7 +72,7 @@ def parse_resolved(data, guild_id = 0):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Interaction metadata data.
     
     guild_id : `int` = `0`, Optional
@@ -87,7 +87,7 @@ def parse_resolved(data, guild_id = 0):
         return Resolved.from_data(resolved_data, guild_id)
 
 
-def put_resolved_into(resolved, data, defaults, *, guild_id = 0):
+def put_resolved(resolved, data, defaults, *, guild_id = 0):
     """
     Puts the given `resolved` into the given interaction metadata data.
     
@@ -96,7 +96,7 @@ def put_resolved_into(resolved, data, defaults, *, guild_id = 0):
     resolved  : `None`, ``Resolved``
         The instance to serialise.
         
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Interaction metadata data.
     
     defaults : `bool`
@@ -107,7 +107,7 @@ def put_resolved_into(resolved, data, defaults, *, guild_id = 0):
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     # Cpython devs: "We do not need goto in python".
     # Also them: *uSeS gOtO TwIcE iN EveRy C fUnCTiOn*.
@@ -133,7 +133,7 @@ validate_resolved = nullable_entity_validator_factory('resolved', Resolved)
 # target_id
 
 parse_target_id = entity_id_parser_factory('target_id')
-put_target_id_into = entity_id_optional_putter_factory('target_id')
+put_target_id = entity_id_optional_putter_factory('target_id')
 validate_target_id = entity_id_validator_factory('target_id', DiscordEntity)
 
 
@@ -142,11 +142,11 @@ validate_target_id = entity_id_validator_factory('target_id', DiscordEntity)
 parse_target_type = preinstanced_parser_factory(
     'type', ApplicationCommandTargetType, ApplicationCommandTargetType.none
 )
-put_target_type_into = preinstanced_putter_factory('type')
+put_target_type = preinstanced_putter_factory('type')
 validate_target_type = preinstanced_validator_factory('target_type', ApplicationCommandTargetType)
 
 # values
 
 parse_values = nullable_array_parser_factory('values')
-put_values_into = nullable_string_array_optional_putter_factory('values')
+put_values = nullable_string_array_optional_putter_factory('values')
 validate_values = nullable_string_array_validator_factory('values')

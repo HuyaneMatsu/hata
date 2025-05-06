@@ -150,7 +150,7 @@ def normalize_aliases(aliases, name):
     
     Parameters
     ----------
-    aliases : `None`, `str`, `iterable` of `str`
+    aliases : `None | str | iterable<str>`
         Alternative names for the command.
     name : `str`
         The command's name.
@@ -174,7 +174,7 @@ def normalize_aliases(aliases, name):
     iterator = getattr(aliases, '__iter__', None)
     if iterator is None:
         raise TypeError(
-            f'`aliases` can be `None`, `str`, `iterable` of `str`, got {aliases.__class__.__name__}; {aliases!r}.'
+            f'`aliases` can be `None | str | iterable<str>`, got {type(aliases).__name__}; {aliases!r}.'
         )
     
     normalized_aliases = None

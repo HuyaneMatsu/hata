@@ -151,7 +151,7 @@ class UserGuildPermission:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`)
+        data : `dict<str, object>`
             Guild permission data.
         """
         self.owner = data['owner']

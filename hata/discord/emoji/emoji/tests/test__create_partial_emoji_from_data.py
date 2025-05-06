@@ -1,4 +1,4 @@
-import warnings
+from warnings import catch_warnings, simplefilter as apply_simple_filter
 
 import vampytest
 
@@ -26,8 +26,8 @@ def test__create_partial_emoji_from_data__1():
     """
     unicode_string = 'Aether'
     
-    with warnings.catch_warnings():
-        warnings.simplefilter('ignore')
+    with catch_warnings():
+        apply_simple_filter('ignore')
         
         emoji = create_partial_emoji_from_data({'name': unicode_string})
     

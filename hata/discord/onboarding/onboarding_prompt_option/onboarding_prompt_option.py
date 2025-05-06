@@ -6,8 +6,8 @@ from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 from ...role import create_partial_role_from_id
 
 from .fields import (
-    parse_channel_ids, parse_description, parse_emoji, parse_id, parse_name, parse_role_ids, put_channel_ids_into,
-    put_description_into, put_emoji_into, put_id_into, put_name_into, put_role_ids_into, validate_channel_ids,
+    parse_channel_ids, parse_description, parse_emoji, parse_id, parse_name, parse_role_ids, put_channel_ids,
+    put_description, put_emoji, put_id, put_name, put_role_ids, validate_channel_ids,
     validate_description, validate_emoji, validate_id, validate_name, validate_role_ids
 )
 
@@ -115,7 +115,7 @@ class OnboardingPromptOption(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Onboarding prompt option data.
         
         Returns
@@ -145,17 +145,17 @@ class OnboardingPromptOption(DiscordEntity):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
-        put_channel_ids_into(self.channel_ids, data, defaults)
-        put_description_into(self.description, data, defaults)
-        put_emoji_into(self.emoji, data, defaults)
-        put_name_into(self.name, data, defaults)
-        put_role_ids_into(self.role_ids, data, defaults)
+        put_channel_ids(self.channel_ids, data, defaults)
+        put_description(self.description, data, defaults)
+        put_emoji(self.emoji, data, defaults)
+        put_name(self.name, data, defaults)
+        put_role_ids(self.role_ids, data, defaults)
         
         if include_internals:
-            put_id_into(self.id, data, defaults)
+            put_id(self.id, data, defaults)
         
         return data
     

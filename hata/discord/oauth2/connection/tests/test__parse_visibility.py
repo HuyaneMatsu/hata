@@ -5,14 +5,48 @@ from ..preinstanced import ConnectionVisibility
 from ..fields import parse_visibility
 
 
-def test__parse_visibility():
+def _iter_options():
+    yield (
+        {},
+        ConnectionVisibility.user_only,
+    )
+    
+    yield (
+        {
+            'visibility': None,
+        },
+        ConnectionVisibility.user_only,
+    )
+    
+    yield (
+        {
+            'visibility': ConnectionVisibility.user_only.value,
+        },
+        ConnectionVisibility.user_only,
+    )
+    
+    yield (
+        {
+            'visibility': ConnectionVisibility.everyone.value,
+        },
+        ConnectionVisibility.everyone,
+    )
+    
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_visibility(input_data):
     """
     Tests whether ``parse_visibility`` works as intended.
+    
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    output : ``ConnectionVisibility``
     """
-    for input_data, expected_output in (
-        ({}, ConnectionVisibility.user_only),
-        ({'visibility': ConnectionVisibility.user_only.value}, ConnectionVisibility.user_only),
-        ({'visibility': ConnectionVisibility.everyone.value}, ConnectionVisibility.everyone),
-    ):
-        output = parse_visibility(input_data)
-        vampytest.assert_eq(output, expected_output)
+    output = parse_visibility(input_data)
+    vampytest.assert_instance(output, ConnectionVisibility)
+    return output

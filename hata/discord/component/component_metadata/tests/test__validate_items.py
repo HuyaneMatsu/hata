@@ -13,6 +13,7 @@ def _iter_items__passing():
     yield [], None
     yield [item_0], (item_0,)
     yield [item_0, item_1], (item_0, item_1,)
+    yield [item_0.url], (item_0,)
 
 
 def _iter_items__type_error():
@@ -35,7 +36,7 @@ def test__validate_items(input_value):
     
     Returns
     -------
-    output : `None | tuple<MediaItem>`
+    output : ``None | tuple<MediaItem>``
     
     Raises
     ------

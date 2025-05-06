@@ -4,6 +4,7 @@ import vampytest
 
 from ....component import Component, ComponentType
 from ....embed import Embed
+from ....soundboard import SoundboardSound
 from ....sticker import Sticker, create_partial_sticker_data
 from ....user import GuildProfile, User
 from ....utils import datetime_to_timestamp
@@ -39,6 +40,10 @@ def test__MessageSnapshot__from_data():
         User.precreate(202407200043, name = 'Rin'),
     ]
     message_type = MessageType.call
+    soundboard_sounds = [
+        SoundboardSound.precreate(202501300010, name = 'whither'),
+        SoundboardSound.precreate(202501300011, name = 'Yuyuko'),
+    ]
     stickers = [
         Sticker.precreate(202409200062, name = 'Make'),
         Sticker.precreate(202409200063, name = 'Me'),
@@ -58,6 +63,9 @@ def test__MessageSnapshot__from_data():
             'flags': int(flags),
             'mention_roles': [str(role_id) for role_id in mentioned_role_ids],
             'mentions': [user.to_data(include_internals = True) for user in mentioned_users],
+            'soundboard_sounds': [
+                soundboard_sound.to_data(include_internals = True) for soundboard_sound in soundboard_sounds
+            ],
             'sticker_items': [create_partial_sticker_data(sticker) for sticker in stickers],
             'type': message_type.value,
         },
@@ -75,6 +83,7 @@ def test__MessageSnapshot__from_data():
     vampytest.assert_eq(message_snapshot.flags, flags)
     vampytest.assert_eq(message_snapshot.mentioned_role_ids, tuple(mentioned_role_ids))
     vampytest.assert_eq(message_snapshot.mentioned_users, tuple(mentioned_users))
+    vampytest.assert_eq(message_snapshot.soundboard_sounds, tuple(soundboard_sounds))
     vampytest.assert_eq(message_snapshot.stickers, tuple(stickers))
     vampytest.assert_is(message_snapshot.type, message_type)
 
@@ -107,6 +116,10 @@ def test__MessageSnapshot__to_data():
     mentioned_role_ids = [202407200016, 202407200017]
     mentioned_users = [user_0, user_1]
     message_type = MessageType.call
+    soundboard_sounds = [
+        SoundboardSound.precreate(202501300012, name = 'whither'),
+        SoundboardSound.precreate(202501300013, name = 'Yuyuko'),
+    ]
     stickers = [
         Sticker.precreate(202409200064, name = 'Make'),
         Sticker.precreate(202409200065, name = 'Me'),
@@ -123,6 +136,7 @@ def test__MessageSnapshot__to_data():
         mentioned_role_ids = mentioned_role_ids,
         mentioned_users = mentioned_users,
         message_type = message_type,
+        soundboard_sounds = soundboard_sounds,
         stickers = stickers,
     )
     
@@ -147,6 +161,10 @@ def test__MessageSnapshot__to_data():
                         'member': guild_profile_0.to_data(defaults = True, include_internals = True),
                     },
                     user_1.to_data(defaults = True, include_internals = True),
+                ],
+                'soundboard_sounds': [
+                    soundboard_sound.to_data(defaults = True, include_internals = True)
+                    for soundboard_sound in soundboard_sounds
                 ],
                 'sticker_items': [create_partial_sticker_data(sticker) for sticker in stickers],
                 'type': message_type.value,

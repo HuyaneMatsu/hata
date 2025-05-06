@@ -25,11 +25,11 @@ def maybe_locale(value):
         locale = value
     
     elif isinstance(value, str):
-        locale = Locale.get(value)
+        locale = Locale(value)
     
     else:
         raise TypeError(
-            f'`locale`-s can be `{Locale.__name}`, `str`, got {value.__class__.__name__}; {value!r}.'
+            f'`locale`-s can be `{Locale.__name}`, `str`, got {type(value).__name__}; {value!r}.'
         )
     
     return locale

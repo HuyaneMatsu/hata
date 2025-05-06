@@ -3,7 +3,7 @@ __all__ = ('GuildWidgetChannel',)
 from ...bases import DiscordEntity
 
 from .fields import (
-    parse_id, parse_name, parse_position, put_id_into, put_name_into, put_position_into, validate_id, validate_name,
+    parse_id, parse_name, parse_position, put_id, put_name, put_position, validate_id, validate_name,
     validate_position
 )
 
@@ -83,7 +83,7 @@ class GuildWidgetChannel(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Guild widget channel data.
         
         Returns
@@ -108,12 +108,12 @@ class GuildWidgetChannel(DiscordEntity):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
-        put_id_into(self.id, data, defaults)
-        put_name_into(self.name, data, defaults)
-        put_position_into(self.position, data, defaults)
+        put_id(self.id, data, defaults)
+        put_name(self.name, data, defaults)
+        put_position(self.position, data, defaults)
         return data
     
     

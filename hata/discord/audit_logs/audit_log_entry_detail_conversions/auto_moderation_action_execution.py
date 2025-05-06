@@ -41,7 +41,7 @@ TRIGGER_TYPE_CONVERSION = AuditLogEntryDetailConversion(
 
 @TRIGGER_TYPE_CONVERSION.set_value_deserializer
 def trigger_type_value_deserializer(value):
-    return AutoModerationRuleTriggerType.get(value)
+    return AutoModerationRuleTriggerType(value)
 
 
 @TRIGGER_TYPE_CONVERSION.set_value_serializer

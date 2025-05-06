@@ -19,7 +19,7 @@ def _validate_bot(bots_value):
     
     Returns
     -------
-    bots : `None`, `list` of `str`
+    bots : `None | list<str>`
         The validated bots.
     error_message : `None`, `str`
         Error message.

@@ -3,7 +3,7 @@ __all__ = ('AutoModerationActionMetadataTimeout',)
 from scarletio import copy_docs
 
 from .base import AutoModerationActionMetadataBase
-from .fields import parse_duration, put_duration_into, validate_duration
+from .fields import parse_duration, put_duration, validate_duration
 
 
 class AutoModerationActionMetadataTimeout(AutoModerationActionMetadataBase):
@@ -23,7 +23,7 @@ class AutoModerationActionMetadataTimeout(AutoModerationActionMetadataBase):
         
         Parameters
         ----------
-        duration : `None`, `int`, `float` = `None`, Optional
+        duration : `None | int | float` = `None`, Optional
             The timeout's duration applied on trigger.
         
         Raises
@@ -62,7 +62,7 @@ class AutoModerationActionMetadataTimeout(AutoModerationActionMetadataBase):
     @copy_docs(AutoModerationActionMetadataBase.to_data)
     def to_data(self, *, defaults = False):
         data = {}
-        put_duration_into(self.duration, data, defaults)
+        put_duration(self.duration, data, defaults)
         return data
     
     
@@ -98,7 +98,7 @@ class AutoModerationActionMetadataTimeout(AutoModerationActionMetadataBase):
         
         Parameters
         ----------
-        duration : `None`, `int`, `float`, Optional (Keyword only)
+        duration : `None | int | float`, Optional (Keyword only)
             The timeout's duration applied on trigger.
         
         Returns

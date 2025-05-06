@@ -27,7 +27,7 @@ from .preinstanced import ApplicationCommandOptionType
 # description
 
 parse_description = nullable_string_parser_factory('description')
-put_description_into = nullable_string_putter_factory('description')
+put_description = nullable_string_putter_factory('description')
 validate_description = nullable_string_validator_factory(
     'description', DESCRIPTION_LENGTH_MIN, DESCRIPTION_LENGTH_MAX
 )
@@ -37,7 +37,7 @@ validate_description = nullable_string_validator_factory(
 parse_description_localizations = nullable_functional_parser_factory(
     'description_localizations', build_locale_dictionary
 )
-put_description_localizations_into = nullable_functional_optional_putter_factory(
+put_description_localizations = nullable_functional_optional_putter_factory(
     'description_localizations', destroy_locale_dictionary
 )
 validate_description_localizations = partial_func(
@@ -47,7 +47,7 @@ validate_description_localizations = partial_func(
 # name
 
 parse_name = force_string_parser_factory('name')
-put_name_into = force_string_putter_factory('name')
+put_name = force_string_putter_factory('name')
 validate_name = force_string_validator_factory(
     'name', NAME_LENGTH_MIN, NAME_LENGTH_MAX
 )
@@ -57,7 +57,7 @@ validate_name = force_string_validator_factory(
 parse_name_localizations = nullable_functional_parser_factory(
     'name_localizations', build_locale_dictionary
 )
-put_name_localizations_into = nullable_functional_optional_putter_factory(
+put_name_localizations = nullable_functional_optional_putter_factory(
     'name_localizations', destroy_locale_dictionary
 )
 validate_name_localizations = partial_func(
@@ -67,5 +67,5 @@ validate_name_localizations = partial_func(
 # type
 
 parse_type = preinstanced_parser_factory('type', ApplicationCommandOptionType, ApplicationCommandOptionType.none)
-put_type_into = preinstanced_putter_factory('type')
+put_type = preinstanced_putter_factory('type')
 validate_type = preinstanced_validator_factory('option_type', ApplicationCommandOptionType)

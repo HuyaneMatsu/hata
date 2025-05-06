@@ -36,7 +36,7 @@ class Command(RichAttributeErrorBaseType):
         ----------
         name : `str`
             The command's name.
-        aliases : `None`, `str`, `iterable` of `str`
+        aliases : `None | str | iterable<str>`
             Alternative names for the command.
         available : `bool`
             Whether the command is available.

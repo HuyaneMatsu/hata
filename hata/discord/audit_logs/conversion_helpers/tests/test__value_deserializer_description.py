@@ -24,4 +24,6 @@ def test__value_deserializer_description(input_value):
     -------
     output : `None | str`
     """
-    return value_deserializer_description(input_value)
+    output = value_deserializer_description(input_value)
+    vampytest.assert_instance(output, str, nullable = True)
+    return output

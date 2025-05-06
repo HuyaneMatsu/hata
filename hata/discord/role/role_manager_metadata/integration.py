@@ -3,7 +3,7 @@ __all__ = ('RoleManagerMetadataIntegration',)
 from scarletio import copy_docs, include
 
 from .base import RoleManagerMetadataBase
-from .fields import parse_integration_id, put_integration_id_into, validate_integration_id
+from .fields import parse_integration_id, put_integration_id, validate_integration_id
 
 
 create_partial_integration_from_id = include('create_partial_integration_from_id')
@@ -58,7 +58,7 @@ class RoleManagerMetadataIntegration(RoleManagerMetadataBase):
     @copy_docs(RoleManagerMetadataBase.to_data)
     def to_data(self, *, defaults = False):
         data = {}
-        put_integration_id_into(self.integration_id, data, defaults)
+        put_integration_id(self.integration_id, data, defaults)
         return data
     
     

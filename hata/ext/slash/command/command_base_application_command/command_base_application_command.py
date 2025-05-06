@@ -458,7 +458,7 @@ class CommandBaseApplicationCommand(CommandBase):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild to mention the command at.
         
         *sub_command_names : `str`

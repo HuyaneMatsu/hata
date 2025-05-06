@@ -116,7 +116,7 @@ def test__EmbeddedActivity__guild(embedded_activity_id, guild_id, extra):
     
     Returns
     -------
-    output : `None | Guild`
+    output : ``None | Guild``
     """
     embedded_activity = EmbeddedActivity.precreate(
         embedded_activity_id,

@@ -10,6 +10,11 @@ from ..preinstanced import ButtonStyle
 def _assert_fields_set(component_metadata):
     """
     Checks whether the ``ComponentMetadataButton`` has all it's attributes set.
+    
+    Parameters
+    ----------
+    component_metadata : ``ComponentMetadataButton``
+        Component metadata to check.
     """
     vampytest.assert_instance(component_metadata, ComponentMetadataButton)
     vampytest.assert_instance(component_metadata.button_style, ButtonStyle)

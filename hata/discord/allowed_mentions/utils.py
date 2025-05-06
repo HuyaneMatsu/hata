@@ -88,7 +88,7 @@ def parse_allowed_mentions(allowed_mentions):
     
     Returns
     -------
-    allowed_mentions : `dict` of (`str`, `object`) items
+    allowed_mentions : `dict<str, object>`
     
     Raises
     ------

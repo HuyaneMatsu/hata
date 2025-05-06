@@ -36,7 +36,7 @@ class ClientCompoundDiscoveryEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `guild` is not ``Guild``, `int`.
+            - If `guild` is not ``int | Guild``.
         ConnectionError
             No internet connection.
         DiscordException
@@ -61,7 +61,7 @@ class ClientCompoundDiscoveryEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild what's discovery metadata will be edited or an existing discovery metadata object.
         
         discovery_template : `None`, ``GuildDiscovery`` = `None`, Optional
@@ -86,7 +86,7 @@ class ClientCompoundDiscoveryEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `guild` is not ``Guild``, `int`.
+            - If `guild` is not ``int | Guild``.
             - If a parameter's type is incorrect.
         ValueError
             - If a parameter's value is incorrect.
@@ -111,7 +111,7 @@ class ClientCompoundDiscoveryEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild to what the discovery subcategory will be added.
         category : ``DiscoveryCategory``, `int`
             The discovery category or it's id what will be added as a subcategory.
@@ -119,7 +119,7 @@ class ClientCompoundDiscoveryEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `guild` is not ``Guild``, `int`.
+            - If `guild` is not ``int | Guild``.
             - If `category`is not ``DiscoveryCategory``, `int`.
         ConnectionError
             No internet connection.
@@ -155,7 +155,7 @@ class ClientCompoundDiscoveryEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild to what the discovery subcategory will be removed from.
         category : ``DiscoveryCategory``, `int`
             The discovery category or it's id what will be removed from the subcategories.
@@ -163,7 +163,7 @@ class ClientCompoundDiscoveryEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `guild` is not ``Guild``, `int`.
+            - If `guild` is not ``int | Guild``.
             - If `category`is not ``DiscoveryCategory``, `int`.
         ConnectionError
             No internet connection.

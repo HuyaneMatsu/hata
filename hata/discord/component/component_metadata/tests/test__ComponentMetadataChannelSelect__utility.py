@@ -1,12 +1,44 @@
 import vampytest
 
 from ....channel import ChannelType
+from ....guild import Guild
 
 from ...entity_select_default_value import EntitySelectDefaultValue, EntitySelectDefaultValueType
 
 from ..channel_select import ComponentMetadataChannelSelect
 
 from .test__ComponentMetadataChannelSelect__constructor import _assert_fields_set
+
+
+def test__ComponentMetadataChannelSelect__clean_copy():
+    """
+    Tests whether ``ComponentMetadataChannelSelect.clean_copy`` works as intended.
+    """
+    guild_id = 202505030014
+    guild = Guild.precreate(guild_id)
+    
+    custom_id = 'oriental'
+    enabled = False
+    max_values = 10
+    min_values = 9
+    placeholder = 'swing'
+    channel_types = [ChannelType.private]
+    default_values = [EntitySelectDefaultValue(EntitySelectDefaultValueType.channel, 202505030015)]
+    
+    component_metadata = ComponentMetadataChannelSelect(
+        custom_id = custom_id,
+        enabled = enabled,
+        max_values = max_values,
+        min_values = min_values,
+        placeholder = placeholder,
+        channel_types = channel_types,
+        default_values = default_values,
+    )
+    copy = component_metadata.clean_copy(guild)
+    
+    _assert_fields_set(copy)
+    vampytest.assert_is_not(copy, component_metadata)
+    vampytest.assert_eq(copy, component_metadata)
 
 
 def test__ComponentMetadataChannelSelect__copy():
@@ -209,3 +241,54 @@ def test__ComponentMetadataChannelSelect__copy_with_keyword_parameters__all_fiel
     vampytest.assert_eq(copy.placeholder, new_placeholder)
     vampytest.assert_eq(copy.channel_types, tuple(new_channel_types))
     vampytest.assert_eq(copy.default_values, tuple(new_default_values))
+
+
+def _iter_options__iter_contents():
+    custom_id = 'oriental'
+    enabled = False
+    max_values = 10
+    min_values = 9
+    placeholder = 'swing'
+    channel_types = [ChannelType.private]
+    default_values = [EntitySelectDefaultValue(EntitySelectDefaultValueType.channel, 202505030000)]
+    
+    yield (
+        {},
+        [],
+    )
+    
+    yield (
+        {
+            'custom_id': custom_id,
+            'enabled': enabled,
+            'max_values': max_values,
+            'min_values': min_values,
+            'placeholder': placeholder,
+            'channel_types': channel_types,
+            'default_values': default_values,
+        },
+        [],
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_contents()).returning_last())
+def test__ComponentMetadataChannelSelect__iter_contents(keyword_parameters):
+    """
+    Tests whether ``ComponentMetadataChannelSelect.iter_contents`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `list<str>`
+    """
+    component_metadata = ComponentMetadataChannelSelect(**keyword_parameters)
+    output = [*component_metadata.iter_contents()]
+    
+    for element in output:
+        vampytest.assert_instance(element, str)
+    
+    return output

@@ -5,7 +5,7 @@ from scarletio import RichAttributeErrorBaseType
 from ...user import create_partial_user_from_id
 
 from .fields import (
-    parse_banned_user_ids, parse_failed_user_ids, put_banned_user_ids_into, put_failed_user_ids_into,
+    parse_banned_user_ids, parse_failed_user_ids, put_banned_user_ids, put_failed_user_ids,
     validate_banned_user_ids, validate_failed_user_ids
 )
 
@@ -94,8 +94,8 @@ class BanAddMultipleResult(RichAttributeErrorBaseType):
         data : `dict<str, object>`
         """
         data = {}
-        put_banned_user_ids_into(self.banned_user_ids, data, defaults)
-        put_failed_user_ids_into(self.failed_user_ids, data, defaults)
+        put_banned_user_ids(self.banned_user_ids, data, defaults)
+        put_failed_user_ids(self.failed_user_ids, data, defaults)
         return data
     
     

@@ -23,7 +23,7 @@ from ...core import GUILDS
 # chunk_count
 
 parse_chunk_count = int_parser_factory('chunk_count', 0)
-put_chunk_count_into = int_putter_factory('chunk_count')
+put_chunk_count = int_putter_factory('chunk_count')
 validate_chunk_count = int_conditional_validator_factory(
     'chunk_count',
     0,
@@ -34,7 +34,7 @@ validate_chunk_count = int_conditional_validator_factory(
 # chunk_index
 
 parse_chunk_index = int_parser_factory('chunk_index', 0)
-put_chunk_index_into = int_putter_factory('chunk_index')
+put_chunk_index = int_putter_factory('chunk_index')
 validate_chunk_index = int_conditional_validator_factory(
     'chunk_index',
     0,
@@ -45,13 +45,13 @@ validate_chunk_index = int_conditional_validator_factory(
 # guild_id
 
 parse_guild_id = entity_id_parser_factory('guild_id')
-put_guild_id_into = entity_id_putter_factory('guild_id')
+put_guild_id = entity_id_putter_factory('guild_id')
 validate_guild_id = entity_id_validator_factory('guild_id', Guild)
 
 # nonce
 
 parse_nonce = nullable_string_parser_factory('nonce')
-put_nonce_into = url_optional_putter_factory('nonce')
+put_nonce = url_optional_putter_factory('nonce')
 validate_nonce = nullable_string_validator_factory('nonce', 0, NONCE_LENGTH_MAX)
 
 # users
@@ -142,7 +142,7 @@ set_docs(
 )
 
 
-def put_users_into(users, data, defaults, *, guild_id = 0):
+def put_users(users, data, defaults, *, guild_id = 0):
     """
     Puts the given `users` into the given `data` json serializable object.
     
@@ -150,7 +150,7 @@ def put_users_into(users, data, defaults, *, guild_id = 0):
     ----------
     users : `list` of ``ClientUserBase``
         Resolved users.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Interaction resolved data.
     defaults : `bool`
         Whether default fields values should be included as well.
@@ -159,7 +159,7 @@ def put_users_into(users, data, defaults, *, guild_id = 0):
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     guild_profiles_datas = []
     

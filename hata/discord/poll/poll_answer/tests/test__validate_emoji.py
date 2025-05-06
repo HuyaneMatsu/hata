@@ -29,7 +29,7 @@ def test__validate_emoji(input_value):
     
     Returns
     -------
-    output : `None | Emoji`
+    output : ``None | Emoji``
     
     Raises
     ------

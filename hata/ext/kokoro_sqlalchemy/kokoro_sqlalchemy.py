@@ -62,51 +62,112 @@ class KOKOROEngine:
     
     async def _connect(self):
         executor = self._worker
-        if executor is None:
+        if executor is not None:
+            release_executor_after = False
+        
+        else:
+            release_executor_after = True
             executor = current_thread().claim_executor()
-        connection = await executor.execute(self._engine.connect)
-        return AsyncConnection(connection, executor)
+        
+        try:
+            connection = await executor.execute(self._engine.connect)
+        except:
+            if release_executor_after:
+                executor.release()
+            raise
+        
+        return AsyncConnection(connection, executor, release_executor_after)
     
     
     def begin(self, close_with_result = False):
         executor = self._worker
-        if executor is None:
+        if executor is not None:
+            release_executor_after = False
+        
+        else:
+            release_executor_after = True
             executor = current_thread().claim_executor()
-        return EngineTransactionContextManager(self, close_with_result, executor)
+        
+        return EngineTransactionContextManager(self, close_with_result, executor, release_executor_after)
     
     
     async def execute(self, *positional_parameters, **keyword_parameters):
         executor = self._worker
-        if executor is None:
+        if executor is not None:
+            release_executor_after = False
+        
+        else:
+            release_executor_after = True
             executor = current_thread().claim_executor()
-        result_proxy = await executor.execute(alchemy_incendiary(
-            self._engine.execute, positional_parameters, keyword_parameters,
-        ))
-        return AsyncResultProxy(result_proxy, executor)
+        
+        try:
+            result_proxy = await executor.execute(alchemy_incendiary(
+                self._engine.execute, positional_parameters, keyword_parameters,
+            ))
+        except:
+            if release_executor_after:
+                executor.release()
+            raise
+        
+        return AsyncResultProxy(result_proxy, executor, release_executor_after)
     
     
     async def scalar(self, *positional_parameters, **keyword_parameters):
         executor = self._worker
-        if executor is None:
+        if executor is not None:
+            release_executor_after = False
+        
+        else:
+            release_executor_after = True
             executor = current_thread().claim_executor()
-        result_proxy = await executor.execute(alchemy_incendiary(
-            self._engine.execute, positional_parameters, keyword_parameters,
-        ))
-        async_result_proxy = AsyncResultProxy(result_proxy, executor)
+        
+        
+        try:
+            result_proxy = await executor.execute(alchemy_incendiary(
+                self._engine.execute, positional_parameters, keyword_parameters,
+            ))
+        except:
+            if release_executor_after:
+                executor.release()
+            raise
+        
+        async_result_proxy = AsyncResultProxy(result_proxy, executor, release_executor_after)
         return await async_result_proxy.scalar()
     
     
     async def has_table(self, table_name, schema = None):
-        return await current_thread().run_in_executor(alchemy_incendiary(self._engine.has_table, (table_name, schema)))
+        executor = self._worker
+        if executor is not None:
+            release_executor_after = False
+        
+        else:
+            release_executor_after = True
+            executor = current_thread().claim_executor()
+        
+        
+        try:
+            return executor.execute(alchemy_incendiary(self._engine.has_table, (table_name, schema)))
+        finally:
+            if release_executor_after:
+                executor.release()
     
     
     async def table_names(self, schema = None, connection = None):
-        task = alchemy_incendiary(self._engine.table_names, (schema, None if connection else connection._connection))
         executor = self._worker
-        if executor is None:
-            return await current_thread().run_in_executor(task)
+        if executor is not None:
+            release_executor_after = False
+        
         else:
-            return await executor.execute(task)
+            release_executor_after = True
+            executor = current_thread().claim_executor()
+        
+        try:
+            return executor.execute(alchemy_incendiary(
+                self._engine.table_names, (schema, None if connection else connection._connection)
+            ))
+        finally:
+            if release_executor_after:
+                executor.release()
     
     
     def __del__(self):
@@ -117,25 +178,28 @@ class KOKOROEngine:
 
 
 class AsyncConnection:
-    __slots__ = ('_connection', 'executor',)
+    __slots__ = ('_connection', '_release_executor_after', 'executor',)
     
-    def __init__(self, connection, executor):
+    def __new__(cls, connection, executor, release_executor_after):
+        self = object.__new__(cls)
         self._connection = connection
+        self._release_executor_after = release_executor_after
         self.executor = executor
+        return self
     
     
     async def execute(self, *positional_parameters, **keyword_parameters):
         result_proxy = await self.executor.execute(alchemy_incendiary(
             self._connection.execute, positional_parameters, keyword_parameters,
         ))
-        return AsyncResultProxy(result_proxy, self.executor)
+        return AsyncResultProxy(result_proxy, self.executor, False)
     
     
     async def scalar(self, *positional_parameters, **keyword_parameters):
         result_proxy = await self.executor.execute(alchemy_incendiary(
             self._connection.execute, positional_parameters, keyword_parameters,
         ))
-        async_result_proxy = AsyncResultProxy(result_proxy, self.executor)
+        async_result_proxy = AsyncResultProxy(result_proxy, self.executor, False)
         return await async_result_proxy.scalar()
     
     
@@ -170,6 +234,11 @@ class AsyncConnection:
     
     def in_transaction(self):
         return self._connection.in_transaction()
+    
+    
+    def __del__(self):
+        if self._release_executor_after:
+            self.executor.release()
 
 
 class AsyncTransaction:
@@ -212,11 +281,14 @@ class AsyncResultProxyIterator:
 
 
 class AsyncResultProxy:
-    __slots__ = ('_result_proxy', 'executor',)
+    __slots__ = ('_release_executor_after', '_result_proxy', 'executor',)
     
-    def __init__(self, result_proxy, executor):
+    def __new__(cls, result_proxy, executor, release_executor_after):
+        self = object.__new__(cls)
+        self._release_executor_after = release_executor_after
         self._result_proxy = result_proxy
         self.executor = executor
+        return self
     
     
     def __aiter__(self):
@@ -264,28 +336,42 @@ class AsyncResultProxy:
     @property
     def inserted_primary_key(self):
         return self._result_proxy.inserted_primary_key
+    
+    
+    def __del__(self):
+        if self._release_executor_after:
+            self.executor.release()
 
 
 class EngineTransactionContextManager:
-    __slots__ = ('_close_with_result', '_context', '_engine', 'executor',)
+    __slots__ = ('_close_with_result', '_context', '_engine', '_release_executor_after', 'connector', 'executor',)
 
-    def __init__(self, engine, close_with_result, executor):
-        self._engine = engine
+    def __new__(cls, engine, close_with_result, executor, release_executor_after):
+        self = object.__new__(cls)
         self._close_with_result = close_with_result
+        self._context = None
+        self._engine = engine
+        self._release_executor_after = release_executor_after
         self.executor = executor
+        return self
     
     
     async def __aenter__(self):
         self._context = await self.executor.execute(
             alchemy_incendiary(self._engine._engine.begin, (self._close_with_result,))
         )
-        return AsyncConnection(self._context.__enter__(), self.executor)
+        return AsyncConnection(self._context.__enter__(), self.executor, False)
     
     
     async def __aexit__(self, exception_type, exception_value, exception_traceback):
         return await self.executor.execute(
             alchemy_incendiary(self._context.__exit__, (exception_type, exception_value, exception_traceback),)
         )
+    
+    
+    def __del__(self):
+        if self._release_executor_after:
+            self.executor.release()
 
 
 class ConnectionContextManager:
@@ -310,6 +396,7 @@ class ConnectionContextManager:
 
 
 class TransactionContextManager(ConnectionContextManager):
+    __slots__ = ()
     
     async def __aexit__(self, exception_type, exception_value, exception_traceback):
         if exception_type is None and self.result._transaction.is_active:
@@ -328,5 +415,5 @@ class KOKOROEngineStrategy(DefaultEngineStrategy):
     name = KOKORO_STRATEGY
     engine_cls = KOKOROEngine
 
-KOKOROEngineStrategy()
 
+KOKOROEngineStrategy()

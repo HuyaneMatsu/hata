@@ -4,56 +4,57 @@ from ..helpers import get_localized_length
 from ..preinstanced import Locale
 
 
-def test__get_localized_length__0():
-    """
-    Tests whether ``get_localized_length`` handles `None` values as expected.
-    """
-    length = get_localized_length(None, None)
+def _iter_options():
+    value_0 = 'hi'
+    value_1 = 'hoi'
+    value_2 = 'halo'
     
-    vampytest.assert_eq(length, 0)
-
-
-def test__get_localized_length__1():
-    """
-    Tests whether ``get_localized_length`` handles the case when the `value` is the longest correctly.
-    """
-    value_1 = 'hi'
-    value_2 = 'hoi'
-    value_3 = 'halo'
+    yield (
+        None,
+        None,
+        0,
+    )
     
-    length = get_localized_length(
-        value_3,
+    yield (
+        value_2,
         {
-            Locale.thai: value_1,
-            Locale.czech: value_2,
+            Locale.thai: value_0,
+            Locale.czech: value_1,
         },
+        max(
+            len(value) for value in (value_0, value_1, value_2)
+        ),
     )
     
-    expected_length = max(
-        len(value) for value in (value_1, value_2, value_3)
-    )
-    
-    vampytest.assert_eq(length, expected_length)
-
-
-def test__get_localized_length__2():
-    """
-    Tests whether ``get_localized_length`` handles the case when a value of ``value_localizations`` is the longest.
-    """
-    value_1 = 'hi'
-    value_2 = 'hoi'
-    value_3 = 'halo'
-    
-    length = get_localized_length(
-        value_1,
+    yield (
+        value_0,
         {
-            Locale.thai: value_3,
-            Locale.czech: value_2,
+            Locale.thai: value_2,
+            Locale.czech: value_1,
         },
+        max(
+            len(value) for value in (value_0, value_1, value_2)
+        ),
     )
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__get_localized_length(value, value_localizations):
+    """
+    Tests whether ``get_localized_length`` works as intended.
     
-    expected_length = max(
-        len(value) for value in (value_1, value_2, value_3)
-    )
+    Parameters
+    ----------
+    value : `None | str`
+        The default value.
     
-    vampytest.assert_eq(length, expected_length)
+    value_localizations : `None | dict<Locale, str>`
+        Localizations of the value.
+    
+    Returns
+    -------
+    length : `int`
+    """
+    output = get_localized_length(value, value_localizations)
+    vampytest.assert_instance(output, int)
+    return output

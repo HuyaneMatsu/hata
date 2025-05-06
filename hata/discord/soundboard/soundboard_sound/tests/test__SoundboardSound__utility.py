@@ -286,7 +286,7 @@ def test__SoundboardSound__is_custom_sound__2():
     vampytest.assert_true(output)
 
 
-def test__SoundboardSound__is_default_sound__0():
+def test__SoundboardSound__is_default_sound__template():
     """
     Tests whether ``SoundboardSound.is_default_sound`` works as intended.
     
@@ -299,7 +299,7 @@ def test__SoundboardSound__is_default_sound__0():
     vampytest.assert_false(output)
 
 
-def test__SoundboardSound__is_default_sound__1():
+def test__SoundboardSound__is_default_sound__default():
     """
     Tests whether ``SoundboardSound.is_default_sound`` works as intended.
     
@@ -313,14 +313,29 @@ def test__SoundboardSound__is_default_sound__1():
     vampytest.assert_true(output)
 
 
-def test__SoundboardSound__is_default_sound__2():
+def test__SoundboardSound__is_default_sound__custom():
     """
     Tests whether ``SoundboardSound.is_default_sound`` works as intended.
     
     Case: Custom.
     """
+    sound_id = 202305290001
+    
     sound = SoundboardSound.precreate(202305290001)
     
     output = sound.is_default_sound()
     vampytest.assert_instance(output, bool)
     vampytest.assert_false(output)
+
+
+def test__SoundboardSound__mention():
+    """
+    Tests whether ``SoundboardSound.mention`` works as intended.
+    """
+    sound_id = 202501300040
+    guild_id = 202501300041
+    
+    sound = SoundboardSound.precreate(sound_id, guild_id = guild_id)
+    
+    output = sound.mention
+    vampytest.assert_instance(output, str)

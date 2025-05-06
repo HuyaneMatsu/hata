@@ -3,19 +3,19 @@ import vampytest
 from ..field import EmbedField
 
 
-def _assert_fields_set(field):
+def _assert_fields_set(embed_field):
     """
     Checks whether every fields of the given embed field are set.
     
     Parameters
     ----------
-    field : ``EmbedField``
+    embed_field : ``EmbedField``
         The field to check.
     """
-    vampytest.assert_instance(field, EmbedField)
-    vampytest.assert_instance(field.inline, bool)
-    vampytest.assert_instance(field.name, str, nullable = True)
-    vampytest.assert_instance(field.value, str, nullable = True)
+    vampytest.assert_instance(embed_field, EmbedField)
+    vampytest.assert_instance(embed_field.inline, bool)
+    vampytest.assert_instance(embed_field.name, str, nullable = True)
+    vampytest.assert_instance(embed_field.value, str, nullable = True)
 
 
 def test__EmbedField__new__no_fields():
@@ -24,8 +24,8 @@ def test__EmbedField__new__no_fields():
     
     Case: Minimal amount of parameters.
     """
-    field = EmbedField()
-    _assert_fields_set(field)
+    embed_field = EmbedField()
+    _assert_fields_set(embed_field)
 
 
 def test__EmbedField__new__all_fields():
@@ -38,12 +38,12 @@ def test__EmbedField__new__all_fields():
     name = 'orin'
     value = 'okuu'
     
-    field = EmbedField(name = name, value = value, inline = inline)
-    _assert_fields_set(field)
+    embed_field = EmbedField(name = name, value = value, inline = inline)
+    _assert_fields_set(embed_field)
     
-    vampytest.assert_eq(field.inline, inline)
-    vampytest.assert_eq(field.name, name)
-    vampytest.assert_eq(field.value, value)
+    vampytest.assert_eq(embed_field.inline, inline)
+    vampytest.assert_eq(embed_field.name, name)
+    vampytest.assert_eq(embed_field.value, value)
 
 
 def test__EmbedField__new__string_conversion():
@@ -55,8 +55,8 @@ def test__EmbedField__new__string_conversion():
     name = 123
     value = 456
     
-    field = EmbedField(name = name, value = value)
-    _assert_fields_set(field)
+    embed_field = EmbedField(name = name, value = value)
+    _assert_fields_set(embed_field)
     
-    vampytest.assert_eq(field.name, str(name))
-    vampytest.assert_eq(field.value, str(value))
+    vampytest.assert_eq(embed_field.name, str(name))
+    vampytest.assert_eq(embed_field.value, str(value))

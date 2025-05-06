@@ -2,7 +2,7 @@ __all__ = ('ApplicationIntegrationTypeConfiguration',)
 
 from scarletio import RichAttributeErrorBaseType
 
-from .fields import parse_install_parameters, put_install_parameters_into, validate_install_parameters
+from .fields import parse_install_parameters, put_install_parameters, validate_install_parameters
 
 
 class ApplicationIntegrationTypeConfiguration(RichAttributeErrorBaseType):
@@ -75,7 +75,7 @@ class ApplicationIntegrationTypeConfiguration(RichAttributeErrorBaseType):
         data : `dict<str, object>`
         """
         data = {}
-        put_install_parameters_into(self.install_parameters, data, defaults)
+        put_install_parameters(self.install_parameters, data, defaults)
         return data
     
     

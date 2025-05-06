@@ -10,14 +10,14 @@ from .constants import NAME_LENGTH_MAX, VALUE_LENGTH_MAX
 # inline
 
 parse_inline = bool_parser_factory('inline', False)
-put_inline_into = bool_optional_putter_factory('inline', False)
+put_inline = bool_optional_putter_factory('inline', False)
 validate_inline = bool_validator_factory('inline', False)
 
 
 # name
 
 parse_name = nullable_string_parser_factory('name')
-put_name_into = nullable_string_putter_factory('name')
+put_name = nullable_string_putter_factory('name')
 
 
 def validate_name(name):
@@ -60,7 +60,7 @@ def validate_name(name):
 # value
 
 parse_value = nullable_string_parser_factory('value')
-put_value_into = nullable_string_putter_factory('value')
+put_value = nullable_string_putter_factory('value')
 
 
 def validate_value(value):

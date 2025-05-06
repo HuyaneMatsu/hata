@@ -10,7 +10,7 @@ from .preinstanced import ScheduleWeeksDay
 # nth_week
 
 parse_nth_week = int_parser_factory('n', 1)
-put_nth_week_into = int_putter_factory('n')
+put_nth_week = int_putter_factory('n')
 validate_nth_week = int_conditional_validator_factory(
     'nth_week',
     1,
@@ -22,5 +22,5 @@ validate_nth_week = int_conditional_validator_factory(
 # day
 
 parse_weeks_day = preinstanced_parser_factory('day', ScheduleWeeksDay, ScheduleWeeksDay.monday)
-put_weeks_day_into = preinstanced_putter_factory('day')
+put_weeks_day = preinstanced_putter_factory('day')
 validate_weeks_day = preinstanced_validator_factory('weeks_day', ScheduleWeeksDay)

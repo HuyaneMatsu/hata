@@ -39,14 +39,14 @@ def parse_authorizer_user_ids(data):
     authorizer_user_ids = {}
     
     for key, value in authorizer_user_ids_data.items():
-        integration_type = ApplicationIntegrationType.get(ApplicationIntegrationType.VALUE_TYPE(key))
+        integration_type = ApplicationIntegrationType(ApplicationIntegrationType.VALUE_TYPE(key))
         user_id = int(value)
         authorizer_user_ids[integration_type] = user_id
     
     return authorizer_user_ids
 
 
-def put_authorizer_user_ids_into(authorizer_user_ids, data, defaults):
+def put_authorizer_user_ids(authorizer_user_ids, data, defaults):
     """
     Serializes the authorizer user identifiers.
     
@@ -114,7 +114,7 @@ def validate_authorizer_user_ids(authorizer_user_ids):
             integration_type = key
         
         elif isinstance(key, ApplicationIntegrationType.VALUE_TYPE):
-            integration_type = ApplicationIntegrationType.get(key)
+            integration_type = ApplicationIntegrationType(key)
         
         else:
             raise TypeError(
@@ -145,14 +145,14 @@ def validate_authorizer_user_ids(authorizer_user_ids):
 # id
 
 parse_id = entity_id_parser_factory('id')
-put_id_into = entity_id_putter_factory('id')
+put_id = entity_id_putter_factory('id')
 validate_id = entity_id_validator_factory('message_interaction_id')
 
 
 # interacted_message_id
 
 parse_interacted_message_id = entity_id_parser_factory('interacted_message_id')
-put_interacted_message_id_into = entity_id_optional_putter_factory('interacted_message_id')
+put_interacted_message_id = entity_id_optional_putter_factory('interacted_message_id')
 validate_interacted_message_id = entity_id_validator_factory('interacted_message_id', NotImplemented, include = 'Message')
 
 
@@ -164,7 +164,7 @@ def parse_name_and_sub_command_name_stack(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Message interaction data.
     
     Returns
@@ -198,7 +198,7 @@ def parse_name_and_sub_command_name_stack(data):
     return name, sub_command_name_stack
 
 
-def put_name_and_sub_command_name_stack_into(name_and_sub_command_name_stack, data, defaults):
+def put_name_and_sub_command_name_stack(name_and_sub_command_name_stack, data, defaults):
     """
     Puts the message interaction's name and sub command name stack into the given `data` json serializable object.
     
@@ -206,14 +206,14 @@ def put_name_and_sub_command_name_stack_into(name_and_sub_command_name_stack, da
     ----------
     name_and_sub_command_name_stack : `tuple` (`str`, `None` | `tuple` of `str`)
        Message interaction name and sub command name stack.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     name, sub_command_name_stack = name_and_sub_command_name_stack
     if sub_command_name_stack is None:
@@ -235,21 +235,21 @@ validate_sub_command_name_stack = nullable_string_array_validator_factory('sub_c
 # response_message_id
 
 parse_response_message_id = entity_id_parser_factory('original_response_message_id')
-put_response_message_id_into = entity_id_optional_putter_factory('original_response_message_id')
+put_response_message_id = entity_id_optional_putter_factory('original_response_message_id')
 validate_response_message_id = entity_id_validator_factory('response_message_id', NotImplemented, include = 'Message')
 
 
 # target_message_id
 
 parse_target_message_id = entity_id_parser_factory('target_message_id')
-put_target_message_id_into = entity_id_optional_putter_factory('target_message_id')
+put_target_message_id = entity_id_optional_putter_factory('target_message_id')
 validate_target_message_id = entity_id_validator_factory('target_message_id', NotImplemented, include = 'Message')
 
 
 # target_user
 
 parse_target_user = nullable_entity_parser_factory('target_user', User)
-put_target_user_into = nullable_entity_optional_putter_factory(
+put_target_user = nullable_entity_optional_putter_factory(
     'target_user', ClientUserBase, force_include_internals = True
 )
 validate_target_user = nullable_entity_validator_factory('target_user', ClientUserBase)
@@ -260,7 +260,7 @@ validate_target_user = nullable_entity_validator_factory('target_user', ClientUs
 parse_triggering_interaction = nullable_entity_parser_factory(
     'triggering_interaction_metadata', NotImplemented, include = 'MessageInteraction'
 )
-put_triggering_interaction_into = nullable_entity_optional_putter_factory(
+put_triggering_interaction = nullable_entity_optional_putter_factory(
     'triggering_interaction_metadata', NotImplemented, can_include_internals = True, include = 'MessageInteraction',
 )
 validate_triggering_interaction = nullable_entity_validator_factory(
@@ -274,7 +274,7 @@ parse_type = preinstanced_parser_factory(
     'type', NotImplemented, NotImplemented, include = 'InteractionType', include_default_attribute_name = 'none'
 )
 
-put_type_into = preinstanced_putter_factory('type')
+put_type = preinstanced_putter_factory('type')
 
 validate_type = preinstanced_validator_factory('type', NotImplemented, include = 'InteractionType')
 
@@ -282,5 +282,5 @@ validate_type = preinstanced_validator_factory('type', NotImplemented, include =
 # user
 
 parse_user = default_entity_parser_factory('user', User, default = ZEROUSER)
-put_user_into = default_entity_putter_factory('user', ClientUserBase, ZEROUSER, force_include_internals = True)
+put_user = default_entity_putter_factory('user', ClientUserBase, ZEROUSER, force_include_internals = True)
 validate_user = default_entity_validator_factory('user', ClientUserBase, default = ZEROUSER)

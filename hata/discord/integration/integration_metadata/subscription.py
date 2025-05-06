@@ -9,10 +9,10 @@ from ..integration_account import IntegrationAccount
 from .constants import EXPIRE_GRACE_PERIOD_DEFAULT, SUBSCRIBER_COUNT_DEFAULT
 from .fields import (
     parse_expire_behavior, parse_expire_grace_period, parse_revoked, parse_role_id, parse_subscriber_count,
-    parse_synced_at, parse_syncing, put_expire_behavior_into, put_expire_grace_period_into, put_revoked_into,
-    put_role_id_into, put_subscriber_count_into, put_synced_at_into, put_syncing_into, validate_expire_behavior,
+    parse_synced_at, parse_syncing, put_expire_behavior, put_expire_grace_period, put_revoked,
+    put_role_id, put_subscriber_count, put_synced_at, put_syncing, validate_expire_behavior,
     validate_expire_grace_period, validate_revoked, validate_role_id, validate_subscriber_count, validate_synced_at,
-    validate_syncing, validate_account, parse_account, put_account_into
+    validate_syncing, validate_account, parse_account, put_account
 )
 from .preinstanced import IntegrationExpireBehavior
 
@@ -203,14 +203,14 @@ class IntegrationMetadataSubscription(IntegrationMetadataBase):
     def to_data(self, *, defaults = False):
         data = {}
         
-        put_account_into(self.account, data, defaults)
-        put_expire_behavior_into(self.expire_behavior, data, defaults)
-        put_expire_grace_period_into(self.expire_grace_period, data, defaults)
-        put_revoked_into(self.revoked, data, defaults)
-        put_role_id_into(self.role_id, data, defaults)
-        put_subscriber_count_into(self.subscriber_count, data, defaults)
-        put_synced_at_into(self.synced_at, data, defaults)
-        put_syncing_into(self.syncing, data, defaults)
+        put_account(self.account, data, defaults)
+        put_expire_behavior(self.expire_behavior, data, defaults)
+        put_expire_grace_period(self.expire_grace_period, data, defaults)
+        put_revoked(self.revoked, data, defaults)
+        put_role_id(self.role_id, data, defaults)
+        put_subscriber_count(self.subscriber_count, data, defaults)
+        put_synced_at(self.synced_at, data, defaults)
+        put_syncing(self.syncing, data, defaults)
         
         return data
     

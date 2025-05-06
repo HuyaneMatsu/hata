@@ -11,8 +11,9 @@ from ....guild import Guild
 from ....interaction import Resolved
 from ....poll import Poll, PollAnswer, PollQuestion, PollResult
 from ....role import Role
+from ....soundboard import SoundboardSound
 from ....sticker import Sticker
-from ....user import User
+from ....user import GuildProfile, User
 
 from ...attachment import Attachment
 from ...message_activity import MessageActivity
@@ -49,6 +50,8 @@ def test__Message__iter_contents__all_contents():
     poll_question_text = 'marisa'
     poll_answer_0_text = 'junko'
     poll_answer_1_text = 'clown'
+    component_0_content = 'mayumi'
+    component_1_content = 'keiki'
     
     embed_0 = Embed(title = embed_0_title, description = embed_0_description)
     embed_0.author = EmbedAuthor(embed_0_author_name)
@@ -66,13 +69,28 @@ def test__Message__iter_contents__all_contents():
         question = PollQuestion(text = poll_question_text),
     )
     
-    message = Message(content = message_content, embeds = [embed_0, embed_1], poll = poll)
+    component_0 = Component(
+        ComponentType.text_display,
+        content = component_0_content,
+    )
     
+    component_1 = Component(
+        ComponentType.text_display,
+        content = component_1_content,
+    )
+    
+    message = Message(
+        components = [component_0, component_1],
+        content = message_content,
+        embeds = [embed_0, embed_1],
+        poll = poll,
+    )
     
     contents = {
         embed_0_title, embed_0_author_name, embed_0_description, embed_0_field_0_name, embed_0_field_0_value,
         embed_0_field_1_name, embed_0_field_1_value, embed_0_footer_text, embed_0_provider_name,
-        message_content, embed_1_title, poll_question_text, poll_answer_0_text, poll_answer_1_text
+        message_content, embed_1_title, poll_question_text, poll_answer_0_text, poll_answer_1_text,
+        component_0_content, component_1_content
     }
     
     vampytest.assert_eq({*message.iter_contents()}, contents)
@@ -276,6 +294,10 @@ def test__Message__copy():
         MessageSnapshot(content = 'Kazami'),
         MessageSnapshot(content = 'Yuuka'),
     ]
+    soundboard_sounds = [
+        SoundboardSound.precreate(202501290022, name = 'whither'),
+        SoundboardSound.precreate(202501290023, name = 'Yuyuko'),
+    ]
     stickers = [
         Sticker.precreate(202305040118, name = 'Kirisame'),
         Sticker.precreate(202305040119, name = 'Marisa'),
@@ -310,6 +332,7 @@ def test__Message__copy():
         resolved = resolved,
         role_subscription = role_subscription,
         snapshots = snapshots,
+        soundboard_sounds = soundboard_sounds,
         stickers = stickers,
         thread = thread,
         tts = tts,
@@ -375,6 +398,10 @@ def test__Message__copy_with__no_fields():
         MessageSnapshot(content = 'Kazami'),
         MessageSnapshot(content = 'Yuuka'),
     ]
+    soundboard_sounds = [
+        SoundboardSound.precreate(202501290024, name = 'whither'),
+        SoundboardSound.precreate(202501290025, name = 'Yuyuko'),
+    ]
     stickers = [
         Sticker.precreate(202305040134, name = 'Kirisame'),
         Sticker.precreate(202305040135, name = 'Marisa'),
@@ -409,6 +436,7 @@ def test__Message__copy_with__no_fields():
         resolved = resolved,
         role_subscription = role_subscription,
         snapshots = snapshots,
+        soundboard_sounds = soundboard_sounds,
         stickers = stickers,
         thread = thread,
         tts = tts,
@@ -474,6 +502,10 @@ def test__Message__copy_with__all_fields():
         MessageSnapshot(content = 'Kazami'),
         MessageSnapshot(content = 'Yuuka'),
     ]
+    old_soundboard_sounds = [
+        SoundboardSound.precreate(202501290026, name = 'whither'),
+        SoundboardSound.precreate(202501290027, name = 'Yuyuko'),
+    ]
     old_stickers = [
         Sticker.precreate(202305040150, name = 'Kirisame'),
         Sticker.precreate(202305040151, name = 'Marisa'),
@@ -528,6 +560,10 @@ def test__Message__copy_with__all_fields():
         MessageSnapshot(content = 'Mushroom'),
         MessageSnapshot(content = 'Soup'),
     ]
+    new_soundboard_sounds = [
+        SoundboardSound.precreate(202501290028, name = 'that'),
+        SoundboardSound.precreate(202501290029, name = 'heart'),
+    ]
     new_stickers = [
         Sticker.precreate(202305040165, name = 'Magic'),
         Sticker.precreate(202305040166, name = 'Witch'),
@@ -561,6 +597,7 @@ def test__Message__copy_with__all_fields():
         resolved = old_resolved,
         role_subscription = old_role_subscription,
         snapshots = old_snapshots,
+        soundboard_sounds = old_soundboard_sounds,
         stickers = old_stickers,
         thread = old_thread,
         tts = old_tts,
@@ -592,6 +629,7 @@ def test__Message__copy_with__all_fields():
         resolved = new_resolved,
         role_subscription = new_role_subscription,
         snapshots = new_snapshots,
+        soundboard_sounds = new_soundboard_sounds,
         stickers = new_stickers,
         thread = new_thread,
         tts = new_tts,
@@ -625,6 +663,7 @@ def test__Message__copy_with__all_fields():
     vampytest.assert_eq(copy.resolved, new_resolved)
     vampytest.assert_eq(copy.role_subscription, new_role_subscription)
     vampytest.assert_eq(copy.snapshots, tuple(new_snapshots))
+    vampytest.assert_eq(copy.soundboard_sounds, tuple(new_soundboard_sounds))
     vampytest.assert_eq(copy.stickers, tuple(new_stickers))
     vampytest.assert_eq(copy.thread, new_thread)
     vampytest.assert_eq(copy.tts, new_tts)
@@ -817,7 +856,7 @@ def test__Message__guild(message_id, input_value):
     
     Returns
     -------
-    output : `None | Guild`
+    output : ``None | Guild``
     """
     message = Message.precreate(message_id, guild_id = input_value)
     output = message.guild
@@ -900,24 +939,59 @@ def test__Message__clean_embeds():
     """
     Tests whether ``Message.clean_embeds`` works as intended.
     """
-    channel_id = 202305050011
-    channel_name = 'yukari'
+    guild_id = 202505030050
+    guild = Guild.precreate(guild_id)
     
-    channel = Channel.precreate(channel_id, name = channel_name, channel_type = ChannelType.guild_text)
+    user_0 = User.precreate(202505030051, name = 'koishi')
+    user_0.guild_profiles[guild_id] = GuildProfile(nick = 'koi')
     
     embeds = [
-        Embed(description = channel.mention),
+        Embed(description = f'{user_0.mention}'),
         Embed(embed_type = EmbedType.image),
     ]
     
-    message = Message(embeds = embeds)
+    message = Message.precreate(
+        202505030052,
+        embeds = embeds,
+        guild_id = guild_id,
+    )
     
     output = message.clean_embeds
     vampytest.assert_instance(output, list)
     vampytest.assert_eq(
         output,
         [
-            Embed(description = '#' + channel.name)
+            Embed(description = f'@{user_0.name_at(guild)}')
+        ],
+    )
+
+    
+def test__Message__clean_components():
+    """
+    Tests whether ``Message.clean_components`` works as intended.
+    """
+    guild_id = 202505030053
+    guild = Guild.precreate(guild_id)
+    
+    user_0 = User.precreate(202505030054, name = 'koishi')
+    user_0.guild_profiles[guild_id] = GuildProfile(nick = 'koi')
+    
+    components = [
+        Component(ComponentType.text_display, content = f'{user_0.mention}'),
+    ]
+    
+    message = Message.precreate(
+        202505030055,
+        components = components,
+        guild_id = guild_id,
+    )
+    
+    output = message.clean_components
+    vampytest.assert_instance(output, list)
+    vampytest.assert_eq(
+        output,
+        [
+            Component(ComponentType.text_display, content = f'@{user_0.name_at(guild)}')
         ],
     )
 
@@ -1061,7 +1135,7 @@ def test__Message__attachment(input_value):
     
     Returns
     -------
-    output : `NNone | Attachment`
+    output : `None | Attachment`
     """
     message = Message(attachments = input_value)
     output = message.attachment
@@ -1090,7 +1164,7 @@ def test__Message__embed(input_value):
     
     Returns
     -------
-    output : `NNone | Embed`
+    output : `None | Embed`
     """
     message = Message(embeds = input_value)
     output = message.embed
@@ -1119,11 +1193,40 @@ def test__Message__snapshot(input_value):
     
     Returns
     -------
-    output : `NNone | MessageSnapshot`
+    output : `None | MessageSnapshot`
     """
     message = Message(snapshots = input_value)
     output = message.snapshot
     vampytest.assert_instance(output, MessageSnapshot, nullable = True)
+    return output
+
+
+def _iter_options__soundboard_sound():
+    soundboard_sound_0 = SoundboardSound.precreate(202501290030, name = 'whither')
+    soundboard_sound_1 = SoundboardSound.precreate(202501290031, name = 'Yuyuko')
+    
+    yield None, None
+    yield [soundboard_sound_1], soundboard_sound_1
+    yield [soundboard_sound_0, soundboard_sound_1], soundboard_sound_0
+
+
+@vampytest._(vampytest.call_from(_iter_options__soundboard_sound()).returning_last())
+def test__Message__soundboard_sound(input_value):
+    """
+    Tests whether ``Message.soundboard_sound`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<SoundboardSound>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `None | SoundboardSound`
+    """
+    message = Message(soundboard_sounds = input_value)
+    output = message.soundboard_sound
+    vampytest.assert_instance(output, SoundboardSound, nullable = True)
     return output
 
 
@@ -1148,7 +1251,7 @@ def test__Message__sticker(input_value):
     
     Returns
     -------
-    output : `NNone | Sticker`
+    output : `None | Sticker`
     """
     message = Message(stickers = input_value)
     output = message.sticker
@@ -1399,6 +1502,33 @@ def test__Message__iter_snapshots(input_value):
     """
     message = Message(snapshots = input_value)
     return [*message.iter_snapshots()]
+
+
+def _iter_options__iter_soundboard_sounds():
+    soundboard_sound_0 = SoundboardSound.precreate(202501290032, name = 'whither')
+    soundboard_sound_1 = SoundboardSound.precreate(202501290033, name = 'Yuyuko')
+    
+    yield None, []
+    yield [soundboard_sound_0], [soundboard_sound_0]
+    yield [soundboard_sound_0, soundboard_sound_1], [soundboard_sound_0, soundboard_sound_1]
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_soundboard_sounds()).returning_last())
+def test__Message__iter_soundboard_sounds(input_value):
+    """
+    Tests whether ``Message.iter_soundboard_sounds`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<SoundboardSound>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `list<SoundboardSound>`
+    """
+    message = Message(soundboard_sounds = input_value)
+    return [*message.iter_soundboard_sounds()]
 
 
 def _iter_options__iter_stickers():
@@ -2073,6 +2203,36 @@ def test__Message__has_snapshots(input_value):
     return output
 
 
+def _iter_options__has_soundboard_sounds():
+    soundboard_sounds = [
+        SoundboardSound.precreate(202501290034, name = 'whither'),
+        SoundboardSound.precreate(202501290035, name = 'Yuyuko'),
+    ]
+    
+    yield None, False
+    yield soundboard_sounds, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__has_soundboard_sounds()).returning_last())
+def test__Message__has_soundboard_sounds(input_value):
+    """
+    Tests whether ``Message.has_soundboard_sounds`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<Sticker>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    message = Message(soundboard_sounds = input_value)
+    output = message.has_soundboard_sounds()
+    vampytest.assert_instance(output, bool)
+    return output
+
+
 def _iter_options__has_stickers():
     stickers = [
         Sticker.precreate(202305050050, name = 'Kirisame'),
@@ -2461,6 +2621,14 @@ def _iter_options__has_any_content_field():
     yield {'referenced_message': Message.precreate(202404200030, content = 'Patchouli')}, False
     yield {'resolved': Resolved(attachments = [Attachment.precreate(202404200031)])}, False
     yield {'role_subscription': MessageRoleSubscription(tier_name = 'Knowledge')}, False
+    yield (
+        {
+            'soundboard_sounds': [
+                SoundboardSound.precreate(202501290036, name = 'whither'),
+            ]
+        },
+        False,
+    )
     yield (
         {
             'stickers': [

@@ -1,6 +1,6 @@
 import vampytest
 
-from ..fields import put_internal_guild_restriction_into
+from ..fields import put_internal_guild_restriction
 from ..preinstanced import ApplicationInternalGuildRestriction
 
 
@@ -18,9 +18,9 @@ def _iter_options():
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__put_internal_guild_restriction_into(input_value, defaults):
+def test__put_internal_guild_restriction(input_value, defaults):
     """
-    Tests whether ``put_internal_guild_restriction_into`` is working as intended.
+    Tests whether ``put_internal_guild_restriction`` is working as intended.
     
     Parameters
     ----------
@@ -33,4 +33,4 @@ def test__put_internal_guild_restriction_into(input_value, defaults):
     -------
     data : `dict<str, object>`
     """
-    return put_internal_guild_restriction_into(input_value, {}, defaults)
+    return put_internal_guild_restriction(input_value, {}, defaults)

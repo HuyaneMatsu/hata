@@ -25,7 +25,7 @@ class RoleManagerMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Role manager metadata.
         
         Returns
@@ -46,7 +46,7 @@ class RoleManagerMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         return {}
     
@@ -110,7 +110,7 @@ class RoleManagerMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        manager : `None`, ``ClientUserBase``, ``Integration``
+        manager : ``None | ClientUserBase | Integration``
         """
         return None
     

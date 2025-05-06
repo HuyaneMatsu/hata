@@ -7,8 +7,8 @@ from ..guild import Guild
 
 from .fields import (
     parse_approximate_online_count, parse_channels, parse_id, parse_invite_url, parse_name, parse_users,
-    put_approximate_online_count_into, put_channels_into, put_id_into, put_invite_url_into, put_name_into,
-    put_users_into, validate_approximate_online_count, validate_channels, validate_id, validate_invite_url,
+    put_approximate_online_count, put_channels, put_id, put_invite_url, put_name,
+    put_users, validate_approximate_online_count, validate_channels, validate_id, validate_invite_url,
     validate_name, validate_users
 )
 
@@ -123,7 +123,7 @@ class GuildWidget(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             The requested guild widget data.
         
         Returns
@@ -151,15 +151,15 @@ class GuildWidget(DiscordEntity):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
-        put_approximate_online_count_into(self.approximate_online_count, data, defaults)
-        put_channels_into(self.channels, data, defaults)
-        put_id_into(self.id, data, defaults)
-        put_invite_url_into(self.invite_url, data, defaults)
-        put_name_into(self.name, data, defaults)
-        put_users_into(self.users, data, defaults)
+        put_approximate_online_count(self.approximate_online_count, data, defaults)
+        put_channels(self.channels, data, defaults)
+        put_id(self.id, data, defaults)
+        put_invite_url(self.invite_url, data, defaults)
+        put_name(self.name, data, defaults)
+        put_users(self.users, data, defaults)
         return data
     
     

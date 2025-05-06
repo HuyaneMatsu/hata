@@ -459,7 +459,7 @@ def test__DEFAULT_THREAD_REACTION_EMOJI_CONVERSION__value_deserializer(input_val
     
     Returns
     -------
-    output : `None | Emoji`
+    output : ``None | Emoji``
     """
     return DEFAULT_THREAD_REACTION_EMOJI_CONVERSION.value_deserializer(input_value)
 
@@ -477,7 +477,7 @@ def test__DEFAULT_THREAD_REACTION_EMOJI_CONVERSION__value_serializer(input_value
     
     Parameters
     ----------
-    input_value : `None | Emoji`
+    input_value : ``None | Emoji``
         Processed value.
     
     Returns

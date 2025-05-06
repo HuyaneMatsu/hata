@@ -6,7 +6,7 @@ from ...bases import EventBase
 from ...user import create_partial_user_from_id
 
 from .fields import (
-    parse_answer_id, parse_message, parse_user_id, put_answer_id_into, put_message_into, put_user_id_into,
+    parse_answer_id, parse_message, parse_user_id, put_answer_id, put_message, put_user_id,
     validate_answer_id, validate_message, validate_user_id
 )
 
@@ -70,7 +70,7 @@ class PollVoteAddEvent(EventBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Vote event data.
         
         Returns
@@ -120,12 +120,12 @@ class PollVoteAddEvent(EventBase):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
-        put_answer_id_into(self.answer_id, data, defaults)
-        put_message_into(self.message, data, defaults)
-        put_user_id_into(self.user_id, data, defaults)
+        put_answer_id(self.answer_id, data, defaults)
+        put_message(self.message, data, defaults)
+        put_user_id(self.user_id, data, defaults)
         return data
     
     

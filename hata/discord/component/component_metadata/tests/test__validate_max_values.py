@@ -3,40 +3,39 @@ import vampytest
 from ..fields import validate_max_values
 
 
-def test__validate_max_values__0():
+def _iter_options__passing():
+    yield 1, 1
+
+
+def _iter_options__type_error():
+    yield ''
+
+
+def _iter_options__value_error():
+    yield -1
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+@vampytest._(vampytest.call_from(_iter_options__value_error()).raising(ValueError))
+def test__validate_max_values(input_value):
     """
     Validates whether ``validate_max_values`` works as intended.
     
-    Case: passing.
-    """
-    for input_value, expected_output in (
-        (1, 1),
-    ):
-        output = validate_max_values(input_value)
-        vampytest.assert_eq(output, expected_output)
-
-
-def test__validate_max_values__1():
-    """
-    Validates whether ``validate_max_values`` works as intended.
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
     
-    Case: `ValueError`.
-    """
-    for input_value in (
-        -1,
-    ):
-        with vampytest.assert_raises(ValueError):
-            validate_max_values(input_value)
-
-
-def test__validate_max_values__2():
-    """
-    Validates whether ``validate_max_values`` works as intended.
+    Returns
+    -------
+    output : `int`
     
-    Case: `TypeError`.
+    Raises
+    ------
+    TypeError
+    ValueError
     """
-    for input_value in (
-        '',
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_max_values(input_value)
+    output = validate_max_values(input_value)
+    vampytest.assert_instance(output, int)
+    return output

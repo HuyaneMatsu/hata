@@ -1,8 +1,11 @@
-from re import compile as re_compile
-
 import vampytest
 
-from ..converters import Pattern, RegexMatch, RegexMatch
+from ..converters import RegexMatch
+
+try:
+    from re import Pattern
+except ImportError:
+    from re import _pattern_type as Pattern
 
 
 def _assert_fields_set(regex_match):

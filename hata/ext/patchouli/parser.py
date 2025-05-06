@@ -9,17 +9,17 @@ from .graver import (
 
 
 SECTION_NAME_RP = re.compile('(?:[A-Z][a-z]*)(?: [A-Z][a-z]*)*')
-SECTION_UNDERLINE_RP = re.compile('[\-]+')
-TABLE_BORDER_PATTERN = '\+(?:[\-=]+\+)+'
-TABLE_TEXT_PATTERN = '\|(?:[^\|]+\|)+'
+SECTION_UNDERLINE_RP = re.compile('[\\-]+')
+TABLE_BORDER_PATTERN = '\\+(?:[\\-=]+\\+)+'
+TABLE_TEXT_PATTERN = '\\|(?:[^\\|]+\\|)+'
 TABLE_BORDER_RP = re.compile(TABLE_BORDER_PATTERN)
 TABLE_TEXT_RP = re.compile(TABLE_TEXT_PATTERN)
 TABLE_ANY_RP = re.compile(f'{TABLE_BORDER_PATTERN}|{TABLE_TEXT_PATTERN}')
-TABLE_TEXT_SPLITTER = re.compile('(?:\| )?(.*?) \|')
-LISTING_HEAD_LINE_RP = re.compile('[\-]+[ \t]*(.*)')
+TABLE_TEXT_SPLITTER = re.compile('(?:\\| )?((?:[^`\\|]*?(?:(?:``|`)[^`]*(?:``|`))?)*) \\|')
+LISTING_HEAD_LINE_RP = re.compile('[\\-]+[ \t]*(.*)')
 
 ATTRIBUTE_SECTION_NAME_RP = re.compile('.*?attributes?', re.I)
-ATTRIBUTE_NAME_RP = re.compile('([A-Za-z_][0-9A-Za-z_]*) *([\:\(]) *')
+ATTRIBUTE_NAME_RP = re.compile('([A-Za-z_][0-9A-Za-z_]*) *([\\:\\(]) *')
 
 del TABLE_BORDER_PATTERN
 del TABLE_TEXT_PATTERN
@@ -32,12 +32,12 @@ def remove_indents(lines):
     
     Parameters
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         Input lines.
     
     Returns
     -------
-    lines : `None` or (`list` of `str`)
+    lines : `None | list<str>`
     """
     if not lines:
         return None
@@ -121,7 +121,7 @@ def parse_sections(lines):
     
     Parameters
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         Unindented lines of a docstring.
     
     Returns
@@ -140,8 +140,11 @@ def parse_sections(lines):
         line = lines[index]
         
         # If there are at least 2 lines and we can match:
-        if (limit - index) > 2 and (SECTION_NAME_RP.fullmatch(line) is not None) and \
-                (SECTION_UNDERLINE_RP.fullmatch(lines[index + 1]) is not None):
+        if (
+            (limit - index) > 2 and
+            (SECTION_NAME_RP.fullmatch(line) is not None) and
+            (SECTION_UNDERLINE_RP.fullmatch(lines[index + 1]) is not None)
+        ):
             # Get the current line out.
             while section_lines:
                 if section_lines[-1]:
@@ -172,13 +175,14 @@ def parse_sections(lines):
     
     return sections
 
+
 def detect_table(lines, index, limit):
     """
     Detects the lines of a table.
     
     Parameters
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         The lines of the section.
     index : `int`
         The starting index of the table.
@@ -209,6 +213,7 @@ def detect_table(lines, index, limit):
     
     return index
 
+
 class TextTable:
     """
     Represents a table inside of a docstring.
@@ -228,7 +233,7 @@ class TextTable:
         
         Parameters
         ----------
-        lines : `list` of `str`
+        lines : `list<str>`
             Line to create the table from.
         start : `int`
             The first line's index, where the table starts.
@@ -263,16 +268,14 @@ class TextTable:
                 if not splitted_line[-1]:
                     # Remove last element, if empty.
                     del splitted_line[-1]
-                
-                if not splitted_line:
-                    break
+                    if not splitted_line:
+                        break
                 
                 if not splitted_line[0]:
                     # Remove first element if empty
                     del splitted_line[0]
-                    
-                if not splitted_line:
-                    break
+                    if not splitted_line:
+                        break
                 
                 # Replace empty elements with None and also strip the lines down as well.
                 for index in range(len(splitted_line)):
@@ -474,7 +477,7 @@ class TextTable:
         """Returns the table's representation."""
         result = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
             ', size = ',
             repr(self._size),
             ', table = [',
@@ -510,7 +513,7 @@ def detect_description(lines, index, limit):
     
     Parameters
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         The lines of the section.
     index : `int`
         The starting index of the description.
@@ -558,7 +561,7 @@ class TextDescription:
         
         Parameters
         ----------
-        lines : `list` of `str`
+        lines : `list<str>`
             Lines to create the description from.
         start : `int`
             The first line's index, where the description starts.
@@ -573,7 +576,7 @@ class TextDescription:
     
     def __repr__(self):
         """Returns the description's representation."""
-        return f'<{self.__class__.__name__} content={self._content!r}>'
+        return f'<{type(self).__name__} content={self._content!r}>'
     
     def graved(self, path):
         """
@@ -597,7 +600,7 @@ def detect_indent(lines, index, limit):
     
     Parameters
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         The lines of the section.
     index : `int`
         The starting index of the indent.
@@ -639,7 +642,7 @@ def build_indent(lines, start, end):
     
     Parameters
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         Lines to create the section from.
     start : `int`
         The first line's index, where the section starts.
@@ -665,7 +668,7 @@ def detect_code_block(lines, index, limit):
     
     Parameters
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         The lines of the section.
     index : `int`
         The starting index of the code block.
@@ -715,7 +718,7 @@ class TextCodeBlock:
     ----------
     _language : `None`, `str`
         The code block's language's name if any. Always lower case.
-    _lines : `list` of `str`
+    _lines : `list<str>`
         The internal lines of the code block.
     """
     __slots__ = ('_language', '_lines',)
@@ -726,7 +729,7 @@ class TextCodeBlock:
         
         Parameters
         ----------
-        lines : `list` of `str`
+        lines : `list<str>`
             Lines to create the code block from.
         start : `int`
             The first line's index, where the code block starts.
@@ -814,7 +817,7 @@ class TextCodeBlock:
     
     def __repr__(self):
         """Returns the code blocks' representation."""
-        result = ['<', self.__class__.__name__]
+        result = ['<', type(self).__name__]
         
         language = self._language
         if language is None:
@@ -857,7 +860,7 @@ def detect_void(lines, index, limit):
     
     Parameters
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         The lines of the section.
     index : `int`
         The starting index of the void..
@@ -887,7 +890,7 @@ def build_void(lines, start, end):
     
     Parameters
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         The lines of the section.
     start : `int`
         The starting index of the void.
@@ -907,7 +910,7 @@ def parse_section(lines):
     
     Parameters
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         Lines to build the section from.
     
     Returns
@@ -925,14 +928,14 @@ def parse_section(lines):
             break
         
         for detector, builder in (
-                (detect_void, build_void),
-                (detect_indent, build_indent),
-                (detect_table, TextTable),
-                (detect_listing, TextListing),
-                (detect_code_block, TextCodeBlock),
-                (detect_block_quote, TextBlockQuote),
-                (detect_description, TextDescription),
-                    ):
+            (detect_void, build_void),
+            (detect_indent, build_indent),
+            (detect_table, TextTable),
+            (detect_listing, TextListing),
+            (detect_code_block, TextCodeBlock),
+            (detect_block_quote, TextBlockQuote),
+            (detect_description, TextDescription),
+        ):
             
             detected_end = detector(lines, index, limit)
             if detected_end == index:
@@ -996,7 +999,7 @@ def detect_listing(lines, index, limit):
     
     Parameters
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         The lines of the section.
     index : `int`
         The starting index of the listing.
@@ -1060,7 +1063,7 @@ class TextListingElement:
         
         Parameters
         ----------
-        lines : `list` of `str`
+        lines : `list<str>`
             The lines to create the element from.
         
         Returns
@@ -1130,7 +1133,7 @@ class TextListingElement:
         """Returns the listing element's representation."""
         repr_parts = [
             '<',
-            self.__class__.__name__
+            type(self).__name__
         ]
         
         head = self._head
@@ -1187,7 +1190,7 @@ class TextListing:
         
         Parameters
         ----------
-        lines : `list` of `str`
+        lines : `list<str>`
             Lines to build the listing from.
         start : `int`
             The first lines index of the listing.
@@ -1261,7 +1264,7 @@ class TextListing:
     
     def __repr__(self):
         """Returns the listing's representation."""
-        return f'<{self.__class__.__name__} elements={self._elements!r}>'
+        return f'<{type(self).__name__} elements = {self._elements!r}>'
     
     def graved(self, path):
         """
@@ -1285,7 +1288,7 @@ def detect_block_quote(lines, index, limit):
     
     Parameters
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         The lines of the section.
     index : `int`
         The starting index of the block quote.
@@ -1311,18 +1314,19 @@ def detect_block_quote(lines, index, limit):
         index += 1
         continue
 
+
 def remove_block_quote_indents(lines):
     """
     Removes the dedent from the given lines returning a new list with the lines without them.
     
     Parameters
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         Input lines.
     
     Returns
     -------
-    lines : `None` or (`list` of `str`)
+    lines : `None | list<str>`
     """
     if not lines:
         return None
@@ -1365,7 +1369,7 @@ class TextBlockQuote:
         
         Parameters
         ----------
-        lines : `list` of `str`
+        lines : `list<str>`
             Lines to create the block quote from.
         start : `int`
             The first line's index, where the block quote starts.
@@ -1417,7 +1421,7 @@ class TextBlockQuote:
     
     def __repr__(self):
         """Returns the description's representation."""
-        return f'<{self.__class__.__name__} descriptions={self._descriptions!r}>'
+        return f'<{type(self).__name__} descriptions = {self._descriptions!r}>'
     
     def graved(self, path):
         """
@@ -1626,7 +1630,7 @@ class DocString:
     
     def __repr__(self):
         """Returns the docstring's representation."""
-        return f'<{self.__class__.__name__} sections={self.sections!r}>'
+        return f'<{type(self).__name__} sections={self.sections!r}>'
     
     @classmethod
     def _create_attribute_docstring_part(cls, attr_name, attr_separator, attr_head, attr_body):

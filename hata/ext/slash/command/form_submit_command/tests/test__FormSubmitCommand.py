@@ -7,7 +7,8 @@ from ......discord.client import Client
 from ......discord.client.compounds.tests.helpers import TestDiscordApiClient
 from ......discord.interaction import InteractionEvent
 
-from ....converters import ParameterConverter, RegexMatcher
+from ....converters import RegexMatcher
+from ....parameter_converters.base import ParameterConverterBase
 from ....response_modifier import ResponseModifier
 
 from ..form_submit_command import FormSubmitCommand
@@ -32,7 +33,7 @@ def _assert_fields_set(form_submit_command):
     vampytest.assert_instance(form_submit_command.name, str)
     vampytest.assert_instance(form_submit_command.response_modifier, ResponseModifier, nullable = True)
     vampytest.assert_instance(form_submit_command._keyword_parameter_converters, tuple)
-    vampytest.assert_instance(form_submit_command._multi_parameter_converter, ParameterConverter, nullable = True)
+    vampytest.assert_instance(form_submit_command._multi_parameter_converter, ParameterConverterBase, nullable = True)
 
 
 def test__FormSubmitCommand__new():

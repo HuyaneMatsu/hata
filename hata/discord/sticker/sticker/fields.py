@@ -25,49 +25,49 @@ from .preinstanced import StickerFormat, StickerType
 # available
 
 parse_available = bool_parser_factory('available', True)
-put_available_into = bool_optional_putter_factory('available', True)
+put_available = bool_optional_putter_factory('available', True)
 validate_available = bool_validator_factory('available', True)
 
 # description 
 
 parse_description = nullable_string_parser_factory('description')
-put_description_into = nullable_string_putter_factory('description')
+put_description = nullable_string_putter_factory('description')
 validate_description = nullable_string_validator_factory('description', DESCRIPTION_LENGTH_MIN, DESCRIPTION_LENGTH_MAX)
 
 # format
 
 parse_format = preinstanced_parser_factory('format_type', StickerFormat, StickerFormat.none)
-put_format_into = preinstanced_putter_factory('format_type')
+put_format = preinstanced_putter_factory('format_type')
 validate_format = preinstanced_validator_factory('format', StickerFormat)
 
 # guild_id
 
 parse_guild_id = entity_id_parser_factory('guild_id')
-put_guild_id_into = entity_id_optional_putter_factory('guild_id')
+put_guild_id = entity_id_optional_putter_factory('guild_id')
 validate_guild_id = entity_id_validator_factory('guild_id', NotImplemented, include = 'Guild')
 
 # id
 
 parse_id = entity_id_parser_factory('id')
-put_id_into = entity_id_putter_factory('id')
+put_id = entity_id_putter_factory('id')
 validate_id = entity_id_validator_factory('id')
 
 # name
 
 parse_name = force_string_parser_factory('name')
-put_name_into = force_string_putter_factory('name')
+put_name = force_string_putter_factory('name')
 validate_name = force_string_validator_factory('name', NAME_LENGTH_MIN, NAME_LENGTH_MAX)
 
 # pack_id
 
 parse_pack_id = entity_id_parser_factory('pack_id')
-put_pack_id_into = entity_id_optional_putter_factory('pack_id')
+put_pack_id = entity_id_optional_putter_factory('pack_id')
 validate_pack_id = entity_id_validator_factory('pack_id', NotImplemented, include = 'StickerPack')
 
 # sort_value
 
 parse_sort_value = int_parser_factory('sort_value', SORT_VALUE_DEFAULT)
-put_sort_value_into = int_putter_factory('sort_value')
+put_sort_value = int_putter_factory('sort_value')
 validate_sort_value = int_conditional_validator_factory(
     'sort_value',
     SORT_VALUE_MIN,
@@ -83,7 +83,7 @@ def parse_tags(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Sticker data
     
     Returns
@@ -99,7 +99,7 @@ def parse_tags(data):
     return tags
 
 
-def put_tags_into(tags, data, defaults):
+def put_tags(tags, data, defaults):
     """
     Puts the sticker tags into the given json serializable dictionary.
     
@@ -107,14 +107,14 @@ def put_tags_into(tags, data, defaults):
     ----------
     tags : `None`, `frozenset` of `str`
         Sticker tags.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if tags is None:
         raw_tags = ''
@@ -130,7 +130,7 @@ def validate_tags(tags):
     
     Parameters
     ----------
-    tags : `None`, `str`, `iterable` of `str`
+    tags : `None | str | iterable<str>`
         Sticker tags to validate.
     
     Returns
@@ -153,7 +153,7 @@ def validate_tags(tags):
     
     if getattr(type(tags), '__iter__', None) is None:
         raise TypeError(
-            f'`tags` can be `None`, `str`, `iterable` of `str`, got {type(tags).__name__}; {tags!r}.'
+            f'`tags` can be `None | str | iterable<str>`, got {type(tags).__name__}; {tags!r}.'
         )
     
     validated_tags = None
@@ -174,11 +174,11 @@ def validate_tags(tags):
 # type
 
 parse_type = preinstanced_parser_factory('type', StickerType, StickerType.none)
-put_type_into = preinstanced_putter_factory('type')
+put_type = preinstanced_putter_factory('type')
 validate_type = preinstanced_validator_factory('sticker_type', StickerType)
 
 # user
 
 parse_user = default_entity_parser_factory('user', User, default = ZEROUSER)
-put_user_into = default_entity_putter_factory('user', ClientUserBase, ZEROUSER, force_include_internals = True)
+put_user = default_entity_putter_factory('user', ClientUserBase, ZEROUSER, force_include_internals = True)
 validate_user = default_entity_validator_factory('user', ClientUserBase, default = ZEROUSER)

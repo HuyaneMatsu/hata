@@ -23,6 +23,9 @@ def test__value_serializer_string_array(input_value):
     
     Returns
     -------
-    output : `object`
+    output : `list<str>`
     """
-    return value_serializer_string_array(input_value)
+    output = value_serializer_string_array(input_value)
+    vampytest.assert_instance(output, list)
+    return output
+

@@ -350,7 +350,7 @@ def _pre_validate_preinstanced_array(field_name, preinstanced_type, string_resol
         return (preinstanced,)
     
     if isinstance(preinstanced_array, int):
-        return (ApplicationCommandIntegrationContextType.get(preinstanced_array),)
+        return (ApplicationCommandIntegrationContextType(preinstanced_array),)
     
     if getattr(preinstanced_array, '__iter__', None) is None:
         _fail_preinstanced_array_validation_single(
@@ -371,7 +371,7 @@ def _pre_validate_preinstanced_array(field_name, preinstanced_type, string_resol
                 )
             
         elif isinstance(preinstanced, int):
-            preinstanced = preinstanced_type.get(preinstanced)
+            preinstanced = preinstanced_type(preinstanced)
         
         else:
             _fail_preinstanced_array_validation_element(

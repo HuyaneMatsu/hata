@@ -7,9 +7,9 @@ from ...user import create_partial_user_from_id
 
 from .fields import (
     parse_cancelled_at, parse_country_code, parse_current_period_end, parse_current_period_start, parse_entitlement_ids,
-    parse_id, parse_renewal_sku_ids, parse_sku_ids, parse_status, parse_user_id, put_cancelled_at_into,
-    put_country_code_into, put_current_period_end_into, put_current_period_start_into, put_entitlement_ids_into,
-    put_id_into, put_renewal_sku_ids_into, put_sku_ids_into, put_status_into, put_user_id_into, validate_cancelled_at,
+    parse_id, parse_renewal_sku_ids, parse_sku_ids, parse_status, parse_user_id, put_cancelled_at,
+    put_country_code, put_current_period_end, put_current_period_start, put_entitlement_ids,
+    put_id, put_renewal_sku_ids, put_sku_ids, put_status, put_user_id, validate_cancelled_at,
     validate_country_code, validate_current_period_end, validate_current_period_start, validate_entitlement_ids,
     validate_id, validate_renewal_sku_ids, validate_sku_ids, validate_status, validate_user_id
 )
@@ -252,13 +252,13 @@ class Subscription(DiscordEntity):
             +---------------------------+-----------------------------------------------+
             | Key                       | Value                                         |
             +===========================+===============================================+
-            | cancelled_at              | `None`, `DateTime`                            |
+            | cancelled_at              | `None | DateTime`                             |
             +---------------------------+-----------------------------------------------+
             | country_code              | `None`, `str`                                 |
             +---------------------------+-----------------------------------------------+
-            | current_period_end        | `None`, `DateTime`                            |
+            | current_period_end        | `None | DateTime`                             |
             +---------------------------+-----------------------------------------------+
-            | current_period_start      | `None`, `DateTime`                            |
+            | current_period_start      | `None | DateTime`                             |
             +---------------------------+-----------------------------------------------+
             | renewal_sku_ids           | `None`, `tuple` of `int`                      |
             +---------------------------+-----------------------------------------------+
@@ -332,16 +332,16 @@ class Subscription(DiscordEntity):
         """
         data = {}
         
-        put_cancelled_at_into(self.cancelled_at, data, defaults)
-        put_country_code_into(self.country_code, data, defaults)
-        put_current_period_end_into(self.current_period_end, data, defaults)
-        put_current_period_start_into(self.current_period_start, data, defaults)
-        put_entitlement_ids_into(self.entitlement_ids, data, defaults)
-        put_id_into(self.id, data, defaults)
-        put_renewal_sku_ids_into(self.renewal_sku_ids, data, defaults)
-        put_sku_ids_into(self.sku_ids, data, defaults)
-        put_status_into(self.status, data, defaults)
-        put_user_id_into(self.user_id, data, defaults)
+        put_cancelled_at(self.cancelled_at, data, defaults)
+        put_country_code(self.country_code, data, defaults)
+        put_current_period_end(self.current_period_end, data, defaults)
+        put_current_period_start(self.current_period_start, data, defaults)
+        put_entitlement_ids(self.entitlement_ids, data, defaults)
+        put_id(self.id, data, defaults)
+        put_renewal_sku_ids(self.renewal_sku_ids, data, defaults)
+        put_sku_ids(self.sku_ids, data, defaults)
+        put_status(self.status, data, defaults)
+        put_user_id(self.user_id, data, defaults)
         
         return data
     

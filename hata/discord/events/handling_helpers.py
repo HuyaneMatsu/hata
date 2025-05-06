@@ -858,7 +858,7 @@ class EventListElement:
         The event of the event-list element.
     args : `None`, `tuple` of `object`
         Additional positional parameters for `func`.
-    kwargs : `None`, `dict` of (`str`, `object`) items
+    kwargs : `None`, `dict<str, object>`
         Additional key word parameters for `func`.
     """
     __slots__ = ('func', 'args', 'kwargs', )
@@ -873,7 +873,7 @@ class EventListElement:
             The event of the eventlist element.
         args : `None`, `str`
             Additional positional parameters for `func`.
-        kwargs : `None`, `dict` of (`str`, `object`) items
+        kwargs : `None`, `dict<str, object>`
             Additional key word parameters for `func`.
         """
         self.func = func
@@ -934,7 +934,7 @@ class eventlist(list):
     
     Attributes
     ----------
-    kwargs : `None`, `dict` of (`str`, `object`) items
+    kwargs : `None`, `dict<str, object>`
         Keyword parameters used for each element when extending the client's events with the event-list.
     type : `None`, `type`
         If `type_` was passed when creating the eventlist, then each added element is pre-validated with the given type
@@ -1758,7 +1758,7 @@ def EventWaitforMeta__new__(cls, class_name, class_parents, class_attributes):
         The created class's name.
     class_parents : `tuple` of `type`
         The superclasses of the creates type.
-    class_attributes : `dict` of (`str`, `object`) items
+    class_attributes : `dict<str, object>`
         The class attributes of the created type.
     
     Returns

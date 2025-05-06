@@ -13,8 +13,8 @@ from ...utils import DATETIME_FORMAT_CODE, DISCORD_EPOCH_START, id_to_datetime
 from .constants import UNICODE_EMOJI_LIMIT
 from .fields import (
     parse_animated, parse_available, parse_id, parse_managed, parse_name, parse_require_colons, parse_role_ids,
-    parse_user, put_animated_into, put_available_into, put_id_into, put_managed_into, put_name_into,
-    put_require_colons_into, put_role_ids_into, put_user_into, validate_animated, validate_available, validate_guild_id,
+    parse_user, put_animated, put_available, put_id, put_managed, put_name,
+    put_require_colons, put_role_ids, put_user, validate_animated, validate_available, validate_guild_id,
     validate_id, validate_managed, validate_name, validate_require_colons, validate_role_ids, validate_user
 )
 
@@ -195,7 +195,7 @@ class Emoji(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Emoji data received from Discord.
         guild_id : `int` = `0`, Optional
             The emoji's guild's identifier.
@@ -252,20 +252,20 @@ class Emoji(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         
-        put_name_into(self.name, data, defaults)
-        put_role_ids_into(self.role_ids, data, defaults)
+        put_name(self.name, data, defaults)
+        put_role_ids(self.role_ids, data, defaults)
         
         if include_internals:
-            put_animated_into(self.animated, data, defaults)
-            put_available_into(self.available, data, defaults)
-            put_id_into(self.id, data, defaults)
-            put_managed_into(self.managed, data, defaults)
-            put_require_colons_into(self.require_colons, data, defaults)
-            put_user_into(self.user, data, defaults)
+            put_animated(self.animated, data, defaults)
+            put_available(self.available, data, defaults)
+            put_id(self.id, data, defaults)
+            put_managed(self.managed, data, defaults)
+            put_require_colons(self.require_colons, data, defaults)
+            put_user(self.user, data, defaults)
         
         return data
     
@@ -290,9 +290,9 @@ class Emoji(DiscordEntity, immortal = True):
              Whether the emoji is animated.
         available : `bool`, Optional (Keyword only)
              Whether the emoji is available.
-        guild : ``Guild``, `int`, Optional (Keyword only)
+        guild : ``int | Guild``, Optional (Keyword only)
             Alternative for `guild_id`.
-        guild_id : ``Guild``, `int`, Optional (Keyword only)
+        guild_id : ``int | Guild``, Optional (Keyword only)
              The emoji's guild's identifier.
         managed : `bool`, Optional (Keyword only)
             Whether the emoji is managed by an integration.
@@ -661,7 +661,7 @@ class Emoji(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Emoji  data.
         guild_id : `int`
             The emoji's guild's identifier.
@@ -679,7 +679,7 @@ class Emoji(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Emoji's data received from Discord.
         """
         self.animated = parse_animated(data)
@@ -702,12 +702,12 @@ class Emoji(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Emoji data received from Discord.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             All item in the returned dict is optional.
         
         Returned Data Structure

@@ -2,7 +2,7 @@ __all__ = ('MessageActivity', )
 
 from scarletio import RichAttributeErrorBaseType
 
-from .fields import parse_party_id, parse_type, put_party_id_into, put_type_into, validate_party_id, validate_type
+from .fields import parse_party_id, parse_type, put_party_id, put_type, validate_party_id, validate_type
 from .preinstanced import MessageActivityType
 
 
@@ -63,7 +63,7 @@ class MessageActivity(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Message activity data.
         
         Returns
@@ -87,11 +87,11 @@ class MessageActivity(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`)
+        data : `dict<str, object>`
         """
         data = {}
-        put_party_id_into(self.party_id, data, defaults)
-        put_type_into(self.type, data, defaults)
+        put_party_id(self.party_id, data, defaults)
+        put_type(self.type, data, defaults)
         return data
     
     

@@ -1,8 +1,5 @@
 __all__ = ('EmbeddedActivity',)
 
-from warnings import warn
-
-from ...activity import Activity
 from ...bases import DiscordEntity
 from ...channel import ChannelType, create_partial_channel_from_id
 from ...core import EMBEDDED_ACTIVITIES, GUILDS
@@ -10,8 +7,8 @@ from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 
 from .fields import (
     parse_application_id, parse_guild_id, parse_id, parse_launch_id, parse_location, parse_user_states,
-    put_application_id_into, put_guild_id_into, put_id_into, put_launch_id_into, put_location_into,
-    put_user_states_into, validate_application_id, validate_guild_id, validate_id, validate_launch_id,
+    put_application_id, put_guild_id, put_id, put_launch_id, put_location,
+    put_user_states, validate_application_id, validate_guild_id, validate_id, validate_launch_id,
     validate_location, validate_user_states
 )
 from .helpers import _add_embedded_activity_to_guild_cache, _remove_embedded_activity_from_guild_cache
@@ -325,14 +322,14 @@ class EmbeddedActivity(DiscordEntity):
         data : `dict<str, object>`
         """
         data = {}
-        put_application_id_into(self.application_id, data, defaults)
-        put_location_into(self.location, data, defaults)
+        put_application_id(self.application_id, data, defaults)
+        put_location(self.location, data, defaults)
         
         if include_internals:
-            put_guild_id_into(self.guild_id, data, defaults)
-            put_id_into(self.id, data, defaults)
-            put_launch_id_into(self.launch_id, data, defaults)
-            put_user_states_into(self.user_states, data, defaults)
+            put_guild_id(self.guild_id, data, defaults)
+            put_id(self.id, data, defaults)
+            put_launch_id(self.launch_id, data, defaults)
+            put_user_states(self.user_states, data, defaults)
         
         return data
     
@@ -605,7 +602,7 @@ class EmbeddedActivity(DiscordEntity):
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         return GUILDS.get(self.guild_id, None)
     
@@ -671,53 +668,3 @@ class EmbeddedActivity(DiscordEntity):
         """
         for user_state in self.user_states.values():
             yield user_state.user
-    
-    
-    # Deprecated
-    
-    @property
-    def activity(self):
-        """
-        Deprecated and will be removed in 2025 February.
-        """
-        warn(
-            (
-                f'`{type(self).__name__}.activity` is deprecated and will be removed in 2025 February.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return Activity()
-    
-    
-    @property
-    def user_ids(self):
-        """
-        Deprecated and will be removed in 2025 February.
-        """
-        warn(
-            (
-                f'`{type(self).__name__}.user_ids` is deprecated and will be removed in 2025 February.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return {user_state.user_id for user_state in self.iter_user_states()}
-    
-
-    @property
-    def users(self):
-        """
-        Deprecated and will be removed in 2025 February.
-        """
-        warn(
-            (
-                f'`{type(self).__name__}.users` is deprecated and will be removed in 2025 February.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return [user_state.user for user_state in self.iter_user_states()]

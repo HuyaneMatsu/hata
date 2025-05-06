@@ -3,7 +3,7 @@ __all__ = ('OrientationLockState', 'PlatformType',)
 from ...bases import Preinstance as P, PreinstancedBase
 
 
-class OrientationLockState(PreinstancedBase):
+class OrientationLockState(PreinstancedBase, value_type = int):
     """
     Represents a embedded activity's orientation lock state.
     
@@ -11,22 +11,16 @@ class OrientationLockState(PreinstancedBase):
     ----------
     name : `str`
         The name of the orientation lock state.
+    
     value : `int`
         The identifier value the orientation lock state.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``OrientationLockState``) items
-        Stores the predefined orientation lock states. These can be accessed with their `value` as key.
-    VALUE_TYPE : `type` = `int`
-        The orientation lock states' values' type.
-    DEFAULT_NAME : `str` = `'UNDEFINED'`
-        The default name of the orientation lock states.
-    
-    Every predefined orientation lock state can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined orientation lock state can be accessed as type attribute as well:
     
     +-----------------------+-----------+-------+
-    | Class attribute name  | Name      | Value |
+    | Type attribute name   | Name      | Value |
     +=======================+===========+=======+
     | none                  | none      | 0     |
     +-----------------------+-----------+-------+
@@ -37,10 +31,6 @@ class OrientationLockState(PreinstancedBase):
     | landscape             | landscape | 3     |
     +-----------------------+-----------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    DEFAULT_NAME = 'UNDEFINED'
-    
     __slots__ = ()
     
     none = P(0, 'none')
@@ -49,31 +39,24 @@ class OrientationLockState(PreinstancedBase):
     landscape = P(3, 'landscape')
 
 
-class PlatformType(PreinstancedBase):
+class PlatformType(PreinstancedBase, value_type = str):
     """
     Represents a supported platform by an embedded activity.
     
     Attributes
     ----------
-    value : `str`
-        The Discord side identifier value of the platform.
     name : `str`
         The name of the platform type.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``PlatformType``) items
-        Stores the predefined platform types. This container is accessed when converting Discord side platform type's
-        value to it's wrapper side representation.
-    VALUE_TYPE : `type` = `str`
-        The platform types' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the platform types.
+    value : `str`
+        The Discord side identifier value of the platform.
     
-    Every predefined platform type can also be accessed as class attribute:
+    Type Attributes
+    ---------------
+    Every predefined platform type can also be accessed as type attribute:
     
     +-----------------------+---------------+-----------+
-    | Class attribute name  | name          | value     |
+    | Type attribute name   | name          | value     |
     +=======================+===============+===========+
     | android               | android       | android   |
     +-----------------------+---------------+-----------+
@@ -82,9 +65,6 @@ class PlatformType(PreinstancedBase):
     | web                   | web           | web       |
     +-----------------------+---------------+-----------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = str
-    
     __slots__ = ()
 
     # predefined

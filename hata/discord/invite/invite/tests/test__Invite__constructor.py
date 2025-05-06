@@ -4,7 +4,7 @@ import vampytest
 
 from ....application import Application
 from ....channel import Channel
-from ....guild import Guild
+from ....guild import Guild, GuildActivityOverview
 from ....user import ClientUserBase, User
 
 from ..flags import InviteFlag
@@ -31,6 +31,7 @@ def _assert_fields_set(invite):
     vampytest.assert_instance(invite.created_at, DateTime, nullable = True)
     vampytest.assert_instance(invite.flags, InviteFlag)
     vampytest.assert_instance(invite.guild, Guild, nullable = True)
+    vampytest.assert_instance(invite.guild_activity_overview, GuildActivityOverview, nullable = True)
     vampytest.assert_instance(invite.inviter, ClientUserBase)
     vampytest.assert_instance(invite.max_age, int, nullable = True)
     vampytest.assert_instance(invite.max_uses, int, nullable = True)
@@ -138,6 +139,7 @@ def test__Invite__precreate__all_fields():
     created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     flags = InviteFlag(11)
     guild = Guild.precreate(202308060073)
+    guild_activity_overview = GuildActivityOverview.precreate(202308060073)
     inviter = User.precreate(202308060074)
     max_age = 3600
     max_uses = 100
@@ -156,6 +158,7 @@ def test__Invite__precreate__all_fields():
         created_at = created_at,
         flags = flags,
         guild = guild,
+        guild_activity_overview = guild_activity_overview,
         inviter = inviter,
         max_age = max_age,
         max_uses = max_uses,
@@ -175,6 +178,7 @@ def test__Invite__precreate__all_fields():
     vampytest.assert_eq(invite.created_at, created_at)
     vampytest.assert_eq(invite.flags, flags)
     vampytest.assert_is(invite.guild, guild)
+    vampytest.assert_eq(invite.guild_activity_overview, guild_activity_overview)
     vampytest.assert_is(invite.inviter, inviter)
     vampytest.assert_eq(invite.max_age, max_age)
     vampytest.assert_eq(invite.max_uses, max_uses)

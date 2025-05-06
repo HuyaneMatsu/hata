@@ -69,7 +69,7 @@ class ClientCompoundApplicationEndpoints(Compound):
         
         Other Parameters
         ----------------
-        owner : `None`, ``ClientUserBase``, ``Guild``, `(int | EntitlementOwnerType, int | str)`, Optional (Keyword only)
+        owner : ``None | ClientUserBase | Guild | (int | EntitlementOwnerType, int | str)``, Optional (Keyword only)
             The entitlement's owner. `owner_id` and `owner_type` combined.
         
         owner_id : `int`, Optional (Keyword only)
@@ -78,10 +78,10 @@ class ClientCompoundApplicationEndpoints(Compound):
         owner_type : ``EntitlementOwnerType``, `int`, Optional (Keyword only)
             The entitlement's owner's type.
         
-        sku : `int`, ``SKU``, Optional (Keyword only)
+        sku : ``int | SKU``, Optional (Keyword only)
             Alternative for `sku_id`.
         
-        sku_id : `int`, ``SKU``, Optional (Keyword only)
+        sku_id : ``int | SKU``, Optional (Keyword only)
             Stock keeping unit to create the entitlement for.
         
         Returns
@@ -158,7 +158,7 @@ class ClientCompoundApplicationEndpoints(Compound):
         sku_ids : `int`, `None`, ``SKU``, `iterable` of `int`, `iterable` of ``SKU`, Optional (Keyword only)
             Stock keeping units to filter for.
         
-        user_id : `int`, `None`, ``ClientUserBase``, Optional (Keyword only)
+        user_id : ``None | int | ClientUserBase``, Optional (Keyword only)
             User identifier to filter for.
         
         Returns
@@ -266,7 +266,7 @@ class ClientCompoundApplicationEndpoints(Compound):
         sku_ids : `int`, `None`, ``SKU``, `iterable` of `int`, `iterable` of ``SKU`, Optional (Keyword only)
             Stock keeping units to filter for.
         
-        user_id : `int`, `None`, ``ClientUserBase``, Optional (Keyword only)
+        user_id : ``None | int | ClientUserBase``, Optional (Keyword only)
             User identifier to filter for.
         
         Returns
@@ -298,7 +298,7 @@ class ClientCompoundApplicationEndpoints(Compound):
         
         else:
             raise TypeError(
-                f'`limit` can be `None`, `int`, got {type(limit).__name__}; {limit!r}.'
+                f'`limit` can be `None | int`, got {type(limit).__name__}; {limit!r}.'
             )
         
         query_string_parameters = {
@@ -466,7 +466,7 @@ class ClientCompoundApplicationEndpoints(Compound):
         
         Parameters
         ----------
-        sku : `int`, ``SKU``
+        sku : ``int | SKU``
             Stock keeping unit to get subscriptions for.
         
         user : `int`, ``ClientUserBase``
@@ -529,7 +529,7 @@ class ClientCompoundApplicationEndpoints(Compound):
         
         Parameters
         ----------
-        sku : `int`, ``SKU``
+        sku : ``int | SKU``
             Stock keeping unit to get subscriptions for.
         
         user : `int`, ``ClientUserBase``
@@ -573,7 +573,7 @@ class ClientCompoundApplicationEndpoints(Compound):
         
         else:
             raise TypeError(
-                f'`limit` can be `None`, `int`, got {type(limit).__name__}; {limit!r}.'
+                f'`limit` can be `None | int`, got {type(limit).__name__}; {limit!r}.'
             )
         
         query_string_parameters = {

@@ -9,7 +9,7 @@ from ...permission.permission import (
 )
 
 from .fields import (
-    parse_nsfw, parse_status, parse_video_quality_mode, put_nsfw_into, put_status_into, put_video_quality_mode_into,
+    parse_nsfw, parse_status, parse_video_quality_mode, put_nsfw, put_status, put_video_quality_mode,
     validate_nsfw, validate_status, validate_video_quality_mode
 )
 from .guild_voice_base import ChannelMetadataGuildVoiceBase
@@ -384,13 +384,13 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
         data = ChannelMetadataGuildVoiceBase.to_data(self, defaults = defaults, include_internals = include_internals)
         
         # nsfw
-        put_nsfw_into(self.nsfw, data, defaults)
+        put_nsfw(self.nsfw, data, defaults)
         
         # status
-        put_status_into(self.status, data, defaults)
+        put_status(self.status, data, defaults)
         
         # video_quality_mode
-        put_video_quality_mode_into(self.video_quality_mode, data, defaults)
+        put_video_quality_mode(self.video_quality_mode, data, defaults)
         
         return data
     

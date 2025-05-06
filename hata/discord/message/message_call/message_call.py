@@ -5,7 +5,7 @@ from scarletio import RichAttributeErrorBaseType
 from ...user import create_partial_user_from_id
 from ...utils import DATETIME_FORMAT_CODE
 from .fields import (
-    parse_ended_at, parse_user_ids, put_ended_at_into, put_user_ids_into, validate_ended_at, validate_user_ids
+    parse_ended_at, parse_user_ids, put_ended_at, put_user_ids, validate_ended_at, validate_user_ids
 )
 
 
@@ -66,7 +66,7 @@ class MessageCall(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Message call data.
         
         Returns
@@ -90,11 +90,11 @@ class MessageCall(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`)
+        data : `dict<str, object>`
         """
         data = {}
-        put_ended_at_into(self.ended_at, data, defaults)
-        put_user_ids_into(self.user_ids, data, defaults)
+        put_ended_at(self.ended_at, data, defaults)
+        put_user_ids(self.user_ids, data, defaults)
         return data
     
     

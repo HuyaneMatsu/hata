@@ -38,4 +38,6 @@ def test__validate_url(input_value):
     TypeError
     ValueError
     """
-    return validate_url(input_value)
+    output = validate_url(input_value)
+    vampytest.assert_instance(output, str)
+    return output

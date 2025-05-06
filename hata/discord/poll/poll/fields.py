@@ -25,7 +25,7 @@ from .preinstanced import PollLayout
 # allow_multiple_choices
 
 parse_allow_multiple_choices = bool_parser_factory('allow_multiselect', False)
-put_allow_multiple_choices_into = bool_optional_putter_factory('allow_multiselect', False)
+put_allow_multiple_choices = bool_optional_putter_factory('allow_multiselect', False)
 validate_allow_multiple_choices = bool_validator_factory('allow_multiple_choices', False)
 
 
@@ -51,7 +51,7 @@ def parse_answers(data):
     return (*(PollAnswer.from_data(answer_data) for answer_data in answer_datas),)    
 
 
-put_answers_into = nullable_entity_array_putter_factory('answers', PollAnswer)
+put_answers = nullable_entity_array_putter_factory('answers', PollAnswer)
 
 
 def validate_answers(answers):
@@ -106,7 +106,7 @@ parse_duration = int_postprocess_parser_factory(
     DURATION_DEFAULT,
     (lambda duration: duration * 3600),
 )
-put_duration_into = int_optional_postprocess_putter_factory(
+put_duration = int_optional_postprocess_putter_factory(
     'duration',
     DURATION_DEFAULT,
     (lambda duration: duration // 3600),
@@ -122,7 +122,7 @@ validate_duration = int_conditional_validator_factory(
 # expires_at
 
 parse_expires_at = nullable_date_time_parser_factory('expiry')
-put_expires_at_into = nullable_date_time_optional_putter_factory('expiry')
+put_expires_at = nullable_date_time_optional_putter_factory('expiry')
 validate_expires_at = nullable_date_time_validator_factory('expires_at')
 
 # finalized
@@ -152,7 +152,7 @@ def parse_finalized(data):
     return finalized
 
 
-def put_finalized_into(finalized, data, defaults):
+def put_finalized(finalized, data, defaults):
     """
     Serializes the finalized value into the given `data`.
     
@@ -184,14 +184,14 @@ validate_finalized = bool_validator_factory('finalized', False)
 # layout
 
 parse_layout = preinstanced_parser_factory('layout_type', PollLayout, PollLayout.default)
-put_layout_into = preinstanced_optional_putter_factory('layout_type', PollLayout.default)
+put_layout = preinstanced_optional_putter_factory('layout_type', PollLayout.default)
 validate_layout = preinstanced_validator_factory('layout', PollLayout)
 
 
 # question
 
 parse_question = nullable_entity_parser_factory('question', PollQuestion)
-put_question_into = nullable_entity_putter_factory('question', PollQuestion)
+put_question = nullable_entity_putter_factory('question', PollQuestion)
 
 
 def validate_question(question):
@@ -256,7 +256,7 @@ def parse_results(data, old_results = None):
     return merge_update_poll_results(new_results, old_results)
 
 
-def put_results_into(results, data, defaults):
+def put_results(results, data, defaults):
     """
     Serializes poll results into the given `data`.
     

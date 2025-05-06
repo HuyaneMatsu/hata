@@ -28,7 +28,7 @@ def test__parse_channel(input_data):
     
     Returns
     -------
-    output : `None`, ``Channel``
+    output : ``None | Channel``
     """
     return parse_channel(input_data)
 

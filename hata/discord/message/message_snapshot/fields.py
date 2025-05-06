@@ -9,9 +9,10 @@ from ..message.fields import (
     parse_attachments as _parse_attachments, parse_components as _parse_components, parse_content as _parse_content,
     parse_edited_at as _parse_edited_at, parse_embeds as _parse_embeds, parse_flags as _parse_flags,
     parse_mentioned_role_ids as _parse_mentioned_role_ids, parse_mentioned_users as _parse_mentioned_users,
-    parse_stickers as _parse_stickers, parse_type as _parse_type, validate_attachments, validate_components,
+    parse_soundboard_sounds as _parse_soundboard_sounds, parse_stickers as _parse_stickers, parse_type as _parse_type,
+    put_soundboard_sounds as _put_soundboard_sounds, validate_attachments, validate_components,
     validate_content, validate_edited_at, validate_embeds, validate_flags, validate_mentioned_role_ids,
-    validate_mentioned_users, validate_stickers, validate_type
+    validate_mentioned_users, validate_soundboard_sounds, validate_stickers, validate_type
 )
 
 
@@ -37,7 +38,7 @@ def parse_attachments(data):
     return _parse_attachments(message_data)
 
 
-def put_attachments_into(attachments, data, defaults):
+def put_attachments(attachments, data, defaults):
     """
     Serializes the given attachments into the given data.
     
@@ -85,7 +86,7 @@ def parse_components(data):
     
     Returns
     -------
-    components : `None | tuple<Component>`
+    components : ``None | tuple<Component>``
     """
     message_data = data.get('message', None)
     if message_data is None:
@@ -94,16 +95,18 @@ def parse_components(data):
     return _parse_components(message_data)
 
 
-def put_components_into(components, data, defaults):
+def put_components(components, data, defaults):
     """
     Serializes the given components into the given data.
     
     Parameters
     ----------
-    components : `None | tuple<Component>`
+    components : ``None | tuple<Component>``
         The components to serialize.
+    
     data : `dict<str, object>`
         Reaction event data.
+    
     defaults : `bool`
         Whether fields with their default values should be included as well.
     
@@ -120,7 +123,10 @@ def put_components_into(components, data, defaults):
         if components is None:
             component_datas = []
         else:
-            component_datas = [component.to_data(defaults = defaults) for component in components]
+            component_datas = [
+                component.to_data(defaults = defaults, include_internals = True)
+                for component in components
+            ]
         
         message_data['components'] = component_datas
     
@@ -149,7 +155,7 @@ def parse_content(data):
     return _parse_content(message_data)
 
 
-def put_content_into(content, data, defaults):
+def put_content(content, data, defaults):
     """
     Serializes the given content into the given data.
     
@@ -206,7 +212,7 @@ def parse_created_at(data):
     return timestamp_to_datetime(created_at)
 
 
-def put_created_at_into(created_at, data, defaults):
+def put_created_at(created_at, data, defaults):
     """
     Serializes the given created at value into the given data.
     
@@ -258,7 +264,7 @@ def parse_edited_at(data):
     return _parse_edited_at(message_data)
 
 
-def put_edited_at_into(edited_at, data, defaults):
+def put_edited_at(edited_at, data, defaults):
     """
     Serializes the given created at value into the given data.
     
@@ -313,7 +319,7 @@ def parse_embeds(data):
     return _parse_embeds(message_data)
 
 
-def put_embeds_into(embeds, data, defaults):
+def put_embeds(embeds, data, defaults):
     """
     Serializes the given embeds into the given data.
     
@@ -368,7 +374,7 @@ def parse_flags(data):
     return _parse_flags(message_data)
 
 
-def put_flags_into(flags, data, defaults):
+def put_flags(flags, data, defaults):
     """
     Serializes the given flags into the given data.
     
@@ -420,7 +426,7 @@ def parse_mentioned_users(data, guild_id = 0):
     return _parse_mentioned_users(message_data, guild_id)
 
 
-def put_mentioned_users_into(mentioned_users, data, defaults, *, guild_id = 0):
+def put_mentioned_users(mentioned_users, data, defaults, *, guild_id = 0):
     """
     Serializes the given mentioned users into the given data.
     
@@ -488,7 +494,7 @@ def parse_mentioned_role_ids(data):
     return _parse_mentioned_role_ids(message_data)
 
 
-def put_mentioned_role_ids_into(mentioned_role_ids, data, defaults):
+def put_mentioned_role_ids(mentioned_role_ids, data, defaults):
     """
     Serializes the given mentioned_role_ids into the given data.
     
@@ -521,6 +527,60 @@ def put_mentioned_role_ids_into(mentioned_role_ids, data, defaults):
     return data
 
 
+# soundboard_sounds
+
+def parse_soundboard_sounds(data):
+    """
+    Parses out soundboard_sounds value from the given data.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    soundboard_sounds : `None | tuple<SoundboardSound>`
+    """
+    message_data = data.get('message', None)
+    if message_data is None:
+        return None
+    
+    return _parse_soundboard_sounds(message_data)
+
+
+def put_soundboard_sounds(soundboard_sounds, data, defaults):
+    """
+    Serializes the given soundboard_sounds into the given data.
+    
+    Parameters
+    ----------
+    soundboard_sounds : `None | tuple<SoundboardSound>`
+        The soundboard_sounds to serialize.
+    
+    data : `dict<str, object>`
+        Reaction event data.
+    
+    defaults : `bool`
+        Whether fields with their default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    if (soundboard_sounds is not None) or defaults:
+        message_data = data.get('message', None)
+        if message_data is None:
+            message_data = {}
+            data['message'] = message_data
+        
+        _put_soundboard_sounds(soundboard_sounds, message_data, defaults)
+    
+    return data
+
+
+# stickers
+
 def parse_stickers(data):
     """
     Parses out stickers value from the given data.
@@ -541,7 +601,7 @@ def parse_stickers(data):
     return _parse_stickers(message_data)
 
 
-def put_stickers_into(stickers, data, defaults):
+def put_stickers(stickers, data, defaults):
     """
     Serializes the given stickers into the given data.
     
@@ -596,7 +656,7 @@ def parse_type(data):
     return _parse_type(message_data)
 
 
-def put_type_into(message_type, data, defaults):
+def put_type(message_type, data, defaults):
     """
     Serializes the given type into the given data.
     

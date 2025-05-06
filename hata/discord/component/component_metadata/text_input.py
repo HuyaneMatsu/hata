@@ -1,18 +1,15 @@
 __all__ = ('ComponentMetadataTextInput',)
 
-import reprlib
 
 from scarletio import copy_docs
-
-from ..shared_fields import parse_custom_id, put_custom_id_into, validate_custom_id
 
 from .base import ComponentMetadataBase
 from .constants import MAX_LENGTH_DEFAULT, MIN_LENGTH_DEFAULT, TEXT_INPUT_STYLE_DEFAULT
 from .fields import (
-    parse_label, parse_max_length, parse_min_length, parse_placeholder, parse_required, parse_text_input_style,
-    parse_value, put_label_into, put_max_length_into, put_min_length_into, put_placeholder_into, put_required_into,
-    put_text_input_style_into, put_value_into, validate_label, validate_max_length, validate_min_length,
-    validate_placeholder, validate_required, validate_text_input_style, validate_value
+    parse_custom_id, parse_label, parse_max_length, parse_min_length, parse_placeholder, parse_required,
+    parse_text_input_style, parse_value, put_custom_id, put_label, put_max_length, put_min_length, put_placeholder,
+    put_required, put_text_input_style, put_value, validate_custom_id, validate_label, validate_max_length,
+    validate_min_length, validate_placeholder, validate_required, validate_text_input_style, validate_value
 )
 
 
@@ -22,10 +19,10 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
     
     Attributes
     ----------
-    custom_id : `None`, `str`
+    custom_id : `None | str`
         Custom identifier to detect which component was used by the user.
     
-    label : `None`, `str`
+    label : `None | str`
         Label of the component.
     
     max_length : `int
@@ -34,7 +31,7 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
     min_length : `int`
         The minimal amount of options to select.
     
-    placeholder : `None`, `str`
+    placeholder : `None | str`
         Placeholder text of the select.
     
     required : `bool`
@@ -43,7 +40,7 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
     text_input_style : ``TextInputStyle``
         The text input's style.
     
-    value : `None`, `str`
+    value : `None | str`
         The text input's default value.
     """
     __slots__ = (
@@ -68,10 +65,10 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
         
         Parameters
         ----------
-        custom_id : `None`, `str`, Optional (Keyword only)
+        custom_id : `None | str`, Optional (Keyword only)
             Custom identifier to detect which component was used by the user.
         
-        label : `None`, `str`, Optional (Keyword only)
+        label : `None | str`, Optional (Keyword only)
             Label of the component.
         
         max_length : `int, Optional (Keyword only)
@@ -80,16 +77,16 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
         min_length : `int`, Optional (Keyword only)
             The minimal amount of options to select.
         
-        placeholder : `None`, `str`, Optional (Keyword only)
+        placeholder : `None | str`, Optional (Keyword only)
             Placeholder text of the select.
         
         required : `bool`, Optional (Keyword only)
             Whether the field is required to be fulfilled.
         
-        text_input_style : ``TextInputStyle``, `int`, Optional (Keyword only)
+        text_input_style : ``int | TextInputStyle``, Optional (Keyword only)
             The text input's style.
         
-        value : `None`, `str`, Optional (Keyword only)
+        value : `None | str`, Optional (Keyword only)
             The text input's default value.
             
         Raises
@@ -207,7 +204,7 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
         custom_id = self.custom_id
         if (custom_id is not None):
             repr_parts.append(', custom_id = ')
-            repr_parts.append(reprlib.repr(custom_id))
+            repr_parts.append(repr(custom_id))
         
         # Text fields : label & placeholder & value
         
@@ -215,7 +212,7 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
         label = self.label
         if (label is not None):
             repr_parts.append(', label = ')
-            repr_parts.append(reprlib.repr(label))
+            repr_parts.append(repr(label))
         
         # placeholder
         placeholder = self.placeholder
@@ -360,19 +357,35 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
     
     
     @copy_docs(ComponentMetadataBase.to_data)
-    def to_data(self, *, defaults = False):
+    def to_data(self, *, defaults = False, include_internals = False):
         data = {}
         
-        put_custom_id_into(self.custom_id, data, defaults)
-        put_label_into(self.label, data, defaults)
-        put_max_length_into(self.max_length, data, defaults)
-        put_min_length_into(self.min_length, data, defaults)
-        put_placeholder_into(self.placeholder, data, defaults)
-        put_required_into(self.required, data, defaults)
-        put_text_input_style_into(self.text_input_style, data, defaults)
-        put_value_into(self.value, data, defaults)
+        put_custom_id(self.custom_id, data, defaults)
+        put_label(self.label, data, defaults)
+        put_max_length(self.max_length, data, defaults)
+        put_min_length(self.min_length, data, defaults)
+        put_placeholder(self.placeholder, data, defaults)
+        put_required(self.required, data, defaults)
+        put_text_input_style(self.text_input_style, data, defaults)
+        put_value(self.value, data, defaults)
         
         return data
+    
+    
+    @copy_docs(ComponentMetadataBase.clean_copy)
+    def clean_copy(self, guild = None):
+        new = object.__new__(type(self))
+        
+        new.custom_id = self.custom_id
+        new.label = self.label
+        new.max_length = self.max_length
+        new.min_length = self.min_length
+        new.placeholder = self.placeholder
+        new.required = self.required
+        new.text_input_style = self.text_input_style
+        new.value = self.value
+        
+        return new
     
     
     @copy_docs(ComponentMetadataBase.copy)
@@ -408,10 +421,10 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
         
         Parameters
         ----------
-        custom_id : `None`, `str`, Optional (Keyword only)
+        custom_id : `None | str`, Optional (Keyword only)
             Custom identifier to detect which component was used by the user.
         
-        label : `None`, `str`, Optional (Keyword only)
+        label : `None | str`, Optional (Keyword only)
             Label of the component.
         
         max_length : `int, Optional (Keyword only)
@@ -420,16 +433,16 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
         min_length : `int`, Optional (Keyword only)
             The minimal amount of options to select.
         
-        placeholder : `None`, `str`, Optional (Keyword only)
+        placeholder : `None | str`, Optional (Keyword only)
             Placeholder text of the select.
         
         required : `bool`, Optional (Keyword only)
             Whether the field is required to be fulfilled.
         
-        text_input_style : ``TextInputStyle``, `int`, Optional (Keyword only)
+        text_input_style : ``int | TextInputStyle``, Optional (Keyword only)
             The text input's style.
         
-        value : `None`, `str`, Optional (Keyword only)
+        value : `None | str`, Optional (Keyword only)
             The text input's default value.
         
         Returns

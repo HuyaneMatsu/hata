@@ -3,20 +3,22 @@ __all__ = ()
 from .preinstanced import Locale
 
 
+
 def serializable_localized_item_validator(item, parameter_name):
     """
     Json serializable localization dictionary item validator.
     
     Parameters
     ---------
-    key : `tuple` ((``Locale``, `str`), `str`)
+    key : (Locale | str, str)
         An item representing a `locale` - `str` pair.
+    
     parameter_name : `str`
         The parameter's name to raise exception with.
     
     Returns
     -------
-    validated_key : `str`
+    validated_item : `(str, str)`
     
     Raises
     ------
@@ -32,33 +34,32 @@ def serializable_localized_item_validator(item, parameter_name):
     elif isinstance(key, str):
         if not key:
             raise ValueError(
-                f'`{parameter_name}` keys cannot be empty strings, got item={item!r}.'
+                f'`{parameter_name}` keys cannot be empty strings, got item = {item!r}.'
             )
         
         validated_key = key
     
     else:
         raise TypeError(
-            f'`{parameter_name}` keys can be `{Locale.__name__}`, `str`, got {value.__class__.__name__}; {value!r}; '
-            f'item={item!r}.'
+            f'`{parameter_name}` keys can be `{Locale.__name__}`, `str`, got {type(value).__name__}; {value!r}; '
+            f'item = {item!r}.'
         )
     
     if isinstance(value, str):
         if not value:
             raise ValueError(
-                f'`{parameter_name}` values cannot be empty strings, got item={item!r}.'
+                f'`{parameter_name}` values cannot be empty strings, got item = {item!r}.'
             )
         
         validated_value = value
     
     else:
         raise TypeError(
-            f'`{parameter_name}` values can be `str`, got {value.__class__.__name__}; {value!r}; item={item!r}.'
+            f'`{parameter_name}` values can be `str`, got {type(value).__name__}; {value!r}; item = {item!r}.'
         )
     
     
     return validated_key, validated_value
-
 
 
 def localized_dictionary_item_validator(item, parameter_name):
@@ -67,14 +68,15 @@ def localized_dictionary_item_validator(item, parameter_name):
     
     Parameters
     ---------
-    item : `tuple` ((``Locale``, `str`), `str`)
+    item : `(Locale | str, str)`
         An item representing a `locale` - `str` pair.
+    
     parameter_name : `str`
         The parameter's name to raise exception with.
     
     Returns
     -------
-    validated_key : `str`
+    validated_item : `(Locale, str)`
     
     Raises
     ------
@@ -90,28 +92,28 @@ def localized_dictionary_item_validator(item, parameter_name):
     elif isinstance(key, str):
         if not key:
             raise ValueError(
-                f'`{parameter_name}` keys cannot be empty strings, got item={item!r}.'
+                f'`{parameter_name}` keys cannot be empty strings, got item = {item!r}.'
             )
         
-        validated_key = Locale.get(key)
+        validated_key = Locale(key)
     
     else:
         raise TypeError(
-            f'`{parameter_name}` keys can be `{Locale.__name__}`, `str`, got {value.__class__.__name__}; {value!r}; '
-            f'item={item!r}.'
+            f'`{parameter_name}` keys can be `{Locale.__name__}`, `str`, got {type(value).__name__}; {value!r}; '
+            f'item = {item!r}.'
         )
     
     if isinstance(value, str):
         if not value:
             raise ValueError(
-                f'`{parameter_name}` values cannot be empty strings, got item={item!r}.'
+                f'`{parameter_name}` values cannot be empty strings, got item = {item!r}.'
             )
         
         validated_value = value
     
     else:
         raise TypeError(
-            f'`{parameter_name}` values can be `str`, got {value.__class__.__name__}; {value!r}; item={item!r}.'
+            f'`{parameter_name}` values can be `str`, got {type(value).__name__}; {value!r}; item = {item!r}.'
         )
     
     
@@ -122,15 +124,15 @@ def localized_dictionary_builder(dictionary, parameter_name):
     """
     Parameters
     ----------
-    dictionary : `None`, `dict` of ((``Locale``, `str`), `str`) items,
-            (`set`, `tuple`, `list`) of `tuple` ((``Locale``, `str`), `str`)
+    dictionary : `None | dict<Locale | str, str> | (set | tuple | list)<(Locale | str, str)>`
         The value to convert to localized dictionary.
+    
     parameter_name : `str`
         The parameter's name to raise exception with.
     
     Returns
     -------
-    validated_dictionary : `None`, `dict` of (``Locale``, `object`) items
+    validated_dictionary : `None | dict<Locale, str>`
     
     Raises
     ------
@@ -149,15 +151,15 @@ def serializable_localized_dictionary_builder(dictionary, parameter_name):
     
     Parameters
     ----------
-    dictionary : `None`, `dict` of ((``Locale``, `str`), `str`) items,
-            (`set`, `tuple`, `list`) of `tuple` ((``Locale``, `str`), `str`)
+    dictionary : `None | dict<Locale | str, str> | (set | tuple | list)<(Locale | str, str)>`
         The value to convert to json serializable localized dictionary.
+    
     parameter_name : `str`
         The parameter's name to raise exception with.
     
     Returns
     -------
-    validated_dictionary : `None`, `dict` of (`str`, `object`) items
+    validated_dictionary : `None | dict<str, str>`
     
     Raises
     ------
@@ -176,16 +178,18 @@ def _dictionary_builder(dictionary, parameter_name, item_validator):
     
     Parameters
     ----------
-    dictionary : `None`, `dict`, (`set`, `tuple`, `list`) of `tuple[2]`
+    dictionary : `None | dict<Locale | str, str> | (set | tuple | list)<(Locale | str, str)>`
         The value to convert.
+    
     parameter_name : `str`
         The parameter's name to raise exception with.
+    
     item_validator : `FunctionType`
         Item validator to pass every every item to.
     
     Returns
     -------
-    validated_dictionary : `None`, `dict` of (`str`, `object`) items
+    validated_dictionary : `None | dict<*return<item_validator>>`
     
     Raises
     ------
@@ -212,16 +216,16 @@ def _dictionary_builder(dictionary, parameter_name, item_validator):
         for item in dictionary:
             if not isinstance(item, tuple):
                 raise TypeError(
-                    f'`{parameter_name}` items can be `tuple`-s, got {item.__class__.__name__}; {item!r}; '
-                    f'{parameter_name}={dictionary!r}.'
+                    f'`{parameter_name}` items can be `tuple`-s, got {type(item).__name__}; {item!r}; '
+                    f'{parameter_name} = {dictionary!r}.'
                 )
             
             
             item_length = len(item)
             if item_length != 2:
                 raise ValueError(
-                    f'`{parameter_name}` items can be `tuple`-s of length `2`, got {item!r}; length={item_length!r}; '
-                    f'{parameter_name}={dictionary!r}.'
+                    f'`{parameter_name}` items can be `tuple`-s of length `2`, got {item!r}; length = {item_length!r}; '
+                    f'{parameter_name} = {dictionary!r}.'
                 )
             
             key, value = item_validator(item, parameter_name)
@@ -233,7 +237,7 @@ def _dictionary_builder(dictionary, parameter_name, item_validator):
     else:
         raise TypeError(
             f'`{parameter_name}` can be `None`, `dict`, `set`, `tuple`, `list`, '
-            f'got {dictionary.__class__.__name__}; {dictionary!r}.'
+            f'got {type(dictionary).__name__}; {dictionary!r}.'
         )
     
     return validated_dictionary
@@ -247,9 +251,10 @@ def get_localized_length(value, value_localizations):
     
     Parameters
     ----------
-    value : `None, `str`
+    value : `None | str`
         The default value.
-    value_localizations : `None`, `dict` of (``Locale``, `str`) items
+    
+    value_localizations : `None | dict<Locale, str>`
         Localizations of the value.
     
     Returns

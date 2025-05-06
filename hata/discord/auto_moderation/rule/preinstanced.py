@@ -8,36 +8,30 @@ from ..trigger_metadata import (
 )
 
 
-class AutoModerationRuleTriggerType(PreinstancedBase):
+class AutoModerationRuleTriggerType(PreinstancedBase, value_type = int):
     """
     Represents an auto moderation rule's trigger type.
     
     Attributes
     ----------
-    value : `int`
-        The Discord side identifier value of the auto moderation trigger type.
-    name : `str`
-        The default name of the auto moderation trigger type.
     max_per_guild : `int`
         The maximal amount of rules of this type per guild.
-    metadata_type : `AutoModerationRuleTriggerMetadataBase``
+    
+    metadata_type : `type<AutoModerationRuleTriggerMetadataBase>`
         The trigger type's respective metadata type.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`str`, ``AutoModerationRuleTriggerType``) items
-        Stores the predefined auto moderation trigger types. This container is accessed when translating a Discord side
-        identifier of a auto moderation trigger type. The identifier value is used as a key to get it's wrapper side
-        representation.
-    VALUE_TYPE : `type` = `str`
-        The auto moderation trigger types' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the auto moderation trigger types.
+    name : `str`
+        The default name of the auto moderation trigger type.
     
-    Every predefined auto moderation trigger type is also stored as a class attribute:
+    value : `int`
+        The Discord side identifier value of the auto moderation trigger type.
+    
+    Type Attributes
+    ---------------
+    Every predefined auto moderation trigger type is also stored as a type attribute:
     
     +-----------------------+-------------------+-----------+---------------+-------------------------------------------------------+
-    | Class attribute name  | Name              | Value     | Max per guild | Metadata type                                         |
+    | Type attribute name   | Name              | Value     | Max per guild | Metadata type                                         |
     +=======================+===================+===========+===============+=======================================================+
     | none                  | none              | 0         | 0             | ``AutoModerationRuleTriggerMetadataBase``             |
     +-----------------------+-------------------+-----------+---------------+-------------------------------------------------------+
@@ -56,54 +50,32 @@ class AutoModerationRuleTriggerType(PreinstancedBase):
     """
     __slots__ = ('max_per_guild', 'metadata_type')
     
-    INSTANCES = {}
-    VALUE_TYPE = int
-
-    @classmethod
-    def _from_value(cls, value):
+    def __new__(cls, value, name = None, max_per_guild = 1, metadata_type = None):
         """
-        Creates a new auto moderation trigger type with the given value.
-        
-        Parameters
-        ----------
-        value : `int`
-            The auto moderation trigger type's identifier value.
-        
-        Returns
-        -------
-        self : ``AutoModerationRuleTriggerType``
-            The created instance.
-        """
-        self = object.__new__(cls)
-        self.name = cls.DEFAULT_NAME
-        self.value = value
-        self.max_per_guild = 1
-        self.metadata_type = AutoModerationRuleTriggerMetadataBase
-        
-        return self
-    
-    
-    def __init__(self, value, name, max_per_guild, metadata_type):
-        """
-        Creates an ``AutoModerationRuleTriggerType`` and stores it at the class's `.INSTANCES` class attribute as well.
+        Creates an auto moderation rule trigger type.
         
         Parameters
         ----------
         value : `int`
             The Discord side identifier value of the auto moderation trigger type.
-        name : `str`
+        
+        name : `None | str` = `None`, Optional
             The default name of the auto moderation trigger type.
-        max_per_guild : `int`
+        
+        max_per_guild : `int` = `1`, Optional
             The native name of the auto moderation trigger type.
-        metadata_type : `None`, ``AutoModerationRuleTriggerMetadataBase``
+        
+        metadata_type : `None | type<AutoModerationRuleTriggerMetadataBase>` = `None`, Optional
             The trigger type's respective metadata type.
         """
-        self.value = value
-        self.name = name
+        if metadata_type is None:
+            metadata_type = AutoModerationRuleTriggerMetadataBase
+        
+        self = PreinstancedBase.__new__(cls, value, name)
         self.max_per_guild = max_per_guild
         self.metadata_type = metadata_type
-        
-        self.INSTANCES[value] = self
+        return self
+    
     
     # predefined
     none = P(0, 'none', 0, AutoModerationRuleTriggerMetadataBase)
@@ -115,32 +87,24 @@ class AutoModerationRuleTriggerType(PreinstancedBase):
     user_profile = P(6, 'user profile', 1, AutoModerationRuleTriggerMetadataKeyword)
 
 
-class AutoModerationEventType(PreinstancedBase):
+class AutoModerationEventType(PreinstancedBase, value_type = int):
     """
     Represents an auto moderation rule's event type.
     
     Attributes
     ----------
-    value : `int`
-        The Discord side identifier value of the auto moderation event type.
     name : `str`
         The default name of the auto moderation event type.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`str`, ``AutoModerationEventType``) items
-        Stores the predefined auto moderation event types. This container is accessed when translating a Discord side
-        identifier of a auto moderation event type. The identifier value is used as a key to get it's wrapper side
-        representation.
-    VALUE_TYPE : `type` = `str`
-        The auto moderation event types' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the auto moderation event types.
+    value : `int`
+        The Discord side identifier value of the auto moderation event type.
     
-    Every predefined auto moderation event type is also stored as a class attribute:
+    Type Attributes
+    ---------------
+    Every predefined auto moderation event type is also stored as a type attribute:
     
     +-----------------------+-------------------+-----------+
-    | Class attribute name  | Name              | Value     |
+    | Type attribute name   | Name              | Value     |
     +=======================+===================+===========+
     | none                  | none              | 0         |
     +-----------------------+-------------------+-----------+
@@ -150,9 +114,6 @@ class AutoModerationEventType(PreinstancedBase):
     +-----------------------+-------------------+-----------+
     """
     __slots__ = ()
-    
-    INSTANCES = {}
-    VALUE_TYPE = int
     
     # predefined
     none = P(0, 'none')

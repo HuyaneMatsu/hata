@@ -8,6 +8,7 @@ from ...core import (
     APPLICATION_ID_TO_CLIENT, INTERACTION_EVENT_MESSAGE_WAITERS, INTERACTION_EVENT_RESPONSE_WAITERS, KOKORO
 )
 from ...localization.utils import LOCALE_DEFAULT
+from ...guild.guild.guild_boost_perks import LEVEL_0
 from ...message import Message
 from ...permission import Permission
 from ...precreate_helpers import process_precreate_parameters, raise_extra
@@ -22,14 +23,14 @@ from ..responding.constants import (
 
 from .constants import DEFAULT_INTERACTION_METADATA, INTERACTION_EVENT_EXPIRE_AFTER_ID_DIFFERENCE
 from .fields import (
-    parse_application_id, parse_application_permissions, parse_authorizer_user_ids, parse_channel, parse_entitlements,
-    parse_guild, parse_id, parse_message, parse_token, parse_type, parse_user, parse_user_locale,
-    parse_user_permissions, put_application_id_into, put_application_permissions_into, put_authorizer_user_ids_into,
-    put_channel_into, put_entitlements_into, put_guild_into, put_id_into, put_message_into, put_token_into,
-    put_type_into, put_user_into, put_user_locale_into, put_user_permissions_into, validate_application_id,
-    validate_application_permissions, validate_authorizer_user_ids, validate_channel, validate_entitlements,
-    validate_guild, validate_id, validate_interaction, validate_message, validate_token, validate_type, validate_user,
-    validate_user_locale, validate_user_permissions
+    parse_application_id, parse_application_permissions, parse_attachment_size_limit, parse_authorizer_user_ids,
+    parse_channel, parse_entitlements, parse_guild, parse_id, parse_message, parse_token, parse_type, parse_user,
+    parse_user_locale, parse_user_permissions, put_application_id, put_application_permissions,
+    put_attachment_size_limit, put_authorizer_user_ids, put_channel, put_entitlements, put_guild, put_id, put_message,
+    put_token, put_type, put_user, put_user_locale, put_user_permissions, validate_application_id,
+    validate_application_permissions, validate_attachment_size_limit, validate_authorizer_user_ids, validate_channel,
+    validate_entitlements, validate_guild, validate_id, validate_interaction, validate_message, validate_token,
+    validate_type, validate_user, validate_user_locale, validate_user_permissions
 )
 from .preinstanced import InteractionType
 
@@ -39,6 +40,7 @@ create_partial_guild_from_id = include('create_partial_guild_from_id')
 
 
 PRECREATE_FIELDS = {
+    'attachment_size_limit': ('attachment_size_limit', validate_attachment_size_limit),
     'application': ('application_id', validate_application_id),
     'application_id': ('application_id', validate_application_id),
     'application_permissions': ('application_permissions', validate_application_permissions),
@@ -94,6 +96,9 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     application_permissions : ``Permission``
         The permissions granted to the application in the guild.
     
+    attachment_size_limit : `int`
+        The size limit in bytes for each attachment.
+    
     authorizer_user_ids : `None | dict<ApplicationIntegrationType, int>`
         The users' identifier who authorized the integration.
     
@@ -104,7 +109,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     channel : ``Channel``
         The channel from where the interaction was called.
     
-    guild : `None`, ``Guild``
+    guild : ``None | Guild``
         The guild from where the interaction was called from.
     
     interaction : ``InteractionMetadataBase``
@@ -136,9 +141,9 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     Interaction event instances are weakreferable.
     """
     __slots__ = (
-        '_async_task', '_response_flags', 'application_id', 'application_permissions', 'authorizer_user_ids',
-        'entitlements', 'channel', 'guild', 'interaction', 'message', 'token', 'type', 'user', 'user_locale',
-        'user_permissions'
+        '_async_task', '_response_flags', 'application_id', 'application_permissions', 'attachment_size_limit',
+        'authorizer_user_ids', 'entitlements', 'channel', 'guild', 'interaction', 'message', 'token', 'type', 'user',
+        'user_locale', 'user_permissions'
     )
     
     def __new__(
@@ -146,6 +151,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         *,
         application_id = ...,
         application_permissions = ...,
+        attachment_size_limit = ...,
         authorizer_user_ids = ...,
         channel = ...,
         entitlements = ...,
@@ -171,6 +177,9 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         application_permissions : ``Permission``, `int`, Optional (Keyword only)
             The permissions granted to the application in the guild.
         
+        attachment_size_limit : `int`, Optional (Keyword only)
+            The size limit in bytes for each attachment.
+        
         authorizer_user_ids : `None | dict<ApplicationIntegrationType | int, int | ClientUserBase>` \
                 , Optional (Keyword only)
             The users' identifier who authorized the integration.
@@ -181,7 +190,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         entitlements : `None`, `iterable` of ``Entitlement``, Optional (Keyword only)
             The applicable entitlements for the event's context.
         
-        guild : `None`, ``Guild``, Optional (Keyword only)
+        guild : ``None | Guild``, Optional (Keyword only)
             The guild from where the interaction was called from.
         
         interaction : ``InteractionMetadataBase``, Optional (Keyword only)
@@ -227,6 +236,12 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
             application_permissions = Permission()
         else:
             application_permissions = validate_application_permissions(application_permissions)
+        
+        # attachment_size_limit
+        if attachment_size_limit is ...:
+            attachment_size_limit = LEVEL_0.attachment_size_limit
+        else:
+            attachment_size_limit = validate_attachment_size_limit(attachment_size_limit)
         
         # authorizer_user_ids
         if authorizer_user_ids is ...:
@@ -301,6 +316,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         self.id = 0
         self.application_id = application_id
         self.application_permissions = application_permissions
+        self.attachment_size_limit = attachment_size_limit
         self.authorizer_user_ids = authorizer_user_ids
         self.channel = channel
         self.entitlements = entitlements
@@ -322,7 +338,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             `INTERACTION_CREATE` dispatch event data.
         
         Returns
@@ -336,6 +352,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         interaction_id = parse_id(data)
         application_id = parse_application_id(data)
         application_permissions = parse_application_permissions(data)
+        attachment_size_limit = parse_attachment_size_limit(data)
         authorizer_user_ids = parse_authorizer_user_ids(data)
         channel = parse_channel(data)
         entitlements = parse_entitlements(data)
@@ -352,6 +369,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         self._response_flags = RESPONSE_FLAG_NONE
         self.application_id = application_id
         self.application_permissions = application_permissions
+        self.attachment_size_limit = attachment_size_limit
         self.authorizer_user_ids = authorizer_user_ids
         self.channel = channel
         self.entitlements = entitlements
@@ -382,22 +400,23 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
-        put_application_id_into(self.application_id, data, defaults)
-        put_application_permissions_into(self.application_permissions, data, defaults)
-        put_authorizer_user_ids_into(self.authorizer_user_ids, data, defaults)
-        put_channel_into(self.channel, data, defaults)
-        put_entitlements_into(self.entitlements, data, defaults)
-        put_guild_into(self.guild, data, defaults)
-        put_id_into(self.id, data, defaults)
-        put_message_into(self.message, data, defaults)
-        put_token_into(self.token, data, defaults)
-        put_type_into(self.type, data, defaults)
-        put_user_into(self.user, data, defaults, guild_id = self.guild_id)
-        put_user_locale_into(self.user_locale, data, defaults)
-        put_user_permissions_into(self.user_permissions, data, defaults)
+        put_application_id(self.application_id, data, defaults)
+        put_application_permissions(self.application_permissions, data, defaults)
+        put_attachment_size_limit(self.attachment_size_limit, data, defaults)
+        put_authorizer_user_ids(self.authorizer_user_ids, data, defaults)
+        put_channel(self.channel, data, defaults)
+        put_entitlements(self.entitlements, data, defaults)
+        put_guild(self.guild, data, defaults)
+        put_id(self.id, data, defaults)
+        put_message(self.message, data, defaults)
+        put_token(self.token, data, defaults)
+        put_type(self.type, data, defaults)
+        put_user(self.user, data, defaults, guild_id = self.guild_id)
+        put_user_locale(self.user_locale, data, defaults)
+        put_user_permissions(self.user_permissions, data, defaults)
         data['data'] = self.interaction.to_data(defaults = defaults, guild_id = self.guild_id)
         return data
     
@@ -421,6 +440,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         self._response_flags = RESPONSE_FLAG_NONE
         self.application_id = 0
         self.application_permissions = Permission()
+        self.attachment_size_limit = LEVEL_0.attachment_size_limit
         self.authorizer_user_ids = None
         self.channel = create_partial_channel_from_id(0, ChannelType.unknown, 0)
         self.entitlements = None
@@ -466,6 +486,9 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         application_permissions : ``Permission``, `int`, Optional (Keyword only)
             The permissions granted to the application in the guild.
         
+        attachment_size_limit : `int`, Optional (Keyword only)
+            The size limit in bytes for each attachment.
+        
         authorizer_user_ids : `None | dict<ApplicationIntegrationType | int, int | ClientUserBase>` \
                 , Optional (Keyword only)
             The users' identifier who authorized the integration.
@@ -476,7 +499,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         entitlements : `None`, `iterable` of ``Entitlement``, Optional (Keyword only)
             The applicable entitlements for the event's context.
         
-        guild : `None`, ``Guild``, Optional (Keyword only)
+        guild : ``None | Guild``, Optional (Keyword only)
             The guild from where the interaction was called from.
         
         interaction : ``InteractionMetadataBase``, Optional (Keyword only)
@@ -566,6 +589,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         new.id = 0
         new.application_id = self.application_id
         new.application_permissions = self.application_permissions
+        new.attachment_size_limit = self.attachment_size_limit
         
         authorizer_user_ids = self.authorizer_user_ids
         if (authorizer_user_ids is not None):
@@ -595,6 +619,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         *,
         application_id = ...,
         application_permissions = ...,
+        attachment_size_limit = ...,
         authorizer_user_ids = ...,
         channel = ...,
         entitlements = ...,
@@ -619,6 +644,9 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         application_permissions : ``Permission``, `int`, Optional (Keyword only)
             The permissions granted to the application in the guild.
         
+        attachment_size_limit : `int`, Optional (Keyword only)
+            The size limit in bytes for each attachment.
+        
         authorizer_user_ids : `None | dict<ApplicationIntegrationType | int, int | ClientUserBase>` \
                 , Optional (Keyword only)
             The users' identifier who authorized the integration.
@@ -632,7 +660,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         entitlements : `None`, `iterable` of ``Entitlement``, Optional (Keyword only)
             The applicable entitlements for the event's context.
         
-        guild : `None`, ``Guild```, Optional (Keyword only)
+        guild : ``None | Guild```, Optional (Keyword only)
             The guild from where the interaction was called from.
         
         interaction : ``InteractionMetadataBase``, Optional (Keyword only)
@@ -678,6 +706,12 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
             application_permissions = self.application_permissions
         else:
             application_permissions = validate_application_permissions(application_permissions)
+        
+        # attachment_size_limit
+        if attachment_size_limit is ...:
+            attachment_size_limit = self.attachment_size_limit
+        else:
+            attachment_size_limit = validate_attachment_size_limit(attachment_size_limit)
         
         # authorizer_user_ids
         if authorizer_user_ids is ...:
@@ -759,6 +793,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         new.id = 0
         new.application_id = application_id
         new.application_permissions = application_permissions
+        new.attachment_size_limit = attachment_size_limit
         new.authorizer_user_ids = authorizer_user_ids
         new.type = interaction_type
         new.channel = channel
@@ -816,7 +851,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     
     def __repr__(self):
         """Returns the representation of the event."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         response_state_names = None
         response_state = self._response_flags
@@ -883,6 +918,17 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
             
             repr_parts.append(', application_permissions = ')
             repr_parts.append(format(self.application_permissions, 'd'))
+        
+        # attachment_size_limit
+        if guild is None:
+            default_attachment_size_limit = LEVEL_0.attachment_size_limit
+        else:
+            default_attachment_size_limit = guild.attachment_size_limit
+        
+        attachment_size_limit = self.attachment_size_limit
+        if attachment_size_limit != default_attachment_size_limit:
+            repr_parts.append(', attachment_size_limit = ')
+            repr_parts.append(repr(attachment_size_limit))
         
         
         repr_parts.append(', channel = ')
@@ -957,6 +1003,10 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         if self.application_permissions != other.application_permissions:
             return False
         
+        # attachment_size_limit
+        if self.attachment_size_limit != other.attachment_size_limit:
+            return False
+        
         # authorizer_user_ids
         if self.authorizer_user_ids != other.authorizer_user_ids:
             return False
@@ -1018,6 +1068,17 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         # application_permissions
         hash_value ^= self.application_permissions
         
+        # attachment_size_limit
+        guild = self.guild
+        if guild is None:
+            default_attachment_size_limit = LEVEL_0.attachment_size_limit
+        else:
+            default_attachment_size_limit = guild.attachment_size_limit
+        
+        attachment_size_limit = self.attachment_size_limit
+        if attachment_size_limit != default_attachment_size_limit:
+            hash_value ^= attachment_size_limit
+        
         # authorizer_user_ids
         authorizer_user_ids = self.authorizer_user_ids
         if (authorizer_user_ids is not None):
@@ -1034,7 +1095,6 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
             hash_value ^= hash(entitlements)
         
         # guild
-        guild = self.guild
         if (guild is not None):
             hash_value ^= hash(guild)
         

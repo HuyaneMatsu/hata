@@ -2,7 +2,6 @@ __all__ = ()
 
 from sys import platform as PLATFORM
 from zlib import decompressobj as create_zlib_decompressor, error as ZlibError
-from warnings import warn
 
 from scarletio import Task, copy_docs, from_json, repeat_timeout, skip_ready_cycle, sleep, to_json
 from scarletio.web_common import ConnectionClosed, InvalidHandshake, URL, WebSocketProtocolError
@@ -90,7 +89,7 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
         The rate limit handler of the gateway.
     resume_gateway_url : `None | str`
         The new gateway url to which we should connect on resuming.
-    sequence : `None`, `int`
+    sequence : `None | int`
         Last sequence number received.
     session_id : `None | str`
         Last session id received at `READY` event.
@@ -803,19 +802,3 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
             self.kokoro = Kokoro(self)
         else:
             kokoro.stop()
-    
-    
-    @property
-    def websocket(self):
-        """
-        Deprecated and will be removed in 2025 April. Use ``.web_socket`` instead.
-        """
-        warn(
-            (
-                f'`{type(self).__name__}.websocket` is deprecated and will be removed in 2025 April. '
-                'Please use `.web_socket` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.web_socket

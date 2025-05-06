@@ -8,7 +8,7 @@ from ...localization.utils import hash_locale_dictionary
 from ..helpers import with_translation
 
 from .fields import (
-    parse_name, parse_name_localizations, parse_value, put_name_into, put_name_localizations_into, put_value_into,
+    parse_name, parse_name_localizations, parse_value, put_name, put_name_localizations, put_value,
     validate_name, validate_name_localizations, validate_value
 )
 
@@ -78,7 +78,7 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             The received application command option choice data.
         
         Returns
@@ -104,12 +104,12 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
-        put_name_into(self.name, data, defaults)
-        put_name_localizations_into(self.name_localizations, data, defaults)
-        put_value_into(self.value, data, defaults)
+        put_name(self.name, data, defaults)
+        put_name_localizations(self.name_localizations, data, defaults)
+        put_value(self.value, data, defaults)
         return data
     
     

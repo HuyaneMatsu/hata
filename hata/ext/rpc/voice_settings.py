@@ -17,7 +17,7 @@ class VoiceSettingsInput:
         Whether `.available_devices` is set.
     available_devices : `None`, `tuple` of ``AvailableDevice``
         Voice device objects.
-    device_id : `None`, `str`
+    device_id : `None | str`
         The device's identifier.
     volume : `None`, `float`
         Input voice level. Can be in range [0.0:1.0]
@@ -30,7 +30,7 @@ class VoiceSettingsInput:
         
         Parameters
         ----------
-        device_id : `None`, `str` = `None` , Optional (Keyword only)
+        device_id : `None | str` = `None` , Optional (Keyword only)
             The device's identifier.
         volume : `None`, `float` = `None`, Optional (Keyword only)
             Input voice level. Can be in range [0.0:1.0]
@@ -161,7 +161,7 @@ class VoiceSettingsInput:
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         
@@ -190,7 +190,7 @@ class VoiceSettingsInput:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Voice settings input data.
         
         Returns
@@ -268,7 +268,7 @@ class AvailableDevice:
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         return {
             'id_': self.id_,
@@ -283,7 +283,7 @@ class AvailableDevice:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Available device data.
         
         Returns
@@ -306,7 +306,7 @@ class VoiceSettingsOutput:
         Whether `.available_devices` is set.
     available_devices : `None`, `tuple` of ``AvailableDevice``
         Voice device objects.
-    device_id : `None`, `str`
+    device_id : `None | str`
         The device's identifier.
     volume : `None`, `float`
         Output voice level. Can be in range [0.0:2.0]
@@ -319,7 +319,7 @@ class VoiceSettingsOutput:
         
         Parameters
         ----------
-        device_id : `None`, `str` = `None`, Optional (Keyword only)
+        device_id : `None | str` = `None`, Optional (Keyword only)
             The device's identifier.
         volume : `None`, `float` = `None`, Optional (Keyword only)
             Output voice level. Can be in range [0.0:2.0]
@@ -450,7 +450,7 @@ class VoiceSettingsOutput:
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         
@@ -479,7 +479,7 @@ class VoiceSettingsOutput:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Voice settings output data.
         
         Returns
@@ -707,7 +707,7 @@ class VoiceSettingsMode:
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         
@@ -746,7 +746,7 @@ class VoiceSettingsMode:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Voice settings mode data.
         
         Returns
@@ -848,7 +848,7 @@ class ShortcutKey:
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         return {
             'type': self.type.value,
@@ -864,7 +864,7 @@ class ShortcutKey:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Shortcut key data.
         
         Returns
@@ -969,7 +969,7 @@ class VoiceSettings:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Voice settings data.
         
         Returns

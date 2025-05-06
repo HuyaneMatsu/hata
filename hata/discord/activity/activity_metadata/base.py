@@ -53,7 +53,7 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        keyword_parameters : `dict` of (`str`, `object`) items
+        keyword_parameters : `dict<str, object>`
             Keyword parameters passed to ``Activity.__new__``
         
         Returns
@@ -116,7 +116,7 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Activity data received from Discord.
         
         Returns
@@ -154,7 +154,7 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Data received from Discord.
         """
         pass
@@ -251,7 +251,7 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        keyword_parameters : `dict` of (`str`, `object`) items
+        keyword_parameters : `dict<str, object>`
             Keyword parameters passed to ``Activity.__new__``
         
         Returns

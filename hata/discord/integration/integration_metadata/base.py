@@ -37,7 +37,7 @@ class IntegrationMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        keyword_parameters : `dict` of (`str`, `object`) items
+        keyword_parameters : `dict<str, object>`
             Keyword parameters to populate the attributes.
         
         The used fields are removed from `keyword_parameters`.
@@ -106,7 +106,7 @@ class IntegrationMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Integration data.
         
         Returns
@@ -127,7 +127,7 @@ class IntegrationMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         return {}
     
@@ -169,7 +169,7 @@ class IntegrationMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        keyword_parameters : `dict` of (`str`, `object`) items
+        keyword_parameters : `dict<str, object>`
             Keyword parameters to populate the attributes.
         
         Returns

@@ -1,6 +1,8 @@
 __all__ = ()
 
-from scarletio import iter_highlight_code_lines
+from re import compile as re_compile
+
+from scarletio import get_highlight_streamer, iter_highlight_code_token_types_and_values
 from scarletio.web_common import quote
 
 from .graver import (
@@ -10,6 +12,9 @@ from .graver import (
 from .highlight import PATCHOULI_FORMATTER_CONTEXT, PYTHON_IDENTIFIERS
 
 from html import escape as html_escape
+
+
+GRAVE_PART_SPLITTER_RP = re_compile('(?:([\\w\\.]+)|( +)|(.))')
 
 
 def create_relative_link(source, target):
@@ -95,29 +100,33 @@ def graved_global_link(reference, object_, path, linker):
     -------
     html : `str`
     """
-    reference_escaped = html_escape(reference)
+    parts = ['<code><span>']
     
-    referred_object = object_.lookup_reference(reference)
-    if referred_object is None:
-        return (
-            '<code>'
-                '<span>'
-                    f'{reference_escaped}'
-                '</span>'
-            '</code>'
-        )
+    for match in GRAVE_PART_SPLITTER_RP.finditer(reference):
+        reference, space, other = match.groups()
+        if (reference is not None):
+            referenced_object = object_.lookup_reference(reference)
+            if (referenced_object is None):
+                parts.append(html_escape(reference))
+            
+            else:
+                url = linker(path, referenced_object.path)
+                parts.append(f'<a href="')
+                parts.append(url)
+                parts.append('">')
+                parts.append(html_escape(reference))
+                parts.append('</a>')
+        
+        if (other is not None):
+            parts.append(html_escape(other))
+        
+        if (space is not None):
+            parts.append(space)
+        
+        continue
     
-    url = linker(path, referred_object.path)
-    
-    return (
-        f'<a href="{url}">'
-            '<code>'
-                '<span>'
-                    f'{reference_escaped}'
-                '</span>'
-            '</code>'
-        '</a>'
-    )
+    parts.append('</span></code>')
+    return ''.join(parts)
 
 
 def graved_link(reference):
@@ -266,6 +275,7 @@ def description_serializer(description, object_, path, linker):
     yield content
     yield '</p>'
 
+
 def attribute_description_serializer(description, object_, path, linker):
     """
     Serializes the given attribute description.
@@ -344,8 +354,21 @@ def code_block_serializer(code_block, object_, path, linker):
             if index == limit:
                 break
             yield '<br>'
+    
     else:
-        yield from iter_highlight_code_lines([line + '\n' for line in lines], PATCHOULI_FORMATTER_CONTEXT)
+        code_parts = []
+        for line in lines:
+            code_parts.append(line)
+            code_parts.append('\n')
+        
+        code = ''.join(code_parts)
+        code_parts = None
+        
+        highlight_streamer = get_highlight_streamer(PATCHOULI_FORMATTER_CONTEXT)
+        for item in iter_highlight_code_token_types_and_values(code):
+            yield from highlight_streamer.asend(item)
+        
+        yield from highlight_streamer.asend(None)
     
     yield '</pre></div>'
 

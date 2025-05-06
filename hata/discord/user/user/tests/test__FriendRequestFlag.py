@@ -32,13 +32,13 @@ def test__FriendRequestFlag__encode(instance):
 
 
 @vampytest.call_from(FriendRequestFlag.INSTANCES.values())
-def test__FriendRequestFlag__get(instance):
+def test__FriendRequestFlag__decode(instance):
     """
-    Tests whether ``FriendRequestFlag.get`` works as intended.
+    Tests whether ``FriendRequestFlag.decode`` works as intended.
     
     Parameters
     ----------
     instance : ``FriendRequestFlag``
         The instance to test.
     """
-    vampytest.assert_is(FriendRequestFlag.get(instance.encode()), instance)
+    vampytest.assert_is(FriendRequestFlag.decode(instance.encode()), instance)

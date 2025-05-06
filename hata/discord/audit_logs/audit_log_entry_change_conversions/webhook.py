@@ -64,7 +64,7 @@ TYPE_CONVERSION = AuditLogEntryChangeConversion(
 
 @TYPE_CONVERSION.set_value_deserializer
 def type_value_deserializer(value):
-    return WebhookType.get(value)
+    return WebhookType(value)
 
 
 @TYPE_CONVERSION.set_value_serializer

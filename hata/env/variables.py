@@ -1,10 +1,11 @@
 __all__ = (
     'ALLOW_DEBUG_MESSAGES', 'API_VERSION', 'CACHE_PRESENCE', 'CACHE_USER', 'CUSTOM_API_ENDPOINT', 'CUSTOM_CDN_ENDPOINT',
-    'CUSTOM_DISCORD_ENDPOINT', 'CUSTOM_MEDIA_ENDPOINT', 'CUSTOM_STATUS_ENDPOINT', 'DOCS_ENABLED',
-    'LIBRARY_AGENT_APPENDIX', 'LIBRARY_NAME', 'LIBRARY_URL', 'LIBRARY_VERSION', 'MESSAGE_CACHE_SIZE', 'RICH_DISCORD_EXCEPTION'
+    'CUSTOM_DISCORD_ENDPOINT', 'CUSTOM_INVITE_ENDPOINT', 'CUSTOM_MEDIA_ENDPOINT', 'CUSTOM_STATUS_ENDPOINT',
+    'DOCS_ENABLED', 'LIBRARY_AGENT_APPENDIX', 'LIBRARY_NAME', 'LIBRARY_URL', 'LIBRARY_VERSION', 'MESSAGE_CACHE_SIZE',
+    'RICH_DISCORD_EXCEPTION'
 )
 
-import warnings
+from warnings import warn
 
 from .getters import get_bool_env, get_int_env, get_str_env
 from .loading import find_dot_env_file_in_current_working_directory, find_dot_env_file_in_launched_location, load_dot_env_from_file
@@ -42,6 +43,7 @@ ALLOW_DEBUG_MESSAGES = get_bool_env('HATA_ALLOW_DEBUG_MESSAGES', False)
 CUSTOM_API_ENDPOINT = get_str_env('HATA_API_ENDPOINT')
 CUSTOM_CDN_ENDPOINT = get_str_env('HATA_CDN_ENDPOINT')
 CUSTOM_DISCORD_ENDPOINT = get_str_env('HATA_DISCORD_ENDPOINT')
+CUSTOM_INVITE_ENDPOINT = get_str_env('HATA_INVITE_ENDPOINT')
 CUSTOM_MEDIA_ENDPOINT = get_str_env('HATA_MEDIA_ENDPOINT')
 CUSTOM_STATUS_ENDPOINT = get_str_env('HATA_STATUS_ENDPOINT')
 
@@ -50,21 +52,21 @@ API_VERSION = get_int_env('HATA_API_VERSION', DEFAULT_API_VERSION)
 
 if API_VERSION != DEFAULT_API_VERSION:
     if API_VERSION < 6:
-        warnings.warn(
+        warn(
             f'`HATA_API_VERSION` given with a value less than `6`, got {API_VERSION!r}, defaulting to '
             f'{DEFAULT_API_VERSION!r}!'
         )
         API_VERSION = DEFAULT_API_VERSION
     
     elif API_VERSION > 11:
-        warnings.warn(
+        warn(
             f'`API_VERSION` given with a value greater than `11`, got {API_VERSION!r}, defaulting to '
             f'{DEFAULT_API_VERSION!r}!'
         )
         API_VERSION = DEFAULT_API_VERSION
     
     elif API_VERSION < 9:
-        warnings.warn(
+        warn(
             (
                 f'`API_VERSION` given either as `6`, `7`, `8`, got {API_VERSION!r}, please use version '
                 f'`{DEFAULT_API_VERSION!r}` instead',

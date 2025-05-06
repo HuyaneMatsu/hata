@@ -7,7 +7,7 @@ from ..role_manager_metadata import (
     RoleManagerMetadataBot, RoleManagerMetadataIntegration, RoleManagerMetadataSubscription
 )
 
-class RoleManagerType(PreinstancedBase):
+class RoleManagerType(PreinstancedBase, value_type = int):
     """
     Represents a managed role's manager type.
     
@@ -15,22 +15,16 @@ class RoleManagerType(PreinstancedBase):
     ----------
     name : `str`
         The name of the role manager type.
+    
     value : `int`
         The identifier value the role manager type.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``RoleManagerType``) items
-        Stores the predefined ``RoleManagerType``-s. These can be accessed with their `value` as key.
-    VALUE_TYPE : `type` = `int`
-        The role manager types' values' type.
-    DEFAULT_NAME : `str` = `'UNDEFINED'`
-        The default name of the role manager types.
-    
-    Every predefined role manager type can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined role manager type can be accessed as type attribute as well:
     
     +-------------------------------+-------------------------------+-------+---------------------------------------------------+
-    | Class attribute name          | Name                          | Value | Metadata type                                     |
+    | Type attribute name           | Name                          | Value | Metadata type                                     |
     +===============================+===============================+=======+===================================================+
     | none                          | none                          | 0     | ``RoleManagerMetadataBase``                       |
     +-------------------------------+-------------------------------+-------+---------------------------------------------------+
@@ -49,35 +43,10 @@ class RoleManagerType(PreinstancedBase):
     | application_role_connection   | application role connection   | 7     | ``RoleManagerMetadataApplicationRoleConnection``  |
     +-------------------------------+-------------------------------+-------+---------------------------------------------------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    DEFAULT_NAME = 'UNDEFINED'
-    
     __slots__ = ('metadata_type', )
     
     
-    @classmethod
-    def _from_value(cls, value):
-        """
-        Creates a new role manager type with the given value.
-        
-        Parameters
-        ----------
-        value : `int`
-            Value representing the role manager.
-        
-        Returns
-        -------
-        self : `instance<cls>`
-        """
-        self = object.__new__(cls)
-        self.name = value
-        self.value = value
-        self.metadata_type = RoleManagerMetadataBase
-        return self
-    
-    
-    def __init__(self, value, name, metadata_type):
+    def __new__(cls, value, name = None, metadata_type = None):
         """
         Creates a new scheduled event entity type instance from the given parameters.
         
@@ -85,15 +54,19 @@ class RoleManagerType(PreinstancedBase):
         ----------
         value : `str`
             The unique identifier of the scheduled event entity type.
-        name : `str`
+        
+        name : `None | str` = `None`, Optional
             The name of the scheduled event entity type.
-        metadata_type : `None`, ``RoleManagerMetadataBase`` subclass
+        
+        metadata_type : `None | type<RoleManagerMetadataBase>` = `None`, Optional
             The role manager's metadata's type.
         """
-        self.name = name
-        self.value = value
+        if metadata_type is None:
+            metadata_type = RoleManagerMetadataBase
+        
+        self = PreinstancedBase.__new__(cls, value, name)
         self.metadata_type = metadata_type
-        self.INSTANCES[value] = self
+        return self
     
     
     def __bool__(self):

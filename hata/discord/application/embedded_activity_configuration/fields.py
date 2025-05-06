@@ -19,7 +19,7 @@ from .preinstanced import OrientationLockState, PlatformType
 # age_gated
 
 parse_age_gated = bool_parser_factory('requires_age_gate', False)
-put_age_gated_into = force_bool_putter_factory('requires_age_gate')
+put_age_gated = force_bool_putter_factory('requires_age_gate')
 validate_age_gated = bool_validator_factory('age_gated', False)
 
 
@@ -43,12 +43,12 @@ def parse_client_platform_configurations(data):
         return None
     
     return {
-        PlatformType.get(platform_value): ClientPlatformConfiguration.from_data(configuration_data)
+        PlatformType(platform_value): ClientPlatformConfiguration.from_data(configuration_data)
         for platform_value, configuration_data in configuration_datas.items()
     }
         
 
-def put_client_platform_configurations_into(client_platform_configurations, data, defaults):
+def put_client_platform_configurations(client_platform_configurations, data, defaults):
     """
     Puts the activity timestamps start into the given data.
     
@@ -117,7 +117,7 @@ def validate_client_platform_configurations(client_platform_configurations):
         if isinstance(key, PlatformType):
             pass
         elif isinstance(key, PlatformType.VALUE_TYPE):
-            key = PlatformType.get(key)
+            key = PlatformType(key)
         else:
             raise TypeError(
                 f'`client_platform_configurations` keys can be `{PlatformType.__name__} | '
@@ -141,7 +141,7 @@ def validate_client_platform_configurations(client_platform_configurations):
 # content_security_policy_exceptions_exist
 
 parse_content_security_policy_exceptions_exist = bool_parser_factory('has_csp_exception', False)
-put_content_security_policy_exceptions_exist_into = force_bool_putter_factory('has_csp_exception')
+put_content_security_policy_exceptions_exist = force_bool_putter_factory('has_csp_exception')
 validate_content_security_policy_exceptions_exist = bool_validator_factory(
     'content_security_policy_exceptions_exist', False
 )
@@ -152,7 +152,7 @@ validate_content_security_policy_exceptions_exist = bool_validator_factory(
 parse_default_orientation_lock_state = preinstanced_parser_factory(
     'default_orientation_lock_state', OrientationLockState, OrientationLockState.none
 )
-put_default_orientation_lock_state_into = preinstanced_putter_factory('default_orientation_lock_state')
+put_default_orientation_lock_state = preinstanced_putter_factory('default_orientation_lock_state')
 validate_default_orientation_lock_state = preinstanced_validator_factory(
     'default_orientation_lock_state', OrientationLockState
 )
@@ -163,7 +163,7 @@ validate_default_orientation_lock_state = preinstanced_validator_factory(
 parse_default_tablet_orientation_lock_state = preinstanced_parser_factory(
     'tablet_default_orientation_lock_state', OrientationLockState, OrientationLockState.none
 )
-put_default_tablet_orientation_lock_state_into = preinstanced_putter_factory('tablet_default_orientation_lock_state')
+put_default_tablet_orientation_lock_state = preinstanced_putter_factory('tablet_default_orientation_lock_state')
 validate_default_tablet_orientation_lock_state = preinstanced_validator_factory(
     'default_tablet_orientation_lock_state', OrientationLockState
 )
@@ -172,7 +172,7 @@ validate_default_tablet_orientation_lock_state = preinstanced_validator_factory(
 # position
 
 parse_position = int_parser_factory('shelf_rank', 0)
-put_position_into = int_putter_factory('shelf_rank')
+put_position = int_putter_factory('shelf_rank')
 validate_position = int_conditional_validator_factory(
     'position',
     0,
@@ -183,6 +183,6 @@ validate_position = int_conditional_validator_factory(
 # preview_video_asset_id
 
 parse_preview_video_asset_id = entity_id_parser_factory('activity_preview_video_asset_id')
-put_preview_video_asset_id_into = entity_id_putter_factory('activity_preview_video_asset_id')
+put_preview_video_asset_id = entity_id_putter_factory('activity_preview_video_asset_id')
 validate_preview_video_asset_id = entity_id_validator_factory('preview_video_asset_id')
 

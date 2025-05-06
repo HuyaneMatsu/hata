@@ -6,8 +6,8 @@ from ...bases import EventBase
 from ...core import GUILDS
 
 from .fields import (
-    parse_chunk_count, parse_chunk_index, parse_guild_id, parse_nonce, parse_users, put_chunk_count_into,
-    put_chunk_index_into, put_guild_id_into, put_nonce_into, put_users_into, validate_chunk_count, validate_chunk_index,
+    parse_chunk_count, parse_chunk_index, parse_guild_id, parse_nonce, parse_users, put_chunk_count,
+    put_chunk_index, put_guild_id, put_nonce, put_users, validate_chunk_count, validate_chunk_index,
     validate_guild_id, validate_nonce, validate_users
 )
 
@@ -109,7 +109,7 @@ class GuildUserChunkEvent(EventBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Guild user chunk event data.
         
         Returns
@@ -136,14 +136,14 @@ class GuildUserChunkEvent(EventBase):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
-        put_chunk_count_into(self.chunk_count, data, defaults)
-        put_chunk_index_into(self.chunk_index, data, defaults)
-        put_guild_id_into(self.guild_id, data, defaults)
-        put_nonce_into(self.nonce, data, defaults)
-        put_users_into(self.users, data, defaults, guild_id = self.guild_id)
+        put_chunk_count(self.chunk_count, data, defaults)
+        put_chunk_index(self.chunk_index, data, defaults)
+        put_guild_id(self.guild_id, data, defaults)
+        put_nonce(self.nonce, data, defaults)
+        put_users(self.users, data, defaults, guild_id = self.guild_id)
         return data
     
     
@@ -330,7 +330,7 @@ class GuildUserChunkEvent(EventBase):
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         guild_id = self.guild_id
         if guild_id:

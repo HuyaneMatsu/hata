@@ -58,7 +58,7 @@ from .target_converters import (
 )
 
 
-class AuditLogEntryTargetType(PreinstancedBase):
+class AuditLogEntryTargetType(PreinstancedBase, value_type = int):
     """
     Represents the target type of an ``AuditLogEntry``.
     
@@ -66,28 +66,25 @@ class AuditLogEntryTargetType(PreinstancedBase):
     ----------
     change_conversions : `None | AuditLogEntryDetailConversionGroup`
         Change conversions.
+    
     detail_conversions : `None | AuditLogEntryDetailConversionGroup`
         Detail conversions.
+    
     name : `str`
         The name of audit log target type.
+    
     target_converter : `None | FunctionType | MethodType`
         Audit log target converter.
+    
     value : `int`
         The identifier value of the audit log target type. Only used for hashing.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``AuditLogEntryTargetType``) items
-        Stores the predefined ``AuditLogEntryTargetType``-s. These can be accessed with their `value` as key.
-    VALUE_TYPE : `type` = `int`
-        The audit log target types' values' type.
-    DEFAULT_NAME : `str` = `'UNDEFINED'`
-        The default name of the audit log target types.
-    
-    Every predefined audit log target type can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined audit log target type can be accessed as type attribute as well:
     
     +-----------------------------------+-----------------------------------+-------+
-    | Class attribute name              | name                              | value |
+    | Type attribute name               | name                              | value |
     +===================================+===================================+=======+
     | none                              | none                              | 0     |
     +-----------------------------------+-----------------------------------+-------+
@@ -130,12 +127,36 @@ class AuditLogEntryTargetType(PreinstancedBase):
     | soundboard_sound                  | soundboard sound                  | 19    |
     +-----------------------------------+-----------------------------------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    DEFAULT_NAME = 'UNDEFINED'
+    __slots__ = ('change_conversions', 'detail_conversions', 'target_converter')
     
-    __slots__ = ('change_conversions', 'detail_conversions', 'target_converter', )
+    def __new__(cls, value, name = None, target_converter = None, change_conversions = None, detail_conversions = None):
+        """
+        Creates a new audit log target type.
+        
+        Parameters
+        ----------
+        value : `int`
+            The identifier value of the audit log target type.
+        
+        name : `None | str` = `None`, Optional
+            The name of the audit log target type.
+        
+        target_converter : `None | FunctionType | MethodType` = `None`, Optional
+            Audit log target converter.
+        
+        change_conversions :  `None | AuditLogEntryChangeConversionGroup` = `None`, Optional
+            Change conversions.
+        
+        detail_conversions : `None | AuditLogEntryDetailConversionGroup` = `None`, Optional
+            Detail conversions.
+        """
+        self = PreinstancedBase.__new__(cls, value, name)
+        self.target_converter = target_converter
+        self.change_conversions = change_conversions
+        self.detail_conversions = detail_conversions
+        return self
     
+
     # predefined
     none = P(
         0,
@@ -277,60 +298,10 @@ class AuditLogEntryTargetType(PreinstancedBase):
         CHANGE_SOUNDBOARD_SOUND_CONVERSIONS,
         None,
     )
-    
-    
-    @copy_docs(PreinstancedBase.__repr__)
-    def __repr__(self):
-        return f'<{self.__class__.__name__} name = {self.name!r}>'
-    
-    
-    def __init__(self, value, name, target_converter, change_conversions, detail_conversions):
-        """
-        Creates a new audit log target type and stores it at the class's `.INSTANCES` class attribute.
-        
-        Parameters
-        ----------
-        value : `int`
-            The identifier value of the audit log target type.
-        name : `str`
-            The name of the audit log target type.
-        target_converter : `None | FunctionType | MethodType`
-            Audit log target converter.
-        change_conversions :  `None | AuditLogEntryChangeConversionGroup`
-            Change conversions.
-        detail_conversions : `None | AuditLogEntryDetailConversionGroup`
-            Detail conversions.
-        """
-        self.target_converter = target_converter
-        self.change_conversions = change_conversions
-        self.detail_conversions = detail_conversions
-        PreinstancedBase.__init__(self, value, name)
-    
-    
-    @classmethod
-    def _from_value(cls, value):
-        """
-        Creates a new audit log target type object from the given value.
-        
-        Parameters
-        ----------
-        value : ``.VALUE_TYPE``
-            The value what has no representation yet.
-        
-        Returns
-        -------
-        self : ``Status``
-            The created audit log target type.
-        """
-        self = super(AuditLogEntryTargetType, cls)._from_value(value)
-        self.change_conversions = None
-        self.detail_conversions = None
-        self.target_converter = None
-        return self
 
 
 @export
-class AuditLogEntryType(PreinstancedBase):
+class AuditLogEntryType(PreinstancedBase, value_type = int):
     """
     Represents the event type of an ``AuditLogEntry``.
     
@@ -338,24 +309,19 @@ class AuditLogEntryType(PreinstancedBase):
     ----------
     name : `str`
         The name of audit log event.
-    value : `int`
-        The Discord side identifier value of the audit log event.
+    
     target_type : ``AuditLogEntryTargetType``
         The audit log's target's type.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``AuditLogEntryType``) items
-        Stores the predefined ``AuditLogEntryType``-s. These can be accessed with their `value` as key.
-    VALUE_TYPE : `type` = `int`
-        The audit log events' values' type.
-    DEFAULT_NAME : `str` = `'UNDEFINED'`
-        The default name of the audit log events.
+    value : `int`
+        The Discord side identifier value of the audit log event.
     
-    Every predefined audit log event can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined audit log event can be accessed as type attribute as well:
     
     +---------------------------------------+---------------------------------------+-------+-----------------------------------+
-    | Class attribute name                  | Name                                  | Value | Target type                       |
+    | Type attribute name                   | Name                                  | Value | Target type                       |
     +=======================================+=======================================+=======+===================================+
     | none                                  | none                                  |  0    | none                              |
     +---------------------------------------+---------------------------------------+-------+-----------------------------------+
@@ -505,12 +471,69 @@ class AuditLogEntryType(PreinstancedBase):
     +---------------------------------------+---------------------------------------+-------+-----------------------------------+
     | channel_status_delete                 | channel status delete                 | 193   | channel                           |
     +---------------------------------------+---------------------------------------+-------+-----------------------------------+
+    | clyde_ai_update                       | clyde ai update                       | 194   | none                              |
+    +---------------------------------------+---------------------------------------+-------+-----------------------------------+
+    | scheduled_event_exception_create      | scheduled event exception create      | 200   | none                              |
+    +---------------------------------------+---------------------------------------+-------+-----------------------------------+
+    | scheduled_event_exception_update      | scheduled event exception update      | 201   | none                              |
+    +---------------------------------------+---------------------------------------+-------+-----------------------------------+
+    | scheduled_event_exception_delete      | scheduled event exception delete      | 202   | none                              |
+    +---------------------------------------+---------------------------------------+-------+-----------------------------------+
+    | user_verification_update              | user verification update              | 210   | none                              |
+    +---------------------------------------+---------------------------------------+-------+-----------------------------------+
+    | guild_overview_update                 | guild overview update                 | 211   | guild                             |
+    +---------------------------------------+---------------------------------------+-------+-----------------------------------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    DEFAULT_NAME = 'UNDEFINED'
-    
     __slots__ = ('target_type',)
+    
+    def __new__(cls, value, name = None, target_type = None):
+        """
+        Creates a new audit log event.
+        
+        Parameters
+        ----------
+        value : `int`
+            The identifier value of the audit log event.
+        
+        name : `None | str` = `None`, Optional
+            The audit log event's name.
+        
+        target_type : `None | AuditLogEntryTargetType` = `None`, Optional
+            The audit log's target type.
+        """
+        if target_type is None:
+            target_type = AuditLogEntryTargetType.none
+        
+        self = PreinstancedBase.__new__(cls, value, name)
+        self.target_type = target_type
+        return self
+    
+    
+    @classmethod
+    def _from_value(cls, value):
+        """
+        Creates a new audit log event object from the given value.
+        
+        Parameters
+        ----------
+        value : ``.VALUE_TYPE``
+            The value what has no representation yet.
+        
+        Returns
+        -------
+        self : ``AuditLogEntryType``
+            The created audit log event.
+        """
+        self = super(AuditLogEntryType, cls)._from_value(value)
+        self.target_type = AuditLogEntryTargetType.none
+        return self
+    
+    
+    @copy_docs(PreinstancedBase._put_repr_parts_into)
+    def _put_repr_parts_into(self, repr_parts):
+        repr_parts.append(', target_type = ')
+        repr_parts.append(self.target_type.name)
+    
     
     # predefined
     none = P(0, 'none', AuditLogEntryTargetType.none)
@@ -633,50 +656,11 @@ class AuditLogEntryType(PreinstancedBase):
     home_screen_update = P(191, 'home screen update', AuditLogEntryTargetType.none)
     channel_status_update = P(192, 'channel status update', AuditLogEntryTargetType.channel)
     channel_status_delete = P(193, 'channel status delete', AuditLogEntryTargetType.channel)
+    clyde_ai_update = P(194, 'clyde ai update', AuditLogEntryTargetType.none)
     
-    def __init__(self, value, name, target_type):
-        """
-        Creates a new audit log event and stores it at the class's `.INSTANCES` class attribute.
-        
-        Parameters
-        ----------
-        value : `int`
-            The identifier value of the audit log event.
-        name : `str`
-            The audit log event's name.
-        target_type : ``AuditLogEntryTargetType`
-            The audit log's target type.
-        """
-        self.target_type = target_type
-        PreinstancedBase.__init__(self, value, name)
+    scheduled_event_exception_create = P(200, 'scheduled event exception create', AuditLogEntryTargetType.none)
+    scheduled_event_exception_update = P(201, 'scheduled event exception update', AuditLogEntryTargetType.none)
+    scheduled_event_exception_delete = P(202, 'scheduled event exception delete', AuditLogEntryTargetType.none)
     
-    
-    @classmethod
-    def _from_value(cls, value):
-        """
-        Creates a new audit log event object from the given value.
-        
-        Parameters
-        ----------
-        value : ``.VALUE_TYPE``
-            The value what has no representation yet.
-        
-        Returns
-        -------
-        self : ``AuditLogEntryType``
-            The created audit log event.
-        """
-        self = super(AuditLogEntryType, cls)._from_value(value)
-        self.target_type = AuditLogEntryTargetType.none
-        return self
-    
-    
-    @copy_docs(PreinstancedBase.__repr__)
-    def __repr__(self):
-        return (
-            f'{type(self).__name__} '
-            f'name = {self.name!r}, '
-            f'value = {self.value!r}, '
-            f'target_type = {self.target_type.name!r}'
-            '>'
-        )
+    user_verification_update = P(201, 'user verification update', AuditLogEntryTargetType.none)
+    guild_overview_update = P(202, 'guild overview update', AuditLogEntryTargetType.guild)

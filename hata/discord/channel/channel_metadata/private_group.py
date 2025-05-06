@@ -6,7 +6,7 @@ from ...bases import ICON_TYPE_NONE, Slotted
 from ...permission.permission import PERMISSION_GROUP, PERMISSION_GROUP_OWNER, PERMISSION_NONE
 
 from .fields import (
-    parse_application_id, parse_name, parse_owner_id, put_application_id_into, put_name_into, put_owner_id_into,
+    parse_application_id, parse_name, parse_owner_id, put_application_id, put_name, put_owner_id,
     validate_application_id, validate_name, validate_owner_id
 )
 from .base import CHANNEL_METADATA_ICON_SLOT
@@ -384,10 +384,10 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass = Slotte
         data = ChannelMetadataPrivateBase.to_data(self, defaults = defaults, include_internals = include_internals)
         
         type(self).icon.put_into(self.icon, data, defaults, as_data = not include_internals)
-        put_name_into(self.name, data, defaults)
+        put_name(self.name, data, defaults)
         
         if include_internals:
-            put_application_id_into(self.application_id, data, defaults)
-            put_owner_id_into(self.owner_id, data, defaults)
+            put_application_id(self.application_id, data, defaults)
+            put_owner_id(self.owner_id, data, defaults)
         
         return data

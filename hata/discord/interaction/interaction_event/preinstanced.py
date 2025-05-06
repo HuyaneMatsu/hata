@@ -11,32 +11,27 @@ from ..interaction_metadata import (
 
 
 @export
-class InteractionType(PreinstancedBase):
+class InteractionType(PreinstancedBase, value_type = int):
     """
     The type of an interaction.
     
     Attributes
     ----------
-    name : `str`
-        The name of the interaction type.
-    value : `int`
-        The identifier value the interaction type.
     metadata_type : `type<InteractionMetadataBase>`
         The interaction's respective metadata type.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``InteractionType``) items
-        Stores the predefined ``InteractionType``-s. These can be accessed with their `value` as key.
-    VALUE_TYPE : `type` = `int`
-        The application command option types' values' type.
-    DEFAULT_NAME : `str` = `'UNDEFINED'`
-        The default name of the interaction types.
+    name : `str`
+        The name of the interaction type.
     
-    Every predefined interaction type can be accessed as class attribute as well:
+    value : `int`
+        The identifier value the interaction type.
+    
+    Type Attributes
+    ---------------
+    Every predefined interaction type can be accessed as type attribute as well:
     
     +-----------------------------------+-----------------------------------+-------+---------------------------------------------------+
-    | Class attribute name              | Name                              | Value | Metadata type                                     |
+    | Type attribute name               | Name                              | Value | Metadata type                                     |
     +===================================+===================================+=======+===================================================+
     | none                              | none                              | 0     | InteractionMetadataBase                           |
     +-----------------------------------+-----------------------------------+-------+---------------------------------------------------+
@@ -51,54 +46,29 @@ class InteractionType(PreinstancedBase):
     | form_submit                       | form_submit                       | 5     | InteractionMetadataFormSubmit                     |
     +-----------------------------------+-----------------------------------+-------+---------------------------------------------------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    DEFAULT_NAME = 'UNDEFINED'
-    
     __slots__ = ('metadata_type',)
     
-
-    @classmethod
-    def _from_value(cls, value):
+    def __new__(cls, value, name = None, metadata_type = None):
         """
-        Creates a new interaction type with the given value.
-        
-        Parameters
-        ----------
-        value : `int`
-            The interaction type's identifier value.
-        
-        Returns
-        -------
-        self : ``InteractionType``
-            The created instance.
-        """
-        self = object.__new__(cls)
-        self.name = cls.DEFAULT_NAME
-        self.value = value
-        self.metadata_type = InteractionMetadataBase
-        
-        return self
-    
-    
-    def __init__(self, value, name, metadata_type):
-        """
-        Creates an ``InteractionType`` and stores it at the class's `.INSTANCES` class attribute as well.
+        Creates an interaction type.
         
         Parameters
         ----------
         value : `int`
             The Discord side identifier value of the interaction type.
-        name : `str`
+        
+        name : `None | str` = `None`
             The default name of the interaction type.
-        metadata_type : `None`, `type<InteractionMetadataBase>`
+        
+        metadata_type : `None | type<InteractionMetadataBase>`
             The interaction type's respective metadata type.
         """
-        self.value = value
-        self.name = name
-        self.metadata_type = metadata_type
+        if metadata_type is None:
+            metadata_type = InteractionMetadataBase
         
-        self.INSTANCES[value] = self
+        self = PreinstancedBase.__new__(cls, value, name)
+        self.metadata_type = metadata_type
+        return self
     
     
     none = P(0, 'none', InteractionMetadataBase)

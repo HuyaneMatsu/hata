@@ -1,18 +1,15 @@
 __all__ = ('ComponentMetadataSelectBase', )
 
-import reprlib
-
 from scarletio import copy_docs
 
-from ..shared_fields import parse_custom_id, put_custom_id_into, validate_custom_id
 from ..shared_helpers import create_auto_custom_id
 
 from .base import ComponentMetadataBase
 from .constants import MAX_VALUES_DEFAULT, MIN_VALUES_DEFAULT
 from .fields import (
-    parse_enabled, parse_max_values, parse_min_values, parse_placeholder, put_enabled_into, put_max_values_into,
-    put_min_values_into, put_placeholder_into, validate_enabled, validate_max_values, validate_min_values,
-    validate_placeholder
+    parse_custom_id, parse_enabled, parse_max_values, parse_min_values, parse_placeholder, put_custom_id, put_enabled,
+    put_max_values, put_min_values, put_placeholder, validate_custom_id, validate_enabled, validate_max_values,
+    validate_min_values, validate_placeholder
 )
 
 
@@ -133,7 +130,7 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
         
         # custom_id
         repr_parts.append(' custom_id = ')
-        repr_parts.append(reprlib.repr(self.custom_id))
+        repr_parts.append(repr(self.custom_id))
         
         # Type specific fields
         self._add_type_specific_repr_fields_into(repr_parts)
@@ -250,16 +247,38 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
     
     
     @copy_docs(ComponentMetadataBase.to_data)
-    def to_data(self, *, defaults = False):
+    def to_data(self, *, defaults = False, include_internals = False):
         data = {}
         
-        put_custom_id_into(self.custom_id, data, defaults)
-        put_enabled_into(self.enabled, data, defaults)
-        put_max_values_into(self.max_values, data, defaults)
-        put_min_values_into(self.min_values, data, defaults)
-        put_placeholder_into(self.placeholder, data, defaults)
+        put_custom_id(self.custom_id, data, defaults)
+        put_enabled(self.enabled, data, defaults)
+        put_max_values(self.max_values, data, defaults)
+        put_min_values(self.min_values, data, defaults)
+        put_placeholder(self.placeholder, data, defaults)
         
         return data
+    
+    
+    @copy_docs(ComponentMetadataBase.clean_copy)
+    def clean_copy(self, guild = None):
+        new = object.__new__(type(self))
+        
+        # custom_id
+        new.custom_id = self.custom_id
+        
+        # enabled
+        new.enabled = self.enabled
+        
+        # placeholder
+        new.placeholder = self.placeholder
+        
+        # max_values
+        new.max_values = self.max_values
+        
+        # min_values
+        new.min_values = self.min_values
+        
+        return new
     
     
     @copy_docs(ComponentMetadataBase.copy)

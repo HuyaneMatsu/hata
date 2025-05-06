@@ -1,5 +1,7 @@
 import vampytest
 
+from ...embed_field_base import EmbedMediaFlag
+
 from ..image import EmbedImage
 
 
@@ -9,8 +11,8 @@ def test__EmbedImage__repr():
     """
     url = 'https://orindance.party/'
     
-    field = EmbedImage(url)
-    vampytest.assert_instance(repr(field), str)
+    embed_image = EmbedImage(url)
+    vampytest.assert_instance(repr(embed_image), str)
 
 
 def test__EmbedImage__hash():
@@ -19,8 +21,8 @@ def test__EmbedImage__hash():
     """
     url = 'https://orindance.party/'
     
-    field = EmbedImage(url)
-    vampytest.assert_instance(hash(field), int)
+    embed_image = EmbedImage(url)
+    vampytest.assert_instance(hash(embed_image), int)
 
 
 
@@ -57,6 +59,7 @@ def _iter_options__eq():
             'url': url_0,
         },
         {
+            'flags': EmbedMediaFlag(3),
             'proxy_url': url_0,
             'width': 2,
             'height': 3,
@@ -73,6 +76,7 @@ def _iter_options__eq():
             'url': url_0,
         },
         {
+            'flags': EmbedMediaFlag(3),
             'proxy_url': url_0,
             'width': 2,
             'height': 3,
@@ -91,6 +95,7 @@ def _iter_options__eq():
             'url': url_0,
         },
         {
+            'flags': EmbedMediaFlag(3),
             'proxy_url': url_0,
             'width': 2,
             'height': 3,
@@ -99,6 +104,7 @@ def _iter_options__eq():
             'url': url_0,
         },
         {
+            'flags': EmbedMediaFlag(3),
             'proxy_url': url_1,
             'width': 2,
         },
@@ -110,6 +116,7 @@ def _iter_options__eq():
             'url': url_0,
         },
         {
+            'flags': EmbedMediaFlag(3),
             'proxy_url': url_0,
             'width': 2,
             'height': 3,
@@ -118,6 +125,7 @@ def _iter_options__eq():
             'url': url_0,
         },
         {
+            'flags': EmbedMediaFlag(3),
             'proxy_url': url_1,
             'height': 3,
         },
@@ -129,6 +137,7 @@ def _iter_options__eq():
             'url': url_0,
         },
         {
+            'flags': EmbedMediaFlag(3),
             'proxy_url': url_0,
             'width': 2,
             'height': 3,
@@ -137,6 +146,28 @@ def _iter_options__eq():
             'url': url_0,
         },
         {
+            'proxy_url': url_1,
+            'width': 2,
+            'height': 3,
+        },
+        False,
+    )
+    
+    yield (
+        {
+            'url': url_0,
+        },
+        {
+            'flags': EmbedMediaFlag(3),
+            'proxy_url': url_0,
+            'width': 2,
+            'height': 3,
+        },
+        {
+            'url': url_0,
+        },
+        {
+            'flags': EmbedMediaFlag(3),
             'proxy_url': url_1,
             'width': 2,
             'height': 3,
@@ -159,10 +190,13 @@ def test__EmbedImage__eq(
     ----------
     keyword_parameters_0 : `dict<str, object>`
         Keyword parameters to create instance with.
+    
     additional_attributes_0 : `dict<str, object>`
         Additional attributes to set.
+    
     keyword_parameters_1 : `dict<str, object>`
         Keyword parameters to create instance with.
+    
     additional_attributes_1 : `dict<str, object>`
         Additional attributes to set.
     
@@ -206,8 +240,8 @@ def test__EmbedImage__bool(keyword_parameters):
     -------
     output : `bool`
     """
-    field = EmbedImage(**keyword_parameters)
-    output = bool(field)
+    embed_image = EmbedImage(**keyword_parameters)
+    output = bool(embed_image)
     vampytest.assert_instance(output, bool)
     return output
 
@@ -233,7 +267,7 @@ def test__EmbedImage__len(keyword_parameters):
     -------
     output : `int`
     """
-    field = EmbedImage(**keyword_parameters)
-    output = len(field)
+    embed_image = EmbedImage(**keyword_parameters)
+    output = len(embed_image)
     vampytest.assert_instance(output, int)
     return output

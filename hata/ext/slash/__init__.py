@@ -3,9 +3,11 @@ Hata extensions for supporting interactions.
 """
 from .command import *
 from .interfaces import *
+from .parameter_converters import *
 
 from .components import *
 from .constants import *
+from .converter_constants import *
 from .converters import *
 from .event_handlers import *
 from .exceptions import *
@@ -29,9 +31,11 @@ __all__ = (
     
     *command.__all__,
     *interfaces.__all__,
+    *parameter_converters.__all__,
     
     *components.__all__,
     *constants.__all__,
+    *converter_constants.__all__,
     *converters.__all__,
     *event_handlers.__all__,
     *exceptions.__all__,
@@ -76,7 +80,7 @@ def setup_ext_slash(client, **kwargs):
     
     Other Parameters
     ----------------
-    assert_application_command_permission_missmatch_at : `None`, `int`, ``Guild``, `iterable` of (`int`, ``Guild``)
+    assert_application_command_permission_missmatch_at : ``None | int | Guild | iterable<int> | iterable<Guild>``
             = `None`, Optional (Keyword only)
         Guilds, where permission overwrites missmatch should be asserted.
     

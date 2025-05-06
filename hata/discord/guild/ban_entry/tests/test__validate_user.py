@@ -23,7 +23,7 @@ def test__validate_user(input_value):
     
     Parameters
     ----------
-    input_value : `None`, ``ClientUserBase``
+    input_value : ``None | ClientUserBase``
         The value to validate.
     
     Returns

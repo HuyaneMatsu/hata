@@ -3,7 +3,8 @@ import vampytest
 from ....bases import Icon, IconType
 from ....color import Color
 from ....localization import Locale
-from ....user import AvatarDecoration, PremiumType, UserClan, UserFlag
+from ....guild import GuildBadge
+from ....user import AvatarDecoration, PremiumType, UserFlag
 
 from ...oauth2_access import Oauth2Access
 
@@ -25,12 +26,12 @@ def _assert_fields_set(user):
     vampytest.assert_instance(user.avatar_decoration, AvatarDecoration, nullable = True)
     vampytest.assert_instance(user.banner, Icon)
     vampytest.assert_instance(user.banner_color, Color, nullable = True)
-    vampytest.assert_instance(user.clan, UserClan, nullable = True)
     vampytest.assert_instance(user.discriminator, int)
     vampytest.assert_instance(user.display_name, str, nullable = True)
     vampytest.assert_instance(user.flags, UserFlag)
     vampytest.assert_instance(user.id, int)
     vampytest.assert_instance(user.name, str)
+    vampytest.assert_instance(user.primary_guild_badge, GuildBadge, nullable = True)
     vampytest.assert_instance(user.email, str, nullable = True)
     vampytest.assert_instance(user.email_verified, bool)
     vampytest.assert_instance(user.locale, Locale)
@@ -58,11 +59,11 @@ def test__Oauth2User__new__all_fields():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160038)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
-    clan = UserClan(guild_id = 202405180015, tag = 'miau')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'voice in the dark'
+    primary_guild_badge = GuildBadge(guild_id = 202405180015, tag = 'miau')
     email = 'rin@orindance.party'
     email_verified = True
     locale = Locale.greek
@@ -74,11 +75,11 @@ def test__Oauth2User__new__all_fields():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
-        clan = clan,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
         name = name,
+        primary_guild_badge = primary_guild_badge,
         email = email,
         email_verified = email_verified,
         locale = locale,
@@ -91,11 +92,11 @@ def test__Oauth2User__new__all_fields():
     vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
     vampytest.assert_eq(user.banner, banner)
     vampytest.assert_eq(user.banner_color, banner_color)
-    vampytest.assert_eq(user.clan, clan)
     vampytest.assert_eq(user.discriminator, discriminator)
     vampytest.assert_eq(user.display_name, display_name)
     vampytest.assert_eq(user.flags, flags)
     vampytest.assert_eq(user.name, name)
+    vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
     vampytest.assert_eq(user.email, email)
     vampytest.assert_eq(user.email_verified, email_verified)
     vampytest.assert_is(user.locale, locale)

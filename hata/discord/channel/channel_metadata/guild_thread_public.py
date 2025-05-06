@@ -3,7 +3,7 @@ __all__ = ('ChannelMetadataGuildThreadPublic',)
 from scarletio import copy_docs
 
 from .fields import (
-    parse_applied_tag_ids, parse_flags, put_applied_tag_ids_into, put_flags_into, validate_applied_tag_ids,
+    parse_applied_tag_ids, parse_flags, put_applied_tag_ids, put_flags, validate_applied_tag_ids,
     validate_flags
 )
 from .flags import ChannelFlag
@@ -335,9 +335,9 @@ class ChannelMetadataGuildThreadPublic(ChannelMetadataGuildThreadBase):
         data = ChannelMetadataGuildThreadBase.to_data(self, defaults = defaults, include_internals = include_internals)
         
         # applied_tag_ids
-        put_applied_tag_ids_into(self.applied_tag_ids, data, defaults)
+        put_applied_tag_ids(self.applied_tag_ids, data, defaults)
         
         # flags
-        put_flags_into(self.flags, data, defaults)
+        put_flags(self.flags, data, defaults)
         
         return data

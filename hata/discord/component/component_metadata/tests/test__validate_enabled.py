@@ -32,4 +32,6 @@ def test__validate_enabled(input_value):
     ------
     TypeError
     """
-    return validate_enabled(input_value)
+    output = validate_enabled(input_value)
+    vampytest.assert_instance(output, bool)
+    return output

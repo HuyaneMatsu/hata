@@ -11,8 +11,8 @@ def test__EmbedField__repr():
     name = 'orin'
     value = 'okuu'
     
-    field = EmbedField(name = name, value = value, inline = inline)
-    vampytest.assert_instance(repr(field), str)
+    embed_field = EmbedField(name = name, value = value, inline = inline)
+    vampytest.assert_instance(repr(embed_field), str)
 
 
 def test__EmbedField__hash():
@@ -23,14 +23,11 @@ def test__EmbedField__hash():
     name = 'orin'
     value = 'okuu'
     
-    field = EmbedField(name = name, value = value, inline = inline)
-    vampytest.assert_instance(hash(field), int)
+    embed_field = EmbedField(name = name, value = value, inline = inline)
+    vampytest.assert_instance(hash(embed_field), int)
 
 
-def test__EmbedField__eq():
-    """
-    Tests whether ``EmbedField.__eq__`` works as intended.
-    """
+def _iter_options__eq():
     inline = True
     name = 'orin'
     value = 'okuu'
@@ -41,18 +38,63 @@ def test__EmbedField__eq():
         'value': value,
     }
     
-    field = EmbedField(**keyword_parameters)
+    yield (
+        keyword_parameters,
+        keyword_parameters,
+        True,
+    )
     
-    vampytest.assert_eq(field, field)
-    vampytest.assert_ne(field, object())
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'inline': False,
+        },
+        False,
+    )
     
-    for field_name, field_value in (
-        ('inline', False),
-        ('name', 'satori'),
-        ('value', 'koishi'),
-    ):
-        test_field = EmbedField(**{**keyword_parameters, field_name: field_value})
-        vampytest.assert_ne(field, test_field)
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'name': 'satori',
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'value': 'koishi',
+        },
+        False,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__eq()).returning_last())
+def test__EmbedField__eq(keyword_parameters_0, keyword_parameters_1):
+    """
+    Tests whether ``EmbedField.__eq__`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters_0 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    keyword_parameters_1 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    embed_field_0 = EmbedField(**keyword_parameters_0)
+    embed_field_1 = EmbedField(**keyword_parameters_1)
+    
+    output = embed_field_0 == embed_field_1
+    vampytest.assert_instance(output, bool)
+    return output
 
 
 def _iter_options__bool():
@@ -84,8 +126,8 @@ def test__EmbedField__bool(keyword_parameters):
     -------
     output : `bool`
     """
-    field = EmbedField(**keyword_parameters)
-    output = bool(field)
+    embed_field = EmbedField(**keyword_parameters)
+    output = bool(embed_field)
     vampytest.assert_instance(output, bool)
     return output
 
@@ -119,7 +161,7 @@ def test__EmbedField__len(keyword_parameters):
     -------
     output : `int`
     """
-    field = EmbedField(**keyword_parameters)
-    output = len(field)
+    embed_field = EmbedField(**keyword_parameters)
+    output = len(embed_field)
     vampytest.assert_instance(output, int)
     return output

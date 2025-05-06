@@ -31,22 +31,22 @@ from .fields import (
     parse_overlay_compatibility_hook, parse_overlay_method_flags, parse_owner, parse_primary_sku_id,
     parse_privacy_policy_url, parse_publishers, parse_redirect_urls, parse_role_connection_verification_url,
     parse_rpc_origins, parse_rpc_state, parse_slug, parse_store_state, parse_tags, parse_terms_of_service_url,
-    parse_third_party_skus, parse_type, parse_verification_state, parse_verify_key, put_aliases_into,
-    put_approximate_guild_count_into, put_approximate_user_install_count_into, put_bot_public_into,
-    put_bot_requires_code_grant_into, put_creator_monetization_state_into, put_custom_install_url_into,
-    put_deeplink_url_into, put_description_into, put_developers_into, put_discoverability_state_into,
-    put_discovery_eligibility_flags_into, put_embedded_activity_configuration_into, put_eula_id_into,
-    put_event_webhook_event_types_into, put_event_webhook_state_into, put_event_webhook_url_into, put_executables_into,
-    put_explicit_content_filter_level_into, put_flags_into, put_guild_id_into, put_hook_into, put_id_into,
-    put_install_parameters_into, put_integration_public_into, put_integration_requires_code_grant_into,
-    put_integration_types_configuration_into, put_integration_types_into, put_interaction_endpoint_url_into,
-    put_interaction_event_types_into, put_interaction_version_into, put_internal_guild_restriction_into,
-    put_max_participants_into, put_monetization_eligibility_flags_into, put_monetization_state_into, put_monetized_into,
-    put_name_into, put_overlay_compatibility_hook_into, put_overlay_into, put_overlay_method_flags_into, put_owner_into,
-    put_primary_sku_id_into, put_privacy_policy_url_into, put_publishers_into, put_redirect_urls_into,
-    put_role_connection_verification_url_into, put_rpc_origins_into, put_rpc_state_into, put_slug_into,
-    put_store_state_into, put_tags_into, put_terms_of_service_url_into, put_third_party_skus_into, put_type_into,
-    put_verification_state_into, put_verify_key_into, validate_aliases, validate_approximate_guild_count,
+    parse_third_party_skus, parse_type, parse_verification_state, parse_verify_key, put_aliases,
+    put_approximate_guild_count, put_approximate_user_install_count, put_bot_public,
+    put_bot_requires_code_grant, put_creator_monetization_state, put_custom_install_url,
+    put_deeplink_url, put_description, put_developers, put_discoverability_state,
+    put_discovery_eligibility_flags, put_embedded_activity_configuration, put_eula_id,
+    put_event_webhook_event_types, put_event_webhook_state, put_event_webhook_url, put_executables,
+    put_explicit_content_filter_level, put_flags, put_guild_id, put_hook, put_id,
+    put_install_parameters, put_integration_public, put_integration_requires_code_grant,
+    put_integration_types_configuration, put_integration_types, put_interaction_endpoint_url,
+    put_interaction_event_types, put_interaction_version, put_internal_guild_restriction,
+    put_max_participants, put_monetization_eligibility_flags, put_monetization_state, put_monetized,
+    put_name, put_overlay_compatibility_hook, put_overlay, put_overlay_method_flags, put_owner,
+    put_primary_sku_id, put_privacy_policy_url, put_publishers, put_redirect_urls,
+    put_role_connection_verification_url, put_rpc_origins, put_rpc_state, put_slug,
+    put_store_state, put_tags, put_terms_of_service_url, put_third_party_skus, put_type,
+    put_verification_state, put_verify_key, validate_aliases, validate_approximate_guild_count,
     validate_approximate_user_install_count, validate_bot_public, validate_bot_requires_code_grant,
     validate_creator_monetization_state, validate_custom_install_url, validate_deeplink_url, validate_description,
     validate_developers, validate_discoverability_state, validate_discovery_eligibility_flags,
@@ -765,7 +765,7 @@ class Application(DiscordEntity, immortal = True):
         self : `None`, `instance<cls>>`
             The application instance the method was called if any.
         
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Application data.
         
         Returns
@@ -805,7 +805,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Application data.
         
         Returns
@@ -837,7 +837,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Application data.
         
         Returns
@@ -867,7 +867,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Application data.
         
         Returns
@@ -888,7 +888,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Application data.
         
         Returns
@@ -909,7 +909,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Application data.
         
         Returns
@@ -930,7 +930,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Application data.
         
         Returns
@@ -948,7 +948,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items, Optional
+        data : `dict<str, object>`, Optional
             Application data.
         """
         self.flags = parse_flags(data)
@@ -960,7 +960,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items, Optional
+        data : `dict<str, object>`, Optional
             Application data.
         """
         self._update_attributes_common(data)
@@ -1005,7 +1005,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items, Optional
+        data : `dict<str, object>`, Optional
             Application data.
         """
         self._update_attributes_common(data)
@@ -1020,7 +1020,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items, Optional
+        data : `dict<str, object>`, Optional
             Application data.
         """
         self._update_attributes_common(data)
@@ -1045,7 +1045,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items, Optional
+        data : `dict<str, object>`, Optional
             Application data.
         """
         self.bot_public = parse_bot_public(data)
@@ -1087,7 +1087,7 @@ class Application(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `str`) items
+        data : `dict<str, object>`
         """
         data = {}
         
@@ -1102,17 +1102,17 @@ class Application(DiscordEntity, immortal = True):
                 stacklevel = 2,
             )
             
-            put_id_into(self.id, data, defaults)
+            put_id(self.id, data, defaults)
         
         type(self).cover.put_into(self.cover, data, defaults, as_data = not include_internals)
-        put_custom_install_url_into(self.custom_install_url, data, defaults)
-        put_description_into(self.description, data, defaults)
-        put_flags_into(self.flags, data, defaults)
+        put_custom_install_url(self.custom_install_url, data, defaults)
+        put_description(self.description, data, defaults)
+        put_flags(self.flags, data, defaults)
         type(self).icon.put_into(self.icon, data, defaults, as_data = not include_internals)
-        put_install_parameters_into(self.install_parameters, data, defaults)
-        put_interaction_endpoint_url_into(self.interaction_endpoint_url, data, defaults)
-        put_role_connection_verification_url_into(self.role_connection_verification_url, data, defaults)
-        put_tags_into(self.tags, data, defaults)
+        put_install_parameters(self.install_parameters, data, defaults)
+        put_interaction_endpoint_url(self.interaction_endpoint_url, data, defaults)
+        put_role_connection_verification_url(self.role_connection_verification_url, data, defaults)
+        put_tags(self.tags, data, defaults)
         return data
     
     
@@ -1130,12 +1130,12 @@ class Application(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `str`) items
+        data : `dict<str, object>`
         """
         data = {}
-        put_flags_into(self.flags, data, defaults)
+        put_flags(self.flags, data, defaults)
         if include_internals:
-            put_id_into(self.id, data, defaults)
+            put_id(self.id, data, defaults)
         return data
     
     
@@ -1154,43 +1154,43 @@ class Application(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `str`) items
+        data : `dict<str, object>`
         """
         data = self._to_data_common(defaults, include_internals)
-        put_approximate_guild_count_into(self.approximate_guild_count, data, defaults)
-        put_approximate_user_install_count_into(self.approximate_user_install_count, data, defaults)
-        put_creator_monetization_state_into(self.creator_monetization_state, data, defaults)
-        put_custom_install_url_into(self.custom_install_url, data, defaults)
-        put_developers_into(self.developers, data, defaults, include_internals = True)
-        put_discoverability_state_into(self.discoverability_state, data, defaults)
-        put_discovery_eligibility_flags_into(self.discovery_eligibility_flags, data, defaults)
-        put_event_webhook_event_types_into(self.event_webhook_event_types, data, defaults)
-        put_event_webhook_state_into(self.event_webhook_state, data, defaults)
-        put_event_webhook_url_into(self.event_webhook_url, data, defaults)
-        put_explicit_content_filter_level_into(self.explicit_content_filter_level, data, defaults)
-        put_guild_id_into(self.guild_id, data, defaults)
-        put_install_parameters_into(self.install_parameters, data, defaults)
-        put_integration_public_into(self.integration_public, data, defaults)
-        put_integration_requires_code_grant_into(self.integration_requires_code_grant, data, defaults)
-        put_integration_types_into(self.integration_types, data, defaults)
-        put_integration_types_configuration_into(self.integration_types_configuration, data, defaults)
-        put_interaction_endpoint_url_into(self.interaction_endpoint_url, data, defaults)
-        put_interaction_event_types_into(self.interaction_event_types, data, defaults)
-        put_interaction_version_into(self.interaction_version, data, defaults)
-        put_internal_guild_restriction_into(self.internal_guild_restriction, data, defaults)
-        put_monetization_eligibility_flags_into(self.monetization_eligibility_flags, data, defaults)
-        put_monetization_state_into(self.monetization_state, data, defaults)
-        put_monetized_into(self.monetized, data, defaults)
+        put_approximate_guild_count(self.approximate_guild_count, data, defaults)
+        put_approximate_user_install_count(self.approximate_user_install_count, data, defaults)
+        put_creator_monetization_state(self.creator_monetization_state, data, defaults)
+        put_custom_install_url(self.custom_install_url, data, defaults)
+        put_developers(self.developers, data, defaults, include_internals = True)
+        put_discoverability_state(self.discoverability_state, data, defaults)
+        put_discovery_eligibility_flags(self.discovery_eligibility_flags, data, defaults)
+        put_event_webhook_event_types(self.event_webhook_event_types, data, defaults)
+        put_event_webhook_state(self.event_webhook_state, data, defaults)
+        put_event_webhook_url(self.event_webhook_url, data, defaults)
+        put_explicit_content_filter_level(self.explicit_content_filter_level, data, defaults)
+        put_guild_id(self.guild_id, data, defaults)
+        put_install_parameters(self.install_parameters, data, defaults)
+        put_integration_public(self.integration_public, data, defaults)
+        put_integration_requires_code_grant(self.integration_requires_code_grant, data, defaults)
+        put_integration_types(self.integration_types, data, defaults)
+        put_integration_types_configuration(self.integration_types_configuration, data, defaults)
+        put_interaction_endpoint_url(self.interaction_endpoint_url, data, defaults)
+        put_interaction_event_types(self.interaction_event_types, data, defaults)
+        put_interaction_version(self.interaction_version, data, defaults)
+        put_internal_guild_restriction(self.internal_guild_restriction, data, defaults)
+        put_monetization_eligibility_flags(self.monetization_eligibility_flags, data, defaults)
+        put_monetization_state(self.monetization_state, data, defaults)
+        put_monetized(self.monetized, data, defaults)
         if include_internals:
-            put_owner_into(self.owner, data, defaults)
-        put_primary_sku_id_into(self.primary_sku_id, data, defaults)
-        put_publishers_into(self.publishers, data, defaults, include_internals = True)
-        put_redirect_urls_into(self.redirect_urls, data, defaults)
-        put_role_connection_verification_url_into(self.role_connection_verification_url, data, defaults)
-        put_rpc_state_into(self.rpc_state, data, defaults)
-        put_slug_into(self.slug, data, defaults)
-        put_store_state_into(self.store_state, data, defaults)
-        put_verification_state_into(self.verification_state, data, defaults)
+            put_owner(self.owner, data, defaults)
+        put_primary_sku_id(self.primary_sku_id, data, defaults)
+        put_publishers(self.publishers, data, defaults, include_internals = True)
+        put_redirect_urls(self.redirect_urls, data, defaults)
+        put_role_connection_verification_url(self.role_connection_verification_url, data, defaults)
+        put_rpc_state(self.rpc_state, data, defaults)
+        put_slug(self.slug, data, defaults)
+        put_store_state(self.store_state, data, defaults)
+        put_verification_state(self.verification_state, data, defaults)
         return data
     
     
@@ -1208,12 +1208,12 @@ class Application(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `str`) items
+        data : `dict<str, object>`
         """
         data = self._to_data_common(defaults, include_internals)
-        put_embedded_activity_configuration_into(self.embedded_activity_configuration, data, defaults)
-        put_max_participants_into(self.max_participants, data, defaults)
-        put_monetized_into(self.monetized, data, defaults)
+        put_embedded_activity_configuration(self.embedded_activity_configuration, data, defaults)
+        put_max_participants(self.max_participants, data, defaults)
+        put_monetized(self.monetized, data, defaults)
         return data
     
     
@@ -1231,22 +1231,22 @@ class Application(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `str`) items
+        data : `dict<str, object>`
         """
         data = self._to_data_common(defaults, include_internals)
-        put_aliases_into(self.aliases, data, defaults)
-        put_deeplink_url_into(self.deeplink_url, data, defaults)
-        put_developers_into(self.developers, data, defaults, include_internals = True)
-        put_eula_id_into(self.eula_id, data, defaults)
-        put_executables_into(self.executables, data, defaults)
-        put_guild_id_into(self.guild_id, data, defaults)
-        put_overlay_into(self.overlay, data, defaults)
-        put_overlay_compatibility_hook_into(self.overlay_compatibility_hook, data, defaults)
-        put_overlay_method_flags_into(self.overlay_method_flags, data, defaults)
-        put_primary_sku_id_into(self.primary_sku_id, data, defaults)
-        put_publishers_into(self.publishers, data, defaults, include_internals = True)
-        put_slug_into(self.slug, data, defaults)
-        put_third_party_skus_into(self.third_party_skus, data, defaults)
+        put_aliases(self.aliases, data, defaults)
+        put_deeplink_url(self.deeplink_url, data, defaults)
+        put_developers(self.developers, data, defaults, include_internals = True)
+        put_eula_id(self.eula_id, data, defaults)
+        put_executables(self.executables, data, defaults)
+        put_guild_id(self.guild_id, data, defaults)
+        put_overlay(self.overlay, data, defaults)
+        put_overlay_compatibility_hook(self.overlay_compatibility_hook, data, defaults)
+        put_overlay_method_flags(self.overlay_method_flags, data, defaults)
+        put_primary_sku_id(self.primary_sku_id, data, defaults)
+        put_publishers(self.publishers, data, defaults, include_internals = True)
+        put_slug(self.slug, data, defaults)
+        put_third_party_skus(self.third_party_skus, data, defaults)
         return data
     
     
@@ -1263,26 +1263,26 @@ class Application(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `str`) items
+        data : `dict<str, object>`
         """
         data = {}
-        put_bot_public_into(self.bot_public, data, defaults)
-        put_bot_requires_code_grant_into(self.bot_requires_code_grant, data, defaults)
+        put_bot_public(self.bot_public, data, defaults)
+        put_bot_requires_code_grant(self.bot_requires_code_grant, data, defaults)
         type(self).cover.put_into(self.cover, data, defaults, as_data = not include_internals)
-        put_description_into(self.description, data, defaults)
-        put_flags_into(self.flags, data, defaults)
-        put_hook_into(self.hook, data, defaults)
+        put_description(self.description, data, defaults)
+        put_flags(self.flags, data, defaults)
+        put_hook(self.hook, data, defaults)
         if include_internals:
-            put_id_into(self.id, data, defaults)
+            put_id(self.id, data, defaults)
         type(self).icon.put_into(self.icon, data, defaults, as_data = not include_internals)
-        put_name_into(self.name, data, defaults)
-        put_privacy_policy_url_into(self.privacy_policy_url, data, defaults)
-        put_rpc_origins_into(self.rpc_origins, data, defaults)
+        put_name(self.name, data, defaults)
+        put_privacy_policy_url(self.privacy_policy_url, data, defaults)
+        put_rpc_origins(self.rpc_origins, data, defaults)
         type(self).splash.put_into(self.splash, data, defaults, as_data = not include_internals)
-        put_tags_into(self.tags, data, defaults)
-        put_terms_of_service_url_into(self.terms_of_service_url, data, defaults)
-        put_type_into(self.type, data, defaults)
-        put_verify_key_into(self.verify_key, data, defaults)
+        put_tags(self.tags, data, defaults)
+        put_terms_of_service_url(self.terms_of_service_url, data, defaults)
+        put_type(self.type, data, defaults)
+        put_verify_key(self.verify_key, data, defaults)
         return data
     
     
@@ -2024,7 +2024,7 @@ class Application(DiscordEntity, immortal = True):
         publishers : `None`, `iterable` of ``ApplicationEntity``, Optional (Keyword only)
             A list of the application's games' publishers.
     
-        redirect_urls : `None`, `str`, `iterable` of `str`, Optional (Keyword only)
+        redirect_urls : `None | str | iterable<str>`, Optional (Keyword only)
             Configured oauth2 redirect urls.
         
         role_connection_verification_url : `None`, `str`, Optional (Keyword only)
@@ -2244,7 +2244,7 @@ class Application(DiscordEntity, immortal = True):
         publishers : `None`, `iterable` of ``ApplicationEntity``, Optional (Keyword only)
             A list of the application's games' publishers.
     
-        redirect_urls : `None`, `str`, `iterable` of `str`, Optional (Keyword only)
+        redirect_urls : `None | str | iterable<str>`, Optional (Keyword only)
             Configured oauth2 redirect urls.
         
         role_connection_verification_url : `None`, `str`, Optional (Keyword only)
@@ -2473,7 +2473,7 @@ class Application(DiscordEntity, immortal = True):
         publishers : `None`, `iterable` of ``ApplicationEntity``, Optional (Keyword only)
             A list of the application's games' publishers.
     
-        redirect_urls : `None`, `str`, `iterable` of `str`, Optional (Keyword only)
+        redirect_urls : `None | str | iterable<str>`, Optional (Keyword only)
             Configured oauth2 redirect urls.
         
         role_connection_verification_url : `None`, `str`, Optional (Keyword only)
@@ -2788,7 +2788,7 @@ class Application(DiscordEntity, immortal = True):
         
         Returns
         -------
-        guild : `None | Guild`
+        guild : ``None | Guild``
         """
         guild_id = self.guild_id
         if guild_id:

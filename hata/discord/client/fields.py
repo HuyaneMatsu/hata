@@ -53,7 +53,7 @@ def validate_additional_owner_ids(additional_owner_ids):
     
     Parameters
     ----------
-    additional_owner_ids : `None`, `int`, ``ClientUserBase``, `iterable` of (`int`, ``ClientUserBase``)
+    additional_owner_ids : ``None | int | ClientUserBase | iterable<int> | iterable<ClientUserBase>``
         Additional users to return `True` for by ``Client.is_owner`.
     
     Returns
@@ -79,8 +79,8 @@ def validate_additional_owner_ids(additional_owner_ids):
     
     if (getattr(additional_owner_ids, '__iter__', None) is None):
         raise TypeError(
-            f'`additional_owner_ids` can be `None`, `int`, `{ClientUserBase.__name__}`, `iterable` of'
-            f'(`int`, `{ClientUserBase.__name__}`), got {additional_owner_ids.__class__.__name__}; '
+            f'`additional_owner_ids` can be `None | int`, `{ClientUserBase.__name__}`, `iterable` of'
+            f'(`int`, `{ClientUserBase.__name__}`), got {type(additional_owner_ids).__name__}; '
             f'{additional_owner_ids!r}.'
         )
     
@@ -133,7 +133,7 @@ def validate_extensions(extensions):
     
     Parameters
     ----------
-    extensions : `None`, `str`, `iterable` of `str`
+    extensions : `None | str | iterable<str>`
         Http client debug options.
     
     Returns
@@ -156,7 +156,7 @@ def validate_extensions(extensions):
     
     if (getattr(extensions, '__iter__', None) is None):
         raise TypeError(
-            f'`extensions` can be `None`, `str`, `iterable` of `str`, got '
+            f'`extensions` can be `None | str | iterable<str>`, got '
             f'{extensions.__class__.__name__}; {extensions!r}.'
         )
     
@@ -195,7 +195,7 @@ def validate_http_debug_options(http_debug_options):
     
     Parameters
     ----------
-    http_debug_options : `None`, `str`, `iterable` of `str`
+    http_debug_options : `None | str | iterable<str>`
         Http client debug options.
     
     Returns
@@ -221,7 +221,7 @@ def validate_http_debug_options(http_debug_options):
     
     if (getattr(http_debug_options, '__iter__', None) is None):
         raise TypeError(
-            f'`http_debug_options` can be `None`, `str`, `iterable` of `str`, got '
+            f'`http_debug_options` can be `None | str | iterable<str>`, got '
             f'{http_debug_options.__class__.__name__}; {http_debug_options!r}.'
         )
     

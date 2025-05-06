@@ -147,7 +147,7 @@ def test__InteractionMetadataMessageComponent__value(values):
     
     Parameters
     ----------
-    values : `None`, `list` of `str`
+    values : `None | list<str>`
         Values to create the metadata with.
     
     Returns

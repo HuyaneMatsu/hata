@@ -50,12 +50,26 @@ def test__WebhookBase__hash():
     vampytest.assert_instance(repr(webhook), str)
 
 
-def test__WebhookBase__eq():
+def test__WebhookBase__eq__non_partial_and_different_object():
     """
     Tests whether ``WebhookBase.__eq__`` works as intended.
-    """
-    webhook_id = 202302050006
     
+    Case: non partial and non user object.
+    """
+    user_id = 202504260015
+    
+    name = 'Orin'
+    
+    user = WebhookBase(name = name)
+    vampytest.assert_eq(user, user)
+    vampytest.assert_ne(user, object())
+    
+    test_user = WebhookBase._create_empty(user_id)
+    vampytest.assert_eq(test_user, test_user)
+    vampytest.assert_ne(user, test_user)
+
+
+def _iter_options__eq():
     avatar = Icon(IconType.static, 14)
     name = 'orin'
     channel_id = 202302050007
@@ -68,22 +82,72 @@ def test__WebhookBase__eq():
         'webhook_type': webhook_type,
     }
     
-    webhook = WebhookBase(**keyword_parameters)
-    vampytest.assert_eq(webhook, webhook)
-    vampytest.assert_ne(webhook, object())
-
-    test_webhook = WebhookBase._create_empty(webhook_id)
-    vampytest.assert_eq(test_webhook, test_webhook)
-    vampytest.assert_ne(webhook, test_webhook)
+    yield (
+        keyword_parameters,
+        keyword_parameters,
+        True,
+    )
     
-    for field_name, field_value in (
-        ('avatar', None),
-        ('name', 'okuu'),
-        ('channel_id', 0),
-        ('webhook_type', WebhookType.bot),
-    ):
-        test_webhook = WebhookBase(**{**keyword_parameters, field_name: field_value})
-        vampytest.assert_ne(webhook, test_webhook)
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'avatar': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'name': 'okuu',
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'channel_id': 0,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'webhook_type': WebhookType.bot,
+        },
+        False,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__eq()).returning_last())
+def test__WebhookBase__eq(keyword_parameters_0, keyword_parameters_1):
+    """
+    Tests whether ``WebhookBase.__eq__`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters_0 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    keyword_parameters_1 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    instance_0 = WebhookBase(**keyword_parameters_0)
+    instance_1 = WebhookBase(**keyword_parameters_1)
+    
+    output = instance_0 == instance_1
+    vampytest.assert_instance(output, bool)
+    return output
 
 
 def test__WebhookBase__format():

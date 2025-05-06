@@ -89,7 +89,7 @@ class ClientCompoundClientEndpoints(Compound):
         
         Parameters
         ----------
-        guild : `None`, `int`, ``Guild``
+        guild : ``None | int | Guild``
             The guild where the client's nickname will be changed. If `guild` is given as `None`, then the function
             returns instantly.
         
@@ -170,7 +170,7 @@ class ClientCompoundClientEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild from where the client will leave.
         
         Raises
@@ -264,7 +264,7 @@ class ClientCompoundClientEndpoints(Compound):
         
         Parameters
         ----------
-        application : `None`, ``Application`` = `None`, Optional
+        application : ``None | Application`` = `None`, Optional
             Application entity to use as a template.
         
         **keyword_parameters : Keyword parameters

@@ -4,8 +4,8 @@ from scarletio import copy_docs
 
 from .base import AutoModerationRuleTriggerMetadataBase
 from .fields import (
-    parse_excluded_keywords, parse_keywords, parse_regex_patterns, put_excluded_keywords_into, put_keywords_into,
-    put_regex_patterns_into, validate_excluded_keywords, validate_keywords, validate_regex_patterns
+    parse_excluded_keywords, parse_keywords, parse_regex_patterns, put_excluded_keywords, put_keywords,
+    put_regex_patterns, validate_excluded_keywords, validate_keywords, validate_regex_patterns
 )
 
 
@@ -89,13 +89,13 @@ class AutoModerationRuleTriggerMetadataKeyword(AutoModerationRuleTriggerMetadata
         
         Parameters
         ----------
-        keywords : `None`, `str`, `iterable` of `str`, Optional
+        keywords : `None | str | iterable<str>`, Optional
             Substrings which will be searched for in content.
         
         regex_patterns : `None`, `tuple` of `str`, Optional
             Regular expression patterns which are matched against content.
         
-        excluded_keywords : `None`, `str`, `iterable` of `str`, Optional
+        excluded_keywords : `None | str | iterable<str>`, Optional
             Excluded keywords from the preset.
         
         Raises
@@ -207,9 +207,9 @@ class AutoModerationRuleTriggerMetadataKeyword(AutoModerationRuleTriggerMetadata
     @copy_docs(AutoModerationRuleTriggerMetadataBase.to_data)
     def to_data(self, *, defaults = False):
         data = {}
-        put_excluded_keywords_into(self.excluded_keywords, data, defaults)
-        put_keywords_into(self.keywords, data, defaults)
-        put_regex_patterns_into(self.regex_patterns, data, defaults)
+        put_excluded_keywords(self.excluded_keywords, data, defaults)
+        put_keywords(self.keywords, data, defaults)
+        put_regex_patterns(self.regex_patterns, data, defaults)
         return data
     
     
@@ -298,7 +298,7 @@ class AutoModerationRuleTriggerMetadataKeyword(AutoModerationRuleTriggerMetadata
         excluded_keywords : `None`, `str`, `iterable` of `str, Optional (Keyword only)
             Excluded keywords from the rule.
         
-        keywords : `None`, `str`, `iterable` of `str`, Optional (Keyword only)
+        keywords : `None | str | iterable<str>`, Optional (Keyword only)
             Substrings which will be searched for in content.
         
         regex_patterns : `None`, `tuple` of `str`, Optional (Keyword only)

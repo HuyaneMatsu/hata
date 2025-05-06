@@ -2,7 +2,7 @@ import vampytest
 
 from ..base import InteractionMetadataBase
 
-from .test__InteractionMetadataBase__constructor import _check_is_all_field_set
+from .test__InteractionMetadataBase__constructor import _assert_fields_set
 
 
 def test__InteractionMetadataBase__from_data():
@@ -13,7 +13,7 @@ def test__InteractionMetadataBase__from_data():
     data = {}
     
     interaction_metadata = InteractionMetadataBase.from_data(data, guild_id)
-    _check_is_all_field_set(interaction_metadata)
+    _assert_fields_set(interaction_metadata)
 
 
 def test__InteractionMetadataBase__to_data():

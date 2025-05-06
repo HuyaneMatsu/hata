@@ -27,7 +27,7 @@ class GuildCreateEvent(EventBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Guild create event data.
         """
         self = object.__new__(cls)
@@ -92,7 +92,7 @@ class ChannelCreateEvent(EventBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             channel create data.
         """
         self = object.__new__(cls)
@@ -160,7 +160,7 @@ class ChannelVoiceSelectEvent(EventBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Guild voice select event data.
         """
         channel_id = data.get('channel_id', None)
@@ -241,7 +241,7 @@ class NotificationCreateEvent(EventBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Notification create data.
         """
         self = object.__new__(cls)

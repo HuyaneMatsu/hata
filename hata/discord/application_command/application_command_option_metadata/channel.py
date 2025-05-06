@@ -2,7 +2,7 @@ __all__ = ('ApplicationCommandOptionMetadataChannel',)
 
 from scarletio import copy_docs
 
-from .fields import parse_channel_types, put_channel_types_into, validate_channel_types
+from .fields import parse_channel_types, put_channel_types, validate_channel_types
 from .parameter import ApplicationCommandOptionMetadataParameter
 
 
@@ -12,7 +12,7 @@ class ApplicationCommandOptionMetadataChannel(ApplicationCommandOptionMetadataPa
     
     Parameters
     ----------
-    channel_types : `None`, `tuple` of ``ChannelType``
+    channel_types : ``None | tuple<ChannelType>``
         The accepted channel types by the option. Defaults to `None`
     
     required : `bool`
@@ -26,7 +26,7 @@ class ApplicationCommandOptionMetadataChannel(ApplicationCommandOptionMetadataPa
         
         Parameters
         ----------
-        channel_types : `None`, `iterable` of (``ChannelType``, `int`), Optional (Keyword only)
+        channel_types : ``None | iterable<int> | iterable<ChannelType>``, Optional (Keyword only)
             The accepted channel types by the option.
         
         required : `bool`, Optional (Keyword only)
@@ -74,7 +74,7 @@ class ApplicationCommandOptionMetadataChannel(ApplicationCommandOptionMetadataPa
     @copy_docs(ApplicationCommandOptionMetadataParameter.to_data)
     def to_data(self, *, defaults = False):
         data = ApplicationCommandOptionMetadataParameter.to_data(self, defaults = defaults)
-        put_channel_types_into(self.channel_types, data, defaults)
+        put_channel_types(self.channel_types, data, defaults)
         return data
     
     
@@ -130,7 +130,7 @@ class ApplicationCommandOptionMetadataChannel(ApplicationCommandOptionMetadataPa
         
         Parameters
         ----------
-        channel_types : `None`, `iterable` of (``ChannelType``, `int`), Optional (Keyword only)
+        channel_types : ``None | iterable<int> | iterable<ChannelType>``, Optional (Keyword only)
             The accepted channel types by the option.
         
         required : `bool`, Optional (Keyword only)

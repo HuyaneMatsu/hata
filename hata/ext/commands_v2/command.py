@@ -105,7 +105,7 @@ def _validate_aliases(aliases):
     
     Parameters
     ----------
-    aliases : `None`, `str`, `list` of `str`
+    aliases : `None | str | list<str>`
         Command aliases.
     
     Returns
@@ -153,7 +153,7 @@ def _validate_aliases(aliases):
             aliases = {aliases}
         else:
             raise TypeError(
-                '`aliases` can be `str`, `list` of `str`, got {aliases.__class__.__name__}; {aliases!r}'
+                f'`aliases` can be `str`, `list` of `str`, got {type(aliases).__name__}; {aliases!r}'
             )
     
     return aliases
@@ -672,7 +672,7 @@ class Command:
             `.__doc__` attribute for it. If the description is a string instance, then it will be normalized with the
             ``normalize_description`` function. If it ends up as an empty string, then `None` will be set as the
             description.
-        aliases : `None`, `str`, `list` of `str`, `tuple` of (`None, `Ellipsis`, `str`, `list` of `str`) = `None`
+        aliases : `None | str | list<str> | tuple<None | Ellipsis | str | list<str>>` = `None`
                 , Optional
             The aliases of the command.
         category : `None`, ``Category``, `str`, `tuple` of (`None`, `Ellipsis`, ``Category``, `str`) = `None`, Optional
@@ -1194,7 +1194,7 @@ class CommandCategory:
         Additional wrappers, which run before the command is executed.
     aliases : `None`, `tuple` of `str`
         Name aliases of the command category.
-    command_category_name_to_command_category : `None` of `dict` of (`str`, `object`) items
+    command_category_name_to_command_category : `None` of `dict<str, object>`
         Command categories by name.
     description : `object`
         The command's description if any.

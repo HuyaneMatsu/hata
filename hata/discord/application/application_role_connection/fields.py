@@ -11,7 +11,7 @@ from .constants import (
 # platform_name
 
 parse_platform_name = nullable_string_parser_factory('platform_name')
-put_platform_name_into = nullable_string_putter_factory('platform_name')
+put_platform_name = nullable_string_putter_factory('platform_name')
 validate_platform_name = nullable_string_validator_factory(
     'platform_name', PLATFORM_NAME_LENGTH_MIN, PLATFORM_NAME_LENGTH_MAX
 )
@@ -20,7 +20,7 @@ validate_platform_name = nullable_string_validator_factory(
 # platform_user_name
 
 parse_platform_user_name = nullable_string_parser_factory('platform_username')
-put_platform_user_name_into = nullable_string_putter_factory('platform_username')
+put_platform_user_name = nullable_string_putter_factory('platform_username')
 validate_platform_user_name = nullable_string_validator_factory(
     'platform_username', PLATFORM_USER_NAME_LENGTH_MIN, PLATFORM_USER_NAME_LENGTH_MAX
 )
@@ -33,7 +33,7 @@ def parse_metadata_values(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Application role connection data.
     
     Returns
@@ -45,7 +45,7 @@ def parse_metadata_values(data):
         return metadata_values
 
 
-def put_metadata_values_into(metadata_values, data, defaults):
+def put_metadata_values(metadata_values, data, defaults):
     """
     Puts the application role connection metadata values into the given data.
     
@@ -53,14 +53,14 @@ def put_metadata_values_into(metadata_values, data, defaults):
     ----------
     metadata_values : `None`, `dict` of (`str`, `str`) items
         Metadata values.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if defaults or (metadata_values is not None):
         if metadata_values is None:

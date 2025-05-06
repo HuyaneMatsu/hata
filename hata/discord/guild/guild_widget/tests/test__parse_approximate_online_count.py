@@ -5,6 +5,7 @@ from ..fields import parse_approximate_online_count
 
 def _iter_options():
     yield {}, 0
+    yield {'presence_count': None}, 0
     yield {'presence_count': 1}, 1
 
 

@@ -93,7 +93,7 @@ async def test__Client__webhook_message_create__stuffed_message():
         vampytest.assert_eq(webhook_id, input_webhook_id)
         vampytest.assert_eq(webhook_token, input_webhook_token)
         vampytest.assert_eq(expected_message_data, input_message_data)
-        vampytest.assert_eq({'wait': True}, input_query_parameters)
+        vampytest.assert_eq({'wait': True, 'with_components': True}, input_query_parameters)
         return output_message_data
     
     api.webhook_message_create = mock_api_webhook_message_create
@@ -227,7 +227,7 @@ async def test__Client__webhook_message_create__stuffed_webhook():
         vampytest.assert_eq(webhook_id, input_webhook_id)
         vampytest.assert_eq(webhook_token, input_webhook_token)
         vampytest.assert_eq(expected_message_data, input_message_data)
-        vampytest.assert_eq({'wait': True}, input_query_parameters)
+        vampytest.assert_eq({'wait': True, 'with_components': True}, input_query_parameters)
         return output_message_data
     
     
@@ -318,7 +318,7 @@ async def test__Client__webhook_message_create__create_thread():
         vampytest.assert_eq(webhook_id, input_webhook_id)
         vampytest.assert_eq(webhook_token, input_webhook_token)
         vampytest.assert_eq(expected_message_data, input_message_data)
-        vampytest.assert_eq({'wait': True}, input_query_parameters)
+        vampytest.assert_eq({'wait': True, 'with_components': True}, input_query_parameters)
         return output_message_data
     
     
@@ -392,7 +392,9 @@ async def test__Client__webhook_message_create__create_into_thread():
     }
     
     
-    async def mock_api_webhook_message_create(input_webhook_id, input_webhook_token, input_message_data, input_query_parameters):
+    async def mock_api_webhook_message_create(
+        input_webhook_id, input_webhook_token, input_message_data, input_query_parameters
+    ):
         nonlocal mock_api_webhook_message_create_called
         nonlocal webhook_id
         nonlocal webhook_token
@@ -403,7 +405,10 @@ async def test__Client__webhook_message_create__create_into_thread():
         vampytest.assert_eq(webhook_id, input_webhook_id)
         vampytest.assert_eq(webhook_token, input_webhook_token)
         vampytest.assert_eq(expected_message_data, input_message_data)
-        vampytest.assert_eq({'wait': True, 'thread_id': str(thread_id)}, input_query_parameters)
+        vampytest.assert_eq(
+            {'wait': True, 'thread_id': str(thread_id), 'with_components': True},
+            input_query_parameters,
+        )
         return output_message_data
     
     
@@ -470,7 +475,7 @@ async def test__Client__webhook_message_create__no_wait():
         vampytest.assert_eq(webhook_id, input_webhook_id)
         vampytest.assert_eq(webhook_token, input_webhook_token)
         vampytest.assert_eq(expected_message_data, input_message_data)
-        vampytest.assert_eq(None, input_query_parameters)
+        vampytest.assert_eq({'with_components': True}, input_query_parameters)
         return output_message_data
     
     api.webhook_message_create = mock_api_webhook_message_create

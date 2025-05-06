@@ -55,7 +55,7 @@ def _get_deprecations_for_spec_name(name):
     
     Returns
     -------
-    deprecations : `dict` of (`str`, `object`) items
+    deprecations : `dict<str, object>`
     """
     target_spec_access_path = tuple(name.split('.'))
     target_spec_access_path_length = len(target_spec_access_path)

@@ -3,7 +3,7 @@ __all__ = ('ScheduleNthWeeksDay',)
 from scarletio import RichAttributeErrorBaseType
 
 from .fields import (
-    parse_nth_week, parse_weeks_day, put_nth_week_into, put_weeks_day_into, validate_nth_week, validate_weeks_day
+    parse_nth_week, parse_weeks_day, put_nth_week, put_weeks_day, validate_nth_week, validate_weeks_day
 )
 from .preinstanced import ScheduleWeeksDay
 
@@ -159,8 +159,8 @@ class ScheduleNthWeeksDay(RichAttributeErrorBaseType):
         data : `dict<str, object>`
         """
         data = {}
-        put_nth_week_into(self.nth_week, data, defaults)
-        put_weeks_day_into(self.weeks_day, data, defaults)
+        put_nth_week(self.nth_week, data, defaults)
+        put_weeks_day(self.weeks_day, data, defaults)
         return data
     
     

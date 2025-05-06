@@ -4,7 +4,7 @@ import vampytest
 
 from ....utils import datetime_to_timestamp
 
-from ..fields import put_raid_detected_at_into
+from ..fields import put_raid_detected_at
 
 
 def _iter_options():
@@ -17,9 +17,9 @@ def _iter_options():
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__put_raid_detected_at_into(input_value, defaults):
+def test__put_raid_detected_at(input_value, defaults):
     """
-    Tests whether ``put_raid_detected_at_into`` works as intended.
+    Tests whether ``put_raid_detected_at`` works as intended.
     
     Parameters
     ----------
@@ -32,4 +32,4 @@ def test__put_raid_detected_at_into(input_value, defaults):
     -------
     output : `dict<str, object>`
     """
-    return put_raid_detected_at_into(input_value, {}, defaults)
+    return put_raid_detected_at(input_value, {}, defaults)

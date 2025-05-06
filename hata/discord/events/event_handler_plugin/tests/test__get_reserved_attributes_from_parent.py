@@ -77,7 +77,7 @@ def _iter_options__runtime_error():
 
 @vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
 @vampytest._(vampytest.call_from(_iter_options__runtime_error()).raising(RuntimeError))
-def test___get_reserved_attributes_from_parent(meta_type, direct_parent, type_parents):
+def test__get_reserved_attributes_from_parent(meta_type, direct_parent, type_parents):
     """
     Tests whether ``_get_reserved_attributes_from_parent`` works as intended.
     

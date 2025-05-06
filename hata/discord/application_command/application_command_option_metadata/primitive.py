@@ -3,7 +3,7 @@ __all__ = ('ApplicationCommandOptionMetadataPrimitive',)
 from scarletio import copy_docs
 
 from .fields import (
-    parse_autocomplete, parse_choices, put_autocomplete_into, put_choices_into, validate_autocomplete,
+    parse_autocomplete, parse_choices, put_autocomplete, put_choices, validate_autocomplete,
     validate_choices_postprocessed
 )
 from .parameter import ApplicationCommandOptionMetadataParameter
@@ -94,8 +94,8 @@ class ApplicationCommandOptionMetadataPrimitive(ApplicationCommandOptionMetadata
     @copy_docs(ApplicationCommandOptionMetadataParameter.to_data)
     def to_data(self, *, defaults = False):
         data = ApplicationCommandOptionMetadataParameter.to_data(self, defaults = defaults)
-        put_autocomplete_into(self.autocomplete, data, defaults)
-        put_choices_into(self.choices, data, defaults)
+        put_autocomplete(self.autocomplete, data, defaults)
+        put_choices(self.choices, data, defaults)
         return data
     
     

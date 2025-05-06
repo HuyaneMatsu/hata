@@ -7,7 +7,7 @@ not intuitive enough. This is when multi-field forms / modal interactions come i
 
 Forms are standalone components, with sub-components as fields.
 
-For now forms are limited to 5 sub-components. And the only accepted sub-components are `TextInput`-s (basically rows
+For now forms are limited to 5 sub-components. And the only accepted sub-components are text inputs (basically rows
 of text inputs, but rows are inserted automatically if not defined.)
 
 ## Limitations
@@ -24,18 +24,18 @@ To send a form response to the user just return the form from a slash or a compo
 `Client.interaction_form_send` method.
 
 ```py3
-from hata.ext.slash import Form, TextInput, TextInputStyle
+from hata import InteractionForm, TextInputStyle, create_text_input
 
-INTRODUCTION_FORM = Form(
+INTRODUCTION_FORM = InteractionForm(
     'Introduce yourself',
     [
-        TextInput(
+        create_text_input(
             'What is your name?',
             min_length = 2,
             max_length = 128,
             custom_id = 'name',
         ),
-        TextInput(
+        create_text_input(
             'Something about you?',
             style = TextInputStyle.paragraph,
             min_length = 64,
@@ -87,13 +87,13 @@ submitted form.
 
 ```py3
 import re
-from hata import DiscordException, ERROR_CODES, Embed
-from hata.ext.slash import Form, TextInput, TextInputStyle, abort
+from hata import DiscordException, ERROR_CODES, Embed, InteractionForm, TextInputStyle, create_text_input
+from hata.ext.slash import abort
 
-ADD_ROLE_FORM = Form(
+ADD_ROLE_FORM = InteractionForm(
     'Add role', # Any dummy title does it
     [
-        TextInput(
+        create_text_input(
             'Additional message to send?',
             style = TextInputStyle.paragraph,
             max_length = 512,
@@ -192,8 +192,8 @@ If the annotation is neither string nor regex pattern, it is ignored.
 
 ```py3
 import re
-from hata import Embed
-from hata.ext.slash import Form, TextInput, TextInputStyle, abort
+from hata import Embed, InteractionForm, TextInputStyle, create_text_input
+from hata.ext.slash import abort
 
 # Define constants
 
@@ -237,7 +237,7 @@ class Waifu:
 
 # We will need these 3 in an example later
 
-TEXT_INPUT_WAIFU_BIO = TextInput(
+TEXT_INPUT_WAIFU_BIO = create_text_input(
     'Bio',
     style = TextInputStyle.paragraph,
     min_length = 64,
@@ -245,24 +245,24 @@ TEXT_INPUT_WAIFU_BIO = TextInput(
     custom_id = CUSTOM_ID_WAIFU_BIO,
 )
 
-TEXT_INPUT_WAIFU_AGE = TextInput(
+TEXT_INPUT_WAIFU_AGE = create_text_input(
     'Age',
     min_length = 1,
     max_length = 1024,
     custom_id = CUSTOM_ID_WAIFU_AGE,
 )
 
-TEXT_INPUT_WAIFU_HAIR = TextInput(
+TEXT_INPUT_WAIFU_HAIR = create_text_input(
     'hair',
     min_length = 1,
     max_length = 1024,
     custom_id = CUSTOM_ID_WAIFU_HAIR,
 )
 
-WAIFU_FORM = Form(
+WAIFU_FORM = InteractionForm(
     'Describe your waifu',
     [
-        TextInput(
+        create_text_input(
             'Name',
             min_length = 2,
             max_length = 64,
@@ -374,7 +374,7 @@ async def edit_waifu(
     # We auto-fill the current value
     text_input = text_input.copy_with(value = FIELD_TO_ATTRIBUTE[field].__get__(waifu, Waifu))
     
-    return Form(
+    return InteractionForm(
         f'Editing {waifu.name}',
         [text_input],
         custom_id = f'{CUSTOM_ID_WAIFU_EDIT_BASE}{key}',
@@ -417,8 +417,7 @@ When using capturing groups in regex, each element will be a tuple, similar to t
 
 ```py3
 import re
-from hata import Embed, BUILTIN_EMOJIS
-from hata.ext.slash import Form, TextInput, TextInputStyle
+from hata import Embed, BUILTIN_EMOJIS, InteractionForm, TextInputStyle, create_text_input
 
 
 CAKE_NAMES = [
@@ -445,10 +444,10 @@ async def rate_cakes(
     # Filter 
     cakes = {cake for cake in (cake_1, cake_2, cake_3, cake_4, cake_5) if (cake is not None)}
     
-    return Form(
+    return InteractionForm(
         'Rate your cakes',
         [
-            TextInput(
+            create_text_input(
                 f'Please rate {cake}',
                 min_length = 2,
                 max_length = 128,
@@ -486,7 +485,7 @@ async def rate_cake_form_submit(
 ----
 
 <p align="left">
-    <a href="./components.md">Previously: Components</a>
+    <a href="./interactive_components.md">Previously: Interactive components</a>
 </p>
 
 <p align="right">

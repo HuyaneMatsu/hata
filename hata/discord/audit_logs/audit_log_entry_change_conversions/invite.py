@@ -13,7 +13,7 @@ from ..conversion_helpers.converters import value_deserializer_id, value_deseria
 # ---- channel_id ----
 
 CHANNEL_ID_CONVERSION = AuditLogEntryChangeConversion(
-    ( 'channel_id',),
+    ('channel_id',),
     'channel_id',
     value_deserializer = value_deserializer_id,
     value_serializer = value_serializer_id,

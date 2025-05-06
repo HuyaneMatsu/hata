@@ -7,7 +7,7 @@ from ...utils import sanitize_mentions
 from ..embed_field_base import EmbedFieldBase
 
 from .fields import (
-    parse_inline, parse_name, parse_value, put_inline_into, put_name_into, put_value_into, validate_inline,
+    parse_inline, parse_name, parse_value, put_inline, put_name, put_value, validate_inline,
     validate_name, validate_value
 )
 
@@ -181,9 +181,9 @@ class EmbedField(EmbedFieldBase):
     @copy_docs(EmbedFieldBase.to_data)
     def to_data(self, *, defaults = False, include_internals = False):
         data = {}
-        put_inline_into(self.inline, data, defaults)
-        put_name_into(self.name, data, defaults)
-        put_value_into(self.value, data, defaults)
+        put_inline(self.inline, data, defaults)
+        put_name(self.name, data, defaults)
+        put_value(self.value, data, defaults)
         return data
     
     

@@ -28,7 +28,7 @@ def test__ComponentMetadataSeparator__to_data():
     """
     Tests whether ``ComponentMetadataSeparator.to_data`` works as intended.
     
-    Case: include defaults.
+    Case: include defaults and internals.
     """
     divider = False
     spacing_size = SeparatorSpacingSize.large
@@ -41,6 +41,7 @@ def test__ComponentMetadataSeparator__to_data():
     vampytest.assert_eq(
         component_metadata.to_data(
             defaults = True,
+            include_internals = True,
         ),
         {
             'divider': divider,

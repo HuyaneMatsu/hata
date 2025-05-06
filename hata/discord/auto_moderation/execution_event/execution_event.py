@@ -13,9 +13,9 @@ from ..rule import AutoModerationRuleTriggerType
 
 from .fields import (
     parse_action, parse_alert_system_message_id, parse_channel_id, parse_content, parse_guild_id, parse_matched_content,
-    parse_matched_keyword, parse_rule_id, parse_rule_trigger_type, parse_user_id, put_action_into,
-    put_alert_system_message_id_into, put_channel_id_into, put_content_into, put_guild_id_into,
-    put_matched_content_into, put_matched_keyword_into, put_rule_id_into, put_rule_trigger_type_into, put_user_id_into,
+    parse_matched_keyword, parse_rule_id, parse_rule_trigger_type, parse_user_id, put_action,
+    put_alert_system_message_id, put_channel_id, put_content, put_guild_id,
+    put_matched_content, put_matched_keyword, put_rule_id, put_rule_trigger_type, put_user_id,
     validate_action, validate_alert_system_message_id, validate_channel_id, validate_content, validate_guild_id,
     validate_matched_content, validate_matched_keyword, validate_rule_id, validate_rule_trigger_type, validate_user_id
 )
@@ -92,13 +92,13 @@ class AutoModerationActionExecutionEvent(EventBase):
         alert_system_message_id : `None`, ``Message``, `int`, Optional (Keyword only)
             The id of the system auto moderation message posted as a result of this action.
         
-        channel_id : `None`, ``Channel``, `int`, Optional (Keyword only)
+        channel_id : ``None | int | Channel``, Optional (Keyword only)
             The channel's identifier where the user content was posted.
         
         content : `None`, `str`, Optional (Keyword only)
             The user generated text content.
         
-        guild_id : `None`, ``Guild``, `int`, Optional (Keyword only)
+        guild_id : ``None | Guild``, `int`, Optional (Keyword only)
             The guild's identifier where the action was executed.
         
         matched_content : `None`, `str`, Optional (Keyword only)
@@ -113,7 +113,7 @@ class AutoModerationActionExecutionEvent(EventBase):
         rule_trigger_type : `None`, ``AutoModerationRuleTriggerType``, `int`, Optional (Keyword only)
             The triggered rule's type.
         
-        user_id : `None`, ``ClientUserBase``, `int`, Optional (Keyword only)
+        user_id : ``None | int | ClientUserBase`, Optional (Keyword only)
             The user who generated the content triggering the rule.
         
         Returns
@@ -210,7 +210,7 @@ class AutoModerationActionExecutionEvent(EventBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Auto moderation execution event data.
         
         Returns
@@ -245,16 +245,16 @@ class AutoModerationActionExecutionEvent(EventBase):
         data : `dict` of (`str`, `str`) items
         """
         data = {}
-        put_action_into(self.action, data, defaults)
-        put_alert_system_message_id_into(self.alert_system_message_id, data, defaults)
-        put_channel_id_into(self.channel_id, data, defaults)
-        put_content_into(self.content, data, defaults)
-        put_guild_id_into(self.guild_id, data, defaults)
-        put_matched_content_into(self.matched_content, data, defaults)
-        put_matched_keyword_into(self.matched_keyword, data, defaults)
-        put_rule_id_into(self.rule_id, data, defaults)
-        put_rule_trigger_type_into(self.rule_trigger_type, data, defaults)
-        put_user_id_into(self.user_id, data, defaults)
+        put_action(self.action, data, defaults)
+        put_alert_system_message_id(self.alert_system_message_id, data, defaults)
+        put_channel_id(self.channel_id, data, defaults)
+        put_content(self.content, data, defaults)
+        put_guild_id(self.guild_id, data, defaults)
+        put_matched_content(self.matched_content, data, defaults)
+        put_matched_keyword(self.matched_keyword, data, defaults)
+        put_rule_id(self.rule_id, data, defaults)
+        put_rule_trigger_type(self.rule_trigger_type, data, defaults)
+        put_user_id(self.user_id, data, defaults)
         return data
     
     
@@ -488,13 +488,13 @@ class AutoModerationActionExecutionEvent(EventBase):
         alert_system_message_id : `None`, ``Message``, `int`, Optional (Keyword only)
             The id of the system auto moderation message posted as a result of this action.
         
-        channel_id : `None`, ``Channel``, `int`, Optional (Keyword only)
+        channel_id : ``None | int | Channel``, Optional (Keyword only)
             The channel's identifier where the user content was posted.
         
         content : `None`, `str`, Optional (Keyword only)
             The user generated text content.
         
-        guild_id : `None`, ``Guild``, `int`, Optional (Keyword only)
+        guild_id : ``None | Guild``, `int`, Optional (Keyword only)
             The guild's identifier where the action was executed.
         
         matched_content : `None`, `str`, Optional (Keyword only)
@@ -509,7 +509,7 @@ class AutoModerationActionExecutionEvent(EventBase):
         rule_trigger_type : `None`, ``AutoModerationRuleTriggerType``, `int`, Optional (Keyword only)
             The triggered rule's type.
         
-        user_id : `None`, ``ClientUserBase``, `int`, Optional (Keyword only)
+        user_id : ``None | int | ClientUserBase`, Optional (Keyword only)
             The user who generated the content triggering the rule.
         
         Returns
@@ -606,7 +606,7 @@ class AutoModerationActionExecutionEvent(EventBase):
         
         Returns
         -------
-        channel : `None`, ``Channel``
+        channel : ``None | Channel``
         """
         channel_id = self.channel_id
         if channel_id:
@@ -622,7 +622,7 @@ class AutoModerationActionExecutionEvent(EventBase):
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         guild_id = self.guild_id
         if guild_id:

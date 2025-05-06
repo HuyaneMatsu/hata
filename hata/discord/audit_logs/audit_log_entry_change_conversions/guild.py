@@ -2,8 +2,8 @@ __all__ = ()
 
 from ...bases import Icon
 from ...guild import (
-    ExplicitContentFilterLevel, HubType, MfaLevel, MessageNotificationLevel, NsfwLevel, SystemChannelFlag,
-    VerificationLevel
+    ExplicitContentFilterLevel, GuildActivityOverviewTag, HubType, MessageNotificationLevel, MfaLevel, NsfwLevel,
+    SystemChannelFlag, VerificationLevel
 )
 from ...guild.guild.constants import (
     AFK_TIMEOUT_DEFAULT, MAX_STAGE_CHANNEL_VIDEO_USERS_DEFAULT, MAX_VOICE_CHANNEL_VIDEO_USERS_DEFAULT
@@ -18,13 +18,43 @@ from ...guild.guild.fields import (
     validate_widget_enabled
 )
 from ...guild.guild.guild import GUILD_BANNER, GUILD_DISCOVERY_SPLASH, GUILD_ICON, GUILD_INVITE_SPLASH
+from ...guild.guild_activity_overview.fields import (
+    _tag_data_sort_key_getter, validate_activity_application_ids, validate_banner_color, validate_privacy_level,
+    validate_tags
+)
 from ...localization import Locale
+from ...scheduled_event import PrivacyLevel
 
 from ..audit_log_entry_change_conversion import AuditLogEntryChangeConversion, AuditLogEntryChangeConversionGroup
 from ..conversion_helpers.converters import (
-    value_deserializer_description, value_deserializer_id, value_deserializer_name, value_serializer_description,
-    value_serializer_id, value_serializer_name
+    value_deserializer_description, value_deserializer_html_color, value_deserializer_id, value_deserializer_name,
+    value_serializer_description, value_serializer_html_color, value_serializer_id, value_serializer_name
 )
+
+
+# ---- activity_application_ids ----
+
+ACTIVITY_APPLICATION_IDS_CONVERSION = AuditLogEntryChangeConversion(
+    ('game_application_ids',),
+    'activity_application_ids',
+    value_validator = validate_activity_application_ids,
+)
+
+
+@ACTIVITY_APPLICATION_IDS_CONVERSION.set_value_deserializer
+def activity_application_ids_value_deserializer(value):
+    if (value is None) or (not value):
+        return None
+    
+    return (*(int(element) for element in value),)
+
+
+@ACTIVITY_APPLICATION_IDS_CONVERSION.set_value_serializer
+def activity_application_ids_value_serializer(value):
+    if value is None:
+        return []
+    
+    return [str(element) for element in value]
 
 
 # ---- afk_channel_id ----
@@ -65,6 +95,17 @@ BANNER_CONVERSION = AuditLogEntryChangeConversion(
 )
 
 
+# ---- banner_color ----
+
+BANNER_COLOR_CONVERSION = AuditLogEntryChangeConversion(
+    ('brand_color_primary',),
+    'banner_color',
+    value_deserializer = value_deserializer_html_color,
+    value_serializer = value_serializer_html_color,
+    value_validator = validate_banner_color,
+)
+
+
 # ---- boost_progress_bar_enabled ----
 
 BOOST_PROGRESS_BAR_ENABLED_CONVERSION = AuditLogEntryChangeConversion(
@@ -79,6 +120,24 @@ def boost_progress_bar_enabled_value_deserializer(value):
     if value is None:
         value = False
     return value
+
+# ---- default_message_notification_level ----
+
+DEFAULT_MESSAGE_NOTIFICATION_LEVEL_CONVERSION = AuditLogEntryChangeConversion(
+    ('default_message_notifications',),
+    'default_message_notification_level',
+    value_validator = validate_default_message_notification_level,
+)
+
+
+@DEFAULT_MESSAGE_NOTIFICATION_LEVEL_CONVERSION.set_value_deserializer
+def message_notification_value_deserializer(value):
+    return MessageNotificationLevel(value)
+
+
+@DEFAULT_MESSAGE_NOTIFICATION_LEVEL_CONVERSION.set_value_serializer
+def message_notification_value_serializer(value):
+    return value.value
 
 
 # ---- description ----
@@ -103,7 +162,7 @@ DISCOVERY_SPLASH_CONVERSION = AuditLogEntryChangeConversion(
 )
 
 
-# ---- content_filter ----
+# ---- explicit_content_filter_level ----
 
 EXPLICIT_CONTENT_FILTER_LEVEL_CONVERSION = AuditLogEntryChangeConversion(
     ('explicit_content_filter',),
@@ -114,7 +173,7 @@ EXPLICIT_CONTENT_FILTER_LEVEL_CONVERSION = AuditLogEntryChangeConversion(
 
 @EXPLICIT_CONTENT_FILTER_LEVEL_CONVERSION.set_value_deserializer
 def content_filter_value_deserializer(value):
-    return ExplicitContentFilterLevel.get(value)
+    return ExplicitContentFilterLevel(value)
 
 
 @EXPLICIT_CONTENT_FILTER_LEVEL_CONVERSION.set_value_serializer
@@ -133,7 +192,7 @@ HUB_TYPE_CONVERSION = AuditLogEntryChangeConversion(
 
 @HUB_TYPE_CONVERSION.set_value_deserializer
 def hub_type_value_deserializer(value):
-    return HubType.get(value)
+    return HubType(value)
 
 
 @HUB_TYPE_CONVERSION.set_value_serializer
@@ -174,7 +233,7 @@ LOCALE_CONVERSION = AuditLogEntryChangeConversion(
 
 @LOCALE_CONVERSION.set_value_deserializer
 def locale_value_deserializer(value):
-    return Locale.get(value)
+    return Locale(value)
 
 
 @LOCALE_CONVERSION.set_value_serializer
@@ -225,30 +284,11 @@ MFA_LEVEL_CONVERSION = AuditLogEntryChangeConversion(
 
 @MFA_LEVEL_CONVERSION.set_value_deserializer
 def mfa_level_value_deserializer(value):
-    return MfaLevel.get(value)
+    return MfaLevel(value)
 
 
 @MFA_LEVEL_CONVERSION.set_value_serializer
 def mfa_level_value_serializer(value):
-    return value.value
-
-
-# ---- message_notification ----
-
-DEFAULT_MESSAGE_NOTIFICATION_LEVEL_CONVERSION = AuditLogEntryChangeConversion(
-    ('default_message_notifications',),
-    'default_message_notification_level',
-    value_validator = validate_default_message_notification_level,
-)
-
-
-@DEFAULT_MESSAGE_NOTIFICATION_LEVEL_CONVERSION.set_value_deserializer
-def message_notification_value_deserializer(value):
-    return MessageNotificationLevel.get(value)
-
-
-@DEFAULT_MESSAGE_NOTIFICATION_LEVEL_CONVERSION.set_value_serializer
-def message_notification_value_serializer(value):
     return value.value
 
 
@@ -274,7 +314,7 @@ NSFW_LEVEL_CONVERSION = AuditLogEntryChangeConversion(
 
 @NSFW_LEVEL_CONVERSION.set_value_deserializer
 def nsfw_level_value_deserializer(value):
-    return NsfwLevel.get(value)
+    return NsfwLevel(value)
 
 
 @NSFW_LEVEL_CONVERSION.set_value_serializer
@@ -291,6 +331,25 @@ OWNER_ID_CONVERSION = AuditLogEntryChangeConversion(
     value_serializer = value_serializer_id,
     value_validator = validate_owner_id,
 )
+
+
+# ---- privacy_level ----
+
+PRIVACY_LEVEL_CONVERSION = AuditLogEntryChangeConversion(
+    ('visibility',),
+    'privacy_level',
+    value_validator = validate_privacy_level,
+)
+
+
+@PRIVACY_LEVEL_CONVERSION.set_value_deserializer
+def privacy_level_value_deserializer(value):
+    return PrivacyLevel(value)
+
+
+@PRIVACY_LEVEL_CONVERSION.set_value_serializer
+def privacy_level_value_serializer(value):
+    return value.value
 
 
 # ---- public_updates_channel_id ----
@@ -361,6 +420,39 @@ def system_channel_flags_value_serializer(value):
     return int(value)
 
 
+# ---- tags ----
+
+TAGS_CONVERSION = AuditLogEntryChangeConversion(
+    ('traits',),
+    'tags',
+    value_validator = validate_tags,
+)
+
+
+@TAGS_CONVERSION.set_value_deserializer
+def tags_value_deserializer(value):
+    if (value is None) or (not value):
+        return None
+    
+    return (*(
+        GuildActivityOverviewTag.from_data(tag_data)
+        for tag_data in sorted(value, key = _tag_data_sort_key_getter)
+    ),)
+
+
+@TAGS_CONVERSION.set_value_serializer
+def tags_value_serializer(value):
+    output = []
+    
+    if (value is not None):
+        for index, guild_tag_overview_tag in enumerate(value):
+            tag_data = guild_tag_overview_tag.to_data()
+            tag_data['position'] = index
+            output.append(tag_data)
+    
+    return output
+
+
 # ---- vanity_code ----
 
 VANITY_CODE_CONVERSION = AuditLogEntryChangeConversion(
@@ -383,7 +475,7 @@ VERIFICATION_LEVEL_CONVERSION = AuditLogEntryChangeConversion(
 
 @VERIFICATION_LEVEL_CONVERSION.set_value_deserializer
 def verification_level_value_deserializer(value):
-    return VerificationLevel.get(value)
+    return VerificationLevel(value)
 
 
 @VERIFICATION_LEVEL_CONVERSION.set_value_serializer
@@ -421,13 +513,16 @@ def widget_enabled_value_deserializer(value):
 # ---- Construct -----
 
 GUILD_CONVERSIONS = AuditLogEntryChangeConversionGroup(
+    ACTIVITY_APPLICATION_IDS_CONVERSION,
     AFK_CHANNEL_ID_CONVERSION,
     AFK_TIMEOUT_CONVERSION,
     BANNER_CONVERSION,
+    BANNER_COLOR_CONVERSION,
     BOOST_PROGRESS_BAR_ENABLED_CONVERSION,
-    EXPLICIT_CONTENT_FILTER_LEVEL_CONVERSION,
+    DEFAULT_MESSAGE_NOTIFICATION_LEVEL_CONVERSION,
     DESCRIPTION_CONVERSION,
     DISCOVERY_SPLASH_CONVERSION,
+    EXPLICIT_CONTENT_FILTER_LEVEL_CONVERSION,
     HUB_TYPE_CONVERSION,
     ICON_CONVERSION,
     INVITE_SPLASH_CONVERSION,
@@ -435,15 +530,16 @@ GUILD_CONVERSIONS = AuditLogEntryChangeConversionGroup(
     MAX_STAGE_CHANNEL_VIDEO_USERS_CONVERSION,
     MAX_VOICE_CHANNEL_VIDEO_USERS_CONVERSION,
     MFA_LEVEL_CONVERSION,
-    DEFAULT_MESSAGE_NOTIFICATION_LEVEL_CONVERSION,
     NAME_CONVERSION,
     NSFW_LEVEL_CONVERSION,
     OWNER_ID_CONVERSION,
+    PRIVACY_LEVEL_CONVERSION,
     PUBLIC_UPDATES_CHANNEL_ID_CONVERSION,
     RULES_CHANNEL_ID_CONVERSION,
     SAFETY_ALERTS_CHANNEL_ID_CONVERSION,
     SYSTEM_CHANNEL_ID_CONVERSION,
     SYSTEM_CHANNEL_FLAGS_CONVERSION,
+    TAGS_CONVERSION,
     VANITY_CODE_CONVERSION,
     VERIFICATION_LEVEL_CONVERSION,
     WIDGET_CHANNEL_ID_CONVERSION,

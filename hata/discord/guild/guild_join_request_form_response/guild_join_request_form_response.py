@@ -33,7 +33,7 @@ class GuildJoinRequestFormResponse(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items.
+        data : `dict<str, object>`.
             Form response data.
         
         Returns
@@ -55,7 +55,7 @@ class GuildJoinRequestFormResponse(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         return data

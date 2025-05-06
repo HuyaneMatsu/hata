@@ -1,7 +1,7 @@
 __all__ = ()
 
-import warnings
 from itertools import chain
+from warnings import warn
 
 from scarletio import Task, WeakSet, export
 
@@ -359,7 +359,7 @@ class ParserSettingOption:
         try:
             intent_shifts = DISPATCH_EVENT_TO_INTENTS[name]
         except KeyError:
-            warnings.warn(
+            warn(
                 (
                     f'Dispatch event parser {name!r} is not registered to any intent. '
                     'Will always use optimized parser to dispatch it.'

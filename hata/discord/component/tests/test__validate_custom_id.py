@@ -4,42 +4,41 @@ from ..shared_constants import CUSTOM_ID_LENGTH_MAX
 from ..shared_fields import validate_custom_id
 
 
-def test__validate_custom_id__0():
+def _iter_options__passing():
+    yield None, None
+    yield '', None
+    yield 'a', 'a'
+
+
+def _iter_options__type_error():
+    yield 12.6
+
+
+def _iter_options__value_error():
+    yield 'a' * (CUSTOM_ID_LENGTH_MAX + 1)
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+@vampytest._(vampytest.call_from(_iter_options__value_error()).raising(ValueError))
+def test__validate_custom_id(input_value):
     """
     Tests whether `validate_custom_id` works as intended.
     
-    Case: passing.
-    """
-    for input_value, expected_output in (
-        (None, None),
-        ('', None),
-        ('a', 'a'),
-    ):
-        output = validate_custom_id(input_value)
-        vampytest.assert_eq(output, expected_output)
-
-
-def test__validate_custom_id__1():
-    """
-    Tests whether `validate_custom_id` works as intended.
+    Parameters
+    ----------
+    input_value : `object`
+        The value to validate.
     
-    Case: `ValueError`.
-    """
-    for input_value in (
-        'a' * (CUSTOM_ID_LENGTH_MAX + 1),
-    ):
-        with vampytest.assert_raises(ValueError):
-            validate_custom_id(input_value)
-
-
-def test__validate_custom_id__2():
-    """
-    Tests whether `validate_custom_id` works as intended.
+    Returns
+    -------
+    output : `None | str`
     
-    Case: `TypeError`.
+    Raises
+    ------
+    TypeError
+    ValueError
     """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_custom_id(input_value)
+    output = validate_custom_id(input_value)
+    vampytest.assert_instance(output, str, nullable = True)
+    return output

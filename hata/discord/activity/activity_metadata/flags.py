@@ -31,6 +31,8 @@ class ActivityFlag(FlagBase):
     +-------------------------------+-------------------+
     | embedded                      | 8                 |
     +-------------------------------+-------------------+
+    | contextless                   | 9                 |
+    +-------------------------------+-------------------+
     """
     instance = F(0)
     join = F(1)
@@ -41,3 +43,4 @@ class ActivityFlag(FlagBase):
     party_privacy_friends = F(6)
     party_privacy_voice_channel = F(7)
     embedded = F(8)
+    contextless = F(9)

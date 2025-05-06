@@ -6,7 +6,7 @@ from ...utils import sanitize_mentions
 
 from ..embed_field_base import EmbedFieldBase
 
-from .fields import parse_name, parse_url, put_name_into, put_url_into, validate_name, validate_url
+from .fields import parse_name, parse_url, put_name, put_url, validate_name, validate_url
 
 
 class EmbedProvider(EmbedFieldBase):
@@ -145,8 +145,8 @@ class EmbedProvider(EmbedFieldBase):
     def to_data(self, *, defaults = False, include_internals = False):
         data = {}
         
-        put_name_into(self.name, data, defaults)
-        put_url_into(self.url, data, defaults)
+        put_name(self.name, data, defaults)
+        put_url(self.url, data, defaults)
         
         return data
     

@@ -3,7 +3,7 @@ __all__ = ('AutoModerationActionMetadataSendAlertMessage',)
 from scarletio import copy_docs
 
 from .base import AutoModerationActionMetadataBase
-from .fields import parse_channel_id, put_channel_id_into, validate_channel_id
+from .fields import parse_channel_id, put_channel_id, validate_channel_id
 
 
 class AutoModerationActionMetadataSendAlertMessage(AutoModerationActionMetadataBase):
@@ -23,7 +23,7 @@ class AutoModerationActionMetadataSendAlertMessage(AutoModerationActionMetadataB
         
         Parameters
         ----------
-        channel_id : `None`, ``Channel``, `int` = `None`, Optional
+        channel_id : ``None | int | Channel`` = `None`, Optional
             The channel where the alert message should be sent.
                
         Raises
@@ -63,7 +63,7 @@ class AutoModerationActionMetadataSendAlertMessage(AutoModerationActionMetadataB
     def to_data(self, *, defaults = False):
         data = {}
         
-        put_channel_id_into(self.channel_id, data, defaults)
+        put_channel_id(self.channel_id, data, defaults)
         
         return data
     
@@ -97,7 +97,7 @@ class AutoModerationActionMetadataSendAlertMessage(AutoModerationActionMetadataB
         
         Parameters
         ----------
-        channel_id : `None`, ``Channel``, `int`, Optional (Keyword only)
+        channel_id : ``None | int | Channel``, Optional (Keyword only)
             The channel where the alert message should be sent.
         
         Returns

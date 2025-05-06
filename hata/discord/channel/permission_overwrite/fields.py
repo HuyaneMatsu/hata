@@ -19,18 +19,18 @@ ClientUserBase = include('ClientUserBase')
 # allow
 
 parse_allow = flag_parser_factory(PERMISSION_ALLOW_KEY, Permission)
-put_allow_into = string_flag_putter_factory(PERMISSION_ALLOW_KEY)
+put_allow = string_flag_putter_factory(PERMISSION_ALLOW_KEY)
 validate_allow = flag_validator_factory('allow', Permission)
 
 # deny
 
 parse_deny = flag_parser_factory(PERMISSION_DENY_KEY, Permission)
-put_deny_into = string_flag_putter_factory(PERMISSION_DENY_KEY)
+put_deny = string_flag_putter_factory(PERMISSION_DENY_KEY)
 validate_deny = flag_validator_factory('deny', Permission)
 
 # target
 
-def put_target_into(target, data, defaults, *, include_internals = False):
+def put_target(target, data, defaults, *, include_internals = False):
     """
     Puts the `target` field of ``PermissionOverwrite`` to the given data.
     
@@ -40,7 +40,7 @@ def put_target_into(target, data, defaults, *, include_internals = False):
     ----------
     target : `tuple` (`int`, ``PermissionOverwriteTargetType``)
         Permission overwrite `target-id`, `target_type` pair.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
@@ -49,7 +49,7 @@ def put_target_into(target, data, defaults, *, include_internals = False):
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     target_id, target_type = target
     
@@ -108,7 +108,7 @@ def validate_target(target):
 # target_id
 
 parse_target_id = entity_id_parser_factory('id')
-put_target_id_into = entity_id_putter_factory('id')
+put_target_id = entity_id_putter_factory('id')
 validate_target_id = entity_id_validator_factory('target_id')
 
 # target_type
@@ -119,15 +119,15 @@ def parse_target_type(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Permission overwrite data.
     
     Returns
     -------
     target_type : ``PermissionOverwriteTargetType``
     """
-    return PermissionOverwriteTargetType.get(get_permission_overwrite_key_value(data))
+    return PermissionOverwriteTargetType(get_permission_overwrite_key_value(data))
 
 
-put_target_type_into = preinstanced_putter_factory('type')
+put_target_type = preinstanced_putter_factory('type')
 validate_target_type = preinstanced_validator_factory('target_type', PermissionOverwriteTargetType)

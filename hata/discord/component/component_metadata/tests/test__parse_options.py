@@ -28,6 +28,8 @@ def test__parse_options(input_data):
     
     Returns
     -------
-    output : `None | tuple<StringSelectOption>`
+    output : ``None | tuple<StringSelectOption>``
     """
-    return parse_options(input_data)
+    output = parse_options(input_data)
+    vampytest.assert_instance(output, tuple, nullable = True)
+    return output

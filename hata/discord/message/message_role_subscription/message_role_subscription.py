@@ -3,8 +3,8 @@ __all__ = ('MessageRoleSubscription',)
 from scarletio import RichAttributeErrorBaseType
 
 from .fields import (
-    parse_renewal, parse_subscription_listing_id, parse_tier_name, parse_total_months, put_renewal_into,
-    put_subscription_listing_id_into, put_tier_name_into, put_total_months_into, validate_renewal,
+    parse_renewal, parse_subscription_listing_id, parse_tier_name, parse_total_months, put_renewal,
+    put_subscription_listing_id, put_tier_name, put_total_months, validate_renewal,
     validate_subscription_listing_id, validate_tier_name, validate_total_months
 )
 
@@ -88,7 +88,7 @@ class MessageRoleSubscription(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Message role subscription data.
         
         Returns
@@ -114,13 +114,13 @@ class MessageRoleSubscription(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
-        put_renewal_into(self.renewal, data, defaults)
-        put_subscription_listing_id_into(self.subscription_listing_id, data, defaults)
-        put_tier_name_into(self.tier_name, data, defaults)
-        put_total_months_into(self.total_months, data, defaults)
+        put_renewal(self.renewal, data, defaults)
+        put_subscription_listing_id(self.subscription_listing_id, data, defaults)
+        put_tier_name(self.tier_name, data, defaults)
+        put_total_months(self.total_months, data, defaults)
         return data
     
     

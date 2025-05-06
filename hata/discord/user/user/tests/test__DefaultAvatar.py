@@ -8,6 +8,21 @@ from ...user import User
 from ..preinstanced import DefaultAvatar
 
 
+def _assert_fields_set(default_avatar):
+    """
+    Asserts whether every field are set of the given default avatar.
+    
+    Parameters
+    ----------
+    default_avatar : ``DefaultAvatar``
+        The instance to test.
+    """
+    vampytest.assert_instance(default_avatar, DefaultAvatar)
+    vampytest.assert_instance(default_avatar.name, str)
+    vampytest.assert_instance(default_avatar.value, DefaultAvatar.VALUE_TYPE)
+    vampytest.assert_instance(default_avatar.color, Color)
+
+
 @vampytest.call_from(DefaultAvatar.INSTANCES.values())
 def test__DefaultAvatar__instances(instance):
     """
@@ -18,10 +33,31 @@ def test__DefaultAvatar__instances(instance):
     instance : ``DefaultAvatar``
         The instance to test.
     """
-    vampytest.assert_instance(instance, DefaultAvatar)
-    vampytest.assert_instance(instance.name, str)
-    vampytest.assert_instance(instance.value, DefaultAvatar.VALUE_TYPE)
-    vampytest.assert_instance(instance.color, Color)
+    _assert_fields_set(instance)
+
+
+def test__DefaultAvatar__new__min_fields():
+    """
+    Tests whether ``DefaultAvatar.__new__`` works as intended.
+    
+    Case: minimal amount of fields given.
+    """
+    value = 6
+    
+    try:
+        output = DefaultAvatar(value)
+        _assert_fields_set(output)
+        
+        vampytest.assert_eq(output.value, value)
+        vampytest.assert_eq(output.name, DefaultAvatar.NAME_DEFAULT)
+        vampytest.assert_eq(output.color, Color())
+        vampytest.assert_is(DefaultAvatar.INSTANCES.get(value, None), output)
+    
+    finally:
+        try:
+            del DefaultAvatar.INSTANCES[value]
+        except KeyError:
+            pass
 
 
 def test__DefaultAvatar__for():

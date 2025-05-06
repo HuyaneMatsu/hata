@@ -23,7 +23,7 @@ class ActivityFieldBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Activity field data.
         
         Returns
@@ -44,7 +44,7 @@ class ActivityFieldBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         return {}
     

@@ -6,7 +6,7 @@ from ...utils import DATETIME_FORMAT_CODE
 
 from ..activity_field_base import ActivityFieldBase
 
-from .fields import parse_end, parse_start, put_end_into, put_start_into, validate_end, validate_start
+from .fields import parse_end, parse_start, put_end, put_start, validate_end, validate_start
 
 
 class ActivityTimestamps(ActivityFieldBase):
@@ -72,8 +72,8 @@ class ActivityTimestamps(ActivityFieldBase):
     @copy_docs(ActivityFieldBase.to_data)
     def to_data(self, *, defaults = False):
         data = {}
-        put_end_into(self.end, data, defaults)
-        put_start_into(self.start, data, defaults)
+        put_end(self.end, data, defaults)
+        put_start(self.start, data, defaults)
         return data
     
     

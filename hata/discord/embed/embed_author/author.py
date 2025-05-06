@@ -7,8 +7,8 @@ from ...utils import sanitize_mentions
 from ..embed_field_base import EmbedFieldBase
 
 from .fields import (
-    parse_icon_proxy_url, parse_icon_url, parse_name, parse_url, put_icon_proxy_url_into, put_icon_url_into,
-    put_name_into, put_url_into, validate_icon_url, validate_name, validate_url
+    parse_icon_proxy_url, parse_icon_url, parse_name, parse_url, put_icon_proxy_url, put_icon_url,
+    put_name, put_url, validate_icon_url, validate_name, validate_url
 )
 
 
@@ -187,12 +187,12 @@ class EmbedAuthor(EmbedFieldBase):
     def to_data(self, *, defaults = False, include_internals = False):
         data = {}
         
-        put_icon_url_into(self.icon_url, data, defaults)
-        put_name_into(self.name, data, defaults)
-        put_url_into(self.url, data, defaults)
+        put_icon_url(self.icon_url, data, defaults)
+        put_name(self.name, data, defaults)
+        put_url(self.url, data, defaults)
         
         if include_internals:
-            put_icon_proxy_url_into(self.icon_proxy_url, data, defaults)
+            put_icon_proxy_url(self.icon_proxy_url, data, defaults)
         
         return data
     

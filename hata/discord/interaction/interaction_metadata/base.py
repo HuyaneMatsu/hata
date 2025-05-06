@@ -88,7 +88,7 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             The received interaction field data.
         
         guild_id : `int` = `0`, Optional
@@ -115,7 +115,7 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         return {}
     

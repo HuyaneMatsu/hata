@@ -9,8 +9,8 @@ def test__EmbedVideo__repr():
     """
     url = 'https://orindance.party/'
     
-    field = EmbedVideo(url)
-    vampytest.assert_instance(repr(field), str)
+    embed_video = EmbedVideo(url)
+    vampytest.assert_instance(repr(embed_video), str)
 
 
 def test__EmbedVideo__hash():
@@ -19,8 +19,8 @@ def test__EmbedVideo__hash():
     """
     url = 'https://orindance.party/'
     
-    field = EmbedVideo(url)
-    vampytest.assert_instance(hash(field), int)
+    embed_video = EmbedVideo(url)
+    vampytest.assert_instance(hash(embed_video), int)
 
 
 def _iter_options__eq():
@@ -158,10 +158,13 @@ def test__EmbedVideo__eq(
     ----------
     keyword_parameters_0 : `dict<str, object>`
         Keyword parameters to create instance with.
+    
     additional_attributes_0 : `dict<str, object>`
         Additional attributes to set.
+    
     keyword_parameters_1 : `dict<str, object>`
         Keyword parameters to create instance with.
+    
     additional_attributes_1 : `dict<str, object>`
         Additional attributes to set.
     
@@ -204,8 +207,8 @@ def test__EmbedVideo__bool(keyword_parameters):
     -------
     output : `bool`
     """
-    field = EmbedVideo(**keyword_parameters)
-    output = bool(field)
+    embed_video = EmbedVideo(**keyword_parameters)
+    output = bool(embed_video)
     vampytest.assert_instance(output, bool)
     return output
 
@@ -231,7 +234,7 @@ def test__EmbedVideo__len(keyword_parameters):
     -------
     output : `int`
     """
-    field = EmbedVideo(**keyword_parameters)
-    output = len(field)
+    embed_video = EmbedVideo(**keyword_parameters)
+    output = len(embed_video)
     vampytest.assert_instance(output, int)
     return output

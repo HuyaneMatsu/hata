@@ -60,7 +60,7 @@ set_docs(get_ipc_path,
     
     Parameters
     ----------
-    pipe : `None`, `int`
+    pipe : `None | int`
         The temporary inter process path's index value to connect to.
     
     Returns
@@ -75,7 +75,7 @@ def check_for_error(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Data received from Discord.
     
     Raises

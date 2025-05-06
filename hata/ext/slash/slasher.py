@@ -1,6 +1,6 @@
 __all__ = ('Slasher', )
 
-import warnings
+from warnings import warn
 from datetime import datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
 
 from scarletio import (
@@ -206,7 +206,7 @@ class CommandState(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the command state's representation."""
-        result = ['<', self.__class__.__name__]
+        result = ['<', type(self).__name__]
         if self._is_non_global:
             result.append(' (non global)')
         
@@ -1004,7 +1004,7 @@ class Slasher(
         client : ``Client``
             The owner client instance.
             
-        assert_application_command_permission_missmatch_at : `None`, `int`, ``Guild``, `iterable` of (`int`, ``Guild``)
+        assert_application_command_permission_missmatch_at : ``None | int | Guild | iterable<int> | iterable<Guild>``
                 = `None`, Optional (Keyword only)
             Guilds, where permission overwrites missmatch should be asserted.
         
@@ -2337,10 +2337,18 @@ class Slasher(
         ):
             return True
         
-        if self._enforce_application_command_permissions:
+        if not self._enforce_application_command_permissions:
+            do_warn = True
+            success = True
+        
+        else:
             access = await self._get_owners_access(client)
             
-            if (access is not None):
+            if (access is None):
+                do_warn = True
+                success = False
+            
+            else:
                 try:
                     permission = await client.application_command_permission_edit(
                         access,
@@ -2367,18 +2375,11 @@ class Slasher(
                 
                 per_guild[permission.application_command_id] = permission
                 
-                warn = False
+                do_warn = False
                 success = True
-            
-            else:
-                warn = True
-                success = False
-        else:
-            warn = True
-            success = True
         
-        if warn:
-            warnings.warn(
+        if do_warn:
+            warn(
                 create_permission_mismatch_message(
                     application_command,
                     guild_id,
@@ -2846,7 +2847,7 @@ class Slasher(
     
     def __repr__(self):
         """Returns the slasher's representation."""
-        return f'<{self.__class__.__name__} sync_should = {len(self._sync_should)}, sync_done = {len(self._sync_done)}>'
+        return f'<{type(self).__name__} sync_should = {len(self._sync_should)}, sync_done = {len(self._sync_done)}>'
     
     
     @property
@@ -3247,7 +3248,7 @@ class Slasher(
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild to gets command count of.
         
         Returns
@@ -3269,7 +3270,7 @@ class Slasher(
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild to gets command count of.
         
         Returns

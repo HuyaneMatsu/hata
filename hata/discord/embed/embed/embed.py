@@ -12,13 +12,15 @@ from ..embed_thumbnail import EmbedThumbnail
 from ..embed_video import EmbedVideo
 
 from .fields import (
-    parse_author, parse_color, parse_description, parse_fields, parse_footer, parse_image, parse_provider,
-    parse_thumbnail, parse_timestamp, parse_title, parse_type, parse_url, parse_video, put_author_into, put_color_into,
-    put_description_into, put_fields_into, put_footer_into, put_image_into, put_provider_into, put_thumbnail_into,
-    put_timestamp_into, put_title_into, put_type_into, put_url_into, put_video_into, validate_author, validate_color,
-    validate_description, validate_fields, validate_footer, validate_image, validate_provider, validate_thumbnail,
-    validate_timestamp, validate_title, validate_type, validate_url, validate_video
+    parse_author, parse_color, parse_description, parse_fields, parse_flags, parse_footer, parse_image, parse_provider,
+    parse_thumbnail, parse_timestamp, parse_title, parse_type, parse_url, parse_video, put_author, put_color,
+    put_description, put_fields, put_flags, put_footer, put_image, put_provider,
+    put_thumbnail, put_timestamp, put_title, put_type, put_url, put_video,
+    validate_author, validate_color, validate_description, validate_fields, validate_flags, validate_footer,
+    validate_image, validate_provider, validate_thumbnail, validate_timestamp, validate_title, validate_type,
+    validate_url, validate_video
 )
+from .flags import EmbedFlag
 from .preinstanced import EmbedType
 
 
@@ -28,31 +30,46 @@ class Embed(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    author : `None`, ``EmbedAuthor``
+    author : `None | EmbedAuthor`
         Author information.
-    color : `None`, ``Color``
+    
+    color : ``None | Color``
         The color code of the embed. Passing `0` means black, not like at the case of roles.
-    description : `None`, `str`
+    
+    description : `None | str`
         The main content of the embed.
-    fields : `None`, `list` of ``EmbedField``
+    
+    fields : `None | list<EmbedField>`
         Fields' information.
-    footer : `None`, ``EmbedFooter``
+    
+    flags : ``EmbedFlag``
+        The embed's flags.
+    
+    footer : `None | EmbedFooter`
         Footer information.
-    image : `None`, ``EmbedImage``
+    
+    image : `None | EmbedImage`
         Image information.
-    provider : `None`, ``EmbedProvider``
+    
+    provider : `None | EmbedProvider`
         Provider information.
-    thumbnail : `None`, ``EmbedThumbnail``
+    
+    thumbnail : `None | EmbedThumbnail`
         Thumbnail information.
-    timestamp : `None`, `datetime`
+    
+    timestamp : `None | DateTime
         Timestamp of the embed's content. Shows up next to the ``.footer``.
-    title : `None`, `str`
+    
+    title : `None | str`
         The title of the embed. Shows at the top with intense white characters.
+    
     type : ``EmbedType``
         The type of the embed.Webhook embeds' type must be `EmbedType.rich`.
-    url : `None`, `str`
+    
+    url : `None | str`
         Url of the embed. If defined, the embed's `title` will show up as a hyper link pointing to the `url`.
-    video : `None`, ``EmbedVideo``
+    
+    video : `None | EmbedVideo`
         Video information.
     
     Examples
@@ -77,18 +94,20 @@ class Embed(RichAttributeErrorBaseType):
     second time.
     """
     __slots__ = (
-        'author', 'color', 'description', 'fields', 'footer', 'image', 'provider', 'thumbnail', 'timestamp', 'title',
-        'type', 'url', 'video'
+        'author', 'color', 'description', 'fields', 'flags', 'footer', 'image', 'provider', 'thumbnail', 'timestamp',
+        'title', 'type', 'url', 'video'
     )
     
     def __new__(
         cls,
         title = ...,
         description = ...,
+        *,
         author = ...,
         color = ...,
         embed_type = ...,
         fields = ...,
+        flags = ...,
         footer = ...,
         image = ...,
         provider = ...,
@@ -102,36 +121,52 @@ class Embed(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        title : `None`, `str`, Optional
+        title : `None | str`, Optional
             The title of the embed. Shows at the top with intense white characters.
-        description : `None`, `str`, Optional
+        
+        description : `None | str`, Optional
             The main content of the embed.
-        author : `None`, ``EmbedAuthor``, Optional (Keyword only)
+        
+        author : `None | EmbedAuthor`, Optional (Keyword only)
             Author information.
-        color : `None`, ``Color``, `int`, Optional (Keyword only)
+        
+        color : `None | Color | int`, Optional (Keyword only)
             The color code of the embed. Passing `0` means black, not like at the case of roles.
-        embed_type : `EmbedType`, `str`, Optional (Keyword only)
+        
+        embed_type : `EmbedType | str`, Optional (Keyword only)
             The type of the embed. Defaults to `EmbedType.rich`.
-        fields : `None`, `iterable` of ``EmbedField``, Optional (Keyword only)
+        
+        fields : `None | iterable<EmbedField>`, Optional (Keyword only)
             Fields' information.
-        footer : `None`, ``EmbedFooter``, Optional (Keyword only)
+        
+        flags : `None | EmbedFlag | int`, Optional (Keyword only)
+            The embed's flags.
+        
+        footer : `None | EmbedFooter`, Optional (Keyword only)
             Footer information.
-        image : `None`, ``EmbedImage``, Optional (Keyword only)
+        
+        image : `None | EmbedImage`, Optional (Keyword only)
             Image information.
-        provider : `None`, ``EmbedProvider``, Optional (Keyword only)
+        
+        provider : `None | EmbedProvider`, Optional (Keyword only)
             Provider information.
-        thumbnail : `None`, ``EmbedThumbnail``, Optional (Keyword only)
+        
+        thumbnail : `None | EmbedThumbnail`, Optional (Keyword only)
             Thumbnail information.
-        timestamp : `None`, `datetime`, Optional (Keyword only)
+        
+        timestamp : `None | DateTime`, Optional (Keyword only)
             Timestamp of the embed's content. Shows up next to the `footer`.
-        url : `None`, `str`, Optional (Keyword only)
+        
+        url : `None | str`, Optional (Keyword only)
             Url of the embed. If defined, the embed's `title` will show up as a hyper link pointing to the `url`.
-        video : `None`, `EmbedVideo`, Optional (Keyword only)
+        
+        video : `None | EmbedVideo`, Optional (Keyword only)
             Video information.
         
         Raises
         ------
         TypeError
+        
             - If a parameter's type is incorrect.
         ValueError
             - If a parameter's value is incorrect.
@@ -173,6 +208,12 @@ class Embed(RichAttributeErrorBaseType):
             fields = None
         else:
             fields = validate_fields(fields)
+        
+        # flags
+        if flags is ...:
+            flags = EmbedFlag()
+        else:
+            flags = validate_flags(flags)
         
         # footer
         if footer is ...:
@@ -220,6 +261,7 @@ class Embed(RichAttributeErrorBaseType):
         self.color = color
         self.description = description
         self.fields = fields
+        self.flags = flags
         self.footer = footer
         self.image = image
         self.provider = provider
@@ -251,6 +293,7 @@ class Embed(RichAttributeErrorBaseType):
         self.color = parse_color(data)
         self.description = parse_description(data)
         self.fields = parse_fields(data)
+        self.flags = parse_flags(data)
         self.footer = parse_footer(data)
         self.image = parse_image(data)
         self.provider = parse_provider(data)
@@ -271,29 +314,31 @@ class Embed(RichAttributeErrorBaseType):
         ----------
         defaults : `bool` = `False`, Optional (Keyword only)
             Whether default values should be included as well.
+        
         include_internals : `bool` = `False`, Optional (Keyword only)
             Whether internal fields should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
-        put_author_into(self.author, data, defaults, include_internals = include_internals)
-        put_color_into(self.color, data, defaults)
-        put_description_into(self.description, data, defaults)
-        put_fields_into(self.fields, data, defaults)
-        put_footer_into(self.footer, data, defaults, include_internals = include_internals)
-        put_image_into(self.image, data, defaults, include_internals = include_internals)
-        put_thumbnail_into(self.thumbnail, data, defaults, include_internals = include_internals)
-        put_timestamp_into(self.timestamp, data, defaults)
-        put_title_into(self.title, data, defaults)
-        put_type_into(self.type, data, defaults)
-        put_url_into(self.url, data, defaults)
+        put_author(self.author, data, defaults, include_internals = include_internals)
+        put_color(self.color, data, defaults)
+        put_description(self.description, data, defaults)
+        put_fields(self.fields, data, defaults)
+        put_footer(self.footer, data, defaults, include_internals = include_internals)
+        put_image(self.image, data, defaults, include_internals = include_internals)
+        put_thumbnail(self.thumbnail, data, defaults, include_internals = include_internals)
+        put_timestamp(self.timestamp, data, defaults)
+        put_title(self.title, data, defaults)
+        put_type(self.type, data, defaults)
+        put_url(self.url, data, defaults)
         
         if include_internals:
-            put_provider_into(self.provider, data, defaults, include_internals = include_internals)
-            put_video_into(self.video, data, defaults, include_internals = include_internals)
+            put_flags(self.flags, data, defaults)
+            put_provider(self.provider, data, defaults, include_internals = include_internals)
+            put_video(self.video, data, defaults, include_internals = include_internals)
         
         return data
     
@@ -306,6 +351,7 @@ class Embed(RichAttributeErrorBaseType):
         self.color = None
         self.description = None
         self.fields = None
+        self.flags = EmbedFlag()
         self.footer = None
         self.image = None
         self.provider = None
@@ -329,7 +375,7 @@ class Embed(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Embed data received from Discord.
         
         Returns
@@ -387,7 +433,7 @@ class Embed(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Embed data received from Discord.
         """
         try:
@@ -457,6 +503,9 @@ class Embed(RichAttributeErrorBaseType):
         for field in self.iter_fields():
             if field:
                 return True
+        
+        # flags
+        # Not applicable
         
         # footer
         footer = self.footer
@@ -551,6 +600,17 @@ class Embed(RichAttributeErrorBaseType):
             
             repr_parts.append(' fields = ')
             repr_parts.append(repr(fields))
+        
+        # flags
+        flags = self.flags
+        if flags:
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' flags = ')
+            repr_parts.append(repr(flags))
         
         # footer
         footer = self.footer
@@ -666,7 +726,7 @@ class Embed(RichAttributeErrorBaseType):
         -------
         representation : `str`
         """
-        return f'<{self.__class__.__name__} length = {len(self)}>'
+        return f'<{type(self).__name__} length = {len(self)}>'
         
     
     def __eq__(self, other):
@@ -688,6 +748,10 @@ class Embed(RichAttributeErrorBaseType):
         
         # fields
         if self.fields != other.fields:
+            return False
+        
+        # flags
+        if self.flags != other.flags:
             return False
         
         # footer
@@ -759,6 +823,9 @@ class Embed(RichAttributeErrorBaseType):
             for field in fields:
                 hash_value ^= hash(field)
         
+        # flags
+        hash_value ^= self.flags
+        
         # footer
         footer = self.footer
         if (footer is not None):
@@ -819,7 +886,7 @@ class Embed(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        guild : `None`, ``Guild`` = `None`, Optional
+        guild : ``None | Guild`` = `None`, Optional
             The respective guild as a context to look up guild specific names of entities.
         
         Returns
@@ -840,6 +907,8 @@ class Embed(RichAttributeErrorBaseType):
         if (fields is not None):
             fields = [field.clean_copy(guild) for field in fields]
         new.fields = fields
+        
+        new.flags = self.flags
         
         footer = self.footer
         if (footer is not None):
@@ -897,6 +966,8 @@ class Embed(RichAttributeErrorBaseType):
             fields = [field.copy() for field in fields]
         new.fields = fields
         
+        new.flags = self.flags
+        
         footer = self.footer
         if (footer is not None):
             footer = footer.copy()
@@ -938,6 +1009,7 @@ class Embed(RichAttributeErrorBaseType):
         description = ...,
         embed_type = ...,
         fields = ...,
+        flags = ...,
         footer = ...,
         image = ...,
         provider = ...,
@@ -952,31 +1024,46 @@ class Embed(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        author : `None`, ``EmbedAuthor``, Optional (Keyword only)
+        author : `None | EmbedAuthor``, Optional (Keyword only)
             Author information.
-        color : `None`, ``Color``, `int`, Optional (Keyword only)
+        
+        color : `None | Color | int`, Optional (Keyword only)
             The color code of the embed. Passing `0` means black, not like at the case of roles.
-        description : `None`, `str`, Optional (Keyword only)
+        
+        description : `None | str`, Optional (Keyword only)
             The main content of the embed.
-        embed_type : ``EmbedType``, `str`, Optional (Keyword only)
+        
+        embed_type : `EmbedType | str`, Optional (Keyword only)
             The type of the embed. Webhook embed's type must be `EmbedType.rich`.
-        fields : `None`, `iterable` of ``EmbedField``, Optional (Keyword only)
+        
+        fields : `None | iterable<EmbedField>`, Optional (Keyword only)
             Fields' information.
-        footer : `None`, ``EmbedFooter``, Optional (Keyword only)
+        
+        flags : `None | EmbedFlag | int`, Optional (Keyword only)
+            The embed's flags.
+        
+        footer : `None | EmbedFooter`, Optional (Keyword only)
             Footer information.
-        image : `None`, ``EmbedImage``, Optional (Keyword only)
+        
+        image : `None | EmbedImage`, Optional (Keyword only)
             Image information.
-        provider : `None`, ``EmbedProvider``, Optional (Keyword only)
+        
+        provider : `None | EmbedProvider`, Optional (Keyword only)
             Provider information.
-        thumbnail : `None`, ``EmbedThumbnail``, Optional (Keyword only)
+        
+        thumbnail : `None | EmbedThumbnail`, Optional (Keyword only)
             Thumbnail information.
-        timestamp : `None`, `datetime`, Optional (Keyword only)
+        
+        timestamp : `None | DateTime`, Optional (Keyword only)
             Timestamp of the embed's content. Shows up next to the ``.footer``.
-        title : `None`, `str`, Optional (Keyword only)
+        
+        title : `None | str`, Optional (Keyword only)
             The title of the embed. Shows at the top with intense white characters.
-        url : `None`, `str`, Optional (Keyword only)
+        
+        url : `None | str`, Optional (Keyword only)
             Url of the embed. If defined, the embed's `title` will show up as a hyper link pointing to the `url`.
-        video : `None`, `EmbedVideo`, Optional (Keyword only)
+        
+        video : `None | EmbedVideo`, Optional (Keyword only)
             Video information.
         
         Returns
@@ -1017,6 +1104,12 @@ class Embed(RichAttributeErrorBaseType):
                 fields = [field.copy() for field in fields]
         else:
             fields = validate_fields(fields)
+        
+        # flags
+        if flags is ...:
+            flags = self.flags
+        else:
+            flags = validate_flags(flags)
         
         # footer
         if footer is ...:
@@ -1087,6 +1180,7 @@ class Embed(RichAttributeErrorBaseType):
         new.color = color
         new.description = description
         new.fields = fields
+        new.flags = flags
         new.footer = footer
         new.image = image
         new.provider = provider

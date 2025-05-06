@@ -1,13 +1,13 @@
 # Introduction
 
-Message components, mainly known as components, are ui elements that can included with a message.
+Message components, mainly known just as components, are UI elements that can be included with a message.
 Your application or bot can send them, allowing the users to see the displayed content and to interact with them.
 
 We can separate components to 3 categories:
 
 - Layout components - Modify how the shown content is structured.
 - Content components - Show either text or media.
-- Interactive components - Allows the user interacting with them.
+- Interactive components - Allows the user to interact with them.
 
 Components can be passed to `InteractionResponse` and to many client methods as well:
 
@@ -22,22 +22,22 @@ Components can be passed to `InteractionResponse` and to many client methods as 
 - `.interaction_component_message_edit`
 
 
-If you are not interested how to layout components or in limitations go ahead to either
+If you're not interested how to layout components or in their limitations you can skip ahead to either
 [content_components](content_components.md) or [interactive components](interactive_components.md).
 
-## Component layouting
+## Component layouts
 
 Currently there are 3 types of layout components:
 
 - Row - currently the only layout component that allows stacking components horizontally.
-    It can contain only interactive components: 5 buttons, but only 1 from others.
-- Container - can contain any other top level components (except itself),
-    has a colorable strip on the left just like embeds.
-- Section - can contain only text display components, but allow you to have a thumbnail on the top right
+    It can contain only interactive components: up to 5 buttons, but only 1 of any other interactive component.
+- Container - can contain any other top level component (except itself),
+    has a color strip on the left just like embeds.
+- Section - can contain only text display components, but allows you to have a thumbnail on the top right
     just like embeds do. The only difference is that the thumbnail can not only be a media, but a button as well.
 
 
-When passing `components` as a parameter, hata will try to auto-align them.
+When passing `components` as a parameter, Hata will try to auto-align them.
 As an example, buttons cannot be used as top level components, so they are automatically nested into rows:
 
 ```py3
@@ -56,9 +56,9 @@ components = [
 ]
 ```
 
-This and a few other conditions allow a more relaxed experience.
+This and a few other conditions allow for a more relaxed experience.
 
-Like passing a single component:
+For example, passing a single component:
 
 ```py3
 components = create_button(...)
@@ -86,27 +86,26 @@ components = [
 
 ## Versioning
 
-Components currently can be separated to 2 versions.
+Currently components can be separated to 2 versions.
 
 #### version 1
 
-They can be attached of any message. They currently consist of interactive components.
+They can be attached to any message. See the table [overview](#overview) for supported components.
 
 #### version 2
 
-They consist of content components and the related layout components.
-These content and layout components allow you to structure your message in a more relaxed way,
-but on the contrary are mutually exclusive with the `embeds` and `content` fields.
+They consist of content components and related layout components.
+These content and layout components allow you to structure your message in a more relaxed way.
+They cannot be used alongside `embeds` and `content` fields.
 
-If a message contains at least 1 "version 2" component, it has to be marked as "version 2".
-Hata does this for you.
-Since "version 2" supports more top level components, when passing the "version 1"'s limitation the same happens.
+If a message contains at least one "version 2" component, it has to be marked as "version 2".
+Hata does this for you automatically.
 
 ## Limitations
 
-- A message can have up to `5` if v1 or `10` if v2 top level components.
+- A message can have up to `5` top level components if v1, or `10` if v2.
 - `custom_id` can be `100` character long.
-- A message can have up to `30` total components.
+- A message can have up to `30` total components if v1, or up to `40` if v2.
 - The displayable content cannot exceed `4000` characters.
     This excludes the text on interactive components and media descriptions.
 
@@ -149,7 +148,7 @@ Here is a complete overview of where components can be used, how can they be nes
 | container           | X                  |                 | X         |                   |                         |                       |                   |           | X         |
 
 
-This information can also be accessed runtime as well:
+This information can also be accessed at runtime:
 
 ```py3
 In [0]: print(ComponentType.container.layout_flags.top_level)

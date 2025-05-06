@@ -1,15 +1,16 @@
 # Introduction
 
-Using content with layout components allow you to structure your message in a more relaxed way than regular `content`,
-`embeds` and `attachments`, although they are mutually exclusive with the `embeds` and `content` fields.
+Using content with layout components allows you to structure your message in a more relaxed way, more than regular
+`content`, `embeds` and `attachments` allow you.
+Note that they can't be used at the same tim as `embeds` and `content` fields.
 
-This guide consists of less commands than the others ones, instead focusing on usage, introducing components one by one.
+This guide focuses on usage, introducing components one by one.
 
 
 ## Text Display
 
-Text display components currently are the only one components that can display text.
-Their functionality equals to regular `content`, but they can be used in an un-ordered manner compared to it.
+Text display components are currently the only components that can display text.
+Their functionality is equal to regular `content`, but they can be used in an un-ordered manner compared to it.
 
 ```py3
 components = [
@@ -23,9 +24,9 @@ components = [
 
 ```
 
-These components support mentions and markdowns as normal message content.
-Additionally you can create a small spacing between them (around the size of half line break) by using multiple after
-each other.
+These components support mentions and markdown as normal message content.
+Additionally you can create a small spacing between them (about half the size of a line break) by using multiple of them,
+one after the other.
 
 ## Separator
 
@@ -56,8 +57,8 @@ create_separator(divider = False, spacing_size = SeparatorSpacingSize.large),
 
 ### Section
 
-Text display components can be grouped into sections. These sections allow you to set a thumbnail, that is just like
-at the case of embeds, an image, but it can also be a button.
+Text display components can be grouped into sections. These sections allow you to set a thumbnail, which can be an image
+just like in the case of embeds, but it can also be a button.
 
 ```py3
 components = [
@@ -77,9 +78,9 @@ components = [
 ]
 ```
 
-By stacking sections with thumbnail after each other you can create something unexpectedly charming.
+By stacking sections with thumbnail one after another you can create something unexpectedly charming.
 
-Thumbnails can have an alternative description and set to be spoilered. 
+Thumbnails can have an alternative description. They can also be set as spoiler. 
 
 ```py3
 create_thumbnail_media(url, description = 'Kawashiro Nitori', spoiler = True)
@@ -87,9 +88,8 @@ create_thumbnail_media(url, description = 'Kawashiro Nitori', spoiler = True)
 
 ## Media Gallery
 
-There is a component just for displaying the previews of various medias that include both images and shockingly
-videos as well.
-One to ten medias can be used in a single media gallery. 
+A component designed to display previews of various media, including both images and videos.
+Between one and ten media items can be used in a single media gallery.
 
 ```py3
 url = 'https://en.touhouwiki.net/images/7/70/Th185Nitori.png'
@@ -114,11 +114,11 @@ components = [
 ]
 ```
 
-Their layout currently cannot be customized, but since they are displayed the exact same way as image attachment
-previews of regular messages they are not specially hard to figure out.
+Their layout currently can't be customized, but since they're displayed in the same way as image attachment previews
+in regular messages, they're not particularly hard to understand.
 
-By using `MediaGalleryItem`-s you can assign additional alternative description to each media and also make them
-spoilered.
+By using `MediaGalleryItem`-s you can assign additional alternative description to each media. 
+`MediaGalleryItem` can be set as spoiler.
 
 ```py3
 create_media_gallery(
@@ -160,7 +160,7 @@ components = [
 
 Attachment media only allows you to use the `attachment://<file_name>` protocol.
 
-You can additional mark attachments as spoilered.
+You can mark attachments as spoilers.
 
 ```py3
 create_attachment_media('attachment://cv.txt', spoiler = True)
@@ -169,8 +169,8 @@ create_attachment_media('attachment://cv.txt', spoiler = True)
 ## Container
 
 You can have visibly distinct groups of components by using containers.
-They allow putting under them any other top level component.
-You can also use the `color` parameter to have them a colored strip on the left side, just like at the case of embeds.
+These allow you to place any other top-level component within them.
+You can also use the `color` parameter to add a colored strip on the left side, similar to how it's done with embeds.
 
 
 ```py3
@@ -207,7 +207,7 @@ components = [
 ]
 ```
 
-You can also spoiler whole containers.
+You can also spoiler entire containers.
 
 ```py3
 create_container(
@@ -219,10 +219,10 @@ create_container(
 
 # Putting it together
 
-Lets put a full command together from the above components.
+Let's put a full command together using the components we've discussed above.
 
-Since showcased a few buttons in the examples to show that [interactive components](interactive_components.md),
-can also be used within layout components, also adding basic handing for them.
+We already showcased a few buttons in the examples to show that [interactive components](interactive_components.md),
+can also be used within layout components. Now, we're going to add basic handling for them.
 
 ```py3
 from hata import (

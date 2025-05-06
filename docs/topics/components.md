@@ -88,11 +88,11 @@ components = [
 
 Components currently can be separated to 2 versions.
 
-#### version 1
+### version 1
 
 They can be attached of any message. They currently consist of interactive components.
 
-#### version 2
+### version 2
 
 They consist of content components and the related layout components.
 These content and layout components allow you to structure your message in a more relaxed way,

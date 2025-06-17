@@ -171,7 +171,7 @@ async def default_voice_client_update_event_handler(client, voice_state, old_att
         +-----------------------+-----------------------+
         | mute                  | `bool`                |
         +-----------------------+-----------------------+
-        | requested_to_speak_at | `None`, `datetime`    |
+        | requested_to_speak_at | `None | DateTime`     |
         +-----------------------+-----------------------+
         | self_deaf             | `bool`                |
         +-----------------------+-----------------------+

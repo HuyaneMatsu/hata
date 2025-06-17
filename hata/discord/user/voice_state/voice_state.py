@@ -38,7 +38,7 @@ class VoiceState(RichAttributeErrorBaseType):
         The guild's identifier where the user is connected to.
     mute : `bool`
         Whether the user is muted.
-    requested_to_speak_at : `None`, `datetime`
+    requested_to_speak_at : `None | DateTime`
         When the user requested to speak.
         
         Only applicable in stage channels.
@@ -96,7 +96,7 @@ class VoiceState(RichAttributeErrorBaseType):
             The guild's identifier where the user is connected to.
         mute : `bool`, Optional (Keyword only)
             Whether the user is muted.
-        requested_to_speak_at : `None`, `datetime`, Optional (Keyword only)
+        requested_to_speak_at : `None | DateTime`, Optional (Keyword only)
             When the user requested to speak.
         self_deaf : `bool`, Optional (Keyword only)
             Whether the user muted everyone else.
@@ -342,7 +342,7 @@ class VoiceState(RichAttributeErrorBaseType):
         +-----------------------+-----------------------+
         | mute                  | `bool`                |
         +-----------------------+-----------------------+
-        | requested_to_speak_at | `None`, `datetime`    |
+        | requested_to_speak_at | `None | DateTime`     |
         +-----------------------+-----------------------+
         | self_deaf             | `bool`                |
         +-----------------------+-----------------------+
@@ -616,7 +616,7 @@ class VoiceState(RichAttributeErrorBaseType):
             The guild's identifier where the user is connected to.
         mute : `bool`, Optional (Keyword only)
             Whether the user is muted.
-        requested_to_speak_at : `None`, `datetime`, Optional (Keyword only)
+        requested_to_speak_at : `None | DateTime`, Optional (Keyword only)
             When the user requested to speak.
         self_deaf : `bool`, Optional (Keyword only)
             Whether the user muted everyone else.

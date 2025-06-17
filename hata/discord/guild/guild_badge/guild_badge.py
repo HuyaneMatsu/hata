@@ -5,7 +5,7 @@ from scarletio import export
 from ...bases import IconSlot
 from ...bases import Slotted
 from ...core import GUILDS
-from ...http import urls as module_urls
+from ...http.urls import build_guild_badge_icon_url, build_guild_badge_icon_url_as
 
 from .fields import (
     parse_enabled, parse_guild_id, parse_tag, put_enabled, put_guild_id, put_tag, validate_enabled,
@@ -37,12 +37,7 @@ class GuildBadge(metaclass = Slotted):
     """
     __slots__ = ('enabled', 'guild_id', 'tag')
     
-    icon = IconSlot(
-        'icon',
-        'badge',
-        module_urls.guild_badge_icon_url,
-        module_urls.guild_badge_icon_url_as,
-    )
+    icon = IconSlot('icon', 'badge')
     
     def __new__(cls, *, enabled = ..., guild_id = ..., icon = ..., tag = ...):
         """
@@ -56,7 +51,7 @@ class GuildBadge(metaclass = Slotted):
         guild_id : `int`, Optional (Keyword only)
             The guild's identifier.
         
-        icon : `None`, ``Icon``, `str`, Optional (Keyword only)
+        icon : ``None | str | Icon``, Optional (Keyword only)
             The guild's badge's icon.
         
         tag : `str`, Optional (Keyword only)
@@ -249,7 +244,7 @@ class GuildBadge(metaclass = Slotted):
         guild_id : `int`, Optional (Keyword only)
             The guild's identifier.
         
-        icon : `None`, ``Icon``, `str`, Optional (Keyword only)
+        icon : ``None | str | Icon``, Optional (Keyword only)
             The guild's badge's icon.
         
         tag : `str`, Optional (Keyword only)
@@ -297,3 +292,35 @@ class GuildBadge(metaclass = Slotted):
         new.icon = icon
         new.tag = tag
         return new
+    
+    
+    @property
+    def icon_url(self):
+        """
+        Returns the guild badge's icon's url. If the guild badge has no icon, then returns `None`.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_guild_badge_icon_url(self.guild_id, self.icon_type, self.icon_hash)
+    
+    
+    def icon_url_as(self, ext = None, size = None):
+        """
+        Returns the guild badge's icon's url. If the guild badge has no icon, then returns `None`.
+        
+        Parameters
+        ----------
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+            If the guild has animated badge icon, it can be `'gif'` as well.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_guild_badge_icon_url_as(self.guild_id, self.icon_type, self.icon_hash, ext, size)

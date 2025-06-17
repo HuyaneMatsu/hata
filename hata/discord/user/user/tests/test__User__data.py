@@ -7,6 +7,7 @@ from ....guild import Guild, GuildBadge
 
 from ...avatar_decoration import AvatarDecoration
 from ...guild_profile import GuildProfile
+from ...name_plate import NamePlate
 
 from ..flags import UserFlag
 from ..user import User
@@ -25,25 +26,32 @@ def test__User__from_data__user_data_only():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160076)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    bot = True
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'suika'
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202506030081,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180056, tag = 'meow')
-    bot = True
     
     user_data = {
         'avatar': avatar.as_base_16_hash,
         'avatar_decoration_data': avatar_decoration.to_data(),
+        'banner': banner.as_base_16_hash,
         'accent_color': int(banner_color),
+        'bot': bot,
         'discriminator': str(discriminator).rjust(4, '0'),
         'global_name': display_name,
-        'username': name,
-        'primary_guild': primary_guild_badge.to_data(),
-        'banner': banner.as_base_16_hash,
-        'id': str(user_id),
         'public_flags': int(flags),
-        'bot': bot,
+        'id': str(user_id),
+        'username': name,
+        'collectibles': {
+            'nameplate': name_plate.to_data(),
+        },
+        'primary_guild': primary_guild_badge.to_data(),
     }
     
     
@@ -53,14 +61,15 @@ def test__User__from_data__user_data_only():
     
     vampytest.assert_eq(user.avatar, avatar)
     vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
+    vampytest.assert_eq(user.banner, banner)
     vampytest.assert_eq(user.banner_color, banner_color)
+    vampytest.assert_eq(user.bot, bot)
     vampytest.assert_eq(user.discriminator, discriminator)
     vampytest.assert_eq(user.display_name, display_name)
-    vampytest.assert_eq(user.name, name)
-    vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
-    vampytest.assert_eq(user.banner, banner)
     vampytest.assert_eq(user.flags, flags)
-    vampytest.assert_eq(user.bot, bot)
+    vampytest.assert_eq(user.name, name)
+    vampytest.assert_eq(user.name_plate, name_plate)
+    vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
 
 
 def test__User__from_data__1():
@@ -145,27 +154,34 @@ def test__User__from_data_and_difference_update_profile__user_missing():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160077)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    bot = True
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'suika'
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202506030082,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180057, tag = 'meow')
-    bot = True
     
     guild_profile = GuildProfile(nick = 'ibuki')
     
     user_data = {
         'avatar': avatar.as_base_16_hash,
         'avatar_decoration_data': avatar_decoration.to_data(),
+        'banner': banner.as_base_16_hash,
         'accent_color': int(banner_color),
+        'bot': bot,
         'discriminator': str(discriminator).rjust(4, '0'),
         'global_name': display_name,
-        'username': name,
-        'primary_guild': primary_guild_badge.to_data(),
-        'banner': banner.as_base_16_hash,
-        'id': str(user_id),
         'public_flags': int(flags),
-        'bot': bot,
+        'id': str(user_id),
+        'username': name,
+        'collectibles': {
+            'nameplate': name_plate.to_data(),
+        },
+        'primary_guild': primary_guild_badge.to_data(),
     }
     
     data = {
@@ -184,14 +200,15 @@ def test__User__from_data_and_difference_update_profile__user_missing():
     
     vampytest.assert_eq(user.avatar, avatar)
     vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
+    vampytest.assert_eq(user.banner, banner)
     vampytest.assert_eq(user.banner_color, banner_color)
+    vampytest.assert_eq(user.bot, bot)
     vampytest.assert_eq(user.discriminator, discriminator)
     vampytest.assert_eq(user.display_name, display_name)
-    vampytest.assert_eq(user.name, name)
-    vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
-    vampytest.assert_eq(user.banner, banner)
     vampytest.assert_eq(user.flags, flags)
-    vampytest.assert_eq(user.bot, bot)
+    vampytest.assert_eq(user.name, name)
+    vampytest.assert_eq(user.name_plate, name_plate)
+    vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
 
 
 def test__User__from_data_and_difference_update_profile__1():
@@ -291,12 +308,16 @@ def test__User__from_data_and_update_profile__user_missing_cache():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160078)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    bot = True
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'suika'
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202506030083,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180058, tag = 'meow')
-    bot = True
     
     guild = Guild.precreate(guild_id)
     
@@ -305,15 +326,18 @@ def test__User__from_data_and_update_profile__user_missing_cache():
     user_data = {
         'avatar': avatar.as_base_16_hash,
         'avatar_decoration_data': avatar_decoration.to_data(),
+        'banner': banner.as_base_16_hash,
+        'bot': bot,
         'accent_color': int(banner_color),
         'discriminator': str(discriminator).rjust(4, '0'),
         'global_name': display_name,
-        'username': name,
-        'primary_guild': primary_guild_badge.to_data(),
-        'banner': banner.as_base_16_hash,
-        'id': str(user_id),
         'public_flags': int(flags),
-        'bot': bot,
+        'username': name,
+        'collectibles': {
+            'nameplate': name_plate.to_data(),
+        },
+        'primary_guild': primary_guild_badge.to_data(),
+        'id': str(user_id),
     }
     
     data = {
@@ -332,14 +356,14 @@ def test__User__from_data_and_update_profile__user_missing_cache():
     
     vampytest.assert_eq(user.avatar, avatar)
     vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
+    vampytest.assert_eq(user.banner, banner)
     vampytest.assert_eq(user.banner_color, banner_color)
+    vampytest.assert_eq(user.bot, bot)
     vampytest.assert_eq(user.discriminator, discriminator)
     vampytest.assert_eq(user.display_name, display_name)
     vampytest.assert_eq(user.name, name)
+    vampytest.assert_eq(user.name_plate, name_plate)
     vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
-    vampytest.assert_eq(user.banner, banner)
-    vampytest.assert_eq(user.flags, flags)
-    vampytest.assert_eq(user.bot, bot)
 
 
 def test__User__from_data_and_update_profile__guild_profile_missing():

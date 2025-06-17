@@ -17,7 +17,12 @@ from ...core import GUILDS
 from ...emoji import Emoji
 from ...emoji.emoji.constants import NAME_LENGTH_MAX as EMOJI_NAME_LENGTH_MAX, NAME_LENGTH_MIN as EMOJI_NAME_LENGTH_MIN
 from ...emoji.emoji.fields import parse_id as parse_emoji_id
-from ...http import urls as module_urls
+from ...http.urls import (
+    build_guild_banner_url, build_guild_banner_url_as, build_guild_discovery_splash_url,
+    build_guild_discovery_splash_url_as, build_guild_home_splash_url, build_guild_home_splash_url_as,
+    build_guild_icon_url, build_guild_icon_url_as, build_guild_invite_splash_url, build_guild_invite_splash_url_as,
+    build_guild_vanity_invite_url, build_guild_widget_json_url, build_guild_widget_url, build_guild_widget_url_as
+)
 from ...localization.utils import LOCALE_DEFAULT
 from ...permission import Permission
 from ...permission.permission import PERMISSION_ALL, PERMISSION_MASK_ADMINISTRATOR, PERMISSION_NONE
@@ -108,40 +113,12 @@ if CACHE_USER:
 else:
     GUILD_USERS_TYPE = WeakValueDictionary
 
-GUILD_BANNER = IconSlot(
-    'banner',
-    'banner',
-    module_urls.guild_banner_url,
-    module_urls.guild_banner_url_as,
-)
 
-GUILD_DISCOVERY_SPLASH = IconSlot(
-    'discovery_splash',
-    'discovery_splash',
-    module_urls.guild_discovery_splash_url,
-    module_urls.guild_discovery_splash_url_as,
-)
-
-GUILD_HOME_SPLASH = IconSlot(
-    'home_splash',
-    'home_header',
-    module_urls.guild_home_splash_url,
-    module_urls.guild_home_splash_url_as,
-)
-
-GUILD_ICON = IconSlot(
-    'icon',
-    'icon',
-    module_urls.guild_icon_url,
-    module_urls.guild_icon_url_as,
-)
-
-GUILD_INVITE_SPLASH = IconSlot(
-    'invite_splash',
-    'splash',
-    module_urls.guild_invite_splash_url,
-    module_urls.guild_invite_splash_url_as,
-)
+GUILD_BANNER = IconSlot('banner', 'banner')
+GUILD_DISCOVERY_SPLASH = IconSlot('discovery_splash', 'discovery_splash')
+GUILD_HOME_SPLASH = IconSlot('home_splash', 'home_header')
+GUILD_ICON = IconSlot('icon', 'icon')
+GUILD_INVITE_SPLASH = IconSlot('invite_splash', 'splash')
 
 
 PRECREATE_FIELDS = {
@@ -402,7 +379,7 @@ class Guild(DiscordEntity, immortal = True):
         
         Defaults to `None` if would be empty.
     
-    stickers : `dict` of (`int`, ``Sticker``) items
+    stickers : ``dict<int, Sticker>``
         Stickers of the guild.
     
     system_channel_flags : ``SystemChannelFlag``
@@ -513,7 +490,7 @@ class Guild(DiscordEntity, immortal = True):
         afk_timeout : `int`, Optional (Keyword only)
             The afk timeout at the `afk_channel`.
         
-        banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        banner : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The guild's banner.
         
         boost_progress_bar_enabled : `bool`, Optional (Keyword only)
@@ -525,7 +502,7 @@ class Guild(DiscordEntity, immortal = True):
         description : `None`, `str`
             Description of the guild. The guild must be a Community guild.
         
-        discovery_splash : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        discovery_splash : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The guild's discovery splash.
         
         explicit_content_filter_level : ``ExplicitContentFilterLevel``, `int`, Optional (Keyword only)
@@ -534,16 +511,16 @@ class Guild(DiscordEntity, immortal = True):
         features : `None`, `iterable` of `(`int`, `GuildFeature``), Optional (Keyword only)
             The guild's features.
         
-        home_splash : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        home_splash : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The guild's home splash.
         
         hub_type : ``HubType``, `int`, Optional (Keyword only)
             The guild's hub type.
         
-        icon : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        icon : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The guild's icon.
         
-        invite_splash : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        invite_splash : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The guild's invite splash.
         
         locale : ``Locale``, `int`, Optional (Keyword only)
@@ -861,7 +838,7 @@ class Guild(DiscordEntity, immortal = True):
         available : `bool`, Optional (Keyword only)
             Whether the guild is available.
         
-        banner : `None`, ``Icon``, `str`, Optional (Keyword only)
+        banner : ``None | str | Icon``, Optional (Keyword only)
             The guild's banner.
         
         boost_count : `int`, Optional (Keyword only)
@@ -882,7 +859,7 @@ class Guild(DiscordEntity, immortal = True):
         description : `None`, `str`
             Description of the guild. The guild must be a Community guild.
         
-        discovery_splash : `None`, ``Icon``, `str`, Optional (Keyword only)
+        discovery_splash : ``None | str | Icon``, Optional (Keyword only)
             The guild's discovery splash.
         
         embedded_activities : `None`, `iterable` of ``EmbeddedActivity``, Optional (Keyword only)
@@ -897,13 +874,13 @@ class Guild(DiscordEntity, immortal = True):
         features : `None`, `features` of `(`int`, `GuildFeature``), Optional (Keyword only)
             The guild's features.
         
-        home_splash : `None`, ``Icon``, `str`, Optional (Keyword only)
+        home_splash : ``None | str | Icon``, Optional (Keyword only)
             The guild's home splash.
         
         hub_type : ``HubType``, `int`, Optional (Keyword only)
             The guild's hub type.
         
-        icon : `None`, ``Icon``, `str`, Optional (Keyword only)
+        icon : ``None | str | Icon``, Optional (Keyword only)
             The guild's icon.
         
         incidents : `None`, ``GuildIncidents``, Optional (Keyword only)
@@ -912,7 +889,7 @@ class Guild(DiscordEntity, immortal = True):
         inventory_settings : `None`, ``GuildInventorySettings``, Optional (Keyword only)
             The guild's inventory settings.
         
-        invite_splash : `None`, ``Icon``, `str`, Optional (Keyword only)
+        invite_splash : ``None | str | Icon``, Optional (Keyword only)
             The guild's invite splash.
         
         large : `bool`, Optional (Keyword only)
@@ -982,7 +959,7 @@ class Guild(DiscordEntity, immortal = True):
             
             Defaults to `None` if would be empty.
         
-        stickers : `None`, `iterable` of ``Sticker``, `dict` of (`int`, ``Sticker``) items, Optional (Keyword only)
+        stickers : `None`, `iterable` of ``Sticker``, ``dict<int, Sticker>``, Optional (Keyword only)
             The stickers of the guild.
         
         system_channel_flags : ``SystemChannelFlag``, `int`, Optional (Keyword only)
@@ -2198,7 +2175,7 @@ class Guild(DiscordEntity, immortal = True):
         afk_timeout : `int`, Optional (Keyword only)
             The afk timeout at the `afk_channel`.
         
-        banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        banner : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The guild's banner.
         
         boost_progress_bar_enabled : `bool`, Optional (Keyword only)
@@ -2210,7 +2187,7 @@ class Guild(DiscordEntity, immortal = True):
         description : `None`, `str`
             Description of the guild. The guild must be a Community guild.
         
-        discovery_splash : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        discovery_splash : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The guild's discovery splash.
         
         explicit_content_filter_level : ``ExplicitContentFilterLevel``, `int`, Optional (Keyword only)
@@ -2219,16 +2196,16 @@ class Guild(DiscordEntity, immortal = True):
         features : `None`, `iterable` of `(`int`, `GuildFeature``), Optional (Keyword only)
             The guild's features.
         
-        home_splash : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        home_splash : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The guild's home splash.
         
         hub_type : ``HubType``, `int`, Optional (Keyword only)
             The guild's hub type.
         
-        icon : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        icon : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The guild's icon.
         
-        invite_splash : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        invite_splash : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The guild's invite splash.
         
         locale : ``Locale``, `int`, Optional (Keyword only)
@@ -2714,7 +2691,7 @@ class Guild(DiscordEntity, immortal = True):
             +-------------------+-------------------------------+
             | require_colons    | `bool`                        |
             +-------------------+-------------------------------+
-            | roles_ids         | `None`, `tuple` of `int`      |
+            | roles_ids         | `None | tuple<int>`           |
             +-------------------+-------------------------------+
         """
         emojis = self.emojis
@@ -3062,14 +3039,7 @@ class Guild(DiscordEntity, immortal = True):
         for sticker_data in sticker_datas:
             sticker = Sticker.from_data(sticker_data)
             stickers[sticker.id] = sticker
-
     
-    # ---- urls ----
-    
-    widget_url = property(module_urls.guild_widget_url)
-    widget_url_as = module_urls.guild_widget_url_as
-    vanity_url = property(module_urls.guild_vanity_invite_url)
-    widget_json_url = property(module_urls.guild_widget_json_url)
     
     # ---- properties ----
     
@@ -4827,3 +4797,222 @@ class Guild(DiscordEntity, immortal = True):
             return PERMISSION_ALL
         
         return Permission(permissions)
+    
+    
+    @property
+    def banner_url(self):
+        """
+        Returns the guild's banner's url. If the guild has no banner, then returns `None`.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_guild_banner_url(self.id, self.banner_type, self.banner_hash)
+    
+    
+    def banner_url_as(self, ext = None, size = None):
+        """
+        Returns the guild's banner's url. If the guild has no banner, then returns `None`.
+        
+        Parameters
+        ----------
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+            If the guild has animated banner, it can be `'gif'` as well.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_guild_banner_url_as(self.id, self.banner_type, self.banner_hash, ext, size)
+    
+    
+    @property
+    def discovery_splash_url(self):
+        """
+        Returns the guild's discovery splash's url. If the guild has no discovery_splash, then returns `None`.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_guild_discovery_splash_url(self.id, self.discovery_splash_type, self.discovery_splash_hash)
+    
+    
+    def discovery_splash_url_as(self, ext = None, size = None):
+        """
+        Returns the guild's discovery splash's url. If the guild has no discovery splash, then returns `None`.
+        
+        Parameters
+        ----------
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+            If the guild has animated discovery splash, it can be `'gif'` as well.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_guild_discovery_splash_url_as(
+            self.id, self.discovery_splash_type, self.discovery_splash_hash, ext, size
+        )
+    
+    
+    @property
+    def home_splash_url(self):
+        """
+        Returns the guild's home splash's url. If the guild has no home_splash, then returns `None`.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_guild_home_splash_url(self.id, self.home_splash_type, self.home_splash_hash)
+    
+    
+    def home_splash_url_as(self, ext = None, size = None):
+        """
+        Returns the guild's home splash's url. If the guild has no home splash, then returns `None`.
+        
+        Parameters
+        ----------
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+            If the guild has animated home splash, it can be `'gif'` as well.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_guild_home_splash_url_as(self.id, self.home_splash_type, self.home_splash_hash, ext, size)
+    
+    
+    @property
+    def icon_url(self):
+        """
+        Returns the guild's icon's url. If the guild has no icon, then returns `None`.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_guild_icon_url(self.id, self.icon_type, self.icon_hash)
+    
+    
+    def icon_url_as(self, ext = None, size = None):
+        """
+        Returns the guild's icon's url. If the guild has no icon, then returns `None`.
+        
+        Parameters
+        ----------
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+            If the guild has animated icon, it can be `'gif'` as well.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_guild_icon_url_as(self.id, self.icon_type, self.icon_hash, ext, size)
+    
+    
+    @property
+    def invite_splash_url(self):
+        """
+        Returns the guild's invite splash's url. If the guild has no invite splash, then returns `None`.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_guild_invite_splash_url(self.id, self.invite_splash_type, self.invite_splash_hash)
+    
+    
+    def invite_splash_url_as(self, ext = None, size = None):
+        """
+        Returns the guild's invite splash's url. If the guild has no invite splash, then returns `None`.
+        
+        Parameters
+        ----------
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+            If the guild has animated invite splash, it can be `'gif'` as well.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_guild_invite_splash_url_as(self.id, self.invite_splash_type, self.invite_splash_hash, ext, size)
+    
+    
+    @property
+    def vanity_url(self):
+        """
+        Returns the guild's vanity invite's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_guild_vanity_invite_url(self.vanity_code)
+        
+    
+    @property
+    def widget_json_url(self):
+        """
+        Returns an url to request the guild's widget data.
+        
+        Returns
+        -------
+        url : `str`
+        """
+        return build_guild_widget_json_url(self.id)
+    
+    
+    @property
+    def widget_url(self):
+        """
+        Returns the guild's widget image's url in `.png` format.
+        
+        Returns
+        -------
+        url : `str`
+        """
+        return build_guild_widget_url(self.id)
+    
+    
+    def widget_url_as(self, style = 'shield'):
+        """
+        Returns the guild's widget image's url in `.png` format.
+        
+        Parameters
+        ----------
+        style : `str` = `'shield'`, Optional
+            The widget image's style. Can be any of: `'shield'`, `'banner1'`, `'banner2'`, `'banner3'`, `'banner4'`.
+        
+        Returns
+        -------
+        url : `str`
+    
+        Raises
+        ------
+        ValueError
+            - If `style` was not passed as any of the expected values.
+        """
+        return build_guild_widget_url_as(self.id, style)

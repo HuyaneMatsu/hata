@@ -39,7 +39,7 @@ class ActivityMetadataHanging(ActivityMetadataBase):
         
         Parameters
         ----------
-        created_at : `None`, `datetime`, Optional (Keyword only)
+        created_at : `None | DateTime`, Optional (Keyword only)
             When the activity was created.
         
         emoji : `None`, ``Emoji``, Optional (Keyword only)
@@ -284,7 +284,7 @@ class ActivityMetadataHanging(ActivityMetadataBase):
         
         Parameters
         ----------
-        created_at : `None`, `datetime`, Optional (Keyword only)
+        created_at : `None | DateTime`, Optional (Keyword only)
             When the status was created.
         
         details : `None`, `str`, Optional (Keyword only)

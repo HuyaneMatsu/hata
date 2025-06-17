@@ -17,7 +17,7 @@ class ApplicationInstallParameters(RichAttributeErrorBaseType):
     ----------
     permissions : ``Permission``
         The permissions to invite the bot with.
-    scopes : `None`, `tuple` of `str`
+    scopes : `None | tuple<str>`
         Oauth2 scopes to invite the bot with.
     """
     __slots__ = ('permissions', 'scopes')

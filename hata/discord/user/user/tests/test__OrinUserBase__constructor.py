@@ -5,6 +5,7 @@ from ....color import Color
 from ....guild import GuildBadge
 
 from ...avatar_decoration import AvatarDecoration
+from ...name_plate import NamePlate
 
 from ..flags import UserFlag
 from ..orin_user_base import OrinUserBase
@@ -29,6 +30,7 @@ def _assert_fields_set(user):
     vampytest.assert_instance(user.flags, UserFlag)
     vampytest.assert_instance(user.id, int)
     vampytest.assert_instance(user.name, str)
+    vampytest.assert_instance(user.name_plate, NamePlate, nullable = True)
     vampytest.assert_instance(user.primary_guild_badge, GuildBadge, nullable = True)
 
 
@@ -56,6 +58,10 @@ def test__OrinUserBase__new__all_fields():
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'voice in the dark'
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202506030003,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180006, tag = 'miau')
     
     user = OrinUserBase(
@@ -67,6 +73,7 @@ def test__OrinUserBase__new__all_fields():
         display_name = display_name,
         flags = flags,
         name = name,
+        name_plate = name_plate,
         primary_guild_badge = primary_guild_badge,
     )
     _assert_fields_set(user)
@@ -79,6 +86,7 @@ def test__OrinUserBase__new__all_fields():
     vampytest.assert_eq(user.display_name, display_name)
     vampytest.assert_eq(user.flags, flags)
     vampytest.assert_eq(user.name, name)
+    vampytest.assert_eq(user.name_plate, name_plate)
     vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
 
 

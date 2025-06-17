@@ -1,3 +1,4 @@
+from base64 import b64encode as base_64_encode
 from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
@@ -36,7 +37,7 @@ def test__Attachment__from_data():
     temporary = True
     title = 'flandre'
     url = 'https://www.astil.dev/'
-    waveform = 'kisaki'
+    waveform = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
     width = 998
     
     data = {
@@ -46,7 +47,7 @@ def test__Attachment__from_data():
         'clip_participants': [clip_user.to_data(include_internals = True) for clip_user in clip_users],
         'content_type': content_type,
         'description': description,
-        'duration_sec': duration,
+        'duration_secs': duration,
         'flags': int(flags),
         'height': height,
         'filename': name,
@@ -55,7 +56,7 @@ def test__Attachment__from_data():
         'ephemeral': temporary,
         'title': title,
         'url': url,
-        'waveform': waveform,
+        'waveform': base_64_encode(waveform).decode('ascii'),
         'width': width,
     }
     
@@ -107,7 +108,7 @@ def test__Attachment__to_data():
     temporary = True
     title = 'flandre'
     url = 'https://www.astil.dev/'
-    waveform = 'kisaki'
+    waveform = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
     width = 998
     
     attachment = Attachment.precreate(
@@ -142,7 +143,7 @@ def test__Attachment__to_data():
             'clip_participants': [clip_user.to_data(defaults = True, include_internals = True) for clip_user in clip_users],
             'content_type': content_type,
             'description': description,
-            'duration_sec': duration,
+            'duration_secs': duration,
             'flags': int(flags),
             'height': height,
             'filename': name,
@@ -151,7 +152,7 @@ def test__Attachment__to_data():
             'ephemeral': temporary,
             'title': title,
             'url': url,
-            'waveform': waveform,
+            'waveform': base_64_encode(waveform).decode('ascii'),
             'width': width,
         },
     )

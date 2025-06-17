@@ -11,8 +11,8 @@ from ....utils import now_as_id
 
 from ...interaction_metadata import InteractionMetadataApplicationCommand, InteractionMetadataMessageComponent
 from ...responding.constants import (
-    RESPONSE_FLAG_ACKNOWLEDGED, RESPONSE_FLAG_ACKNOWLEDGING, RESPONSE_FLAG_DEFERRED, RESPONSE_FLAG_RESPONDED,
-    RESPONSE_FLAG_RESPONDING
+    RESPONSE_FLAG_ACKNOWLEDGED, RESPONSE_FLAG_ACKNOWLEDGING, RESPONSE_FLAG_DEFERRED, RESPONSE_FLAG_EPHEMERAL,
+    RESPONSE_FLAG_RESPONDED, RESPONSE_FLAG_RESPONDING
 )
 
 from ..interaction_event import InteractionEvent
@@ -106,6 +106,18 @@ def test__InteractionEvent__is_expired():
     
     interaction_event = InteractionEvent.precreate(now_as_id())
     vampytest.assert_false(interaction_event.is_expired())
+
+
+def test__InteractionEvent__is_response_invoking_user_only():
+    """
+    Tests whether ``InteractionEvent.is_response_invoking_user_only`` works as intended.
+    """
+    interaction_event = InteractionEvent()
+    vampytest.assert_false(interaction_event.is_response_invoking_user_only())
+    
+    interaction_event = InteractionEvent()
+    interaction_event._response_flags |= RESPONSE_FLAG_EPHEMERAL
+    vampytest.assert_true(interaction_event.is_response_invoking_user_only())
 
 
 def test__InteractionEvent__copy():

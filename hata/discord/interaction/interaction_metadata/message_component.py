@@ -26,7 +26,7 @@ class InteractionMetadataMessageComponent(InteractionMetadataBase):
     resolved : `None`, ``Resolved``
         Contains the received entities.
     
-    values : `None`, `tuple` of `str`
+    values : `None | tuple<str>`
         Values selected by the user.
     """
     __slots__ = ('component_type', 'custom_id', 'resolved', 'values')
@@ -53,7 +53,7 @@ class InteractionMetadataMessageComponent(InteractionMetadataBase):
         resolved : `None`, ``Resolved``, Optional (Keyword only)
             Contains the received entities.
         
-        values : `None`, `tuple` of `str`, Optional (Keyword only)
+        values : `None | tuple<str>`, Optional (Keyword only)
             Values selected by the user. Applicable for component interactions.
         
         Raises
@@ -147,7 +147,7 @@ class InteractionMetadataMessageComponent(InteractionMetadataBase):
         resolved : `None`, ``Resolved``, Optional (Keyword only)
             Contains the received entities.
         
-        values : `None`, `tuple` of `str`, Optional (Keyword only)
+        values : `None | tuple<str>`, Optional (Keyword only)
             Values selected by the user. Applicable for component interactions.
         
         Returns

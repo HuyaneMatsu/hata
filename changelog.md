@@ -1,3 +1,34 @@
+## 1.3.80 *\[2025-06-17\]*
+
+### Improvements
+
+- `Attachment.waveform` is now `None | bytes` (from `None | str`).
+- Add `VoiceAttachment`.
+- Add `voice_attachment` support to `Client.message_create`, `.webhook_message_create`,
+    `.interaction_followup_message_create` and to`.interaction_response_message_edit`.
+- Add `Palette`.
+- Add missing `ChannelMetadataBase.icon_type` and `ChannelMetadataBase.icon_hash`, `Channel.icon_type`,
+    `Channel.icon_hash`.
+- Fix `Channel.icon_url` and `Channel.icon_url_as` were bound to the channel group metadata.
+    So they were not only there, but were they were, they were not even working. (Since 2022.)
+- Add missing `AvatarDecoration.url` and `.url_as`.
+- Add `AvatarDecoration.expires_at`.
+- Add `NamePlate`.
+- Add `UserBase.name_plate`.
+- Add `UserBase.name_plate_url`.
+- Add `InteractionEvent.is_response_invoking_user_only`.
+
+### ext.plugin_loader
+- Assigning to a plugin's module is now allowed.
+- Plugin dependency tree building now should work better.
+- In plugin dependency tree plugins cannot have their own module level parent as their children.
+
+#### ext.rpc
+- Remove `Oauth2Application.icon_url` and `Oauth2Application.icon_url_as` since they were not working.
+
+#### ext.slash
+- Add `voice_attachment` support to `InteractionResponse` and to `abort`.
+
 ## 1.3.79 *\[2025-05-05\]*
 
 ### Improvements

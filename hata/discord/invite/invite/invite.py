@@ -6,7 +6,7 @@ from scarletio import export
 
 from ...bases import DiscordEntity
 from ...core import INVITES
-from ...http import urls as module_urls
+from ...http.urls import build_invite_url
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 from ...user import ClientUserBase, ZEROUSER
 
@@ -807,9 +807,18 @@ class Invite(DiscordEntity, immortal = True):
         new.uses = None
         
         return new
-        
     
-    url = property(module_urls.invite_url)
+    
+    @property
+    def url(self):
+        """
+        Returns the invite's url.
+        
+        Returns
+        -------
+        url : `str`
+        """
+        return build_invite_url(self.code)
     
     
     @property

@@ -60,7 +60,7 @@ def parse_created_at(data):
     
     Returns
     -------
-    created_at : `None`, `datetime`
+    created_at : `None | DateTime`
     """
     created_at = data.get('created_at', None)
     if (created_at is not None):
@@ -73,7 +73,7 @@ def put_created_at(created_at, data, defaults):
     
     Parameters
     ----------
-    created_at : `None`, `datetime`
+    created_at : `None | DateTime`
         Activity timestamps created_at.
     data : `dict<str, object>`
         Json serializable dictionary.

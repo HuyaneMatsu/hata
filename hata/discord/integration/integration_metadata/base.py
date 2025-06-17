@@ -288,7 +288,7 @@ class IntegrationMetadataBase(RichAttributeErrorBaseType):
         """
         When the integration was last synced.
         
-        synced_at : `None`, `datetime`
+        synced_at : `None | DateTime`
         """
     )
     

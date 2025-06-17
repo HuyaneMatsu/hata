@@ -106,7 +106,7 @@ Since "version 2" supports more top level components, when passing the "version 
 
 - A message can have up to `5` if v1 or `10` if v2 top level components.
 - `custom_id` can be `100` character long.
-- A message can have up to `30` total components.
+- A message can have up to `40` total components.
 - The displayable content cannot exceed `4000` characters.
     This excludes the text on interactive components and media descriptions.
 

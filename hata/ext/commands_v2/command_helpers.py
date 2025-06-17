@@ -60,7 +60,7 @@ async def handle_exception(command_context, exception):
     ----------
     command_context : ``CommandContext``
         The respective command context.
-    exception : ``BaseException``
+    exception : `BaseException`
         The occurred exception.
     
     Returns

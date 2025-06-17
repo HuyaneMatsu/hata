@@ -46,42 +46,85 @@ def test__Channel__hash__1():
     vampytest.assert_instance(hash(channel), int)
 
 
-def test__Channel__eq():
-    """
-    Tests whether ``Channel.__eq__` works as intended.
-    """
+def _iter_options__eq():
     name = 'Frantic'
     channel_type = ChannelType.guild_text
-    guild_id = 202209180140
-    channel_id_1 = 202209180141
-    channel_id_2 = 202209180142
     
     keyword_parameters = {
         'channel_type': channel_type,
         'name': name,
     }
     
-    channel = Channel.precreate(channel_id_1, **keyword_parameters, guild_id = guild_id)
+    yield (
+        keyword_parameters,
+        keyword_parameters,
+        True,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'name': 'dread',
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'channel_type': ChannelType.guild_voice,
+        },
+        False,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__eq()).returning_last())
+def test__Channel__eq(keyword_parameters_0, keyword_parameters_1):
+    """
+    Tests whether ``Channel.__eq__`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters_0 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    keyword_parameters_1 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    channel_0 = Channel(**keyword_parameters_0)
+    channel_1 = Channel(**keyword_parameters_1)
+    
+    output = channel_0 == channel_1
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def test__Channel__eq__partial__non_partial():
+    """
+    Tests whether ``Channel.__eq__` works as intended.
+    
+    Case: partial, non partial.
+    """
+    name = 'Frantic'
+    channel_type = ChannelType.guild_text
+    guild_id = 202209180140
+    channel_id_0 = 202209180141
+    channel_id_1 = 202209180142
+    
+    channel = Channel.precreate(channel_id_0, channel_type = channel_type, guild_id = guild_id, name = name)
     
     vampytest.assert_eq(channel, channel)
     vampytest.assert_ne(channel, object())
     
     # another full
-    test_channel = Channel.precreate(channel_id_2, **keyword_parameters, guild_id = guild_id)
+    test_channel = Channel.precreate(channel_id_1, channel_type = channel_type, guild_id = guild_id, name = name)
     vampytest.assert_ne(channel, test_channel)
-    
-    
-    # partial
-    test_channel = Channel(**keyword_parameters)
-    vampytest.assert_eq(channel, test_channel)
-    
-    # different partials
-    for field_name, field_value in (
-        ('name', 'dread'),
-        ('channel_type', ChannelType.guild_voice)
-    ):
-        test_channel = Channel(**{**keyword_parameters, field_name: field_value})
-        vampytest.assert_ne(channel, test_channel)
 
 
 def test__Channel__sort():

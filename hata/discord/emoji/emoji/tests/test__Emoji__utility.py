@@ -3,7 +3,7 @@ from datetime import datetime as DateTime
 import vampytest
 
 from ....client import Client
-from ....core import BUILTIN_EMOJIS
+from ....core import BUILTIN_EMOJIS, EMOJIS
 from ....guild import Guild
 from ....role import Role, RoleManagerType
 from ....user import User
@@ -13,22 +13,45 @@ from ..emoji import Emoji
 from .test__Emoji__constructor import _assert_fields_set
 
 
-def test__Emoji__is_premium():
-    """
-    Tests whether ``Emoji.is_premium`` works as intended.
-    """
+def _iter_options__is_premium():
     role_id_0 = 202212190005
     role_id_1 = 202212190006
     
     role_0 = Role.precreate(role_id_0)
     role_1 = Role.precreate(role_id_1, manager_type = RoleManagerType.subscription)
     
-    for emoji, expected_output in (
-        (Emoji.precreate(202212190007, roles = None), False),
-        (Emoji.precreate(202212190008, roles = [role_id_0]), False),
-        (Emoji.precreate(202212190009, roles = [role_id_1]), True),
-    ):
-        vampytest.assert_eq(emoji.is_premium(), expected_output)
+    yield 202212190007, None, False
+    yield 202212190008, [role_0], False
+    yield 202212190009, [role_1], True
+
+
+@vampytest._(vampytest.call_from(_iter_options__is_premium()).returning_last())
+def test__Emoji__is_premium(emoji_id, roles):
+    """
+    Tests whether ``Emoji.is_premium`` works as intended.
+    
+    Parameters
+    ----------
+    emoji_id : `int`
+        Emoji identifier.
+    
+    roles : ``None | list<Role>``
+        Roles to create the emoji with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    if roles is None:
+        role_ids = None
+    else:
+        role_ids = [role.id for role in roles]
+    
+    emoji = Emoji.precreate(emoji_id, role_ids = role_ids)
+    
+    output = emoji.is_premium()
+    vampytest.assert_instance(output, bool)
+    return output
 
 
 def test__Emoji__partial():
@@ -135,28 +158,6 @@ def test__Emoji__created_at():
     vampytest.assert_instance(emoji.created_at, DateTime)
 
 
-def test__emoji__url():
-    """
-    Tests whether ``Emoji.url`` works as intended.
-    """
-    emoji = BUILTIN_EMOJIS['x']
-    vampytest.assert_is(emoji.url, None)
-
-    emoji = Emoji()
-    vampytest.assert_instance(emoji.url, str)
-
-
-def test__emoji__url_as():
-    """
-    Tests whether ``Emoji.url_as`` works as intended.
-    """
-    emoji = BUILTIN_EMOJIS['x']
-    vampytest.assert_is(emoji.url_as(), None)
-
-    emoji = Emoji()
-    vampytest.assert_instance(emoji.url_as(), str)
-
-
 def test__Emoji__copy():
     """
     Tests whether ``Emoji.copy`` works as intended.
@@ -185,7 +186,7 @@ def test__Emoji__copy():
     vampytest.assert_eq(emoji, copy)
 
 
-def test__Emoji__copy_with__0():
+def test__Emoji__copy_with__no_fields():
     """
     Tests whether ``Emoji.copy_with`` works as intended.
     
@@ -215,7 +216,7 @@ def test__Emoji__copy_with__0():
     vampytest.assert_eq(emoji, copy)
 
 
-def test__Emoji__copy_with__1():
+def test__Emoji__copy_with__all_fields():
     """
     Tests whether ``Emoji.copy_with`` works as intended.
     
@@ -288,50 +289,182 @@ def test__Emoji__guild():
     vampytest.assert_is(emoji.guild, guild)
 
 
-def test__Emoji__roles():
-    """
-    Tests whether ``Emoji.roles`` works as intended.
-    """
+def _iter_options__roles():
     role_id_0 = 202301010071
     role_id_1 = 202301010072
     role_0 = Role.precreate(role_id_0, position = 1)
     role_1 = Role.precreate(role_id_1, position = 0)
     
-    for input_value, expected_output in (
-        (None, None),
-        ([role_id_0, role_id_1], (role_1, role_0)),
-    ):
-        emoji = Emoji(role_ids = input_value) 
-        vampytest.assert_eq(emoji.roles, expected_output)
+    yield None, None
+    yield [role_id_0, role_id_1], (role_1, role_0)
+    
+
+@vampytest._(vampytest.call_from(_iter_options__roles()).returning_last())
+def test__Emoji__roles(role_ids):
+    """
+    Tests whether ``Emoji.roles`` works as intended.
+    
+    Parameters
+    ----------
+    role_ids : `None | list<int>`
+        Role identifiers to create emoji with.
+    
+    Returns
+    -------
+    output : ``tuple<Role>``
+    """
+    emoji = Emoji(role_ids = role_ids) 
+    
+    output = emoji.roles
+    vampytest.assert_instance(output, tuple, nullable = True)
+    
+    if (output is not None):
+        for element in output:
+            vampytest.assert_instance(element, Role)
+    
+    return output
 
 
-def test__Emoji__iter_role_ids():
-    """
-    Tests whether ``Emoji.iter_role_ids`` works as intended.
-    """
+def _iter_options__iter_role_ids():
     role_id_0 = 202301010073
     role_id_1 = 202301010074
     
-    for input_value, expected_output in (
-        (None, []),
-        ([role_id_0, role_id_1], [role_id_0, role_id_1]),
-    ):
-        emoji = Emoji(role_ids = input_value) 
-        vampytest.assert_eq([*emoji.iter_role_ids()], expected_output)
+    yield None, []
+    yield [role_id_0, role_id_1], [role_id_0, role_id_1]
 
 
-def test__Emoji__iter_roles():
+@vampytest._(vampytest.call_from(_iter_options__iter_role_ids()).returning_last())
+def test__Emoji__iter_role_ids(role_ids):
     """
-    Tests whether ``Emoji.iter_roles`` works as intended.
+    Tests whether ``Emoji.iter_role_ids`` works as intended.
+    
+    Parameters
+    ----------
+    role_ids : `None | list<int>`
+        Role identifiers to create emoji with.
+    
+    Returns
+    -------
+    output : `list<int>`
     """
+    emoji = Emoji(role_ids = role_ids)
+    output = [*emoji.iter_role_ids()]
+    
+    for element in output:
+        vampytest.assert_instance(element, int)
+    
+    return output
+
+
+def _iter_options__iter_roles():
     role_id_0 = 202301010075
     role_id_1 = 202301010076
     role_0 = Role.precreate(role_id_0, position = 1)
     role_1 = Role.precreate(role_id_1, position = 0)
     
-    for input_value, expected_output in (
-        (None, []),
-        ([role_id_0, role_id_1], [role_0, role_1]),
-    ):
-        emoji = Emoji(role_ids = input_value) 
-        vampytest.assert_eq([*emoji.iter_roles()], expected_output)
+    yield None, []
+    yield [role_id_0, role_id_1], [role_0, role_1]
+
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_roles()).returning_last())
+def test__Emoji__iter_roles(role_ids):
+    """
+    Tests whether ``Emoji.iter_roles`` works as intended.
+    
+    Parameters
+    ----------
+    role_ids : `None | list<int>`
+        Role identifiers to create emoji with.
+    
+    Returns
+    -------
+    output : ``list<Role>``
+    """
+    emoji = Emoji(role_ids = role_ids) 
+    
+    output = [*emoji.iter_roles()]
+    
+    for element in output:
+        vampytest.assert_instance(element, Role)
+    
+    return output
+
+
+def _iter_options__url():
+    yield 202505310000, False, True
+    yield 202505310001, True, True
+    
+    yield BUILTIN_EMOJIS['x'].id, False, False
+
+
+@vampytest._(vampytest.call_from(_iter_options__url()).returning_last())
+def test__Emoji__url(emoji_id, animated):
+    """
+    Tests whether ``Emoji.url`` works as intended.
+    
+    Parameters
+    ----------
+    emoji_id : `int`
+        Identifier to create emoji with.
+    
+    animated : `bool`
+        Whether the emoji is animated.
+    
+    Returns
+    -------
+    has_url : `bool`
+    """
+    if emoji_id < (1 << 22):
+        emoji = EMOJIS[emoji_id]
+    
+    else:
+        emoji = Emoji.precreate(
+            emoji_id,
+            animated = animated,
+        )
+    
+    output = emoji.url
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__url_as():
+    yield 202505310002, False, {'ext': 'webp', 'size': 128}, True
+    yield 202505310003, True, {'ext': 'webp', 'size': 128}, True
+    
+    yield BUILTIN_EMOJIS['x'].id, False, {'ext': 'webp', 'size': 128}, False
+
+
+@vampytest._(vampytest.call_from(_iter_options__url_as()).returning_last())
+def test__Emoji__url_as(emoji_id, animated, keyword_parameters):
+    """
+    Tests whether ``Emoji.url_as`` works as intended.
+    
+    Parameters
+    ----------
+    emoji_id : `int`
+        Identifier to create emoji with.
+    
+    animated : `bool`
+        Whether the emoji is animated.
+    
+    keyword_parameters : `dict<str, object>`
+        Additional keyword parameters to pass.
+    
+    Returns
+    -------
+    has_url : `bool`
+    """
+    if emoji_id < (1 << 22):
+        emoji = EMOJIS[emoji_id]
+    
+    else:
+        emoji = Emoji.precreate(
+            emoji_id,
+            animated = animated,
+        )
+    
+    output = emoji.url_as(**keyword_parameters)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)

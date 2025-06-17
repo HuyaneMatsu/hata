@@ -2,7 +2,7 @@ __all__ = ()
 
 from scarletio import include_with_callback, set_docs
 
-from .utils import timestamp_to_datetime
+from .utils import timestamp_to_datetime, unix_time_to_datetime
 
 
 def entity_id_parser_factory(field_key):
@@ -101,7 +101,7 @@ def entity_id_array_parser_factory(field_key, *, ordered = True):
         
         Returns
         -------
-        entity_id_array : `None`, `tuple` of `int`
+        entity_id_array : `None | tuple<int>`
         """
     )
     return parser
@@ -497,6 +497,7 @@ def default_date_time_parser_factory(field_key, default):
     ----------
     field_key : `str`
         The field's key used in payload.
+    
     default : `object`
         Default value to return if the field is not present (or null) in the data.
     
@@ -525,6 +526,65 @@ def default_date_time_parser_factory(field_key, default):
         timestamp = data.get(field_key, None)
         if (timestamp is not None):
             return timestamp_to_datetime(timestamp)
+        
+        return default
+    
+    return parser
+
+
+def nullable_unix_time_parser_factory(field_key):
+    """
+    Returns a new nullable unix time parser.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    
+    Returns
+    -------
+    parser : `FunctionType`
+    """
+    return default_unix_time_parser_factory(field_key, None)
+
+
+def default_unix_time_parser_factory(field_key, default):
+    """
+    Returns a new defaulted unix time parser.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    
+    default : `object`
+        Default value to return if the field is not present (or null) in the data.
+    
+    Returns
+    -------
+    parser : `FunctionType`
+    """
+    def parser(data):
+        """
+        Parses out a unix time from the given payload.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        data : `dict<str, object>`
+            Entity data.
+        
+        Returns
+        -------
+        field_value : `None | DateTime`
+        """
+        nonlocal default
+        nonlocal field_key
+        
+        timestamp = data.get(field_key, None)
+        if (timestamp is not None):
+            return unix_time_to_datetime(timestamp)
         
         return default
     

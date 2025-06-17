@@ -4,29 +4,44 @@ from ....client import Client
 from ....core import BUILTIN_EMOJIS
 from ....guild import Guild
 from ....user import ClientUserBase
-from ....utils import is_url
 
 from ..soundboard_sound import SoundboardSound
 
 from .test__SoundboardSound__constructor import _assert_fields_set
 
 
-def test__SoundboardSound__guild():
-    """
-    Tests whether ``SoundboardSound.guild`` works as intended.
-    """
+def _iter_options__guild():
     guild_id_0 = 202305240042
     guild_id_1 = 202305240043
     
-    guild = Guild.precreate(guild_id_0)
+    guild_0 = Guild.precreate(guild_id_0)
     
-    for sound_id, input_guild_id, expected_output in (
-        (202305240044, guild_id_0, guild),
-        (202305240045, guild_id_1, None),
-        (202305240046, 0, None),
-    ):
-        sound = SoundboardSound.precreate(sound_id, guild_id = input_guild_id)
-        vampytest.assert_is(sound.guild, expected_output)
+    yield 202305240044, guild_id_0, guild_0
+    yield 202305240045, guild_id_1, None
+    yield 202305240046, 0, None
+
+
+@vampytest._(vampytest.call_from(_iter_options__guild()).returning_last())
+def test__SoundboardSound__guild(sound_id, guild_id):
+    """
+    Tests whether ``SoundboardSound.guild`` works as intended.
+    
+    Parameters
+    ----------
+    sound_id : `int`
+        Sound identifier to test with.
+    
+    guild_id : `int`
+        Guild identifier to test with.
+    
+    Returns
+    -------
+    output : ``None | Guild``
+    """
+    sound = SoundboardSound.precreate(sound_id, guild_id = guild_id)
+    output = sound.guild
+    vampytest.assert_instance(output, Guild, nullable = True)
+    return output
 
 
 def test__SoundboardSound__user():
@@ -140,11 +155,11 @@ def test__SoundboardSound__copy():
     vampytest.assert_eq(sound, copy)
 
 
-def test__SoundboardSound__copy_with__0():
+def test__SoundboardSound__copy_with__no_fields():
     """
     Tests whether ``SoundboardSound.copy_with`` works as intended.
     
-    Case: No fields overwritten.
+    Case: No fields given.
     """
     available = False
     emoji = BUILTIN_EMOJIS['heart']
@@ -167,11 +182,11 @@ def test__SoundboardSound__copy_with__0():
     vampytest.assert_eq(sound, copy)
 
 
-def test__SoundboardSound__copy_with__1():
+def test__SoundboardSound__copy_with__all_fields():
     """
     Tests whether ``SoundboardSound.copy_with`` works as intended.
     
-    Case: All fields overwritten.
+    Case: All fields given.
     """
     old_available = False
     old_emoji = BUILTIN_EMOJIS['heart']
@@ -209,20 +224,6 @@ def test__SoundboardSound__copy_with__1():
     vampytest.assert_eq(copy.name, new_name)
     vampytest.assert_eq(copy.user_id, new_user_id)
     vampytest.assert_eq(copy.volume, new_volume)
-
-
-def test__SoundboardSound__url():
-    """
-    tests whether ``SoundboardSound.url`` works as intended.
-    """
-    sound_id = 202305240054
-    
-    sound = SoundboardSound.precreate(sound_id)
-    output = sound.url
-    
-    vampytest.assert_instance(output, str)
-    vampytest.assert_true(is_url(output))
-    vampytest.assert_in(str(sound_id), output)
 
 
 def test__SoundboardSound__delete():
@@ -339,3 +340,27 @@ def test__SoundboardSound__mention():
     
     output = sound.mention
     vampytest.assert_instance(output, str)
+
+
+def _iter_options__url():
+    yield 202305240054, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__url()).returning_last())
+def test__SoundboardSound__url(sound_id):
+    """
+    tests whether ``SoundboardSound.url`` works as intended.
+    
+    Parameters
+    ----------
+    sound_id : `int`
+        Identifier to test with.
+    
+    Returns
+    -------
+    has_url `bool`
+    """
+    sound = SoundboardSound.precreate(sound_id)
+    output = sound.url
+    vampytest.assert_instance(output, str)
+    return True

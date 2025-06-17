@@ -293,7 +293,7 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        values : `None`, `tuple` of `str`
+        values : `None | tuple<str>`
         """
     )
     

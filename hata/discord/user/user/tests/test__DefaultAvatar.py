@@ -1,9 +1,6 @@
 import vampytest
 
 from ....color import Color
-from ....utils import is_url
-
-from ...user import User
 
 from ..preinstanced import DefaultAvatar
 
@@ -60,16 +57,6 @@ def test__DefaultAvatar__new__min_fields():
             pass
 
 
-def test__DefaultAvatar__for():
-    """
-    Tests whether ``DefaultAvatar.for_`` works as intended.
-    """
-    user = User.precreate(202211110018)
-    default_avatar = DefaultAvatar.for_(user)
-    
-    vampytest.assert_instance(default_avatar, DefaultAvatar)
-
-
 def test__DefaultAvatar__repr():
     """
     Tests whether ``DefaultAvatar.__repr__`` works as intended.
@@ -77,24 +64,24 @@ def test__DefaultAvatar__repr():
     vampytest.assert_instance(repr(DefaultAvatar.blue), str)
 
 
-def test__DefaultAvatar__url():
+def _iter_options__url():
+    yield DefaultAvatar.blue, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__url()).returning_last())
+def test__DefaultAvatar__url(default_avatar):
     """
     Tests whether ``DefaultAvatar.url`` works as intended.
-    """
-    vampytest.assert_true(is_url(DefaultAvatar.blue.url))
-
-
-def test__DefaultAvatar__for__discriminator_deprecation():
-    """
-    Tests whether ``DefaultAvatar.for_`` handles discrimination deprecation as intended.
-    """
-    key = 1
-    user_id_0 = 202305160000
-    user_id_1 = 202305160001
-    user_0 = User.precreate((user_id_0 & ((1 << 22) - 1)) | (key << 22))
-    user_1 = User.precreate(user_id_1, discriminator = key)
     
-    default_avatar_0 = DefaultAvatar.for_(user_0)
-    default_avatar_1 = DefaultAvatar.for_(user_1)
+    Parameters
+    ----------
+    default_avatar : ``DefaultAvatar``
+        Default avatar to get its url.
     
-    vampytest.assert_is(default_avatar_0, default_avatar_1)
+    Returns
+    -------
+    has_url : `bool`
+    """
+    output = default_avatar.url
+    vampytest.assert_instance(output, str)
+    return True

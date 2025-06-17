@@ -5,7 +5,6 @@ from scarletio import include
 from ...bases import IconSlot, IconType, Slotted
 from ...color import Color
 from ...core import ROLES
-from ...http import urls as module_urls
 from ...utils import DISCORD_EPOCH_START
 
 from .fields import (
@@ -21,8 +20,8 @@ from .flags import GuildProfileFlag
 create_partial_role_from_id = include('create_partial_role_from_id')
 
 
-GUILD_PROFILE_AVATAR = IconSlot('avatar', 'avatar', None, None)
-GUILD_PROFILE_BANNER = IconSlot('banner', 'banner', None, None)
+GUILD_PROFILE_AVATAR = IconSlot('avatar', 'avatar')
+GUILD_PROFILE_BANNER = IconSlot('banner', 'banner')
 
 
 class GuildProfile(metaclass = Slotted):
@@ -31,7 +30,7 @@ class GuildProfile(metaclass = Slotted):
     
     Attributes
     ----------
-    avatar_decoration : `None`, ``AvatarDecoration``
+    avatar_decoration : ``None | AvatarDecoration``
         The guild profile's avatar decorations.
     
     avatar_hash : `int`
@@ -46,14 +45,14 @@ class GuildProfile(metaclass = Slotted):
     banner_type : ``IconType``
         The respective user's banner type at the guild.
     
-    boosts_since : `None`, `datetime`
+    boosts_since : `None | DateTime`
         Since when the user uses it's Nitro to boost the respective guild.
         If the user does not boost the guild then is set as `None`.
     
     flags : ``GuildProfileFlag``
         The guild profile's flags.
     
-    joined_at : `None`, `datetime`
+    joined_at : `None | DateTime`
         The date, since the user is the member of the guild.
         If this field was not included with the initial data, then it is set to `None`.
     
@@ -67,7 +66,7 @@ class GuildProfile(metaclass = Slotted):
     role_ids : `None`, `tuple` of ``int``
         The user's roles at the guild.
     
-    timed_out_until : `None`, `datetime`
+    timed_out_until : `None | DateTime`
         Till when the user is timed out, and cannot interact with the guild.
     """
     __slots__ = (
@@ -96,22 +95,22 @@ class GuildProfile(metaclass = Slotted):
         
         Parameters
         ----------
-        avatar : `None`, ``Icon``, `str`, Optional (Keyword only)
+        avatar : ``None | str | Icon``, Optional (Keyword only)
             The guild profile's avatar.
         
-        avatar_decoration : `None`, ``AvatarDecoration``, Optional (Keyword only)
+        avatar_decoration : ``None | AvatarDecoration``, Optional (Keyword only)
             The guild profile's avatar decoration.
         
-        banner : `None`, ``Icon``, `str`, Optional (Keyword only)
+        banner : ``None | str | Icon``, Optional (Keyword only)
             The guild profile's banner.
         
-        boosts_since : `None`, `datetime`, Optional (Keyword only)
+        boosts_since : `None | DateTime`, Optional (Keyword only)
             Since when the user uses it's Nitro to boost the respective guild.
         
         flags : `int`, ``GuildProfileFlag``, Optional (Keyword only)
             The guild profile's flags.
             
-        joined_at : `None`, `datetime`, Optional (Keyword only)
+        joined_at : `None | DateTime`, Optional (Keyword only)
             The date, since the user is the member of the guild.
         
         nick : `None`, `str`, Optional (Keyword only)
@@ -123,7 +122,7 @@ class GuildProfile(metaclass = Slotted):
         role_ids : `None`, `iterable` of (`int`, ``Role``), Optional (Keyword only)
             The user's roles at the guild.
         
-        timed_out_until : `None`, `datetime`, Optional (Keyword only)
+        timed_out_until : `None | DateTime`, Optional (Keyword only)
             Till when the user is timed out, and cannot interact with the guild.
         
         Raises
@@ -422,7 +421,7 @@ class GuildProfile(metaclass = Slotted):
         +===================+===============================+
         | avatar            | ``Icon``                      |
         +-------------------+-------------------------------+
-        | avatar_decoration | `None`, ``AvatarDecoration``  |
+        | avatar_decoration | ``None | AvatarDecoration``   |
         +-------------------+-------------------------------+
         | banner            | ``Icon``                      |
         +-------------------+-------------------------------+
@@ -434,7 +433,7 @@ class GuildProfile(metaclass = Slotted):
         +-------------------+-------------------------------+
         | pending           | `bool`                        |
         +-------------------+-------------------------------+
-        | role_ids          | `None`, `tuple` of `int`      |
+        | role_ids          | `None | tuple<int>`           |
         +-------------------+-------------------------------+
         | timed_out_until   | `None | DateTime`             |
         +-------------------+-------------------------------+
@@ -547,22 +546,22 @@ class GuildProfile(metaclass = Slotted):
         
         Parameters
         ----------
-        avatar : `None`, ``Icon``, `str`, Optional (Keyword only)
+        avatar : ``None | str | Icon``, Optional (Keyword only)
             The guild profile's avatar.
         
-        avatar_decoration : `None`, ``AvatarDecoration``, Optional (Keyword only)
+        avatar_decoration : ``None | AvatarDecoration``, Optional (Keyword only)
             The guild profile's avatar decoration.
         
-        banner : `None`, ``Icon``, `str`, Optional (Keyword only)
+        banner : ``None | str | Icon``, Optional (Keyword only)
             The guild profile's banner.
         
-        boosts_since : `None`, `datetime`, Optional (Keyword only)
+        boosts_since : `None | DateTime`, Optional (Keyword only)
             Since when the user uses it's Nitro to boost the respective guild.
         
         flags : `int`, ``GuildProfileFlag``, Optional (Keyword only)
             The guild profile's flags.
         
-        joined_at : `None`, `datetime`, Optional (Keyword only)
+        joined_at : `None | DateTime`, Optional (Keyword only)
             The date, since the user is the member of the guild.
         
         nick : `None`, `str`, Optional (Keyword only)
@@ -574,7 +573,7 @@ class GuildProfile(metaclass = Slotted):
         role_ids : `None`, `iterable` of (`int`, ``Role``), Optional (Keyword only)
             The user's roles at the guild.
         
-        timed_out_until : `None`, `datetime`, Optional (Keyword only)
+        timed_out_until : `None | DateTime`, Optional (Keyword only)
             Till when the user is timed out, and cannot interact with the guild.
         
         Returns
@@ -816,5 +815,38 @@ class GuildProfile(metaclass = Slotted):
         return created_at
     
     
-    avatar_decoration_url = property(module_urls.user_avatar_decoration_url)
-    avatar_decoration_url_as = module_urls.user_avatar_decoration_url_as
+    @property
+    def avatar_decoration_url(self):
+        """
+        Returns the guild profile's avatar decoration's url.
+        If the guild profile has no avatar decoration then returns `None`.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        avatar_decoration = self.avatar_decoration
+        if (avatar_decoration is not None):
+            return avatar_decoration.url
+    
+    
+    def avatar_decoration_url_as(self, ext = None, size = None):
+        """
+        Returns the guild profile's avatar decoration's url.
+        If the guild profile has no avatar decoration then returns `None`.
+        
+        Parameters
+        ----------
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        avatar_decoration = self.avatar_decoration
+        if (avatar_decoration is not None):
+            return avatar_decoration.url_as(ext = ext, size = size)

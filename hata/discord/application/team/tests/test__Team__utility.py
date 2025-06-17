@@ -33,11 +33,11 @@ def test__Team__copy():
     vampytest.assert_not_is(copy, team)
 
 
-def test__Team__copy_with__0():
+def test__Team__copy_with__no_fields():
     """
     Tests whether ``Team.copy_with`` works as intended.
     
-    Case: No parameters given.
+    Case: No fields given.
     """
     icon = Icon(IconType.static, 2)
     members = [TeamMember(user = User.precreate(202211240026))]
@@ -58,19 +58,20 @@ def test__Team__copy_with__0():
     vampytest.assert_not_is(copy, team)
 
 
-def test__Team__copy_with__1():
+def test__Team__copy_with__all_fields():
     """
     Tests whether ``Team.copy_with`` works as intended.
     
-    Case: Stuffed.
+    Case: all fields given.
     """
     old_icon = Icon(IconType.static, 2)
-    new_icon = Icon(IconType.animated, 12)
     old_members = [TeamMember(user = User.precreate(202211240026))]
-    new_members = [TeamMember(user = User.precreate(202211240027)), TeamMember(user = User.precreate(202211240028))]
     old_name = 'Red'
-    new_name = 'Angel'
     old_owner_id = 202211240029
+    
+    new_icon = Icon(IconType.animated, 12)
+    new_members = [TeamMember(user = User.precreate(202211240027)), TeamMember(user = User.precreate(202211240028))]
+    new_name = 'Angel'
     new_owner_id = 202211240030
     
     
@@ -109,20 +110,36 @@ def test__Team__owner():
     vampytest.assert_eq(owner.id, owner_id)
 
 
-def test__Team__iter_members():
-    """
-    Tests whether ``Team.iter_members`` works as intended.
-    """
+def _iter_options__iter_members():
     member_0 = TeamMember(user = User.precreate(202211240032))
     member_1 = TeamMember(user = User.precreate(202211240033))
     
-    for input_value, expected_output in (
-        (None, []),
-        ([member_0], [member_0]),
-        ([member_0, member_1], [member_0, member_1]),
-    ):
-        team = Team(members = input_value)
-        vampytest.assert_eq([*team.iter_members()], expected_output)
+    yield None, []
+    yield [member_0], [member_0]
+    yield [member_0, member_1], [member_0, member_1]
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_members()).returning_last())
+def test__Team__iter_members(members):
+    """
+    Tests whether ``Team.iter_members`` works as intended.
+    
+    Parameters
+    ----------
+    members : ``None | list<TeamMember>``
+        team members to create team with.
+    
+    Returns
+    -------
+    output : ``list<TeamMember>``
+    """
+    team = Team(members = members)
+    output = [*team.iter_members()]
+    
+    for element in output:
+        vampytest.assert_instance(element, TeamMember)
+    
+    return output
 
 
 def test__Team__invited():
@@ -163,3 +180,70 @@ def test__Team__partial():
     
     team = Team.precreate(team_id)
     vampytest.assert_false(team.partial)
+
+
+def _iter_options__icon_url():
+    yield 202506010004, None, False
+    yield 202506010005, Icon(IconType.animated, 5), True
+
+
+@vampytest._(vampytest.call_from(_iter_options__icon_url()).returning_last())
+def test__Team__icon_url(team_id, icon):
+    """
+    Tests whether ``Team.icon_url`` works as intended.
+    
+    Parameters
+    ----------
+    team_id : `int`
+        Identifier to create team with.
+    
+    icon : ``None | Icon``
+        Icon to create the team with.
+    
+    Returns
+    -------
+    has_icon_url : `bool`
+    """
+    team = Team.precreate(
+        team_id,
+        icon = icon,
+    )
+    
+    output = team.icon_url
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__icon_url_as():
+    yield 202506010006, None, {'ext': 'webp', 'size': 128}, False
+    yield 202506010007, Icon(IconType.animated, 5), {'ext': 'webp', 'size': 128}, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__icon_url_as()).returning_last())
+def test__Team__icon_url_as(team_id, icon, keyword_parameters):
+    """
+    Tests whether ``Team.icon_url_as`` works as intended.
+    
+    Parameters
+    ----------
+    team_id : `int`
+        Identifier to create team with.
+    
+    icon : ``None | Icon``
+        Icon to create the team with.
+    
+    keyword_parameters : `dict<str, object>`
+        Additional keyword parameters to pass.
+    
+    Returns
+    -------
+    has_icon_url : `bool`
+    """
+    team = Team.precreate(
+        team_id,
+        icon = icon,
+    )
+    
+    output = team.icon_url_as(**keyword_parameters)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)

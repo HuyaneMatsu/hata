@@ -6,6 +6,7 @@ from ....color import Color
 from ....guild import GuildBadge
 
 from ...avatar_decoration import AvatarDecoration
+from ...name_plate import NamePlate
 
 from ..flags import UserFlag
 from ..client_user_presence_base import ClientUserPBase
@@ -17,17 +18,22 @@ def test__ClientUserPBase__repr():
     Tests whether ``ClientUserPBase.__repr__`` works as intended.
     """
     user_id = 202302060001
+    
+    activities = [Activity('orin dance', activity_type = ActivityType.playing)]
     avatar = Icon(IconType.static, 14)
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160058)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    bot = True
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'orin'
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202506030063,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180046, tag = 'miau')
-    bot = True
-    activities = [Activity('orin dance', activity_type = ActivityType.playing)]
     status = Status.online
     statuses = {'mobile': Status.online.value}
     
@@ -35,17 +41,18 @@ def test__ClientUserPBase__repr():
     vampytest.assert_instance(repr(user), str)
 
     user = ClientUserPBase(
+        activities = activities,
         avatar = avatar,
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
+        bot = bot,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
         name = name,
+        name_plate = name_plate,
         primary_guild_badge = primary_guild_badge,
-        bot = bot,
-        activities = activities,
         status = status,
         statuses = statuses,
     )
@@ -57,17 +64,22 @@ def test__ClientUserPBase__hash():
     Tests whether ``ClientUserPBase.__hash__`` works as intended.
     """
     user_id = 202302060002
+    
+    activities = [Activity('orin dance', activity_type = ActivityType.playing)]
     avatar = Icon(IconType.static, 14)
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160059)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    bot = True
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'orin'
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202506030064,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180047, tag = 'miau')
-    bot = True
-    activities = [Activity('orin dance', activity_type = ActivityType.playing)]
     status = Status.online
     statuses = {'mobile': Status.online.value}
     
@@ -75,17 +87,18 @@ def test__ClientUserPBase__hash():
     vampytest.assert_instance(hash(user), int)
     
     user = ClientUserPBase(
+        activities = activities,
         avatar = avatar,
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
+        bot = bot,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
         name = name,
+        name_plate = name_plate,
         primary_guild_badge = primary_guild_badge,
-        bot = bot,
-        activities = activities,
         status = status,
         statuses = statuses,
     )
@@ -112,32 +125,37 @@ def test__ClientUserPBase__eq__non_partial_and_different_object():
 
 
 def _iter_options__eq():
+    activities = [Activity('orin dance', activity_type = ActivityType.playing)]
     avatar = Icon(IconType.static, 14)
-    name = 'orin'
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160036)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    bot = True
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
+    name = 'orin'
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202506030065,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180009, tag = 'miau')
-    bot = True
-    activities = [Activity('orin dance', activity_type = ActivityType.playing)]
     status = Status.online
     statuses = {'mobile': Status.online.value}
     
     keyword_parameters = {
+        'activities': activities,
         'avatar': avatar,
-        'name': name,
         'avatar_decoration': avatar_decoration,
         'banner': banner,
         'banner_color': banner_color,
+        'bot': bot,
         'discriminator': discriminator,
         'display_name': display_name,
         'flags': flags,
+        'name': name,
+        'name_plate': name_plate,
         'primary_guild_badge': primary_guild_badge,
-        'bot': bot,
-        'activities': activities,
         'status': status,
         'statuses': statuses,
     }
@@ -152,7 +170,7 @@ def _iter_options__eq():
         keyword_parameters,
         {
             **keyword_parameters,
-            'avatar': None,
+            'activities': None,
         },
         False,
     )
@@ -161,7 +179,7 @@ def _iter_options__eq():
         keyword_parameters,
         {
             **keyword_parameters,
-            'name': 'okuu',
+            'avatar': None,
         },
         False,
     )
@@ -197,6 +215,15 @@ def _iter_options__eq():
         keyword_parameters,
         {
             **keyword_parameters,
+            'bot': False,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
             'discriminator': 0,
         },
         False,
@@ -224,25 +251,25 @@ def _iter_options__eq():
         keyword_parameters,
         {
             **keyword_parameters,
+            'name': 'okuu',
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'name_plate': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
             'primary_guild_badge': None,
-        },
-        False,
-    )
-    
-    yield (
-        keyword_parameters,
-        {
-            **keyword_parameters,
-            'bot': False,
-        },
-        False,
-    )
-    
-    yield (
-        keyword_parameters,
-        {
-            **keyword_parameters,
-            'activities': None,
         },
         False,
     )
@@ -297,32 +324,37 @@ def test__ClientUserPBase__format():
     
     Case: Shallow.
     """
+    activities = [Activity('orin dance', activity_type = ActivityType.playing)]
     avatar = Icon(IconType.static, 14)
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160061)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    bot = True
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'orin'
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202506030066,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180049, tag = 'miau')
-    bot = True
-    activities = [Activity('orin dance', activity_type = ActivityType.playing)]
     status = Status.online
     statuses = {'mobile': Status.online.value}
     
     user = ClientUserPBase(
+        activities = activities,
         avatar = avatar,
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
+        bot = bot,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
         name = name,
+        name_plate = name_plate,
         primary_guild_badge = primary_guild_badge,
-        bot = bot,
-        activities = activities,
         status = status,
         statuses = statuses,
     )

@@ -503,3 +503,204 @@ def test__GuildActivityOverview__iter_tags(guild_id, tags):
         vampytest.assert_instance(element, GuildActivityOverviewTag)
     
     return output
+
+
+def _iter_options__icon_url():
+    yield 202505280030, None, False
+    yield 202505280031, Icon(IconType.animated, 5), True
+
+
+@vampytest._(vampytest.call_from(_iter_options__icon_url()).returning_last())
+def test__GuildActivityOverview__icon_url(guild_id, icon):
+    """
+    Tests whether ``GuildActivityOverview.icon_url`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Identifier to create guild with.
+    
+    icon : ``None | Icon``
+        Icon to create the guild with.
+    
+    Returns
+    -------
+    has_icon_url : `bool`
+    """
+    guild = GuildActivityOverview.precreate(
+        guild_id,
+        icon = icon,
+    )
+    
+    output = guild.icon_url
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__icon_url_as():
+    yield 202505280040, None, {'ext': 'webp', 'size': 128}, False
+    yield 202505280041, Icon(IconType.animated, 5), {'ext': 'webp', 'size': 128}, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__icon_url_as()).returning_last())
+def test__GuildActivityOverview__icon_url_as(guild_id, icon, keyword_parameters):
+    """
+    Tests whether ``GuildActivityOverview.icon_url_as`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Identifier to create guild with.
+    
+    icon : ``None | Icon``
+        Icon to create the guild with.
+    
+    keyword_parameters : `dict<str, object>`
+        Additional keyword parameters to pass.
+    
+    Returns
+    -------
+    has_icon_url : `bool`
+    """
+    guild = GuildActivityOverview.precreate(
+        guild_id,
+        icon = icon,
+    )
+    
+    output = guild.icon_url_as(**keyword_parameters)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__discovery_splash_url():
+    yield 202505290012, None, False
+    yield 202505290013, Icon(IconType.animated, 5), True
+
+
+@vampytest._(vampytest.call_from(_iter_options__discovery_splash_url()).returning_last())
+def test__GuildActivityOverview__discovery_splash_url(guild_id, icon):
+    """
+    Tests whether ``GuildActivityOverview.discovery_splash_url`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Identifier to create guild with.
+    
+    icon : ``None | Icon``
+        Icon to create the guild with.
+    
+    Returns
+    -------
+    has_discovery_splash_url : `bool`
+    """
+    guild = GuildActivityOverview.precreate(
+        guild_id,
+        discovery_splash = icon,
+    )
+    
+    output = guild.discovery_splash_url
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__discovery_splash_url_as():
+    yield 202505290014, None, {'ext': 'webp', 'size': 128}, False
+    yield 202505290015, Icon(IconType.animated, 5), {'ext': 'webp', 'size': 128}, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__discovery_splash_url_as()).returning_last())
+def test__GuildActivityOverview__discovery_splash_url_as(guild_id, icon, keyword_parameters):
+    """
+    Tests whether ``GuildActivityOverview.discovery_splash_url_as`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Identifier to create guild with.
+    
+    icon : ``None | Icon``
+        Icon to create the guild with.
+    
+    keyword_parameters : `dict<str, object>`
+        Additional keyword parameters to pass.
+    
+    Returns
+    -------
+    has_discovery_splash_url : `bool`
+    """
+    guild = GuildActivityOverview.precreate(
+        guild_id,
+        discovery_splash = icon,
+    )
+    
+    output = guild.discovery_splash_url_as(**keyword_parameters)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__badge_icon_url():
+    yield 202505310030, None, False
+    yield 202505310031, Icon(IconType.animated, 5), True
+
+
+@vampytest._(vampytest.call_from(_iter_options__badge_icon_url()).returning_last())
+def test__GuildActivityOverview__badge_icon_url(guild_id, icon):
+    """
+    Tests whether ``GuildActivityOverview.badge_icon_url`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Identifier to create guild with.
+    
+    icon : ``None | Icon``
+        Icon to create the guild with.
+    
+    Returns
+    -------
+    has_badge_icon_url : `bool`
+    """
+    guild = GuildActivityOverview.precreate(
+        guild_id,
+        badge_icon = icon,
+    )
+    
+    output = guild.badge_icon_url
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__badge_icon_url_as():
+    yield 202505310032, None, {'ext': 'webp', 'size': 128}, False
+    yield 202505310033, Icon(IconType.animated, 5), {'ext': 'webp', 'size': 128}, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__badge_icon_url_as()).returning_last())
+def test__GuildActivityOverview__badge_icon_url_as(guild_id, icon, keyword_parameters):
+    """
+    Tests whether ``GuildActivityOverview.badge_icon_url_as`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Identifier to create guild with.
+    
+    icon : ``None | Icon``
+        Icon to create the guild with.
+    
+    keyword_parameters : `dict<str, object>`
+        Additional keyword parameters to pass.
+    
+    Returns
+    -------
+    has_badge_icon_url : `bool`
+    """
+    guild = GuildActivityOverview.precreate(
+        guild_id,
+        badge_icon = icon,
+    )
+    
+    output = guild.badge_icon_url_as(**keyword_parameters)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)

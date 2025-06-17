@@ -27,6 +27,8 @@ def test__parse_expires_at(input_data):
     
     Returns
     -------
-    output : `DateTime`
+    output : `None | DateTime`
     """
-    return parse_expires_at(input_data)
+    output = parse_expires_at(input_data)
+    vampytest.assert_instance(output, DateTime, nullable = True)
+    return output

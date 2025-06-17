@@ -15,9 +15,9 @@ class MessageCall(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    ended_at : `None`, `datetime`
+    ended_at : `None | DateTime`
         When the call ended. Set as `None` if it is still ongoing.
-    user_ids : `None`, `tuple` of `int`
+    user_ids : `None | tuple<int>`
         The users' identifiers participating the call.
     """
     __slots__ = ('ended_at', 'user_ids',)
@@ -28,7 +28,7 @@ class MessageCall(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        ended_at : `None`, `datetime`, Optional (Keyword only)
+        ended_at : `None | DateTime`, Optional (Keyword only)
             When the call ended.
         user_ids : `None`, `iterable` of (`ClientUserBase`, `int`), Optional (Keyword only)
             The users' identifiers participating the call.
@@ -194,7 +194,7 @@ class MessageCall(RichAttributeErrorBaseType):
         Parameters
         ----------
         ----------
-        ended_at : `None`, `datetime`, Optional (Keyword only)
+        ended_at : `None | DateTime`, Optional (Keyword only)
             When the call ended.
         user_ids : `None`, `iterable` of (`ClientUserBase`, `int`), Optional (Keyword only)
             The users' identifiers participating the call.

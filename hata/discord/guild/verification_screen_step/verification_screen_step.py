@@ -21,7 +21,7 @@ class VerificationScreenStep(RichAttributeErrorBaseType):
         The step's title.
     type : ``VerificationScreenStepType``
         The type of the step.
-    values : `None`, `tuple` of `str`
+    values : `None | tuple<str>`
         The values of the step.
     """
     __slots__ = ('required', 'title', 'type', 'values')

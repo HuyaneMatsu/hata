@@ -5,9 +5,9 @@ from scarletio import copy_docs
 from ...bases import ICON_TYPE_NONE
 
 from .fields import (
-    parse_avatar_decoration, parse_banner_color, parse_discriminator, parse_display_name, parse_flags,
+    parse_avatar_decoration, parse_banner_color, parse_discriminator, parse_display_name, parse_flags, parse_name_plate,
     parse_primary_guild_badge, validate_avatar_decoration, validate_banner_color, validate_discriminator,
-    validate_display_name, validate_flags, validate_primary_guild_badge
+    validate_display_name, validate_flags, validate_name_plate, validate_primary_guild_badge
 )
 from .flags import UserFlag
 from .user_base import USER_BANNER, UserBase
@@ -25,7 +25,7 @@ class OrinUserBase(UserBase):
     avatar_type : ``IconType``
         The user's avatar's type.
     
-    avatar_decoration : `None`, ``AvatarDecoration``
+    avatar_decoration : ``None | AvatarDecoration``
         The user's avatar decorations.
     
     banner_color : `None`, ``Color``
@@ -50,12 +50,18 @@ class OrinUserBase(UserBase):
         The user's flags.
     
     name : str
-        The client's username.
+        The user's name.
+    
+    name_plate : ``None | NamePlate``
+        The user's name plate.
     
     primary_guild_badge : ``None | GuildBadge`
         The user's primary guild's badge.
     """
-    __slots__ = ('avatar_decoration', 'banner_color', 'discriminator', 'display_name', 'flags', 'primary_guild_badge')
+    __slots__ = (
+        'avatar_decoration', 'banner_color', 'discriminator', 'display_name', 'flags', 'name_plate',
+        'primary_guild_badge'
+    )
     
     banner = USER_BANNER
     
@@ -70,6 +76,7 @@ class OrinUserBase(UserBase):
         display_name = ...,
         flags = ...,
         name = ...,
+        name_plate = ...,
         primary_guild_badge = ...,
     ):
         """
@@ -77,13 +84,13 @@ class OrinUserBase(UserBase):
         
         Parameters
         ----------
-        avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        avatar : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The user's avatar.
         
-        avatar_decoration : `None`, ``AvatarDecoration``, Optional (Keyword only)
+        avatar_decoration : ``None | AvatarDecoration``, Optional (Keyword only)
             The user's avatar decoration.
         
-        banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        banner : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The user's banner.
         
         banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
@@ -100,6 +107,9 @@ class OrinUserBase(UserBase):
         
         name : `str`, Optional (Keyword only)
             The user's name.
+        
+        name_plate : ``None | NamePlate``, Optional (Keyword only)
+            The user's name plate.
         
         primary_guild_badge : ``None | GuildBadge`, Optional (Keyword only)
             The user's primary guild's badge.
@@ -147,6 +157,12 @@ class OrinUserBase(UserBase):
         else:
             flags = validate_flags(flags)
         
+        # name_plate
+        if name_plate is ...:
+            name_plate = None
+        else:
+            name_plate = validate_name_plate(name_plate)
+        
         # primary_guild_badge
         if primary_guild_badge is ...:
             primary_guild_badge = None
@@ -165,6 +181,7 @@ class OrinUserBase(UserBase):
         self.discriminator = discriminator
         self.display_name = display_name
         self.flags = flags
+        self.name_plate = name_plate
         self.primary_guild_badge = primary_guild_badge
         return self
     
@@ -179,6 +196,7 @@ class OrinUserBase(UserBase):
         self.discriminator = parse_discriminator(data)
         self.display_name = parse_display_name(data)
         self.flags = parse_flags(data)
+        self.name_plate = parse_name_plate(data)
         self.primary_guild_badge = parse_primary_guild_badge(data)
         
     
@@ -219,6 +237,12 @@ class OrinUserBase(UserBase):
             old_attributes['flags'] = self.flags
             self.flags = flags
         
+        # name_plate
+        name_plate = parse_name_plate(data)
+        if self.name_plate != name_plate:
+            old_attributes['name_plate'] = self.name_plate
+            self.name_plate = name_plate
+        
         # primary_guild_badge
         primary_guild_badge = parse_primary_guild_badge(data)
         if self.primary_guild_badge != primary_guild_badge:
@@ -238,6 +262,7 @@ class OrinUserBase(UserBase):
         self.discriminator = 0
         self.display_name = None
         self.flags = UserFlag()
+        self.name_plate = None
         self.primary_guild_badge = None
     
     
@@ -255,6 +280,12 @@ class OrinUserBase(UserBase):
         new.discriminator = self.discriminator
         new.display_name = self.display_name
         new.flags = self.flags
+        
+        # name_plate
+        name_plate = self.name_plate
+        if (name_plate is not None):
+            name_plate = name_plate.copy()
+        new.name_plate = name_plate
         
         primary_guild_badge = self.primary_guild_badge
         if (primary_guild_badge is not None):
@@ -274,21 +305,22 @@ class OrinUserBase(UserBase):
         discriminator = ...,
         display_name = ...,
         flags = ...,
-        primary_guild_badge = ...,
         name = ...,
+        name_plate = ...,
+        primary_guild_badge = ...,
     ):
         """
         Copies the user with the given fields.
         
         Parameters
         ----------
-        avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        avatar : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The user's avatar.
         
-        avatar_decoration : `None`, ``AvatarDecoration``, Optional (Keyword only)
+        avatar_decoration : ``None | AvatarDecoration``, Optional (Keyword only)
             The user's avatar decoration.
         
-        banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        banner : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The user's banner.
         
         banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
@@ -305,6 +337,9 @@ class OrinUserBase(UserBase):
         
         name : `str`, Optional (Keyword only)
             The user's name.
+        
+        name_plate : ``None | NamePlate``, Optional (Keyword only)
+            The user's name plate.
         
         primary_guild_badge : ``None | GuildBadge`, Optional (Keyword only)
             The user's primary guild's badge.
@@ -358,6 +393,12 @@ class OrinUserBase(UserBase):
         else:
             flags = validate_flags(flags)
         
+        # name_plate
+        if name_plate is ...:
+            name_plate = self.name_plate
+        else:
+            name_plate = validate_name_plate(name_plate)
+        
         # primary_guild_badge
         if primary_guild_badge is ...:
             primary_guild_badge = self.primary_guild_badge
@@ -378,6 +419,7 @@ class OrinUserBase(UserBase):
         new.discriminator = discriminator
         new.display_name = display_name
         new.flags = flags
+        new.name_plate = name_plate
         new.primary_guild_badge = primary_guild_badge
         return new
     
@@ -410,6 +452,11 @@ class OrinUserBase(UserBase):
         
         # flags
         hash_value ^= self.flags
+        
+        # name_plate
+        name_plate = self.name_plate
+        if (name_plate is not None):
+            hash_value ^= hash(name_plate)
         
         # primary_guild_badge
         primary_guild_badge = self.primary_guild_badge

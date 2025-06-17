@@ -4,7 +4,7 @@ from scarletio import export
 
 from ...bases import DiscordEntity
 from ...core import BUILTIN_EMOJIS, EMOJIS, GUILDS, UNICODE_TO_EMOJI
-from ...http import urls as module_urls
+from ...http.urls import build_emoji_url, build_emoji_url_as
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 from ...role import RoleManagerType, create_partial_role_from_id
 from ...user import ZEROUSER
@@ -62,7 +62,7 @@ class Emoji(DiscordEntity, immortal = True):
         The emoji's name.
     require_colons : `bool`
         Whether it is required to use colons for the emoji to show up.
-    role_ids : `None`, `tuple` of `int`
+    role_ids : `None | tuple<int>`
         Role identifiers for which the custom emoji is whitelisted to. If the emoji is not limited for
         specific roles, then this value is set to `None`. If the emoji is a builtin (unicode) emoji, then this
         attribute is set to `None` as  well.
@@ -651,10 +651,6 @@ class Emoji(DiscordEntity, immortal = True):
         return created_at
     
     
-    url = property(module_urls.emoji_url)
-    url_as = module_urls.emoji_url_as
-    
-    
     def _set_attributes(self, data, guild_id):
         """
         Sets the attributes of the emoji from the given data.
@@ -726,7 +722,7 @@ class Emoji(DiscordEntity, immortal = True):
         +-------------------+-------------------------------+
         | require_colons    | `bool`                        |
         +-------------------+-------------------------------+
-        | role_ids          | `None`, `tuple` of `int`      |
+        | role_ids          | `None | tuple<int>`           |
         +-------------------+-------------------------------+
         """
         old_attributes = {}
@@ -1038,7 +1034,7 @@ class Emoji(DiscordEntity, immortal = True):
         
         Returns
         -------
-        roles : `None`, `tuple` of ``Role``
+        roles : ``None | tuple<Role>``
         """
         role_ids = self.role_ids
         if role_ids is None:
@@ -1094,3 +1090,35 @@ class Emoji(DiscordEntity, immortal = True):
                 return True
         
         return False
+    
+    
+    @property
+    def url(self):
+        """
+        Returns the emoji's image's url. If the emoji is unicode emoji, then returns `None` instead.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_emoji_url(self.id, self.animated)
+    
+    
+    def url_as(self, ext = None, size = None):
+        """
+        Returns the emoji's image's url. If the emoji is unicode emoji, then returns `None` instead.
+        
+        Parameters
+        ----------
+        ext : `None | str`
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+            If emoji is animated, it can be `'gif'` as well.
+        
+        size : `None | int`
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_emoji_url_as(self.id, self.animated, ext, size)

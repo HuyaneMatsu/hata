@@ -291,7 +291,7 @@ class ApplicationCommandParameterConfigurerWrapper(CommandWrapper):
         The command or other wrapper to wrap.
     _autocomplete : `None`, `CoroutineFunction`
         Auto complete function for the parameter.
-    _channel_types : `None`, `tuple` of `int`
+    _channel_types : `None | tuple<int>`
         The accepted channel types.
     _choice_enum_type : `None`, `type`
         Enum type of `choices` if applicable.

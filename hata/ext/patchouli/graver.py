@@ -122,13 +122,29 @@ EXPECTED_BUILTIN_NAMES = {
     'CoroutineGeneratorType',
     
     # stdlib types
-    'DateTime', # from datetime
-    'UUID', # from uuid
-    're.Pattern', # from re
-    're.Match', # from re
-    'Pattern', # from re
-    'SocketKind', # from socket
+    
+    # from datetime
+    'DateTime',
+    'datetime.datetime',
+    
+    # from uuid
+    'UUID',
+    'uuid.UUID',
+    
+    # from re
+    're.Pattern',
+    're.Match',
+    'Pattern',
+    'Match',
+    
+    # from socket
+    'SocketKind',
+    
+    # from random
+    'Random',
+    'random.Random',
 }
+
 
 GRAMMAR_CHARS = {
     '.',

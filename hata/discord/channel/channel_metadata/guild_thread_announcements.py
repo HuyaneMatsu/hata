@@ -9,13 +9,13 @@ class ChannelMetadataGuildThreadAnnouncements(ChannelMetadataGuildThreadBase):
     
     Attributes
     ----------
-    _created_at : `None`, `datetime`
+    _created_at : `None | DateTime`
         When the channel was created.
     _cache_permission : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     archived : `bool`
         Whether the thread s archived.
-    archived_at : `None`, `datetime`
+    archived_at : `None | DateTime`
         When the thread's archive status was last changed.
     auto_archive_after : `int`
         Duration in seconds to automatically archive the thread after recent activity. Can be one of: `3600`, `86400`,

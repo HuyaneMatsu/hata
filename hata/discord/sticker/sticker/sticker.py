@@ -2,7 +2,7 @@ __all__ = ('Sticker', )
 
 from ...bases import DiscordEntity
 from ...core import GUILDS, STICKERS, STICKER_PACKS
-from ...http import urls as module_urls
+from ...http.urls import build_sticker_url, build_sticker_url_as
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 from ...user import ZEROUSER
 from ...utils import DATETIME_FORMAT_CODE
@@ -656,10 +656,6 @@ class Sticker(DiscordEntity, immortal = True):
         return True
     
     
-    url = property(module_urls.sticker_url)
-    url_as = module_urls.sticker_url_as
-    
-    
     def _set_attributes(self, data):
         """
         Sets the attributes of the sticker from the given data.
@@ -982,3 +978,34 @@ class Sticker(DiscordEntity, immortal = True):
             return False
         
         return (tag in self.tags)
+    
+    
+    @property
+    def url(self):
+        """
+        Returns the sticker's url. If the sticker has no url, returns `None`.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_sticker_url(self.id, self.format)
+    
+    
+    def url_as(self, size = None, preview = False):
+        """
+        Returns the sticker's url. If the sticker has no url, returns `None`.
+        
+        Parameters
+        ----------
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the icon's url.
+        
+        preview : `bool` = `False`, Optional
+            Whether preview url should be generated.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_sticker_url_as(self.id, self.format, size, preview)

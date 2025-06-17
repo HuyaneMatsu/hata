@@ -16,7 +16,7 @@ class EnvGetter(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    _captured : `None, `list<(int, str)>`
+    _captured : `None | list<(int, str)>`
         Captured errors.
     _entered : `int`
         Whether the getter is entered as a context manager. If not, it will propagate the errors instantly.

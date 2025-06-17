@@ -801,8 +801,8 @@ class IconSlot:
         cls,
         internal_name,
         discord_side_name,
-        url_property,
-        url_as_method,
+        url_property = None,
+        url_as_method = None,
         *,
         add_updater = True,
         animated_icon_type = ICON_TYPE_ANIMATED,
@@ -992,7 +992,7 @@ class IconSlot:
         
         Returns
         -------
-        icon : `None`, ``Icon``
+        icon : ``None | Icon``
             The validated icon.
         
         Raises
@@ -1046,7 +1046,7 @@ class IconSlot:
         
         Returns
         -------
-        icon : `None`, ``Icon``
+        icon : ``None | Icon``
             The parsed out icon.
         
         Raises
@@ -1077,7 +1077,7 @@ class IconSlot:
         
         Returns
         -------
-        icon : `None`, ``Icon``
+        icon : ``None | Icon``
             The parsed out icon.
         
         Raises

@@ -6,7 +6,7 @@ from ...bases import DiscordEntity, id_sort_key
 from ...core import CHANNELS, GUILDS, MESSAGES
 from ...embed import EXTRA_EMBED_TYPES, Embed
 from ...emoji import ReactionMapping
-from ...http import urls as module_urls
+from ...http.urls import build_message_jump_url
 from ...poll import Poll
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 from ...role import create_partial_role_from_id
@@ -135,7 +135,7 @@ class Message(DiscordEntity, immortal = True):
     content : `None | str`
         The message's content. Defaults to `None`.
     
-    edited_at : `None`, `datetime`
+    edited_at : `None | DateTime`
         The time when the message was edited, or `None` if it was not.
         
         Pinning or (un)suppressing a message will not change it's edited value.
@@ -168,7 +168,7 @@ class Message(DiscordEntity, immortal = True):
     mentioned_everyone : `bool`
         Whether the message contains `@everyone`, `@here`. Defaults to `False`.
     
-    mentioned_role_ids : `None`, `tuple` of `int`
+    mentioned_role_ids : `None | tuple<int>`
         The mentioned roles' identifiers. Defaults to `None`.
     
     mentioned_users : `None`, `tuple` of ``ClientUserBase``
@@ -299,7 +299,7 @@ class Message(DiscordEntity, immortal = True):
         content : `None | str`, Optional (Keyword only)
             The message's content.
         
-        edited_at : `None`, `datetime`
+        edited_at : `None | DateTime`
             The time when the message was edited.
         
         embeds : `None`, `iterable` of ``Embed``, Optional (Keyword only)
@@ -1321,9 +1321,9 @@ class Message(DiscordEntity, immortal = True):
         +-----------------------------------+-----------------------------------------------------------------------+
         | components                        | ``None | tuple<Component>``                                           |
         +-----------------------------------+-----------------------------------------------------------------------+
-        | content                           | `None | str`                                                         |
+        | content                           | `None | str`                                                          |
         +-----------------------------------+-----------------------------------------------------------------------+
-        | edited_at                         | `None`, `datetime`                                                    |
+        | edited_at                         | `None | DateTime`                                                     |
         +-----------------------------------+-----------------------------------------------------------------------+
         | embeds                            | `None`, `tuple` of ``Embed``                                          |
         +-----------------------------------+-----------------------------------------------------------------------+
@@ -1333,7 +1333,7 @@ class Message(DiscordEntity, immortal = True):
         +-----------------------------------+-----------------------------------------------------------------------+
         | mentioned_everyone                | `bool`                                                                |
         +-----------------------------------+-----------------------------------------------------------------------+
-        | mentioned_role_ids                | `None`, `tuple` of `int`                                              |
+        | mentioned_role_ids                | `None | tuple<int>`                                                   |
         +-----------------------------------+-----------------------------------------------------------------------+
         | mentioned_users                   | `None`, `tuple` of ``ClientUserBase``                                 |
         +-----------------------------------+-----------------------------------------------------------------------+
@@ -1915,7 +1915,7 @@ class Message(DiscordEntity, immortal = True):
         content : `None | str`, Optional (Keyword only)
             The message's content.
         
-        edited_at : `None`, `datetime`
+        edited_at : `None | DateTime`
             The time when the message was edited.
         
         embeds : `None`, `iterable` of ``Embed``, Optional (Keyword only)
@@ -2209,7 +2209,7 @@ class Message(DiscordEntity, immortal = True):
         content : `None | str`, Optional (Keyword only)
             The message's content.
         
-        edited_at : `None`, `datetime`
+        edited_at : `None | DateTime`
             The time when the message was edited.
         
         embeds : `None`, `iterable` of ``Embed``, Optional (Keyword only)
@@ -2611,7 +2611,17 @@ class Message(DiscordEntity, immortal = True):
     
     # Properties
     
-    url = property(module_urls.message_jump_url)
+    @property
+    def url(self):
+        """
+        Returns a jump url to the message.
+        
+        Returns
+        -------
+        url : `str`
+        """
+        return build_message_jump_url(self.guild_id, self.channel_id, self.id)
+    
     
     @property
     def channel(self):
@@ -2804,7 +2814,7 @@ class Message(DiscordEntity, immortal = True):
         
         Returns
         -------
-        role_mentions : `None`, `tuple` of ``Role``
+        role_mentions : ``None | tuple<Role>``
         """
         mentioned_role_ids = self.mentioned_role_ids
         if (mentioned_role_ids is not None):

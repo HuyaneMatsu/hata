@@ -12,7 +12,7 @@ class ScheduledEventEntityMetadataStage(ScheduledEventEntityMetadataBase):
     
     Attributes
     ----------
-    speaker_ids : `None`, `tuple` of `int`
+    speaker_ids : `None | tuple<int>`
         The speakers' identifier of the stage channel.
     """
     __slots__ = ('speaker_ids', )

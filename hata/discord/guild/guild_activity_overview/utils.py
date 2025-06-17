@@ -7,7 +7,7 @@ from .fields import (
     validate_activity_application_ids, validate_banner_color, validate_description, validate_name,
     validate_privacy_level, validate_tags
 )
-from .guild_activity_overview import GUILD_ACTIVITY_OVERVIEW_DISCOVERY_SPLASH, GUILD_ICON
+from .guild_activity_overview import GUILD_ACTIVITY_OVERVIEW_DISCOVERY_SPLASH, GUILD_ACTIVITY_OVERVIEW_ICON
 
 
 GUILD_ACTIVITY_OVERVIEW_FIELD_CONVERTERS = {
@@ -19,8 +19,8 @@ GUILD_ACTIVITY_OVERVIEW_FIELD_CONVERTERS = {
         partial_func(GUILD_ACTIVITY_OVERVIEW_DISCOVERY_SPLASH.put_into, as_data = True),
     ),
     'icon': (
-        partial_func(GUILD_ICON.validate_icon, allow_data = True),
-        partial_func(GUILD_ICON.put_into, as_data = True),
+        partial_func(GUILD_ACTIVITY_OVERVIEW_ICON.validate_icon, allow_data = True),
+        partial_func(GUILD_ACTIVITY_OVERVIEW_ICON.put_into, as_data = True),
     ),
     'name': (validate_name, put_name),
     'privacy_level': (validate_privacy_level, put_privacy_level),

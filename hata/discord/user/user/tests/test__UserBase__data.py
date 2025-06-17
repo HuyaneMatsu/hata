@@ -39,6 +39,9 @@ def test__UserBase__to_data():
         'discriminator': '0000',
         'global_name': None,
         'username': name,
+        'collectibles': {
+            'nameplate': None,
+        },
         'banner': None,
         'id': str(user_id),
         'public_flags': 0,

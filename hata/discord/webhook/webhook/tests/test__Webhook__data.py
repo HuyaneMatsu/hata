@@ -108,15 +108,18 @@ def test__Webhook__to_data():
     expected_output = {
         'avatar': avatar.as_base_16_hash,
         'avatar_decoration_data': None,
+        'banner': None,
+        'bot': True,
         'accent_color': None,
         'discriminator': '0000',
         'global_name': None,
-        'username': name,
-        'primary_guild': None,
-        'banner': None,
-        'id': str(webhook_id),
         'public_flags': 0,
-        'bot': True,
+        'id': str(webhook_id),
+        'username': name,
+        'collectibles': {
+            'nameplate': None,
+        },
+        'primary_guild': None,
     }
     
     vampytest.assert_eq(

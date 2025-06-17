@@ -88,7 +88,7 @@ def put_channel(channel, data, defaults):
     ----------
     channel : ``None | Channel``
         The channel to serialize.
-    data : `dict<str, object>` items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
@@ -170,7 +170,7 @@ def put_guild(guild, data, defaults):
     ----------
     guild : ``None | Guild``
         The guild to serialize.
-    data : `dict<str, object>` items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
@@ -253,7 +253,7 @@ def put_target_application(target_application, data, defaults):
     ----------
     target_application : ``None | Application``
         The application to serialize.
-    data : `dict<str, object>` items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
@@ -295,7 +295,7 @@ def put_target_type(target_type, data, defaults):
     ----------
     target-type : ``InviteTargetType``
         The target type to serialize.
-    data : `dict<str, object>` items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.

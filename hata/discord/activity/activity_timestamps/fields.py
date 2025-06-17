@@ -16,7 +16,7 @@ def parse_end(data):
     
     Returns
     -------
-    end : `None`, `datetime`
+    end : `None | DateTime`
     """
     end = data.get('end', None)
     if (end is not None):
@@ -29,7 +29,7 @@ def put_end(end, data, defaults):
     
     Parameters
     ----------
-    end : `None`, `datetime`
+    end : `None | DateTime`
         Activity timestamps end.
     data : `dict<str, object>`
         Json serializable dictionary.
@@ -64,7 +64,7 @@ def parse_start(data):
     
     Returns
     -------
-    start : `None`, `datetime`
+    start : `None | DateTime`
     """
     start = data.get('start', None)
     if (start is not None):
@@ -77,7 +77,7 @@ def put_start(start, data, defaults):
     
     Parameters
     ----------
-    start : `None`, `datetime`
+    start : `None | DateTime`
         Activity timestamps start.
     data : `dict<str, object>`
         Json serializable dictionary.

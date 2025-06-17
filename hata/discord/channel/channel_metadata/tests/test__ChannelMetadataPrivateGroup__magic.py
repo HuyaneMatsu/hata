@@ -48,35 +48,94 @@ def test__ChannelMetadataPrivateGroup__hash():
     vampytest.assert_instance(hash(channel_metadata), int)
 
 
-def test__ChannelMetadataPrivateGroup__eq():
-    """
-    Tests whether ``.ChannelMetadataPrivateGroup.__eq__`` works as intended.
-    """
+def _iter_options__eq():
     application_id = 202301210006
-    user_1 = User.precreate(202209160018)
-    user_2 = User.precreate(202209160019)
+    user_0 = User.precreate(202209160018)
+    user_1 = User.precreate(202209160019)
     owner_id = 202209160021
     icon = Icon(IconType.static, 1)
     name = 'Armelyrics'
     
     keyword_parameters = {
         'application_id': application_id,
-        'users': [user_1],
+        'users': [user_0],
         'owner_id': owner_id,
         'name': name,
         'icon': icon,
     }
-    channel_metadata = ChannelMetadataPrivateGroup(**keyword_parameters)
     
-    vampytest.assert_eq(channel_metadata, channel_metadata)
-    vampytest.assert_ne(channel_metadata, object())
+    yield (
+        keyword_parameters,
+        keyword_parameters,
+        True,
+    )
     
-    for field_name, field_value in (
-        ('users', [user_2]),
-        ('owner_id', 202209160022),
-        ('icon', Icon(IconType.static, 2)),
-        ('name', 'Okuu'),
-        ('application_id', 202301210007),
-    ):
-        test_channel_metadata = ChannelMetadataPrivateGroup(**{**keyword_parameters, field_name: field_value})
-        vampytest.assert_ne(channel_metadata, test_channel_metadata)
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'users': [user_1],
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'owner_id': 202209160022,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'icon': Icon(IconType.static, 2),
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'name': 'Okuu',
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'application_id': 202301210007,
+        },
+        False,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__eq()).returning_last())
+def test__ChannelMetadataPrivateGroup__eq(keyword_parameters_0, keyword_parameters_1):
+    """
+    Tests whether ``ChannelMetadataPrivateGroup.__eq__`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters_0 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    keyword_parameters_1 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    channel_metadata_0 = ChannelMetadataPrivateGroup(**keyword_parameters_0)
+    channel_metadata_1 = ChannelMetadataPrivateGroup(**keyword_parameters_1)
+    
+    output = channel_metadata_0 == channel_metadata_1
+    vampytest.assert_instance(output, bool)
+    return output

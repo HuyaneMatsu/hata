@@ -19,6 +19,7 @@ from ...localization import Locale
 from ...localization.utils import LOCALE_DEFAULT
 
 from ..avatar_decoration import AvatarDecoration
+from ..name_plate import NamePlate
 
 from .constants import (
     DISCRIMINATOR_VALUE_MAX, DISCRIMINATOR_VALUE_MIN, DISPLAY_NAME_LENGTH_MAX, NAME_LENGTH_MAX, NAME_LENGTH_MIN,
@@ -41,7 +42,7 @@ def parse_activities(data):
     
     Returns
     -------
-    activities : `None`, `list` of ``Activity``
+    activities : ``None | list<Activity>``
     """
     activity_datas = data.get('activities', None)
     if (activity_datas is None) or (not activity_datas):
@@ -56,7 +57,7 @@ def put_activities(activities, data, defaults):
     
     Parameters
     ----------
-    activities : `None`, `list` of ``Activity``
+    activities : ``None | list<Activity>``
         Activities.
     data : `dict<str, object>`
         Json serializable dictionary.
@@ -90,7 +91,7 @@ def validate_activities(activities):
     
     Returns
     -------
-    activities : `None`, `list` of ``Activity``
+    activities : ``None | list<Activity>``
     
     Raises
     ------
@@ -296,7 +297,7 @@ def validate_discriminator(discriminator):
     else:
         raise TypeError(
             f'`discriminator` can be `int`, `str`, got '
-            f'{discriminator.__class__.__name__}; {discriminator!r}.'
+            f'{type(discriminator).__name__}; {discriminator!r}.'
         )
     
     if (discriminator < DISCRIMINATOR_VALUE_MIN) or (discriminator > DISCRIMINATOR_VALUE_MAX):
@@ -373,6 +374,7 @@ parse_mfa_enabled = bool_parser_factory('mfa_enabled', False)
 put_mfa_enabled = bool_optional_putter_factory('mfa_enabled', False)
 validate_mfa_enabled = bool_validator_factory('mfa_enabled', False)
 
+
 # name
 
 def parse_name(data):
@@ -403,10 +405,76 @@ def parse_name(data):
 put_name = force_string_putter_factory('username')
 validate_name = force_string_validator_factory('name', NAME_LENGTH_MIN, NAME_LENGTH_MAX)
 
+
 # name | webhook_name
 
 put_webhook_name = force_string_putter_factory('name')
 validate_webhook_name = force_string_validator_factory('name', WEBHOOK_NAME_LENGTH_MIN, WEBHOOK_NAME_LENGTH_MAX)
+
+
+# name_plate
+
+def parse_name_plate(data):
+    """
+    Parses out a name plate from the given data.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    name_plate : ``None | NamePlate``
+    """
+    nested_data = data.get('collectibles', None)
+    if nested_data is None:
+        return
+    
+    name_plate_data = nested_data.get('nameplate', None)
+    if name_plate_data is None:
+        return
+    
+    return NamePlate.from_data(name_plate_data)
+
+
+def put_name_plate(name_plate, data, defaults):
+    """
+    Serializes the name plate value into the given data.
+    
+    Parameters
+    ----------
+    name_plate : ``None | NamePlate``
+        Name plate to serialize.
+    
+    data : `dict<str, object>`
+        Json serializable dictionary.
+    
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    if (name_plate is not None) or defaults:
+        try:
+            nested_data = data['collectibles']
+        except KeyError:
+            nested_data = {}
+            data['collectibles'] = nested_data
+        
+        if name_plate is None:
+            name_plate_data = None
+        else:
+            name_plate_data = name_plate.to_data(defaults = defaults)
+        
+        nested_data['nameplate'] = name_plate_data
+    
+    return data
+
+
+validate_name_plate = nullable_entity_validator_factory('name_plate', NamePlate)
 
 # premium_type
 
@@ -450,8 +518,10 @@ def put_statuses(statuses, data, defaults):
     ----------
     statuses : `None`, `dict` of (`str`, `str`) items
         user statuses by platform.
+    
     data : `dict<str, object>`
         Json serializable dictionary.
+    
     defaults : `bool`
         Whether default values should be included as well.
     

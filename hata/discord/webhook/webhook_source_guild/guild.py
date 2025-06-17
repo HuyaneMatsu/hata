@@ -3,7 +3,7 @@ __all__ = ('WebhookSourceGuild', )
 from scarletio import include
 
 from ...bases import DiscordEntity, IconSlot
-from ...http import urls as module_urls
+from ...http.urls import build_guild_icon_url, build_guild_icon_url_as
 
 from .fields import validate_id, validate_name, parse_id, parse_name, put_id, put_name
 
@@ -28,12 +28,7 @@ class WebhookSourceGuild(DiscordEntity):
     """
     __slots__ = ('name',)
     
-    icon = IconSlot(
-        'icon',
-        'icon',
-        module_urls.guild_icon_url,
-        module_urls.guild_icon_url_as,
-    )
+    icon = IconSlot('icon', 'icon')
     
     def __new__(cls, *, guild_id = ..., icon = ..., name = ...):
         """
@@ -43,7 +38,7 @@ class WebhookSourceGuild(DiscordEntity):
         ----------
         guild_id : `int`, Optional (Keyword only)
             The guild's identifier.
-        icon : `None`, ``Icon``, `str`, Optional (Keyword only)
+        icon : ``None | str | Icon``, Optional (Keyword only)
             The guild's icon.
         name : `str`, Optional (Keyword only)
             The guild's name.
@@ -255,7 +250,7 @@ class WebhookSourceGuild(DiscordEntity):
         ----------
         guild_id : `int`, Optional (Keyword only)
             The guild's identifier.
-        icon : `None`, ``Icon``, `str`, Optional (Keyword only)
+        icon : ``None | str | Icon``, Optional (Keyword only)
             The guild's icon.
         name : `str`, Optional (Keyword only)
             The guild's name.
@@ -295,3 +290,35 @@ class WebhookSourceGuild(DiscordEntity):
         new.id = guild_id
         new.name = name
         return new
+    
+    
+    @property
+    def icon_url(self):
+        """
+        Returns the guild's icon's url. If the guild has no icon, then returns `None`.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_guild_icon_url(self.id, self.icon_type, self.icon_hash)
+    
+    
+    def icon_url_as(self, ext = None, size = None):
+        """
+        Returns the guild's icon's url. If the guild has no icon, then returns `None`.
+        
+        Parameters
+        ----------
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+            If the guild has animated icon, it can be `'gif'` as well.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_guild_icon_url_as(self.id, self.icon_type, self.icon_hash, ext, size)

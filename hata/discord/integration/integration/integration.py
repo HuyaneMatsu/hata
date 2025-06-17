@@ -91,7 +91,7 @@ class Integration(DiscordEntity, immortal = True):
         subscriber_count : `int`, Optional (Keyword only)
             How many subscribers the integration has. 
         
-        synced_at : `None`, `datetime`, Optional (Keyword only)
+        synced_at : `None | DateTime`, Optional (Keyword only)
             When the integration was last synced.
         
         syncing : `bool`, Optional (Keyword only)
@@ -194,7 +194,7 @@ class Integration(DiscordEntity, immortal = True):
         subscriber_count : `int`, Optional (Keyword only)
             How many subscribers the integration has. 
         
-        synced_at : `None`, `datetime`, Optional (Keyword only)
+        synced_at : `None | DateTime`, Optional (Keyword only)
             When the integration was last synced.
         
         syncing : `bool`, Optional (Keyword only)
@@ -627,7 +627,7 @@ class Integration(DiscordEntity, immortal = True):
         subscriber_count : `int`, Optional (Keyword only)
             How many subscribers the integration has. 
         
-        synced_at : `None`, `datetime`, Optional (Keyword only)
+        synced_at : `None | DateTime`, Optional (Keyword only)
             When the integration was last synced.
         
         syncing : `bool`, Optional (Keyword only)

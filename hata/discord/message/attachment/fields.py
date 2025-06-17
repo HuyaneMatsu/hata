@@ -1,5 +1,7 @@
 __all__ = ()
 
+from base64 import b64decode as base_64_decode, b64encode as base_64_encode
+
 from ...application import Application
 from ...field_parsers import (
     bool_parser_factory, entity_id_parser_factory, flag_parser_factory, float_parser_factory,
@@ -14,9 +16,9 @@ from ...field_putters import (
 )
 from ...field_validators import (
     bool_validator_factory, entity_id_validator_factory, flag_validator_factory, float_conditional_validator_factory,
-    force_string_validator_factory, int_conditional_validator_factory, nullable_date_time_validator_factory,
-    nullable_entity_array_validator_factory, nullable_entity_validator_factory, nullable_string_validator_factory,
-    url_optional_validator_factory, url_required_validator_factory
+    force_string_validator_factory, int_conditional_validator_factory, nullable_bytes_validator_factory,
+    nullable_date_time_validator_factory, nullable_entity_array_validator_factory, nullable_entity_validator_factory,
+    nullable_string_validator_factory, url_optional_validator_factory, url_required_validator_factory
 )
 from ...user import User
 
@@ -31,14 +33,14 @@ parse_application = nullable_functional_parser_factory('application', Applicatio
 
 def put_application(application, data, defaults):
     """
-    Puts the invite's application into the given data.
+    Serializes the attachment's application into the given data.
     
     Parameters
     ----------
-    application : `None | Application`
+    application : ``None | Application``
         The application to serialize.
     
-    data : `dict<str, object>` items
+    data : `dict<str, object>`
         Json serializable dictionary.
     
     defaults : `bool`
@@ -92,8 +94,8 @@ validate_description = nullable_string_validator_factory('description', 0, DESCR
 
 # duration
 
-parse_duration = float_parser_factory('duration_sec', DURATION_DEFAULT)
-put_duration = float_optional_putter_factory('duration_sec', DURATION_DEFAULT)
+parse_duration = float_parser_factory('duration_secs', DURATION_DEFAULT)
+put_duration = float_optional_putter_factory('duration_secs', DURATION_DEFAULT)
 validate_duration = float_conditional_validator_factory(
     'duration',
     DURATION_DEFAULT,
@@ -165,11 +167,60 @@ parse_url = force_string_parser_factory('url')
 put_url = url_optional_putter_factory('url')
 validate_url = url_required_validator_factory('url')
 
+
 # waveform
 
-parse_waveform = nullable_string_parser_factory('waveform')
-put_waveform = nullable_string_optional_putter_factory('waveform')
-validate_waveform = nullable_string_validator_factory('waveform', 0, 4096)
+def parse_waveform(data):
+    """
+    Parses the waveform out from the given data.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    waveform : `None | bytes`
+    """
+    waveform = data.get('waveform')
+    if (waveform is not None) and waveform:
+        try:
+            return base_64_decode(waveform)
+        except ValueError:
+            pass
+
+
+def put_waveform(waveform, data, defaults):
+    """
+    Serializes the waveform into the given data.
+    
+    Parameters
+    ----------
+    waveform : `None | bytes`
+        The waveform to serialize.
+    
+    data : `dict<str, object>`
+        Json serializable dictionary.
+    
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    if (waveform is not None) or defaults:
+        if waveform is not None:
+            waveform = base_64_encode(waveform).decode('ascii')
+        
+        data['waveform'] = waveform
+    
+    return data
+
+
+validate_waveform = nullable_bytes_validator_factory('waveform', 0, 4096)
+
 
 # width
 

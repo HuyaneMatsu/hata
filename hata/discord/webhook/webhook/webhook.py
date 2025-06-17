@@ -5,8 +5,7 @@ from scarletio import copy_docs, export, include
 from ...bases import ICON_TYPE_NONE, Icon
 from ...core import USERS
 from ...exceptions import DiscordException, ERROR_CODES
-from ...http import urls as module_urls
-from ...http.urls import WEBHOOK_URL_PATTERN
+from ...http.urls import WEBHOOK_URL_PATTERN, build_webhook_url
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 from ...user import ClientUserBase, UserBase, ZEROUSER
 from ...user.user.fields import parse_id, put_id, put_webhook_name, validate_id, validate_webhook_name
@@ -112,7 +111,7 @@ class Webhook(WebhookBase):
         channel_id : `int`, Optional (Keyword only)
             The channel's identifier, where the webhook is going to send it's messages.
         
-        avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        avatar : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The user's avatar.
         
         source_channel : `None`, ``WebhookSourceChannel``, Optional (Keyword only)
@@ -291,7 +290,7 @@ class Webhook(WebhookBase):
         channel_id : `int`, Optional (Keyword only)
             The channel's identifier, where the webhook is going to send it's messages.
         
-        avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        avatar : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The user's avatar.
         
         source_channel : `None`, ``WebhookSourceChannel``, Optional (Keyword only)
@@ -478,7 +477,7 @@ class Webhook(WebhookBase):
         application_id : `int`, ``Application``, Optional (Keyword only)
             The application's identifier what created the webhook.
         
-        avatar : `None`, ``Icon``, `str`, Optional (Keyword only)
+        avatar : ``None | str | Icon``, Optional (Keyword only)
             The webhook's avatar.
         
         channel : `int`, ``Channel``, Optional (Keyword only)
@@ -564,7 +563,16 @@ class Webhook(WebhookBase):
         return create_partial_webhook_from_id(webhook_id, webhook_token)
     
     
-    url = property(module_urls.webhook_url)
+    @property
+    def url(self):
+        """
+        Returns the webhook's url.
+        
+        Returns
+        -------
+        url : `str`
+        """
+        return build_webhook_url(self.id, self.token)
     
     
     @classmethod

@@ -456,7 +456,7 @@ class MenuStructure(RichAttributeErrorBaseType):
         | should_process    | `bool`    |
         +-------------------+-----------+
     
-    get_timeout : `None`, `Function`
+    get_timeout : `None`, `FunctionType`
         Return the time after the menu should be closed.
         
         > Define it as non-positive to never timeout. Not recommended.
@@ -491,7 +491,7 @@ class MenuStructure(RichAttributeErrorBaseType):
         | exception | `None`, `BaseException`   |
         +-----------+---------------------------+
     
-    init : `None`, `Function`
+    init : `None`, `FunctionType`
         Initializer function.
     
         Should accept the following parameters:
@@ -1202,7 +1202,7 @@ class Menu(RichAttributeErrorBaseType, metaclass = MenuType):
         
         Parameters
         ----------
-        exception : `None`, ``BaseException`` = `None`, Optional
+        exception : `None`, `BaseException` = `None`, Optional
             Exception to cancel the pagination with. Defaults to `None`
         
         Returns
@@ -1233,7 +1233,7 @@ class Menu(RichAttributeErrorBaseType, metaclass = MenuType):
         
         Parameters
         ----------
-        exception : `None`, ``BaseException``
+        exception : `None`, `BaseException`
         """
         client = self.client
         message = self.message

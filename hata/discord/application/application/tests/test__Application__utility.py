@@ -878,7 +878,7 @@ def test__Application__guild(application):
     
     Parameters
     ----------
-    input_value : ``Application```
+    application : ``Application```
         Application to test with.
     
     Returns
@@ -1168,3 +1168,137 @@ def test__Application__has_cache_emoji_by_id():
     
     vampytest.assert_instance(output, bool)
     vampytest.assert_eq(output, False)
+
+
+def _iter_options__icon_url():
+    yield 202505310006, None, False
+    yield 202505310007, Icon(IconType.animated, 5), True
+
+
+@vampytest._(vampytest.call_from(_iter_options__icon_url()).returning_last())
+def test__Application__icon_url(application_id, icon):
+    """
+    Tests whether ``Application.icon_url`` works as intended.
+    
+    Parameters
+    ----------
+    application_id : `int`
+        Identifier to create application with.
+    
+    icon : ``None | Icon``
+        Icon to create the application with.
+    
+    Returns
+    -------
+    has_icon_url : `bool`
+    """
+    application = Application.precreate(
+        application_id,
+        icon = icon,
+    )
+    
+    output = application.icon_url
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__icon_url_as():
+    yield 202505310008, None, {'ext': 'webp', 'size': 128}, False
+    yield 202505310009, Icon(IconType.animated, 5), {'ext': 'webp', 'size': 128}, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__icon_url_as()).returning_last())
+def test__Application__icon_url_as(application_id, icon, keyword_parameters):
+    """
+    Tests whether ``Application.icon_url_as`` works as intended.
+    
+    Parameters
+    ----------
+    application_id : `int`
+        Identifier to create application with.
+    
+    icon : ``None | Icon``
+        Icon to create the application with.
+    
+    keyword_parameters : `dict<str, object>`
+        Additional keyword parameters to pass.
+    
+    Returns
+    -------
+    has_icon_url : `bool`
+    """
+    application = Application.precreate(
+        application_id,
+        icon = icon,
+    )
+    
+    output = application.icon_url_as(**keyword_parameters)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__cover_url():
+    yield 202505310010, None, False
+    yield 202505310011, Icon(IconType.animated, 5), True
+
+
+@vampytest._(vampytest.call_from(_iter_options__cover_url()).returning_last())
+def test__Application__cover_url(application_id, icon):
+    """
+    Tests whether ``Application.cover_url`` works as intended.
+    
+    Parameters
+    ----------
+    application_id : `int`
+        Identifier to create application with.
+    
+    icon : ``None | Icon``
+        Icon to create the application with.
+    
+    Returns
+    -------
+    has_cover_url : `bool`
+    """
+    application = Application.precreate(
+        application_id,
+        cover = icon,
+    )
+    
+    output = application.cover_url
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__cover_url_as():
+    yield 202505310012, None, {'ext': 'webp', 'size': 128}, False
+    yield 202505310013, Icon(IconType.animated, 5), {'ext': 'webp', 'size': 128}, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__cover_url_as()).returning_last())
+def test__Application__cover_url_as(application_id, icon, keyword_parameters):
+    """
+    Tests whether ``Application.cover_url_as`` works as intended.
+    
+    Parameters
+    ----------
+    application_id : `int`
+        Identifier to create application with.
+    
+    icon : ``None | Icon``
+        Icon to create the application with.
+    
+    keyword_parameters : `dict<str, object>`
+        Additional keyword parameters to pass.
+    
+    Returns
+    -------
+    has_cover_url : `bool`
+    """
+    application = Application.precreate(
+        application_id,
+        cover = icon,
+    )
+    
+    output = application.cover_url_as(**keyword_parameters)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)

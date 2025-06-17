@@ -1,7 +1,7 @@
 __all__ = ('IntegrationApplication',)
 
 from ...bases import DiscordEntity, ICON_TYPE_NONE, IconSlot
-from ...http import urls as module_urls
+from ...http.urls import build_application_icon_url, build_application_icon_url_as
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 from ...user import ZEROUSER
 
@@ -10,13 +10,13 @@ from .fields import (
     validate_bot, validate_description, validate_id, validate_name
 )
 
-application_icon = IconSlot('icon', 'icon', module_urls.application_icon_url, module_urls.application_icon_url_as)
+APPLICATION_ICON = IconSlot('icon', 'icon')
 
 
 PRECREATE_FIELDS = {
     'bot': ('bot', validate_bot),
     'description': ('description', validate_description),
-    'icon': ('icon', application_icon.validate_icon),
+    'icon': ('icon', APPLICATION_ICON.validate_icon),
     'name': ('name', validate_name),
 }
 
@@ -35,14 +35,14 @@ class IntegrationApplication(DiscordEntity):
         The application's icon's type.
     bot : ``ClientUserBase``
         The application's bot if applicable.
-    description : `None` `str`
+    description : `None | str`
         The description of the application. Defaults to empty string.
     name : `str`
         The name of the application. Defaults to empty string.
     """
     __slots__ = ('bot', 'description', 'name', )
     
-    icon = application_icon
+    icon = APPLICATION_ICON
     
     def __new__(cls, *, bot = ..., description = ..., icon = ..., name = ...):
         """
@@ -113,6 +113,7 @@ class IntegrationApplication(DiscordEntity):
         ----------
         integration_application_id : `int`
             The integration application's id.
+        
         **keyword_parameters : Keyword parameters
             The attributes to set.
         
@@ -124,7 +125,7 @@ class IntegrationApplication(DiscordEntity):
         description : `None`, `str`, Optional (Keyword only)
             The description of the application.
         
-        icon : `None`, ``Icon``, Optional (Keyword only)
+        icon : ``None | Icon``, Optional (Keyword only)
             The icon of the integration application.
         
         name : `None, `str`, Optional (Keyword only)
@@ -429,3 +430,35 @@ class IntegrationApplication(DiscordEntity):
         new.id = 0
         new.name = name
         return new
+    
+    
+    @property
+    def icon_url(self):
+        """
+        Returns the application's icon's url. If the application has no icon, then returns `None`.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_application_icon_url(self.id, self.icon_type, self.icon_hash)
+    
+    
+    def icon_url_as(self, ext = None, size = None):
+        """
+        Returns the application's icon's url. If the application has no icon, then returns `None`.
+        
+        Parameters
+        ----------
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+            If the application has animated icon, it can be `'gif'` as well.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_application_icon_url_as(self.id, self.icon_type, self.icon_hash, ext, size)

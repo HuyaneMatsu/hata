@@ -224,7 +224,7 @@ class ComponentInteractionWaiter:
         
         Parameters
         ----------
-        exception : `None`, ``BaseException`` = `None`, Optional
+        exception : `None`, `BaseException` = `None`, Optional
             The exception to cancel the waiter with.
         """
         if self._finished:
@@ -256,7 +256,7 @@ class ComponentInteractionIterator:
     ----------
     _check : `None`, `callable`
         The check to call to validate whether the response is sufficient.
-    _exception : `None`, ``BaseException``
+    _exception : `None`, `BaseException`
         Whether the waiter finished with an exception.
     _finished : `bool`
         Whether the interaction iterator is finished.
@@ -418,7 +418,7 @@ class ComponentInteractionIterator:
         
         Parameters
         ----------
-        exception : `None`, ``BaseException`` = `None`, Optional
+        exception : `None`, `BaseException` = `None`, Optional
             The exception to cancel the waiter with.
         """
         if self._finished:

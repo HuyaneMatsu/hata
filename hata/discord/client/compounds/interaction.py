@@ -39,6 +39,7 @@ MESSAGE_SERIALIZER_INTERACTION_FOLLOWUP_CREATE = create_serializer(
             MessageBuilderInteractionFollowupCreate.poll,
             MessageBuilderInteractionFollowupCreate.show_for_invoking_user_only,
             MessageBuilderInteractionFollowupCreate.tts,
+            MessageBuilderInteractionFollowupCreate.voice_attachment,
         ],
         False,
     )
@@ -58,7 +59,6 @@ MESSAGE_SERIALIZER_INTERACTION_FOLLOWUP_EDIT = create_serializer(
         True,
     )
 )
-
 
 MESSAGE_SERIALIZER_INTERACTION_COMPONENT_EDIT = create_serializer(
     MessageBuilderInteractionComponentEdit,
@@ -102,6 +102,7 @@ MESSAGE_SERIALIZER_INTERACTION_RESPONSE_EDIT = create_serializer(
             MessageBuilderInteractionResponseEdit.embeds,
             MessageBuilderInteractionResponseEdit.flags,
             MessageBuilderInteractionResponseEdit.poll,
+            MessageBuilderInteractionResponseEdit.voice_attachment,
         ],
         True,
     )
@@ -190,7 +191,7 @@ def _process_interaction_response(interaction_event, interaction_response_data):
     
     Returns
     -------
-    message : `None | Message`
+    message : ``None | Message``
         Returns `None` on failure.
     """
     if (interaction_response_data is None):
@@ -234,7 +235,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         Returns
         -------
-        response_message : `None | Message`
+        response_message : ``None | Message``
             Returns a message oon success.
             If `wait` was given as `False` then `None`.
         
@@ -505,7 +506,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         Returns
         -------
-        response_message : `None | Message`
+        response_message : ``None | Message``
             Returns a message on success.
         
         Raises
@@ -772,6 +773,9 @@ class ClientCompoundInteractionEndpoints(Compound):
         suppress_embeds : `bool`, Optional (Keyword only)
             Whether the message's embeds should be suppressed or unsuppressed.
         
+        voice_attachment : ``None | VoiceAttachment``, Optional (Keyword only)
+            Modifies the message to be a voice message, allowing it to contain just a single voice attachment.
+        
         Raises
         ------
         TypeError
@@ -1023,6 +1027,8 @@ class ClientCompoundInteractionEndpoints(Compound):
         tts : `bool` = `False`, Optional (Keyword only)
             Whether the message is text-to-speech.
         
+        voice_attachment : ``None | VoiceAttachment``, Optional (Keyword only)
+            Modifies the message to be a voice message, allowing it to contain just a single voice attachment.
         
         Returns
         -------

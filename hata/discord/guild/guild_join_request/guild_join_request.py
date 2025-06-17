@@ -28,15 +28,15 @@ class GuildJoinRequest(EventBase):
     ----------
     actioned_by : ``None | ClientUserBase``
         The user who action the join request.
-    actioned_at : `None`, `datetime`
+    actioned_at : `None | DateTime`
         When the join request was actioned at.
-    created_at : `None`, `datetime`
+    created_at : `None | DateTime`
         When the join request was created.
     form_responses : `None`, `tuple` of ``GuildJoinRequestFormResponse``
         The responses the user submitted.
     guild_id : `int`
         The respective guild's identifier.
-    last_seen_at : `None`, `datetime`
+    last_seen_at : `None | DateTime`
         When the user was last seen.
     rejection_reason : `None`, `str`
         The reason why the join request was rejected.
@@ -70,7 +70,7 @@ class GuildJoinRequest(EventBase):
         ----------
         actioned_by : ``None | ClientUserBase``, Optional (Keyword only)
             The user who action the join request.
-        actioned_at : `None`, `datetime`, Optional (Keyword only)
+        actioned_at : `None | DateTime`, Optional (Keyword only)
             When the join request was actioned at.
         created_at : None`, `datetime`, Optional (Keyword only)
             When the join request was created.
@@ -78,7 +78,7 @@ class GuildJoinRequest(EventBase):
             The responses the user submitted.
         guild_id : `int`, ``Guild``, Optional (Keyword only)
             The respective guild's identifier.
-        last_seen_at : `None`, `datetime`, Optional (Keyword only)
+        last_seen_at : `None | DateTime`, Optional (Keyword only)
             When the user was last seen.
         rejection_reason : `None`, `str`, Optional (Keyword only)
             The reason why the join request was rejected.
@@ -421,7 +421,7 @@ class GuildJoinRequest(EventBase):
         ----------
         actioned_by : ``None | ClientUserBase``, Optional (Keyword only)
             The user who action the join request.
-        actioned_at : `None`, `datetime`, Optional (Keyword only)
+        actioned_at : `None | DateTime`, Optional (Keyword only)
             When the join request was actioned at.
         created_at : None`, `datetime`, Optional (Keyword only)
             When the join request was created.
@@ -429,7 +429,7 @@ class GuildJoinRequest(EventBase):
             The responses the user submitted.
         guild_id : `int`, ``Guild``, Optional (Keyword only)
             The respective guild's identifier.
-        last_seen_at : `None`, `datetime`, Optional (Keyword only)
+        last_seen_at : `None | DateTime`, Optional (Keyword only)
             When the user was last seen.
         rejection_reason : `None`, `str`, Optional (Keyword only)
             The reason why the join request was rejected.

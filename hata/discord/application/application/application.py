@@ -7,7 +7,10 @@ from scarletio import BaseMethodDescriptor, export
 
 from ...bases import DiscordEntity, ICON_TYPE_NONE, IconSlot
 from ...core import APPLICATIONS, APPLICATION_ID_TO_CLIENT, GUILDS
-from ...http import urls as module_urls
+from ...http.urls import (
+    build_application_cover_url, build_application_cover_url_as, build_application_icon_url,
+    build_application_icon_url_as
+)
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 from ...user import ZEROUSER
 
@@ -319,30 +322,9 @@ from .preinstanced import (
 # +-------------------------------------+-----------+-----------+---------------+
 
 
-APPLICATION_COVER = IconSlot(
-    'cover',
-    'cover_image',
-    module_urls.application_cover_url,
-    module_urls.application_cover_url_as,
-    add_updater = False,
-)
-
-APPLICATION_ICON = IconSlot(
-    'icon',
-    'icon',
-    module_urls.application_icon_url,
-    module_urls.application_icon_url_as,
-    add_updater = False,
-)
-
-APPLICATION_SPLASH = IconSlot(
-    'splash',
-    'splash',
-    None,
-    None,
-    add_updater = False,
-)
-
+APPLICATION_COVER = IconSlot('cover', 'cover_image', add_updater = False)
+APPLICATION_ICON = IconSlot('icon', 'icon', add_updater = False)
+APPLICATION_SPLASH = IconSlot('splash', 'splash', add_updater = False)
 
 
 COMMON_CONSTRUCT_FIELDS = {
@@ -431,7 +413,7 @@ class Application(DiscordEntity, immortal = True):
     _cache_emojis : `None | dict<int, Emoji>`
         Application emoji cache.
     
-    aliases : `None`, `tuple` of `str`
+    aliases : `None | tuple<str>`
         Aliases of the application's name.
     
     approximate_guild_count : `int`
@@ -600,14 +582,14 @@ class Application(DiscordEntity, immortal = True):
         A list of the application's games' publishers.
         Defaults to `None`.
     
-    redirect_urls : `None`, `tuple` of `str`
+    redirect_urls : `None | tuple<str>`
         Configured oauth2 redirect urls.
         Defaults to `None`.
     
     role_connection_verification_url : `None`, `str`
         The application's role connection verification entry point
     
-    rpc_origins : `None`, `tuple` of `str`
+    rpc_origins : `None | tuple<str>`
         The application's `rpc` origin urls, if `rpc` is enabled.
         Defaults to `None`.
     
@@ -627,7 +609,7 @@ class Application(DiscordEntity, immortal = True):
     store_state : ``ApplicationStoreState``
         The application's state towards having approved store.
     
-    tags : `None`, `tuple` of `str`
+    tags : `None | tuple<str>`
         Up to 5 tags describing the content and functionality of the application.
         Defaults to `None`.
     
@@ -1900,7 +1882,7 @@ class Application(DiscordEntity, immortal = True):
         bot_requires_code_grant : `bool`, Optional (Keyword only)
             Whether the application's bot will only join a guild when completing the full `oauth2` code grant flow.
         
-        cover : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        cover : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The application's cover.
         
         creator_monetization_state : ``ApplicationMonetizationState``, `int`, Optional (Keyword only)
@@ -1954,7 +1936,7 @@ class Application(DiscordEntity, immortal = True):
         hook : `bool`, Optional (Keyword only)
             Whether the application's bot is allowed to hook into the application's game directly.
         
-        icon : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        icon : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The application's icon.
         
         install_parameters : `None`, ``ApplicationInstallParameters``, Optional (Keyword only)
@@ -2039,7 +2021,7 @@ class Application(DiscordEntity, immortal = True):
         slug : `None`, `str`, Optional (Keyword only)
             If this application is a game sold on Discord, this field will be the url slug that links to the store page.
         
-        splash : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        splash : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The application's splash.
         
         store_state : ``ApplicationStoreState``, `int`, Optional (Keyword only)
@@ -2119,7 +2101,7 @@ class Application(DiscordEntity, immortal = True):
         bot_requires_code_grant : `bool`, Optional (Keyword only)
             Whether the application's bot will only join a guild when completing the full `oauth2` code grant flow.
         
-        cover : `None`, ``Icon``, `str`, Optional (Keyword only)
+        cover : ``None | str | Icon``, Optional (Keyword only)
             The application's cover.
         
         creator_monetization_state : ``ApplicationMonetizationState``, `int`, Optional (Keyword only)
@@ -2173,7 +2155,7 @@ class Application(DiscordEntity, immortal = True):
         hook : `bool`, Optional (Keyword only)
             Whether the application's bot is allowed to hook into the application's game directly.
         
-        icon : `None`, ``Icon``, `str`, Optional (Keyword only)
+        icon : ``None | str | Icon``, Optional (Keyword only)
             The application's icon.
         
         install_parameters : `None`, ``ApplicationInstallParameters``, Optional (Keyword only)
@@ -2259,7 +2241,7 @@ class Application(DiscordEntity, immortal = True):
         slug : `None`, `str`, Optional (Keyword only)
             If this application is a game sold on Discord, this field will be the url slug that links to the store page.
         
-        splash : `None`, ``Icon``, `str`, Optional (Keyword only)
+        splash : ``None | str | Icon``, Optional (Keyword only)
             The application's splash.
         
         store_state : ``ApplicationStoreState``, `int`, Optional (Keyword only)
@@ -2349,7 +2331,7 @@ class Application(DiscordEntity, immortal = True):
         bot_requires_code_grant : `bool`, Optional (Keyword only)
             Whether the application's bot will only join a guild when completing the full `oauth2` code grant flow.
         
-        cover : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        cover : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The application's cover.
         
         creator_monetization_state : ``ApplicationMonetizationState``, `int`, Optional (Keyword only)
@@ -2403,7 +2385,7 @@ class Application(DiscordEntity, immortal = True):
         hook : `bool`, Optional (Keyword only)
             Whether the application's bot is allowed to hook into the application's game directly.
         
-        icon : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        icon : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The application's icon.
         
         install_parameters : `None`, ``ApplicationInstallParameters``, Optional (Keyword only)
@@ -2488,7 +2470,7 @@ class Application(DiscordEntity, immortal = True):
         slug : `None`, `str`, Optional (Keyword only)
             If this application is a game sold on Discord, this field will be the url slug that links to the store page.
         
-        splash : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        splash : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The application's splash.
         
         store_state : ``ApplicationStoreState``, `int`, Optional (Keyword only)
@@ -2961,3 +2943,69 @@ class Application(DiscordEntity, immortal = True):
             return False
         
         return emoji_id in cache_emojis
+    
+    
+    # urls
+    
+    @property
+    def cover_url(self):
+        """
+        Returns the application's cover's url. If the application has no cover, then returns `None`.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_application_cover_url(self.id, self.cover_type, self.cover_hash)
+    
+    
+    def cover_url_as(self, ext = None, size = None):
+        """
+        Returns the application's cover's url. If the application has no cover, then returns `None`.
+        
+        Parameters
+        ----------
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+            If the application has animated cover, it can be `'gif'` as well.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_application_cover_url_as(self.id, self.cover_type, self.cover_hash, ext, size)
+    
+    
+    @property
+    def icon_url(self):
+        """
+        Returns the application's icon's url. If the application has no icon, then returns `None`.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_application_icon_url(self.id, self.icon_type, self.icon_hash)
+    
+    
+    def icon_url_as(self, ext = None, size = None):
+        """
+        Returns the application's icon's url. If the application has no icon, then returns `None`.
+        
+        Parameters
+        ----------
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+            If the application has animated icon, it can be `'gif'` as well.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_application_icon_url_as(self.id, self.icon_type, self.icon_hash, ext, size)

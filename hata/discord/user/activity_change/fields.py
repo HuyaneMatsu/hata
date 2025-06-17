@@ -64,7 +64,7 @@ def validate_added(added):
     
     Returns
     -------
-    added : `None`, `list` of ``Activity``
+    added : ``None | list<Activity>``
     
     Raises
     ------
@@ -110,7 +110,7 @@ def validate_removed(removed):
     
     Returns
     -------
-    removed : `None`, `list` of ``Activity``
+    removed : ``None | list<Activity>``
     
     Raises
     ------

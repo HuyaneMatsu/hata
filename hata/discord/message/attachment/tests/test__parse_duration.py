@@ -6,8 +6,8 @@ from ..fields import parse_duration
 
 def _iter_options():
     yield {}, DURATION_DEFAULT
-    yield {'duration_sec': None}, DURATION_DEFAULT
-    yield {'duration_sec': 1.0}, 1.0
+    yield {'duration_secs': None}, DURATION_DEFAULT
+    yield {'duration_secs': 1.0}, 1.0
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

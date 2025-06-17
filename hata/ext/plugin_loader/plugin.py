@@ -1,6 +1,6 @@
-__all__ = ()
+__all__ = ('Plugin',)
 
-import sys, warnings
+import sys
 from importlib.util import module_from_spec, spec_from_file_location
 from os.path import basename as get_file_name, splitext as split_file_name_and_extension
 from py_compile import PyCompileError, compile as compile_module
@@ -780,7 +780,14 @@ class Plugin(RichAttributeErrorBaseType):
         plugin : ``Plugin``
             The plugin to register.
         """
+        # Ignore if self
         if plugin is self:
+            return
+        
+        # Ignore if other is a direct parent of self.
+        other_name = plugin._spec.name
+        self_name = self._spec.name
+        if len(self_name) > len(other_name) and self_name.startswith(other_name) and self_name[len(other_name)] == '.':
             return
         
         child_plugins = self._child_plugins
@@ -908,7 +915,14 @@ class Plugin(RichAttributeErrorBaseType):
         plugin : ``Plugin``
             The plugin to register.
         """
+        # Ignore if self.
         if plugin is self:
+            return
+        
+        # Ignore if other is a direct children of self.
+        other_name = plugin._spec.name
+        self_name = self._spec.name
+        if len(self_name) < len(other_name) and other_name.startswith(self_name) and other_name[len(self_name)] == '.':
             return
         
         parent_plugins = self._parent_plugins
@@ -987,19 +1001,6 @@ class Plugin(RichAttributeErrorBaseType):
             else:
                 if not parent_plugins:
                     self._parent_plugins = parent_plugins
-    
-    
-    @property
-    def _module(self):
-        """
-        Deprecated attribute of ``Plugin``.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}._module` is deprecated, please use `.get_module()` instead.',
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self._spec.get_module()
     
     
     def get_module(self):

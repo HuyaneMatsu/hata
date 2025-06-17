@@ -33,7 +33,7 @@ from ..user import (
 from ..user.user.fields import (
     parse_email, parse_email_verified, parse_locale, parse_mfa_enabled, parse_premium_type, validate_avatar_decoration,
     validate_banner_color, validate_bot, validate_discriminator, validate_display_name, validate_email,
-    validate_email_verified, validate_flags, validate_locale, validate_mfa_enabled, validate_name,
+    validate_email_verified, validate_flags, validate_locale, validate_mfa_enabled, validate_name, validate_name_plate,
     validate_premium_type, validate_primary_guild_badge, validate_status
 )
 
@@ -97,7 +97,7 @@ class Client(
         
         Nonce `0` is allocated for the case, when all the guild's users are requested.
     
-    activities : `None`, `list` of ``Activity``
+    activities : ``None | list<Activity>``
         A list of the client's activities. Defaults to `None`.
     
     api : ``DiscordApiClient``
@@ -112,7 +112,7 @@ class Client(
     avatar_type : ``IconType``
         The client's avatar's type.
     
-    avatar_decoration : `None`, ``AvatarDecoration``
+    avatar_decoration : ``None | AvatarDecoration``
         The client's avatar decorations.
     
     banner_color : `None`, ``Color``
@@ -151,7 +151,7 @@ class Client(
     group_channels : `dict` of (`int`, ``Channel``) items
         The group channels of the client. They can be accessed by their id as the key.
     
-    guild_profiles : `dict` of (`int`, ``GuildProfile``) items
+    guild_profiles : ``dict<int, GuildProfile>``
         A dictionary, which contains the client's guild profiles. If a client is member of a guild, then it should
         have a respective guild profile accordingly.
     
@@ -175,6 +175,9 @@ class Client(
     
     name : str
         The client's username.
+    
+    name_plate : ``None | NamePlate``
+        The client's name plate.
     
     premium_type : ``PremiumType``
         The Nitro subscription type of the client.
@@ -283,6 +286,7 @@ class Client(
         locale = ...,
         mfa_enabled = ...,
         name = ...,
+        name_plate = ...,
         premium_type = ...,
         primary_guild_badge = ...,
         secret = ...,
@@ -312,13 +316,13 @@ class Client(
         application_id : `None | int | str`, Optional (Keyword only)
             The client's application id. If passed as `str`, will be converted to `int`.
          
-        avatar : `None`, ``Icon``, `str`, Optional (Keyword only)
+        avatar : ``None | str | Icon``, Optional (Keyword only)
             The client's avatar.
         
-        avatar_decoration : `None`, ``AvatarDecoration``, Optional (Keyword only)
+        avatar_decoration : ``None | AvatarDecoration``, Optional (Keyword only)
             The client's avatar decoration.
         
-        banner : `None`, ``Icon``, `str`, Optional (Keyword only)
+        banner : ``None | str | Icon``, Optional (Keyword only)
             The client's banner.
         
         banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
@@ -371,7 +375,10 @@ class Client(
         name : `str`, Optional (Keyword only)
             The user's name.
         
-        premium_type : ``None | PremiumType | int``, Optional (Keyword only)
+        name_plate : ``None | NamePlate``, Optional (Keyword only)
+            The client's name plate.
+        
+        premium_type : ``None | int | PremiumType``, Optional (Keyword only)
             The Nitro subscription type of the client.
         
         primary_guild_badge : ``None | GuildBadge``, Optional (Keyword only)
@@ -550,6 +557,12 @@ class Client(
         else:
             name = validate_name(name)
         
+        # name_plate
+        if name_plate is ...:
+            name_plate = None
+        else:
+            name_plate = validate_name_plate(name_plate)
+        
         # premium_type
         if premium_type is ...:
             premium_type = PremiumType.none
@@ -649,6 +662,7 @@ class Client(
         self.intents = intents
         self.locale = locale
         self.mfa_enabled = mfa_enabled
+        self.name_plate = name_plate
         self.premium_type = premium_type
         self.primary_guild_badge = primary_guild_badge
         self.private_channels = {}

@@ -34,7 +34,7 @@ def _assert_fields_set(attachment):
     vampytest.assert_instance(attachment.temporary, bool)
     vampytest.assert_instance(attachment.title, str, nullable = True)
     vampytest.assert_instance(attachment.url, str)
-    vampytest.assert_instance(attachment.waveform, str, nullable = True)
+    vampytest.assert_instance(attachment.waveform, bytes, nullable = True)
     vampytest.assert_instance(attachment.width, int)
 
 
@@ -70,7 +70,7 @@ def test__Attachment__new__all_fields():
     temporary = True
     title = 'flandre'
     url = 'https://www.astil.dev/'
-    waveform = 'kisaki'
+    waveform = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
     width = 998
     
     attachment = Attachment(
@@ -148,7 +148,7 @@ def test__Attachment__precreate__all_fields():
     temporary = True
     title = 'flandre'
     url = 'https://www.astil.dev/'
-    waveform = 'kisaki'
+    waveform = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
     width = 998
     
     attachment = Attachment.precreate(

@@ -28,7 +28,7 @@ class ClientUserBase(OrinUserBase):
     avatar_type : ``IconType``
         The user's avatar's type.
     
-    avatar_decoration : `None`, ``AvatarDecoration``
+    avatar_decoration : ``None | AvatarDecoration``
         The user's avatar decorations.
     
     banner_color : `None`, ``Color``
@@ -46,13 +46,13 @@ class ClientUserBase(OrinUserBase):
     discriminator : `int`
         The user's discriminator. Given to avoid overlapping names.
     
-    display_name : `None`, `str`
+    display_name : `None | str`
         The user's non-unique display name.
     
     flags : ``UserFlag``
         The user's user flags.
     
-    guild_profiles : `dict` of (`int`, ``GuildProfile``) items
+    guild_profiles : ``dict<int, GuildProfile>``
         A dictionary, which contains the user's guild profiles. If a user is member of a guild, then it should
         have a respective guild profile accordingly.
     
@@ -61,6 +61,9 @@ class ClientUserBase(OrinUserBase):
     
     name : str
         The user's name.
+    
+    name_plate : ``None | NamePlate``
+        The user's name plate.
     
     primary_guild_badge : `None | GuildBadge`
         The user's primary guild's badge.
@@ -84,6 +87,7 @@ class ClientUserBase(OrinUserBase):
         display_name = ...,
         flags = ...,
         name = ...,
+        name_plate = ...,
         primary_guild_badge = ...,
     ):
         """
@@ -91,13 +95,13 @@ class ClientUserBase(OrinUserBase):
         
         Parameters
         ----------
-        avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        avatar : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The user's avatar.
         
-        avatar_decoration : `None`, ``AvatarDecoration``, Optional (Keyword only)
+        avatar_decoration : ``None | AvatarDecoration``, Optional (Keyword only)
             The user's avatar decoration.
         
-        banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        banner : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The user's banner.
         
         banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
@@ -109,7 +113,7 @@ class ClientUserBase(OrinUserBase):
         discriminator : `str`, `int`, Optional (Keyword only)
             The user's discriminator.
         
-        display_name : `None`, `str`, Optional (Keyword only)
+        display_name : `None | str`, Optional (Keyword only)
             The user's non-unique display name.
         
         flags : `int`, ``UserFlag``, Optional (Keyword only)
@@ -117,6 +121,9 @@ class ClientUserBase(OrinUserBase):
         
         name : `str`, Optional (Keyword only)
             The user's name.
+        
+        name_plate : ``None | NamePlate``, Optional (Keyword only)
+            The user's name plate.
         
         primary_guild_badge : `None | GuildBadge`, Optional (Keyword only)
             The user's primary guild's badge.
@@ -144,6 +151,7 @@ class ClientUserBase(OrinUserBase):
             display_name = display_name,
             flags = flags,
             name = name,
+            name_plate = name_plate,
             primary_guild_badge = primary_guild_badge,
         )
         self.bot = bot
@@ -176,7 +184,7 @@ class ClientUserBase(OrinUserBase):
         self : `instance<cls>`
         """
         raise NotImplementedError(
-            f'`{cls.__class__.__name__}` does not support `.from_data` operation, please call it on a sub-type of it.'
+            f'`{cls.__name__}` does not support `.from_data` operation, please call it on a sub-type of it.'
         )
     
     
@@ -297,7 +305,13 @@ class ClientUserBase(OrinUserBase):
         self = object.__new__(cls)
         self.avatar_hash = client.avatar_hash
         self.avatar_type = client.avatar_type
-        self.avatar_decoration = client.avatar_decoration
+        
+        # avatar_decoration
+        avatar_decoration = client.avatar_decoration
+        if (avatar_decoration is not None):
+            avatar_decoration = avatar_decoration.copy()
+        self.avatar_decoration = avatar_decoration
+        
         self.banner_color = client.banner_color
         self.banner_hash = client.banner_hash
         self.banner_type = client.banner_type
@@ -321,6 +335,12 @@ class ClientUserBase(OrinUserBase):
             user_id = 0
         self.id = user_id
         self.name = client.name
+        
+        # name_plate
+        name_plate = client.name_plate
+        if (name_plate is not None):
+            name_plate = name_plate.copy()
+        self.name_plate = name_plate
         
         primary_guild_badge = client.primary_guild_badge
         if (primary_guild_badge is not None):
@@ -370,6 +390,7 @@ class ClientUserBase(OrinUserBase):
         display_name = ...,
         flags = ...,
         name = ...,
+        name_plate = ...,
         primary_guild_badge = ...,
     ):
         """
@@ -377,13 +398,13 @@ class ClientUserBase(OrinUserBase):
         
         Parameters
         ----------
-        avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        avatar : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The user's avatar.
         
-        avatar_decoration : `None`, ``AvatarDecoration``, Optional (Keyword only)
+        avatar_decoration : ``None | AvatarDecoration``, Optional (Keyword only)
             The user's avatar decoration.
         
-        banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        banner : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The user's banner.
         
         banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
@@ -395,7 +416,7 @@ class ClientUserBase(OrinUserBase):
         discriminator : `str`, `int`, Optional (Keyword only)
             The user's discriminator.
         
-        display_name : `None`, `str`, Optional (Keyword only)
+        display_name : `None | str`, Optional (Keyword only)
             The user's non-unique display name.
         
         flags : `int`, ``UserFlag``, Optional (Keyword only)
@@ -403,6 +424,9 @@ class ClientUserBase(OrinUserBase):
         
         name : `str`, Optional (Keyword only)
             The user's name.
+        
+        name_plate : ``None | NamePlate``, Optional (Keyword only)
+            The user's name plate.
         
         primary_guild_badge : `None | GuildBadge`, Optional (Keyword only)
             The user's primary guild's badge.
@@ -435,6 +459,7 @@ class ClientUserBase(OrinUserBase):
             display_name = display_name,
             flags = flags,
             name = name,
+            name_plate = name_plate,
             primary_guild_badge = primary_guild_badge,
         )
         new.bot = bot

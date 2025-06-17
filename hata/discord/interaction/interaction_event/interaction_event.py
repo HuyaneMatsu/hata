@@ -1208,6 +1208,17 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         return now_as_id() > (self.id + INTERACTION_EVENT_EXPIRE_AFTER_ID_DIFFERENCE)
     
     
+    def is_response_invoking_user_only(self):
+        """
+        Returns whether the event was responded as invoking user only.
+        
+        Returns
+        -------
+        is_response_invoking_user_only : `bool`
+        """
+        return True if (self._response_flags & RESPONSE_FLAG_EPHEMERAL) else False
+    
+    
     def __len__(self):
         """Helper for unpacking if needed."""
         return 3

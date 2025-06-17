@@ -44,7 +44,7 @@ class Attachment(DiscordEntity):
     
     Attributes
     ----------
-    application : `None | Application`
+    application : ``None | Application``
         The application in the attachment if recognized. (Only for clips for now.)
     
     clip_created_at : `None | DateTime`
@@ -53,11 +53,11 @@ class Attachment(DiscordEntity):
     clip_users : `None | tuple<ClientUserBase>`
         The users in the clip. Applicable if the attachment is a clip.
     
-    content_type : `None`, `str`
+    content_type : `None | str`
         The attachment's media type.
     
-    description : `None`, `str`
-        Description for the file.
+    description : `None | str`
+        Description for the attachment.
         
         > Max 1024 characters.
     
@@ -94,15 +94,15 @@ class Attachment(DiscordEntity):
         
         > Defaults to `False`.
     
-    title : `None`, `str`
+    title : `None | str`
         The attachment's title.
         Present if any characters were excluded from ``.name``.
     
     url : `str`
         The attachment's url.
     
-    waveform : `None`, `str`
-        Base64 encoded bytearray representing a sampled waveform. Applicable for voice messages only.
+    waveform : `None | bytes`
+        Represents a sampled waveform of the attached voice data. Applicable for voice messages only.
         
         > Defaults to `None`.
     
@@ -140,7 +140,7 @@ class Attachment(DiscordEntity):
         
         Parameters
         ----------
-        application : `None | Application`, Optional (Keyword only)
+        application : ``None | Application``, Optional (Keyword only)
             The application in the attachment if recognized.
         
         clip_created_at : `None | DateTime`, Optional (Keyword only)
@@ -149,11 +149,11 @@ class Attachment(DiscordEntity):
         clip_users : `None | iterable<ClientUserBase>`, Optional (Keyword only)
             The users in the clip. Applicable if the attachment is a clip.
         
-        content_type : `None`, `str`, Optional (Keyword only)
+        content_type : `None | str`, Optional (Keyword only)
             The attachment's media type.
         
-        description : `None`, `str`, Optional (Keyword only)
-            Description for the file.
+        description : `None | str`, Optional (Keyword only)
+            Description for the attachment.
         
         duration : `float`, Optional (Keyword only)
             The attachment's duration in seconds.
@@ -173,14 +173,14 @@ class Attachment(DiscordEntity):
         temporary : `bool`, Optional (Keyword only)
             Whether the attachment is temporary and is removed after a set period of time.
         
-        title : `None`, `str`, Optional (Keyword only)
+        title : `None | str`, Optional (Keyword only)
             The attachment's title.
         
         url : `str`, Optional (Keyword only)
             The attachment's url.
         
-        waveform : `None`, `str`, Optional (Keyword only)
-            Base64 encoded bytearray representing a sampled waveform.
+        waveform : `None | bytes`, Optional (Keyword only)
+            Represents a sampled waveform of the attached voice data.
         
         width : `int`, Optional (Keyword only)
             The attachment's width if applicable.
@@ -654,7 +654,7 @@ class Attachment(DiscordEntity):
         
         Parameters
         ----------
-        application : `None | Application`, Optional (Keyword only)
+        application : ``None | Application``, Optional (Keyword only)
             The application in the attachment if recognized.
         
         clip_created_at : `None | DateTime`, Optional (Keyword only)
@@ -663,11 +663,11 @@ class Attachment(DiscordEntity):
         clip_users : `None | iterable<ClientUserBase>`, Optional (Keyword only)
             The users in the clip. Applicable if the attachment is a clip.
         
-        content_type : `None`, `str`, Optional (Keyword only)
+        content_type : `None | str`, Optional (Keyword only)
             The attachment's media type.
         
-        description : `None`, `str`, Optional (Keyword only)
-            Description for the file.
+        description : `None | str`, Optional (Keyword only)
+            Description for the attachment.
         
         duration : `float`, Optional (Keyword only)
             The attachment's duration in seconds.
@@ -687,14 +687,14 @@ class Attachment(DiscordEntity):
         temporary : `bool`, Optional (Keyword only)
             Whether the attachment is temporary and is removed after a set period of time.
         
-        title : `None`, `str`, Optional (Keyword only)
+        title : `None | str`, Optional (Keyword only)
             The attachment's title.
         
         url : `str`, Optional (Keyword only)
             The attachment's url.
         
-        waveform : `None`, `str`, Optional (Keyword only)
-            Base64 encoded bytearray representing a sampled waveform.
+        waveform : `None | bytes`, Optional (Keyword only)
+            Represents a sampled waveform of the attached voice data.
         
         width : `int`, Optional (Keyword only)
             The attachment's width if applicable.
@@ -837,7 +837,7 @@ class Attachment(DiscordEntity):
         
         Other Parameters
         ----------------
-        application : `None | Application`, Optional (Keyword only)
+        application : ``None | Application``, Optional (Keyword only)
             The application in the attachment if recognized.
         
         clip_created_at : `None | DateTime`, Optional (Keyword only)
@@ -846,11 +846,11 @@ class Attachment(DiscordEntity):
         clip_users : `None | iterable<ClientUserBase>`, Optional (Keyword only)
             The users in the clip. Applicable if the attachment is a clip.
         
-        content_type : `None`, `str`, Optional (Keyword only)
+        content_type : `None | str`, Optional (Keyword only)
             The attachment's media type.
         
-        description : `None`, `str`, Optional (Keyword only)
-            Description for the file.
+        description : `None | str`, Optional (Keyword only)
+            Description for the attachment.
         
         duration : `float`, Optional (Keyword only)
             The attachment's duration in seconds.
@@ -867,20 +867,20 @@ class Attachment(DiscordEntity):
         size : `int`, Optional (Keyword only)
             The attachment's size in bytes.
         
-        proxy_url : `None`, `str`, Optional (Keyword only)
+        proxy_url : `None | str`, Optional (Keyword only)
             Proxied url of the attachment.
         
         temporary : `bool`, Optional (Keyword only)
             Whether the attachment is temporary and is removed after a set period of time.
         
-        title : `None`, `str`, Optional (Keyword only)
+        title : `None | str`, Optional (Keyword only)
             The attachment's title.
             
         url : `str`, Optional (Keyword only)
             The attachment's url.
         
-        waveform : `None`, `str`, Optional (Keyword only)
-            Base64 encoded bytearray representing a sampled waveform.
+        waveform : `None | bytes`, Optional (Keyword only)
+            Represents a sampled waveform of the attached voice data.
         
         width : `int`, Optional (Keyword only)
             The attachment's width if applicable.

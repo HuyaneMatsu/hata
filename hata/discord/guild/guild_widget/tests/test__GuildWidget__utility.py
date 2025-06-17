@@ -125,7 +125,10 @@ def test__GuildWidget__json_url():
     """
     Tests whether ``GuildWidget.json_url`` works as intended.
     """
-    guild_widget = GuildWidget()
+    guild_id = 202505290031
+    guild_widget = GuildWidget(
+        guild_id = guild_id,
+    )
     
     output = guild_widget.json_url
     
@@ -151,37 +154,89 @@ def test__GuildWidget__guild():
     vampytest.assert_eq(output.name, name)
 
 
-def test__GuildWidget__iter_channels():
-    """
-    Tests whether ``GuildWidget.iter_channels`` works as intended.
-    """
+def _iter_options__iter_channels():
     channel_0 = GuildWidgetChannel(name = 'Koishi', channel_id = 202305190026)
     channel_1 = GuildWidgetChannel(name = 'Satori', channel_id = 202305190027)
     
-    for input_value, expected_output in (
-        (None, []),
-        ([channel_0], [channel_0]),
-        ([channel_0, channel_1], [channel_0, channel_1]),
-    ):
-        guild_widget = GuildWidget(channels = input_value)
-        output = [*guild_widget.iter_channels()]
-        
-        vampytest.assert_eq(output, expected_output)
+    yield (
+        None,
+        [],
+    )
+    
+    yield (
+        [channel_0],
+        [channel_0],
+    )
+    
+    yield (
+        [channel_0, channel_1],
+        [channel_0, channel_1],
+    )
 
 
-def test__GuildWidget__iter_users():
+@vampytest._(vampytest.call_from(_iter_options__iter_channels()).returning_last())
+def test__GuildWidget__iter_channels(guild_widget_channels):
     """
-    Tests whether ``GuildWidget.iter_users`` works as intended.
+    Tests whether ``GuildWidget.iter_channels`` works as intended.
+    
+    Parameters
+    ----------
+    guild_widget_channels : ``None | list<GuildWidgetChannel>``
+        Channels to create the guild widget with.
+    
+    Returns
+    -------
+    output : ``list<GuildWidgetChannel>``
     """
+    guild_widget = GuildWidget(channels = guild_widget_channels)
+    
+    output = [*guild_widget.iter_channels()]
+    
+    for element in output:
+        vampytest.assert_instance(element, GuildWidgetChannel)
+    
+    return output
+
+
+def _iter_options__iter_users():
     user_0 = GuildWidgetUser(name = 'Koishi', user_id = 1)
     user_1 = GuildWidgetUser(name = 'Satori', user_id = 2)
     
-    for input_value, expected_output in (
-        (None, []),
-        ([user_0], [user_0]),
-        ([user_0, user_1], [user_0, user_1]),
-    ):
-        guild_widget = GuildWidget(users = input_value)
-        output = [*guild_widget.iter_users()]
-        
-        vampytest.assert_eq(output, expected_output)
+    yield (
+        None,
+        [],
+    )
+    
+    yield (
+        [user_0],
+        [user_0],
+    )
+    
+    yield (
+        [user_0, user_1],
+        [user_0, user_1],
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_users()).returning_last())
+def test__GuildWidget__iter_users(guild_widget_users):
+    """
+    Tests whether ``GuildWidget.iter_users`` works as intended.
+    
+    Parameters
+    ----------
+    guild_widget_users : ``None | list<GuildWidgetUser>``
+        Users to create the guild widget with.
+    
+    Returns
+    -------
+    output : ``list<GuildWidgetUser>``
+    """
+    guild_widget = GuildWidget(users = guild_widget_users)
+    
+    output = [*guild_widget.iter_users()]
+    
+    for element in output:
+        vampytest.assert_instance(element, GuildWidgetUser)
+    
+    return output

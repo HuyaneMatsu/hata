@@ -91,7 +91,7 @@ class Channel(DiscordEntity, immortal = True):
         archived : `bool`, Optional (Keyword only)
             Whether the (thread) channel is archived.
         
-        archived_at : `None`, `datetime`, Optional (Keyword only)
+        archived_at : `None | DateTime`, Optional (Keyword only)
             When the thread's archive status was last changed.
         
         applied_tag_ids : `None`, `tuple` of (`int`, ``ForumTag``), Optional (Keyword only)
@@ -103,13 +103,13 @@ class Channel(DiscordEntity, immortal = True):
         available_tags : `None`, `tuple` of ``ForumTag``, Optional (Keyword only)
             The available tags to assign to the child-thread channels.
         
-        created_at : `None`, `datetime`, Optional (Keyword only)
+        created_at : `None | DateTime`, Optional (Keyword only)
             When the channel was created.
         
         bitrate : `int`, Optional (Keyword only)
             The bitrate (in bits) of the voice channel.
         
-        created_at : `None`, `datetime`, Optional (Keyword only)
+        created_at : `None | DateTime`, Optional (Keyword only)
             When the (thread) channel was created.
         
         default_forum_layout : ``ForumLayout``, `int`, Optional (Keyword only)
@@ -130,7 +130,7 @@ class Channel(DiscordEntity, immortal = True):
         flags : `int`, ``ChannelFlag``, Optional (Keyword only)
             The channel's flags.
         
-        icon : `None`, ``Icon``, `str`, `bytes`, Optional (Keyword only)
+        icon : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The channel's icon.
         
         invitable : `bool`, Optional (Keyword only)
@@ -850,6 +850,37 @@ class Channel(DiscordEntity, immortal = True):
     
     
     @property
+    def icon_url(self):
+        """
+        Returns the channel's icon's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return self.metadata._get_icon_url(self)
+    
+    
+    def icon_url_as(self, ext = None, size = None):
+        """
+        Returns the channel's icon url.
+        
+        Parameters
+        ----------
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return self.metadata._get_icon_url_as(self, ext, size)
+    
+    
+    @property
     def guild(self):
         """
         Returns the channel's guild. At the case of private channels this is always `None`.
@@ -935,11 +966,11 @@ class Channel(DiscordEntity, immortal = True):
             +---------------------------------------+-----------------------------------------------------------+
             | Keys                                  | Values                                                    |
             +=======================================+===========================================================+
-            | applied_tag_ids                       | `None`, `tuple` of `int`                                  |
+            | applied_tag_ids                       | `None | tuple<int>`                                       |
             +---------------------------------------+-----------------------------------------------------------+
             | archived                              | `bool`                                                    |
             +---------------------------------------+-----------------------------------------------------------+
-            | archived_at                           | `None`, `datetime`                                        |
+            | archived_at                           | `None | DateTime`                                         |
             +---------------------------------------+-----------------------------------------------------------+
             | auto_archive_after                    | `int`                                                     |
             +---------------------------------------+-----------------------------------------------------------+
@@ -1180,7 +1211,7 @@ class Channel(DiscordEntity, immortal = True):
         archived : `bool`, Optional (Keyword only)
             Whether the (thread) channel is archived.
         
-        archived_at : `None`, `datetime`, Optional (Keyword only)
+        archived_at : `None | DateTime`, Optional (Keyword only)
             When the thread's archive status was last changed.
         
         applied_tag_ids : `None`, `tuple` of (`int`, ``ForumTag``), Optional (Keyword only)
@@ -1192,13 +1223,13 @@ class Channel(DiscordEntity, immortal = True):
         available_tags : `None`, `tuple` of ``ForumTag``, Optional (Keyword only)
             The available tags to assign to the child-thread channels.
         
-        created_at : `None`, `datetime`, Optional (Keyword only)
+        created_at : `None | DateTime`, Optional (Keyword only)
             When the channel was created.
         
         bitrate : `int`, Optional (Keyword only)
             The bitrate (in bits) of the voice channel.
         
-        created_at : `None`, `datetime`, Optional (Keyword only)
+        created_at : `None | DateTime`, Optional (Keyword only)
             When the (thread) channel was created.
         
         default_forum_layout : ``ForumLayout``, `int`, Optional (Keyword only)
@@ -1219,7 +1250,7 @@ class Channel(DiscordEntity, immortal = True):
         flags : `int`, ``ChannelFlag``, Optional (Keyword only)
             The channel's flags.
         
-        icon : `None`, ``Icon``, `str`, `bytes`, Optional (Keyword only)
+        icon : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The channel's icon.
         
         invitable : `bool`, Optional (Keyword only)
@@ -1633,6 +1664,18 @@ class Channel(DiscordEntity, immortal = True):
     
     
     @property
+    @copy_docs(ChannelMetadataBase.icon)
+    def icon_hash(self):
+        return self.metadata.icon_hash
+    
+    
+    @property
+    @copy_docs(ChannelMetadataBase.icon)
+    def icon_type(self):
+        return self.metadata.icon_type
+    
+    
+    @property
     @copy_docs(ChannelMetadataBase.invitable)
     def invitable(self):
         return self.metadata.invitable
@@ -2037,7 +2080,7 @@ class Channel(DiscordEntity, immortal = True):
         archived : `bool`, Optional (Keyword only)
             Whether the (thread) channel is archived.
         
-        archived_at : `None`, `datetime`, Optional (Keyword only)
+        archived_at : `None | DateTime`, Optional (Keyword only)
             When the thread's archive status was last changed.
         
         applied_tag_ids : `None`, `tuple` of (`int`, ``ForumTag``), Optional (Keyword only)
@@ -2049,13 +2092,13 @@ class Channel(DiscordEntity, immortal = True):
         available_tags : `None`, `tuple` of ``ForumTag``, Optional (Keyword only)
             The available tags to assign to the child-thread channels.
         
-        created_at : `None`, `datetime`, Optional (Keyword only)
+        created_at : `None | DateTime`, Optional (Keyword only)
             When the channel was created.
         
         bitrate : `int`, Optional (Keyword only)
             The bitrate (in bits) of the voice channel.
         
-        created_at : `None`, `datetime`, Optional (Keyword only)
+        created_at : `None | DateTime`, Optional (Keyword only)
             When the (thread) channel was created.
         
         default_forum_layout : ``ForumLayout``, `int`, Optional (Keyword only)
@@ -2076,7 +2119,7 @@ class Channel(DiscordEntity, immortal = True):
         flags : `int`, ``ChannelFlag``, Optional (Keyword only)
             The channel's flags.
         
-        icon : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        icon : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The channel's icon.
             
             > Mutually exclusive with `icon_type` and `icon_hash` parameters.

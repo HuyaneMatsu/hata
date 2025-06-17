@@ -139,7 +139,7 @@ def put_archived_at(archived_at, data, defaults):
     
     Parameters
     ----------
-    archived_at : `None`, `datetime`
+    archived_at : `None | DateTime`
         When the channel was archived.
     data : `dict<str, object>`
         Json serializable dictionary.

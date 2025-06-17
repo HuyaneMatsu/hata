@@ -951,7 +951,7 @@ class AllowedMentionProxy(RichAttributeErrorBaseType):
         """
         A get-set-del property to enable or disable specific role mentions.
         
-        Accepts and returns `None` or a `list`, `set` or `tuple` of ``Role``-s.
+        Accepts and returns ``None | (list | set | tuple)<Role>``
         """
         allowed_role_ids = self._allowed_role_ids
         if allowed_role_ids is not None:

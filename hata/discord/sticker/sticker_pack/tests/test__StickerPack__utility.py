@@ -34,7 +34,7 @@ def test__StickerPack__copy():
     vampytest.assert_eq(sticker_pack, copy)
 
 
-def test__StickerPack__copy_with__0():
+def test__StickerPack__copy_with__no_fields():
     """
     Tests whether ``StickerPack.copy_with`` works as intended.
     
@@ -63,7 +63,7 @@ def test__StickerPack__copy_with__0():
     vampytest.assert_eq(sticker_pack, copy)
 
 
-def test__StickerPack__copy_with__1():
+def test__StickerPack__copy_with__all_fields():
     """
     Tests whether ``StickerPack.copy_with`` works as intended.
     
@@ -124,44 +124,131 @@ def test__StickerPack__partial():
     vampytest.assert_true(sticker_pack.partial)
 
 
-def test__StickerPack__iter_stickers():
-    """
-    Tests whether ``StickerPack.iter_stickers`` works as intended.
-    """
+def _iter_options__iter_stickers():
     sticker_0 = Sticker.precreate(202201060073)
     sticker_1 = Sticker.precreate(202201060074)
     
-    for input_value, expected_output in (
-        (None, set()),
-        ([sticker_0], {sticker_0}),
-        ([sticker_0, sticker_1], {sticker_0, sticker_1}),
-    ):
-        sticker_pack = StickerPack(stickers = input_value)
-        vampytest.assert_eq({*sticker_pack.iter_stickers()}, expected_output)
+    yield None, set()
+    yield [sticker_0], {sticker_0}
+    yield [sticker_0, sticker_1], {sticker_0, sticker_1}
 
 
-def test__StickerPack__has_sticker():
+@vampytest._(vampytest.call_from(_iter_options__iter_stickers()).returning_last())
+def test__StickerPack__iter_stickers(stickers):
     """
-    Tests whether ``StickerPack.has_sticker` works as intended.
+    Tests whether ``StickerPack.iter_stickers`` works as intended.
+    
+    Parameters
+    ----------
+    stickers : ``None | list<Sticker>``
+        Stickers to create the sticker pack with.
+    
+    Returns
+    -------
+    output : ``set<Sticker>``
     """
+    sticker_pack = StickerPack(stickers = stickers)
+    output = {*sticker_pack.iter_stickers()}
+    
+    for element in output:
+        vampytest.assert_instance(element, Sticker)
+    
+    return output
+
+
+def _iter_options__has_sticker():
     sticker_0 = Sticker.precreate(202201060075)
     sticker_1 = Sticker.precreate(202201060076)
     
-    for input_stickers, sticker, expected_output in (
-        (None, sticker_0, False),
-        ([sticker_0], sticker_0, True),
-        ([sticker_1], sticker_0, False),
-    ):
-        sticker_pack = StickerPack(stickers = input_stickers)
-        vampytest.assert_eq(sticker_pack.has_sticker(sticker), expected_output)
+    yield None, sticker_0, False
+    yield [sticker_0], sticker_0, True
+    yield [sticker_1], sticker_0, False
 
 
-def test__StickerPack__banner_url():
+@vampytest._(vampytest.call_from(_iter_options__has_sticker()).returning_last())
+def test__StickerPack__has_sticker(stickers, sticker):
     """
-    Tests whether ``StickerPack.banner_url` works as intended.
-    """
-    sticker_pack = StickerPack()
-    vampytest.assert_is(sticker_pack.banner_url, None)
+    Tests whether ``StickerPack.has_sticker` works as intended.
+    Parameters
+    ----------
+    stickers : ``None | list<Sticker>``
+        Stickers to create the sticker pack with.
     
-    sticker_pack = StickerPack(banner_id = 202201060077)
-    vampytest.assert_instance(sticker_pack.banner_url, str)
+    sticker : ``Sticker``
+        Sticker to test with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    sticker_pack = StickerPack(stickers = stickers)
+    output = sticker_pack.has_sticker(sticker)
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__banner_url():
+    yield 202506010012, 0, False
+    yield 202506010014, 202506010015, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__banner_url()).returning_last())
+def test__StickerPack__banner_url(sticker_pack_id, banner_id):
+    """
+    Tests whether ``StickerPack.banner_url`` works as intended.
+    
+    Parameters
+    ----------
+    sticker_pack_id : `int`
+        Identifier to create sticker pack with.
+    
+    banner_id : `int`
+        Banner identifier to create the sticker pack with.
+    
+    Returns
+    -------
+    has_banner_url : `bool`
+    """
+    sticker_pack = StickerPack.precreate(
+        sticker_pack_id,
+        banner_id = banner_id,
+    )
+    
+    output = sticker_pack.banner_url
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__banner_url_as():
+    yield 202506010016, 0, {'ext': 'webp', 'size': 128}, False
+    yield 202506010018, 202506010019, {'ext': 'webp', 'size': 128}, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__banner_url_as()).returning_last())
+def test__StickerPack__banner_url_as(sticker_pack_id, banner_id, keyword_parameters):
+    """
+    Tests whether ``StickerPack.banner_url_as`` works as intended.
+    
+    Parameters
+    ----------
+    sticker_pack_id : `int`
+        Identifier to create sticker pack with.
+    
+    banner_id : `int`
+        banner identifier to create the sticker pack with.
+    
+    keyword_parameters : `dict<str, object>`
+        Additional keyword parameters to pass.
+    
+    Returns
+    -------
+    has_banner_url : `bool`
+    """
+    sticker_pack = StickerPack.precreate(
+        sticker_pack_id,
+        banner_id = banner_id,
+    )
+    
+    output = sticker_pack.banner_url_as(**keyword_parameters)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)

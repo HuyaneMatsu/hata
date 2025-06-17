@@ -29,7 +29,7 @@ class OnboardingPromptOption(DiscordEntity):
     
     Attributes
     ----------
-    channel_ids : `None`, `tuple` of `int`
+    channel_ids : `None | tuple<int>`
         The channels' identifier opted into when this option is selected.
     description : `None`, `str`
         The option's description
@@ -39,7 +39,7 @@ class OnboardingPromptOption(DiscordEntity):
         the option's identifier.
     name : `str`
         The option's name.
-    role_ids : `None`, `tuple` of `int`
+    role_ids : `None | tuple<int>`
         The roles' identifiers assigned to the user when this option is selected.
     """
     __slots__ = ('channel_ids', 'description', 'emoji', 'name', 'role_ids')
@@ -488,7 +488,7 @@ class OnboardingPromptOption(DiscordEntity):
         
         Returns
         -------
-        roles : `None`, `tuple` of ``Role``
+        roles : ``None | tuple<Role>``
         """
         role_ids = self.role_ids
         if role_ids is None:

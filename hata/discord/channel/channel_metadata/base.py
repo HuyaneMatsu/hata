@@ -3,7 +3,6 @@ __all__ = ('ChannelMetadataBase',)
 from scarletio import RichAttributeErrorBaseType, include
 
 from ...bases import Icon, IconType, PlaceHolder, IconSlot
-from ...http import urls as module_urls
 from ...permission.permission import PERMISSION_NONE
 from ...utils import id_to_datetime
 
@@ -13,14 +12,6 @@ from .preinstanced import ForumLayout, SortOrder, VideoQualityMode, VoiceRegion
 
 
 Client = include('Client')
-
-
-CHANNEL_METADATA_ICON_SLOT = IconSlot(
-    'icon',
-    'icon',
-    module_urls.channel_group_icon_url,
-    module_urls.channel_group_icon_url_as,
-)
 
 
 class ChannelMetadataBase(RichAttributeErrorBaseType):
@@ -93,7 +84,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the channel metadata's representation."""
-        return f'<{self.__class__.__name__}>'
+        return f'<{type(self).__name__}>'
     
     
     def __hash__(self):
@@ -195,11 +186,11 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
             +---------------------------------------+-----------------------------------------------------------+
             | Keys                                  | Values                                                    |
             +=======================================+===========================================================+
-            | applied_tag_ids                       | `None`, `tuple` of `int`                                  |
+            | applied_tag_ids                       | `None | tuple<int>`                                       |
             +---------------------------------------+-----------------------------------------------------------+
             | archived                              | `bool`                                                    |
             +---------------------------------------+-----------------------------------------------------------+
-            | archived_at                           | `None`, `datetime`                                        |
+            | archived_at                           | `None | DateTime`                                         |
             +---------------------------------------+-----------------------------------------------------------+
             | auto_archive_after                    | `int`                                                     |
             +---------------------------------------+-----------------------------------------------------------+
@@ -524,6 +515,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         ----------
         channel_entity : ``Channel``
             The channel entity owning the metadata.
+        
         user : ``UserBase``
             The user to calculate it's permissions of.
         
@@ -541,13 +533,14 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        roles : `tuple` of ``Role``
+        channel_entity : ``Channel``
+            The channel entity owning the metadata.
+        
+        roles : ``tuple<Role>``
             The roles to calculate final permissions from.
         
         Returns
         -------
-        channel_entity : ``Channel``
-            The channel entity owning the metadata.
         permissions : ``Permission``
             The calculated permissions.
         """
@@ -557,6 +550,11 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
     def _get_created_at(self, channel_entity):
         """
         Returns when the channel was created.
+        
+        Parameters
+        ----------
+        channel_entity : ``Channel``
+            The channel entity owning the metadata.
         
         Returns
         -------
@@ -572,6 +570,45 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         This method is only applicable for channel types with permission cache.
         """
         pass
+    
+    
+    def _get_icon_url(self, channel_entity):
+        """
+        Returns the channel metadata's icon.
+        
+        Parameters
+        ----------
+        channel_entity : ``Channel``
+            The channel entity owning the metadata.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return None
+    
+    
+    def _get_icon_url_as(self, channel_entity, ext, size):
+        """
+        Returns the channel metadata's icon.
+        
+        Parameters
+        ----------
+        channel_entity : ``Channel``
+            The channel entity owning the metadata.
+        
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return None
+    
     
     # Slot place holders
     
@@ -593,7 +630,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        applied_tag_ids : `None`, `tuple` of `int`
+        applied_tag_ids : `None | tuple<int>`
         """
     )
     
@@ -621,7 +658,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        archived_at : `None`, `datetime`
+        archived_at : `None | DateTime`
         """
     )
     
@@ -751,6 +788,30 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         Returns
         -------
         icon : ``Icon``
+        """
+    )
+    
+    
+    icon_hash = PlaceHolder(
+        0,
+        """
+        Returns the channel's icon's hash.
+        
+        Returns
+        -------
+        icon_hash : `int`
+        """
+    )
+    
+    
+    icon_type = PlaceHolder(
+        IconType.none,
+        """
+        Returns the channel's icon's type.
+        
+        Returns
+        -------
+        icon_type : ``IconType``
         """
     )
     

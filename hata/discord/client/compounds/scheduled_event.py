@@ -50,7 +50,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         description : `None`, `str` = `None`, Optional (Keyword only)
             The event's description. It's length can be in range [0:1000].
         
-        end : `None`, `datetime` = `None`, Optional (Keyword only)
+        end : `None | DateTime` = `None`, Optional (Keyword only)
             When the event will end.
         
         location : `None`, `str` = `None`, Optional (Keyword only)
@@ -132,7 +132,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         description : `None`, `str`, Optional (Keyword only)
             The new description of the scheduled event. It's length can be in range [0:1000].
         
-        end : `None`, `datetime`
+        end : `None | DateTime`
             The end of the of the scheduled event.
         
         location : `str`, Optional (Keyword only)

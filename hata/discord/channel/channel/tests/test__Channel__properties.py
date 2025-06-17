@@ -89,6 +89,8 @@ def test__Channel__icon():
     
     channel = Channel.precreate(202209180151, channel_type = ChannelType.private_group, icon = icon)
     vampytest.assert_eq(channel.icon, icon)
+    vampytest.assert_is(channel.icon_type, icon.type)
+    vampytest.assert_eq(channel.icon_hash, icon.hash)
 
 
 def test__Channel__permission_overwrites():

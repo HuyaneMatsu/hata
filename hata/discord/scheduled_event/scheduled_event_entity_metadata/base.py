@@ -195,7 +195,7 @@ class ScheduledEventEntityMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        speaker_ids : `None`, `tuple` of `int`
+        speaker_ids : `None | tuple<int>`
         """
     )
     

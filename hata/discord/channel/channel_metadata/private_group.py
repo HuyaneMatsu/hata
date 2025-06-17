@@ -1,16 +1,19 @@
 __all__ = ('ChannelMetadataPrivateGroup',)
 
 from scarletio import copy_docs
-
-from ...bases import ICON_TYPE_NONE, Slotted
+ 
+from ...bases import ICON_TYPE_NONE, IconSlot, Slotted
+from ...http.urls import build_channel_group_icon_url, build_channel_group_icon_url_as
 from ...permission.permission import PERMISSION_GROUP, PERMISSION_GROUP_OWNER, PERMISSION_NONE
 
 from .fields import (
     parse_application_id, parse_name, parse_owner_id, put_application_id, put_name, put_owner_id,
     validate_application_id, validate_name, validate_owner_id
 )
-from .base import CHANNEL_METADATA_ICON_SLOT
 from .private_base import ChannelMetadataPrivateBase
+
+
+CHANNEL_METADATA_ICON = IconSlot('icon', 'icon')
 
 
 class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass = Slotted):
@@ -39,7 +42,7 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass = Slotte
     """
     __slots__ = ('application_id', 'name', 'owner_id')
     
-    icon = CHANNEL_METADATA_ICON_SLOT
+    icon = CHANNEL_METADATA_ICON
     
     
     def __new__(
@@ -58,7 +61,7 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass = Slotte
         ----------
         application_id : `int`, ``Application``, Optional (Keyword only)
             The application's identifier the channel is managed by.
-        icon : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        icon : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The channel's icon.
         name : `str`, Optional (Keyword only)
             The channel's display name. Can be empty string if the channel has no name.
@@ -316,7 +319,7 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass = Slotte
         ----------
         application_id : `int`, ``Application``, Optional (Keyword only)
             The application's identifier the channel is managed by.
-        icon : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        icon : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The channel's icon.
         name : `str`, Optional (Keyword only)
             The channel's display name. Can be empty string if the channel has no name.
@@ -391,3 +394,13 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass = Slotte
             put_owner_id(self.owner_id, data, defaults)
         
         return data
+    
+    
+    @copy_docs(ChannelMetadataPrivateBase._get_icon_url)
+    def _get_icon_url(self, channel_entity):
+        return build_channel_group_icon_url(channel_entity.id, self.icon_type, self.icon_hash)
+    
+    
+    @copy_docs(ChannelMetadataPrivateBase._get_icon_url_as)
+    def _get_icon_url_as(self, channel_entity, ext, size):
+        return build_channel_group_icon_url_as(channel_entity.id, self.icon_type, self.icon_hash, ext, size)

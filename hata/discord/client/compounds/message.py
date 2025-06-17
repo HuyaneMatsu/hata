@@ -47,6 +47,7 @@ MESSAGE_SERIALIZER_CREATE = create_serializer(
             MessageBuilderCreate.poll,
             MessageBuilderCreate.sticker_ids,
             MessageBuilderCreate.tts,
+            MessageBuilderCreate.voice_attachment,
         ],
         False,
     )
@@ -366,6 +367,9 @@ class ClientCompoundMessageEndpoints(Compound):
         
         tts : `bool` = `False`, Optional (Keyword only)
             Whether the message is text-to-speech.
+        
+        voice_attachment : ``None | VoiceAttachment``, Optional (Keyword only)
+            Modifies the message to be a voice message, allowing it to contain just a single voice attachment.
         
         Returns
         -------

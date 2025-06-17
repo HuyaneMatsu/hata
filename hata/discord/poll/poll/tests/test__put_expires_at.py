@@ -23,8 +23,9 @@ def test__put_expires_at(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `bool`
+    input_value : `None | DateTime`
         The value to serialise.
+    
     defaults : `bool`
         Whether default values should be included as well.
     

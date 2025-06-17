@@ -26,12 +26,12 @@ def test__validate_application(input_value):
     
     Parameters
     ----------
-    input_value : `None | Application`
+    input_value : ``None | Application``
         The application to validate.
     
     Returns
     -------
-    output : `None | Application`
+    output : ``None | Application``
     
     Raises
     ------

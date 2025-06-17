@@ -155,7 +155,7 @@ class ClientCompoundApplicationEndpoints(Compound):
         guild_id : `int`, `None`, ``Guild``, Optional (Keyword only)
             Guild identifier to filter for.
         
-        sku_ids : `int`, `None`, ``SKU``, `iterable` of `int`, `iterable` of ``SKU`, Optional (Keyword only)
+        sku_ids : ``None | int | SKU | iterable<int> | iterable<SKU>``, Optional (Keyword only)
             Stock keeping units to filter for.
         
         user_id : ``None | int | ClientUserBase``, Optional (Keyword only)
@@ -263,7 +263,7 @@ class ClientCompoundApplicationEndpoints(Compound):
         limit : `int`, Optional (Keyword only)
             Up to how much entitlements should be requested. Can be in range `[1, 100]`. Defaults to `100`.
         
-        sku_ids : `int`, `None`, ``SKU``, `iterable` of `int`, `iterable` of ``SKU`, Optional (Keyword only)
+        sku_ids : ``None | int | SKU | iterable<int> | iterable<SKU>``, Optional (Keyword only)
             Stock keeping units to filter for.
         
         user_id : ``None | int | ClientUserBase``, Optional (Keyword only)

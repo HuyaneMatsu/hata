@@ -9,7 +9,7 @@ from scarletio import export, include
 
 from ...core import CHANNELS
 
-from ..channel_metadata.base import CHANNEL_METADATA_ICON_SLOT
+from ..channel_metadata.private_group import CHANNEL_METADATA_ICON
 from ..channel_metadata.fields import (
     put_applied_tag_ids, put_auto_archive_after, put_bitrate, put_default_forum_layout,
     put_default_sort_order, put_default_thread_auto_archive_after, put_default_thread_reaction_emoji,
@@ -66,8 +66,8 @@ CHANNEL_GUILD_MAIN_FIELD_CONVERTERS = {
 
 CHANNEL_PRIVATE_GROUP_FIELD_CONVERTERS = {
     'icon': (
-        CHANNEL_METADATA_ICON_SLOT.validate_icon,
-        partial_func(CHANNEL_METADATA_ICON_SLOT.put_into, as_data = True),
+        CHANNEL_METADATA_ICON.validate_icon,
+        partial_func(CHANNEL_METADATA_ICON.put_into, as_data = True),
     ),
     'name': (validate_name, put_name),
 }

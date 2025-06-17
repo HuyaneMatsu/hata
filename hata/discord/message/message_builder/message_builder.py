@@ -16,7 +16,7 @@ from .conversions import (
     CONVERSION_MESSAGE_REFERENCE_CONFIGURATION, CONVERSION_NAME, CONVERSION_NONCE, CONVERSION_POLL,
     CONVERSION_REPLY_FAIL_FALLBACK, CONVERSION_REPLY_MESSAGE_ID, CONVERSION_SHOW_FOR_INVOKING_USER_ONLY,
     CONVERSION_SILENT, CONVERSION_STICKER, CONVERSION_STICKERS, CONVERSION_STICKER_IDS, CONVERSION_SUPPRESS_EMBEDS,
-    CONVERSION_THREAD_NAME, CONVERSION_TTS
+    CONVERSION_THREAD_NAME, CONVERSION_TTS, CONVERSION_VOICE_ATTACHMENT
 )
 
 
@@ -75,6 +75,7 @@ class MessageBuilderCreate(MessageBuilderBase):
     sticker_ids = CONVERSION_STICKER_IDS
     stickers = CONVERSION_STICKERS
     tts = CONVERSION_TTS
+    voice_attachment = CONVERSION_VOICE_ATTACHMENT
 
 
 class MessageBuilderEdit(MessageBuilderBase):
@@ -111,6 +112,7 @@ class MessageBuilderWebhookCreate(MessageBuilderBase):
     silent = CONVERSION_SILENT
     thread_name = CONVERSION_THREAD_NAME
     tts = CONVERSION_TTS
+    voice_attachment = CONVERSION_VOICE_ATTACHMENT
 
 
 class MessageBuilderWebhookEdit(MessageBuilderEdit):
@@ -173,6 +175,7 @@ class MessageBuilderInteractionFollowupCreate(MessageBuilderBase):
     show_for_invoking_user_only = CONVERSION_SHOW_FOR_INVOKING_USER_ONLY
     silent = CONVERSION_SILENT
     tts = CONVERSION_TTS
+    voice_attachment = CONVERSION_VOICE_ATTACHMENT
 
 
 class MessageBuilderInteractionFollowupEdit(MessageBuilderEdit):
@@ -216,3 +219,4 @@ class MessageBuilderInteractionResponseEdit(MessageBuilderEdit):
     __slots__ = ()
     
     poll = CONVERSION_POLL
+    voice_attachment = CONVERSION_VOICE_ATTACHMENT

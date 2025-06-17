@@ -555,7 +555,7 @@ def test__MessageSnapshot__iter_mentioned_users(input_value):
     
     Parameters
     ----------
-    input_value : `None | list<ClientUserBase>`
+    input_value : ``None | list<ClientUserBase>``
         Value to test with.
     
     Returns

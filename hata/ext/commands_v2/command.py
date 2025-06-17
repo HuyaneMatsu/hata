@@ -354,7 +354,7 @@ class Command:
         Reference to the command itself.
     _wrappers : `None`, `list` of `async-callable`
         Additional wrappers, which run before the command is executed.
-    aliases : `None`, `tuple` of `str`
+    aliases : `None | tuple<str>`
         Name aliases of the command if any. They are always lower case.
     command_category_name_to_command_category : `None`, `dict` of (`str`, ``CommandCategory``) items
         Sub-command categories by name.
@@ -1192,7 +1192,7 @@ class CommandCategory:
         Error handlers bind to the command.
     _wrappers : `None`, `list` of `async-callable`
         Additional wrappers, which run before the command is executed.
-    aliases : `None`, `tuple` of `str`
+    aliases : `None | tuple<str>`
         Name aliases of the command category.
     command_category_name_to_command_category : `None` of `dict<str, object>`
         Command categories by name.

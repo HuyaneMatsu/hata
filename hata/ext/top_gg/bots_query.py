@@ -69,7 +69,7 @@ def nullable_string_tuple_to_string_array(nullable_string_tuple):
     
     Parameters
     ----------
-    nullable_string_tuple : `None`, `tuple` of `str`
+    nullable_string_tuple : `None | tuple<str>`
         The value to convert.
     
     Returns
@@ -90,7 +90,7 @@ def nullable_snowflake_tuple_to_string_array(nullable_snowflake_tuple):
     
     Parameters
     ----------
-    nullable_snowflake_tuple : `None`, `tuple` of `int`
+    nullable_snowflake_tuple : `None | tuple<int>`
         The value to convert.
     
     Returns
@@ -143,7 +143,7 @@ def nullable_datetime_to_timestamp(date_time):
     
     Parameters
     ----------
-    date_time : `None`, `datetime`
+    date_time : `None | DateTime`
         The date time to convert.
     
     Returns

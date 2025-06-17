@@ -76,7 +76,7 @@ def test__put_application(application, defaults):
     
     Parameters
     ----------
-    application : `None | Application`
+    application : ``None | Application``
         The application to serialise.
     
     defaults : `bool`

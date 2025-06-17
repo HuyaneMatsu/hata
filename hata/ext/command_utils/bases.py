@@ -29,7 +29,7 @@ class PaginationBase:
     
     Attributes
     ----------
-    _canceller : `None`, `Function`
+    _canceller : `None`, `FunctionType`
         The function called when the ``Pagination`` is cancelled or when it expires. This is a onetime use and after
         it was used, is set as `None`.
     
@@ -111,7 +111,7 @@ class PaginationBase:
         
         Parameters
         ----------
-        exception : `None`, ``BaseException``
+        exception : `None`, `BaseException`
             Exception to cancel the ``Pagination`` with.
         """
         client = self.client
@@ -214,7 +214,7 @@ class PaginationBase:
         
         Parameters
         ----------
-        exception : `None`, ``BaseException`` = `None`, Optional
+        exception : `None`, `BaseException` = `None`, Optional
             Exception to cancel the pagination with. Defaults to `None`
         
         Returns

@@ -14,7 +14,7 @@ from ...gateway.client_base import DiscordGatewayClientBase
 from ...guild import GuildBadge
 from ...http import DiscordApiClient
 from ...localization import Locale
-from ...user import AvatarDecoration, PremiumType, Status, UserFlag
+from ...user import AvatarDecoration, NamePlate, PremiumType, Status, UserFlag
 
 from ..client import Client
 from ..ready_state import ReadyState
@@ -44,6 +44,7 @@ def _assert_fields_set(client):
     vampytest.assert_instance(client.application, Application)
     vampytest.assert_instance(client.avatar, Icon)
     vampytest.assert_instance(client.avatar_decoration, AvatarDecoration, nullable = True)
+    vampytest.assert_instance(client.name_plate, NamePlate, nullable = True)
     vampytest.assert_instance(client.banner_color, int, nullable = True)
     vampytest.assert_instance(client.banner, Icon)
     vampytest.assert_instance(client.bot, bool)
@@ -107,18 +108,22 @@ def test__Client__new__all_fields():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160015)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    bot = True
     discriminator = 2222
     display_name = 'Far'
-    flags = UserFlag(1)
-    name = 'voice in the dark'
-    primary_guild_badge = GuildBadge(guild_id = 202405180059, tag = 'meow')
-    bot = True
-
     email = 'rin@orindance.party'
     email_verified = True
+    flags = UserFlag(1)
     locale = Locale.greek
     mfa_enabled = True
+    name = 'voice in the dark'
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202506030090,
+    )
     premium_type = PremiumType.nitro_basic
+    primary_guild_badge = GuildBadge(guild_id = 202405180059, tag = 'meow')
+
     
     http = HTTPClient(KOKORO)
     api = DiscordApiClient(True, 'koishi', http = http)
@@ -130,17 +135,17 @@ def test__Client__new__all_fields():
         banner = banner,
         banner_color = banner_color,
         discriminator = discriminator,
-        display_name = display_name,
-        flags = flags,
-        name = name,
-        primary_guild_badge = primary_guild_badge,
         bot = bot,
-        
+        display_name = display_name,
         email = email,
         email_verified = email_verified,
+        flags = flags,
         locale = locale,
         mfa_enabled = mfa_enabled,
+        name = name,
+        name_plate = name_plate,
         premium_type = premium_type,
+        primary_guild_badge = primary_guild_badge,
         
         api = api,
         http = http,
@@ -153,18 +158,19 @@ def test__Client__new__all_fields():
         vampytest.assert_eq(client.avatar_decoration, avatar_decoration)
         vampytest.assert_eq(client.banner, banner)
         vampytest.assert_eq(client.banner_color, banner_color)
+        vampytest.assert_eq(client.bot, bot)
         vampytest.assert_eq(client.discriminator, discriminator)
         vampytest.assert_eq(client.display_name, display_name)
-        vampytest.assert_eq(client.flags, flags)
-        vampytest.assert_eq(client.name, name)
-        vampytest.assert_eq(client.primary_guild_badge, primary_guild_badge)
-        vampytest.assert_eq(client.bot, bot)
-    
         vampytest.assert_eq(client.email, email)
         vampytest.assert_eq(client.email_verified, email_verified)
+        vampytest.assert_eq(client.flags, flags)
         vampytest.assert_is(client.locale, locale)
         vampytest.assert_eq(client.mfa_enabled, mfa_enabled)
+        vampytest.assert_eq(client.name, name)
+        vampytest.assert_eq(client.name_plate, name_plate)
         vampytest.assert_is(client.premium_type, premium_type)
+        vampytest.assert_eq(client.primary_guild_badge, primary_guild_badge)
+    
         
         vampytest.assert_is(client.api, api)
         vampytest.assert_is(client.http, http)

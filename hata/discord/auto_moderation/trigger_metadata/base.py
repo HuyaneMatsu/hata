@@ -99,7 +99,7 @@ class AutoModerationRuleTriggerMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        excluded_keywords : `None`, `tuple` of `str`
+        excluded_keywords : `None | tuple<str>`
         """
     )
     
@@ -123,7 +123,7 @@ class AutoModerationRuleTriggerMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        keywords : `None`, `tuple` of `str`
+        keywords : `None | tuple<str>`
         """
     )
     
@@ -159,7 +159,7 @@ class AutoModerationRuleTriggerMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        regex_patterns : `None`, `tuple` of `str`
+        regex_patterns : `None | tuple<str>`
         """
     )
     

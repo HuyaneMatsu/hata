@@ -27,7 +27,7 @@ class ClientUserPBase(ClientUserBase):
     
     Attributes
     ----------
-    activities : `None`, `list` of ``Activity``
+    activities : ``None | list<Activity>``
         A list of the client's activities. Defaults to `None`
     
     avatar_hash : `int`
@@ -36,7 +36,7 @@ class ClientUserPBase(ClientUserBase):
     avatar_type : ``IconType``
         The user's avatar's type.
     
-    avatar_decoration : `None`, ``AvatarDecoration``
+    avatar_decoration : ``None | AvatarDecoration``
         The user's avatar decoration.
     
     banner_color : `None`, ``Color``
@@ -54,13 +54,13 @@ class ClientUserPBase(ClientUserBase):
     discriminator : `int`
         The user's discriminator. Given to avoid overlapping names.
     
-    display_name : `None`, `str`
+    display_name : `None | str`
         The user's non-unique display name.
     
     flags : ``UserFlag``
         The user's user flags.
     
-    guild_profiles : `dict` of (`int`, ``GuildProfile``) items
+    guild_profiles : ``dict<int, GuildProfile>``
         A dictionary, which contains the user's guild profiles. If a user is member of a guild, then it should
         have a respective guild profile accordingly.
     
@@ -69,6 +69,9 @@ class ClientUserPBase(ClientUserBase):
     
     name : str
         The user's name.
+    
+    name_plate : ``None | NamePlate``
+        The user's name plate.
     
     primary_guild_badge : ``None | GuildBadge``
         The user's primary guild's badge.
@@ -98,6 +101,7 @@ class ClientUserPBase(ClientUserBase):
         display_name = ...,
         flags = ...,
         name = ...,
+        name_plate = ...,
         primary_guild_badge = ...,
         status = ...,
         statuses = ...,
@@ -110,13 +114,13 @@ class ClientUserPBase(ClientUserBase):
         activities : `iterable`, `list` of ``Activity``, Optional (Keyword only)
             A list of the client's activities.
         
-        avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        avatar : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The user's avatar.
         
-        avatar_decoration : `None`, ``AvatarDecoration``, Optional (Keyword only)
+        avatar_decoration : ``None | AvatarDecoration``, Optional (Keyword only)
             The user's avatar decoration.
         
-        banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        banner : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The user's banner.
         
         banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
@@ -128,7 +132,7 @@ class ClientUserPBase(ClientUserBase):
         discriminator : `str`, `int`, Optional (Keyword only)
             The user's discriminator.
         
-        display_name : `None`, `str`, Optional (Keyword only)
+        display_name : `None | str`, Optional (Keyword only)
             The user's non-unique display name.
         
         flags : `int`, ``UserFlag``, Optional (Keyword only)
@@ -136,6 +140,9 @@ class ClientUserPBase(ClientUserBase):
         
         name : `str`, Optional (Keyword only)
             The user's name.
+        
+        name_plate : ``None | NamePlate``, Optional (Keyword only)
+            The user's name plate.
         
         primary_guild_badge : ``None | GuildBadge``, Optional (Keyword only)
             The user's primary guild's badge.
@@ -186,6 +193,7 @@ class ClientUserPBase(ClientUserBase):
             display_name = display_name,
             flags = flags,
             name = name,
+            name_plate = name_plate,
             primary_guild_badge = primary_guild_badge,
         )
         
@@ -369,6 +377,7 @@ class ClientUserPBase(ClientUserBase):
         display_name = ...,
         flags = ...,
         name = ...,
+        name_plate = ...,
         primary_guild_badge = ...,
         status = ...,
         statuses = ...,
@@ -381,13 +390,13 @@ class ClientUserPBase(ClientUserBase):
         activities : `iterable`, `list` of ``Activity``, Optional (Keyword only)
             A list of the client's activities.
         
-        avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        avatar : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The user's avatar.
         
-        avatar_decoration : `None`, ``AvatarDecoration``, Optional (Keyword only)
+        avatar_decoration : ``None | AvatarDecoration``, Optional (Keyword only)
             The user's avatar decoration.
         
-        banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        banner : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The user's banner.
         
         banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
@@ -399,7 +408,7 @@ class ClientUserPBase(ClientUserBase):
         discriminator : `str`, `int`, Optional (Keyword only)
             The user's discriminator.
         
-        display_name : `None`, `str`, Optional (Keyword only)
+        display_name : `None | str`, Optional (Keyword only)
             The user's non-unique display name.
         
         flags : `int`, ``UserFlag``, Optional (Keyword only)
@@ -407,6 +416,9 @@ class ClientUserPBase(ClientUserBase):
         
         name : `str`, Optional (Keyword only)
             The user's name.
+        
+        name_plate : ``None | NamePlate``, Optional (Keyword only)
+            The user's name plate.
         
         primary_guild_badge : ``None | GuildBadge``, Optional (Keyword only)
             The user's primary guild's badge.
@@ -461,6 +473,7 @@ class ClientUserPBase(ClientUserBase):
             display_name = display_name,
             flags = flags,
             name = name,
+            name_plate = name_plate,
             primary_guild_badge = primary_guild_badge,
         )
         

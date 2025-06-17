@@ -12,7 +12,7 @@ from ..guild_profile import GuildProfile
 
 def _check_is_all_fields_set(guild_profile):
     """
-    Asserts whether all fields of the given guild profiles are set.
+    Asserts whether all fields of the given guild profile are set.
     
     Parameters
     ----------

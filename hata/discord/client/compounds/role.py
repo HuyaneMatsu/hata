@@ -138,7 +138,7 @@ class ClientCompoundRoleEndpoints(Compound):
         flags : ``RoleFlag``, `int`, Optional (Keyword only)
             The role's flags.
         
-        icon : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        icon : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The role's icon.
         
         mentionable : `bool`, Optional (Keyword only)
@@ -204,7 +204,7 @@ class ClientCompoundRoleEndpoints(Compound):
         flags : ``RoleFlag``, `int`, Optional (Keyword only)
             The role's flags.
         
-        icon : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        icon : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The role's icon.
             
         mentionable : `bool`, Optional (Keyword only)

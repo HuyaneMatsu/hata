@@ -868,7 +868,7 @@ class UserPagination:
         
         Parameters
         ----------
-        exception : `None`, ``BaseException``
+        exception : `None`, `BaseException`
             - `CancelledError` if closed with the close emoji.
             - `TimeoutError` if closed by timeout.
             - `PermissionError` if closed because cant add reactions.

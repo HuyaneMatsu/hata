@@ -64,7 +64,7 @@ def preconvert_snowflake_array(snowflake_array, name):
     
     Returns
     -------
-    snowflake_array : `None`, `tuple` of `int`
+    snowflake_array : `None | tuple<int>`
         The returned value is always sorted.
     
     Raises

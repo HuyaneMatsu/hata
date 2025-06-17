@@ -353,33 +353,58 @@ def test__GuildProfile__created_at():
     vampytest.assert_eq(guild_profile.created_at, joined_at)
 
 
-def test__GuildProfile__avatar_decoration_url():
-    """
-    Tests whether ``GuildProfile.avatar_decoration_url`` work as intended.
-    """
+def _iter_options__avatar_decoration_url():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202407150017)
     
-    guild_profile = GuildProfile(
-        avatar_decoration = avatar_decoration,
-    )
-    
-    avatar_decoration_url = guild_profile.avatar_decoration_url
-    
-    vampytest.assert_instance(avatar_decoration_url, str)
-    vampytest.assert_true(is_url(avatar_decoration_url))
+    yield None, False
+    yield avatar_decoration, True
 
 
-def test__GuildProfile__avatar_decoration_url_as():
+@vampytest._(vampytest.call_from(_iter_options__avatar_decoration_url()).returning_last())
+def test__GuildProfile__avatar_decoration_url(avatar_decoration):
     """
-    Tests whether ``GuildProfile.avatar_decoration_url_as`` work as intended.
+    Tests whether ``GuildProfile.avatar_decoration_url`` work as intended.
+    
+    Parameters
+    ----------
+    avatar_decoration : ``None | AvatarDecoration``
+        Avatar decoration to create the guild profile with.
+    
+    Returns
+    -------
+    has_avatar_decoration_url : `bool`
     """
+    guild_profile = GuildProfile(avatar_decoration = avatar_decoration)
+    output = guild_profile.avatar_decoration_url
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__avatar_decoration_url_as():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202407150018)
     
-    guild_profile = GuildProfile(
-        avatar_decoration = avatar_decoration,
-    )
+    yield None, {'ext': 'jpg', 'size': 128}, False
+    yield avatar_decoration, {'ext': 'jpg', 'size': 128}, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__avatar_decoration_url_as()).returning_last())
+def test__GuildProfile__avatar_decoration_url_as(avatar_decoration, keyword_parameters):
+    """
+    Tests whether ``GuildProfile.avatar_decoration_url_as`` work as intended.
     
-    avatar_decoration_url = guild_profile.avatar_decoration_url_as(ext = 'png', size = 4096)
+    Parameters
+    ----------
+    avatar_decoration : ``None | AvatarDecoration``
+        Avatar decoration to create the guild profile with.
     
-    vampytest.assert_instance(avatar_decoration_url, str)
-    vampytest.assert_true(is_url(avatar_decoration_url))
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to use.
+    
+    Returns
+    -------
+    has_avatar_decoration_url : `bool`
+    """
+    guild_profile = GuildProfile(avatar_decoration = avatar_decoration)
+    output = guild_profile.avatar_decoration_url_as(**keyword_parameters)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)

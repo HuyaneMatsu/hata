@@ -34,7 +34,7 @@ def test__Attachment__copy__default():
     temporary = True
     title = 'flandre'
     url = 'https://www.astil.dev/'
-    waveform = 'kisaki'
+    waveform = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
     width = 998
     
     attachment = Attachment(
@@ -107,7 +107,7 @@ def test__Attachment__copy_with__no_fields():
     temporary = True
     title = 'flandre'
     url = 'https://www.astil.dev/'
-    waveform = 'kisaki'
+    waveform = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
     width = 998
     
     attachment = Attachment(
@@ -180,7 +180,7 @@ def test__Attachment__copy_with__all_fields():
     old_temporary = True
     old_title = 'flandre'
     old_url = 'https://www.astil.dev/'
-    old_waveform = 'kisaki'
+    old_waveform = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
     old_width = 998
     
     new_application = Application.precreate(202502020017)
@@ -199,7 +199,7 @@ def test__Attachment__copy_with__all_fields():
     new_temporary = False
     new_title = 'remilia'
     new_url = 'https://orindance.party/'
-    new_waveform = 'kisaki'
+    new_waveform = b'\x01' * len(old_waveform)
     new_width = 700
     
     attachment = Attachment(
@@ -337,7 +337,7 @@ def test__Attachment__iter_clip_users(input_value):
     
     Parameters
     ----------
-    input_value : `None | list<ClientUserBase>`
+    input_value : ``None | list<ClientUserBase>``
         Value to test with.
     
     Returns

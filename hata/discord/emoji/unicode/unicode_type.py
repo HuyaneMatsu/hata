@@ -13,9 +13,9 @@ class Unicode(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    aliases : `None`, `tuple` of `str`
+    aliases : `None | tuple<str>`
         Alternative names of the emoji.
-    emoticons : `None`, `tuple` of `str`
+    emoticons : `None | tuple<str>`
         Emoticons which the emoji represents.
     name : `str`
         The unicode's name.
@@ -41,9 +41,9 @@ class Unicode(RichAttributeErrorBaseType):
             Unicode value.
         variation_selector_16 : `bool`
             Whether the emoji is a variation selector 16 emoji.
-        aliases : `None`, `tuple` of `str`
+        aliases : `None | tuple<str>`
             Alternative names of the emoji.
-        emoticons : `None`, `tuple` of `str`
+        emoticons : `None | tuple<str>`
             Emoticons which the emoji represents.
         unicode_aliases : `None | tuple<str>`
             Alternative unicode strings representing the same unicode.

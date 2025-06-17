@@ -58,7 +58,7 @@ class WebhookBase(UserBase):
         channel_id : `int`, Optional (Keyword only)
             The channel's identifier, where the webhook is going to send it's messages.
         
-        avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        avatar : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The user's avatar.
         
         name : `str`, Optional (Keyword only)
@@ -136,7 +136,7 @@ class WebhookBase(UserBase):
         channel_id : `int`, Optional (Keyword only)
             The channel's identifier, where the webhook is going to send it's messages.
         
-        avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        avatar : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The user's avatar.
         
         name : `str`, Optional (Keyword only)

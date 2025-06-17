@@ -17,15 +17,15 @@ class ChannelMetadataGuildThreadPublic(ChannelMetadataGuildThreadBase):
     
     Attributes
     ----------
-    _created_at : `None`, `datetime`
+    _created_at : `None | DateTime`
         When the channel was created.
     _cache_permission : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    applied_tag_ids : `None`, `tuple` of `int`
+    applied_tag_ids : `None | tuple<int>`
          The tags' identifier which have been applied to the thread. Applicable for threads of a forum.
     archived : `bool`
         Whether the thread s archived.
-    archived_at : `None`, `datetime`
+    archived_at : `None | DateTime`
         When the thread's archive status was last changed.
     auto_archive_after : `int`
         Duration in seconds to automatically archive the thread after recent activity. Can be one of: `3600`, `86400`,
@@ -78,13 +78,13 @@ class ChannelMetadataGuildThreadPublic(ChannelMetadataGuildThreadBase):
              The tags' identifier which have been applied to the thread.
         archived : `bool`, Optional (Keyword only)
             Whether the thread is archived.
-        archived_at : `None`, `datetime`, Optional (Keyword only)
+        archived_at : `None | DateTime`, Optional (Keyword only)
             When the thread's archive status was last changed.
         auto_archive_after : `int`, Optional (Keyword only)
             Duration in seconds to automatically archive the thread after recent activity.
         flags : ``ChannelFlag``, `int`, Optional (Keyword only)
             The channel's flags.
-        created_at : `None`, `datetime`, Optional (Keyword only)
+        created_at : `None | DateTime`, Optional (Keyword only)
             When the channel was created.
         name : `str`, Optional (Keyword only)
             The channel's name.
@@ -220,13 +220,13 @@ class ChannelMetadataGuildThreadPublic(ChannelMetadataGuildThreadBase):
              The tags' identifier which have been applied to the thread.
         archived : `bool`, Optional (Keyword only)
             Whether the thread is archived.
-        archived_at : `None`, `datetime`, Optional (Keyword only)
+        archived_at : `None | DateTime`, Optional (Keyword only)
             When the thread's archive status was last changed.
         auto_archive_after : `int`, Optional (Keyword only)
             Duration in seconds to automatically archive the thread after recent activity.
         flags : ``ChannelFlag``, `int`, Optional (Keyword only)
             The channel's flags.
-        created_at : `None`, `datetime`, Optional (Keyword only)
+        created_at : `None | DateTime`, Optional (Keyword only)
             When the channel was created.
         name : `str`, Optional (Keyword only)
             The channel's name.

@@ -446,22 +446,95 @@ def test__ScheduledEvent__entity__stage_channel():
     vampytest.assert_eq(output.id, entity_id)
 
 
-def test__ScheduledEvent__url():
+def _iter_options__url():
+    yield 202303190000, 202303190001, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__url()).returning_last())
+def test__ScheduledEvent__url(scheduled_event_id, guild_id):
     """
-    Tests whether ``ScheduledEvent.url`` works as intended.
+    tests whether ``ScheduledEvent.url`` works as intended.
     
-    Case: stage channel.
+    Parameters
+    ----------
+    scheduled_event_id : `int`
+        ScheduledEvent identifier.
+    
+    guild_id : `int`
+        Scheduled event's guild's identifier.
+    
+    Returns
+    -------
+    has_url `bool`
     """
-    scheduled_event_id = 202303190000
-    guild_id = 202303190001
-    
-    scheduled_event = ScheduledEvent.precreate(
-        scheduled_event_id,
-        guild_id = guild_id,
-    )
-    
+    scheduled_event = ScheduledEvent.precreate(scheduled_event_id, guild_id = guild_id)
     output = scheduled_event.url
     vampytest.assert_instance(output, str)
-    vampytest.assert_true(is_url(output))
-    vampytest.assert_in(str(scheduled_event_id), output)
-    vampytest.assert_in(str(guild_id), output)
+    return True
+
+
+def _iter_options__image_url():
+    yield 202506010000, None, False
+    yield 202506010001, Icon(IconType.animated, 5), True
+
+
+@vampytest._(vampytest.call_from(_iter_options__image_url()).returning_last())
+def test__ScheduledEvent__image_url(scheduled_event_id, icon):
+    """
+    Tests whether ``ScheduledEvent.image_url`` works as intended.
+    
+    Parameters
+    ----------
+    scheduled_event_id : `int`
+        Identifier to create scheduled event with.
+    
+    icon : ``None | Icon``
+        Icon to create the scheduled event with.
+    
+    Returns
+    -------
+    has_image_url : `bool`
+    """
+    scheduled_event = ScheduledEvent.precreate(
+        scheduled_event_id,
+        image = icon,
+    )
+    
+    output = scheduled_event.image_url
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__image_url_as():
+    yield 202506010002, None, {'ext': 'webp', 'size': 128}, False
+    yield 202506010003, Icon(IconType.animated, 5), {'ext': 'webp', 'size': 128}, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__image_url_as()).returning_last())
+def test__ScheduledEvent__image_url_as(scheduled_event_id, icon, keyword_parameters):
+    """
+    Tests whether ``ScheduledEvent.image_url_as`` works as intended.
+    
+    Parameters
+    ----------
+    scheduled_event_id : `int`
+        Identifier to create scheduled event with.
+    
+    icon : ``None | Icon``
+        Icon to create the scheduled event with.
+    
+    keyword_parameters : `dict<str, object>`
+        Additional keyword parameters to pass.
+    
+    Returns
+    -------
+    has_image_url : `bool`
+    """
+    scheduled_event = ScheduledEvent.precreate(
+        scheduled_event_id,
+        image = icon,
+    )
+    
+    output = scheduled_event.image_url_as(**keyword_parameters)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)

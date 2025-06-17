@@ -150,7 +150,7 @@ def get_plugin_event_handler_and_parser_names(event_handler_manager, name):
     -------
     plugin : `None`, ``EventHandlerManager``, ``EventHandlerPlugin``
         The event handler or the plugin owning the event.
-    parser_names : `None`, `tuple` of `str`
+    parser_names : `None | tuple<str>`
         Dispatch event parser's names relating to the event.
     """
     try:

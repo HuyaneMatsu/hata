@@ -722,7 +722,7 @@ def test__AuditLog__get_user(users, user_id):
     
     Parameters
     ----------
-    users : `None | list<ClientUserBase>`
+    users : ``None | list<ClientUserBase>``
         Users to create the audit log with.
     user_id : `int`
         User identifier.
@@ -756,7 +756,7 @@ def test__AuditLog__iter_user(users):
     
     Parameters
     ----------
-    users : `None | list<ClientUserBase>`
+    users : ``None | list<ClientUserBase>``
         Users to create the audit log with.
     
     Returns

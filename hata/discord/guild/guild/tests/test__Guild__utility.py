@@ -445,64 +445,7 @@ def test__Guild__delete__client_not_last():
         client_1 = None
 
 
-@vampytest.call_with('shield')
-@vampytest.call_with('banner1')
-@vampytest.call_with('banner2')
-@vampytest.call_with('banner3')
-@vampytest.call_with('banner4')
-def test__Guild__widget_url_as__passing(style):
-    """
-    Tests whether ``Guild.widget_url_as`` works as intended.
-    
-    Case: Passing.
-    
-    Parameters
-    ----------
-    style : `str`
-        Widget style
-    """
-    guild = Guild.precreate(202306230037)
-    widget_url = guild.widget_url_as(style)
-    
-    vampytest.assert_instance(widget_url, str)
-    vampytest.assert_true(is_url(widget_url))
-
-
-@vampytest.raising(ValueError)
-@vampytest.call_with('shield1')
-@vampytest.call_with('banner11')
-@vampytest.call_with('banner5')
-@vampytest.call_with('banner0')
-def test__Guild__widget_url_as__value_error(style):
-    """
-    Tests whether ``Guild.widget_url_as`` works as intended.
-    
-    Case: `ValueError`.
-    
-    Parameters
-    ----------
-    style : `str`
-        Widget style
-    """
-    guild = Guild.precreate(202306230038)
-    widget_url = guild.widget_url_as(style)
-    
-    vampytest.assert_instance(widget_url, str)
-    vampytest.assert_true(is_url(widget_url))
-
-
-def test__Guild__widget_url():
-    """
-    Tests whether ``Guild.widget_url`` works as intended.
-    """
-    guild = Guild.precreate(202306230039)
-    widget_url = guild.widget_url
-    
-    vampytest.assert_instance(widget_url, str)
-    vampytest.assert_true(is_url(widget_url))
-    
-
-def test__Guild__nsfw__0():
+def test__Guild__nsfw__safe():
     """
     Tests whether `Guild.nsfw` returns the correct value.
     
@@ -514,7 +457,7 @@ def test__Guild__nsfw__0():
     vampytest.assert_eq(guild.nsfw, nsfw_level.nsfw)
 
 
-def test__Guild__nsfw__1():
+def test__Guild__nsfw__explicit():
     """
     Tests whether `Guild.nsfw` returns the correct value.
     
@@ -530,46 +473,59 @@ def _iter_options__iter_features():
     feature_0 = GuildFeature.animated_icon
     feature_1 = GuildFeature.animated_banner
     
-    yield Guild.precreate(202305290002, features = None), set()
-    yield Guild.precreate(202305290003, features = [feature_0]), {feature_0}
-    yield Guild.precreate(202305290004, features = [feature_0, feature_1]), {feature_0, feature_1}
+    yield 202305290002, None, set()
+    yield 202305290003, [feature_0], {feature_0}
+    yield 202305290004, [feature_0, feature_1], {feature_0, feature_1}
 
 
 @vampytest._(vampytest.call_from(_iter_options__iter_features()).returning_last())
-def test__Guild__iter_features(guild):
+def test__Guild__iter_features(guild_id, features):
     """
     Tests whether ``Guild.iter_features`` works as intended.
     
     Parameters
     ----------
-    guild : ``Guild``
-        The guild to iter the features of.
+    guild_id : `int`
+        Guild identifier to create guild for.
+    
+    features : ``None | list<GuildFeature>``
+        Guild features to create guild with.
     
     Returns
     -------
-    output : `set` of ``GuildFeature``
+    output : ``set<GuildFeature>`
     """
-    return {*guild.iter_features()}
+    guild = Guild.precreate(guild_id, features = features)
+    output = {*guild.iter_features()}
+    
+    for element in output:
+        vampytest.assert_instance(element, GuildFeature)
+    
+    return output
 
 
 def _iter_options__has_feature():
     feature = GuildFeature.animated_icon
 
-    yield Guild.precreate(202212190038, features = []), feature, False
-    yield Guild.precreate(202212200020, features = [GuildFeature.animated_banner]), feature, False
-    yield Guild.precreate(202212200021, features = [feature]), feature, True
-    yield Guild.precreate(202212200022, features = [GuildFeature.animated_banner, feature]), feature, True
+    yield 202212190038, None, feature, False
+    yield 202212200020, [GuildFeature.animated_banner], feature, False
+    yield 202212200021, [feature], feature, True
+    yield 202212200022, [GuildFeature.animated_banner, feature], feature, True
 
 
 @vampytest._(vampytest.call_from(_iter_options__has_feature()).returning_last())
-def test__Guild__has_feature(guild, feature):
+def test__Guild__has_feature(guild_id, features, feature):
     """
     Tests whether ``Guild.has_feature`` works as intended.
     
     Parameters
     ----------
-    guild : ``Guild``
-        The guild to check the feature of.
+    guild_id : `int`
+        Guild identifier to create guild for.
+    
+    features : ``None | list<GuildFeature>``
+        Guild features to create guild with.
+    
     feature : ``GuildFeature``
         The feature to check for.
     
@@ -577,7 +533,10 @@ def test__Guild__has_feature(guild, feature):
     -------
     output : `bool`
     """
-    return guild.has_feature(feature)
+    guild = Guild.precreate(guild_id, features = features)
+    output = guild.has_feature(feature)
+    vampytest.assert_instance(output, bool)
+    return output
 
 
 def test__Guild__boost_perks():
@@ -894,38 +853,6 @@ def test__Guild__get_soundboard_sounds_like(guild, name):
     output : `list` of ``SoundboardSound``
     """
     return guild.get_soundboard_sounds_like(name)
-
-
-def test__Guild__vanity_url__has_no():
-    """
-    Tests whether ``Guild.vanity_url`` works as intended.
-    """
-    guild = Guild.precreate(202306230130, vanity_code = None)
-    vanity_url = guild.vanity_url
-    
-    vampytest.assert_is(vanity_url, None)
-
-
-def test__Guild__vanity_url__has():
-    """
-    Tests whether ``Guild.vanity_url`` works as intended.
-    """
-    guild = Guild.precreate(202306230131, vanity_code = 'koishi')
-    vanity_url = guild.vanity_url
-    
-    vampytest.assert_instance(vanity_url, str)
-    vampytest.assert_true(is_url(vanity_url))
-
-
-def test__Guild__widget_json_url():
-    """
-    Tests whether ``Guild.widget_json_url`` works as intended.
-    """
-    guild = Guild.precreate(202306230132)
-    widget_json_url = guild.widget_json_url
-    
-    vampytest.assert_instance(widget_json_url, str)
-    vampytest.assert_true(is_url(widget_json_url))
 
 
 def test__Guild__default_role():
@@ -2646,21 +2573,25 @@ def _iter_options__get_voice_state():
     voice_state_0 = VoiceState(user_id = user_id_0)
     voice_state_1 = VoiceState(user_id = user_id_1)
     
-    yield Guild.precreate(202407110002), user_id_0, None
-    yield Guild.precreate(202407110003, voice_states = [voice_state_0]), user_id_0, voice_state_0
-    yield Guild.precreate(202407110004, voice_states = [voice_state_1]), user_id_0, None
-    yield Guild.precreate(202407110005, voice_states = [voice_state_0, voice_state_1]), user_id_0, voice_state_0
+    yield 202407110002, None, user_id_0, None
+    yield 202407110003, [voice_state_0], user_id_0, voice_state_0
+    yield 202407110004, [voice_state_1], user_id_0, None
+    yield 202407110005, [voice_state_0, voice_state_1], user_id_0, voice_state_0
 
 
 @vampytest._(vampytest.call_from(_iter_options__get_voice_state()).returning_last())
-def test__Guild__get_voice_state(guild, user_id):
+def test__Guild__get_voice_state(guild_id, voice_states, user_id):
     """
     Tests whether ``Guild.get_voice_state`` works as intended.
     
     Parameters
     ----------
-    guild : ``Guild``
-        The guild to iterate its voice states of.
+    guild_id : `int`
+        Identifier to create guild with.
+    
+    voice_states : ``None | list<VoiceState>``
+        Voice states to create guild with.
+    
     user_id : `int`
         User identifier to get voice state for.
     
@@ -2668,6 +2599,470 @@ def test__Guild__get_voice_state(guild, user_id):
     -------
     output : `None`, ``VoiceState``
     """
+    guild = Guild.precreate(guild_id, voice_states = voice_states)
     output = guild.get_voice_state(user_id)
     vampytest.assert_instance(output, VoiceState, nullable = True)
     return output
+
+
+def _iter_options__icon_url():
+    yield 202505280010, None, False
+    yield 202505280011, Icon(IconType.animated, 5), True
+
+
+@vampytest._(vampytest.call_from(_iter_options__icon_url()).returning_last())
+def test__Guild__icon_url(guild_id, icon):
+    """
+    Tests whether ``Guild.icon_url`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Identifier to create guild with.
+    
+    icon : ``None | Icon``
+        Icon to create the guild with.
+    
+    Returns
+    -------
+    has_icon_url : `bool`
+    """
+    guild = Guild.precreate(
+        guild_id,
+        icon = icon,
+    )
+    
+    output = guild.icon_url
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__icon_url_as():
+    yield 202505280020, None, {'ext': 'webp', 'size': 128}, False
+    yield 202505280021, Icon(IconType.animated, 5), {'ext': 'webp', 'size': 128}, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__icon_url_as()).returning_last())
+def test__Guild__icon_url_as(guild_id, icon, keyword_parameters):
+    """
+    Tests whether ``Guild.icon_url_as`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Identifier to create guild with.
+    
+    icon : ``None | Icon``
+        Icon to create the guild with.
+    
+    keyword_parameters : `dict<str, object>`
+        Additional keyword parameters to pass.
+    
+    Returns
+    -------
+    has_icon_url : `bool`
+    """
+    guild = Guild.precreate(
+        guild_id,
+        icon = icon,
+    )
+    
+    output = guild.icon_url_as(**keyword_parameters)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__invite_splash_url():
+    yield 202505290004, None, False
+    yield 202505290005, Icon(IconType.animated, 5), True
+
+
+@vampytest._(vampytest.call_from(_iter_options__invite_splash_url()).returning_last())
+def test__Guild__invite_splash_url(guild_id, icon):
+    """
+    Tests whether ``Guild.invite_splash_url`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Identifier to create guild with.
+    
+    icon : ``None | Icon``
+        Icon to create the guild with.
+    
+    Returns
+    -------
+    has_invite_splash_url : `bool`
+    """
+    guild = Guild.precreate(
+        guild_id,
+        invite_splash = icon,
+    )
+    
+    output = guild.invite_splash_url
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__invite_splash_url_as():
+    yield 202505290006, None, {'ext': 'webp', 'size': 128}, False
+    yield 202505290007, Icon(IconType.animated, 5), {'ext': 'webp', 'size': 128}, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__invite_splash_url_as()).returning_last())
+def test__Guild__invite_splash_url_as(guild_id, icon, keyword_parameters):
+    """
+    Tests whether ``Guild.invite_splash_url_as`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Identifier to create guild with.
+    
+    icon : ``None | Icon``
+        Icon to create the guild with.
+    
+    keyword_parameters : `dict<str, object>`
+        Additional keyword parameters to pass.
+    
+    Returns
+    -------
+    hash_invite_splash_url : `bool`
+    """
+    guild = Guild.precreate(
+        guild_id,
+        invite_splash = icon,
+    )
+    
+    output = guild.invite_splash_url_as(**keyword_parameters)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__discovery_splash_url():
+    yield 202505290008, None, False
+    yield 202505290009, Icon(IconType.animated, 5), True
+
+
+@vampytest._(vampytest.call_from(_iter_options__discovery_splash_url()).returning_last())
+def test__Guild__discovery_splash_url(guild_id, icon):
+    """
+    Tests whether ``Guild.discovery_splash_url`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Identifier to create guild with.
+    
+    icon : ``None | Icon``
+        Icon to create the guild with.
+    
+    Returns
+    -------
+    has_discovery_splash_url : `bool`
+    """
+    guild = Guild.precreate(
+        guild_id,
+        discovery_splash = icon,
+    )
+    
+    output = guild.discovery_splash_url
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__discovery_splash_url_as():
+    yield 202505290010, None, {'ext': 'webp', 'size': 128}, False
+    yield 202505290011, Icon(IconType.animated, 5), {'ext': 'webp', 'size': 128}, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__discovery_splash_url_as()).returning_last())
+def test__Guild__discovery_splash_url_as(guild_id, icon, keyword_parameters):
+    """
+    Tests whether ``Guild.discovery_splash_url_as`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Identifier to create guild with.
+    
+    icon : ``None | Icon``
+        Icon to create the guild with.
+    
+    keyword_parameters : `dict<str, object>`
+        Additional keyword parameters to pass.
+    
+    Returns
+    -------
+    has_discovery_splash_url : `bool`
+    """
+    guild = Guild.precreate(
+        guild_id,
+        discovery_splash = icon,
+    )
+    
+    output = guild.discovery_splash_url_as(**keyword_parameters)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__banner_url():
+    yield 202505290020, None, False
+    yield 202505290021, Icon(IconType.animated, 5), True
+
+
+@vampytest._(vampytest.call_from(_iter_options__banner_url()).returning_last())
+def test__Guild__banner_url(guild_id, icon):
+    """
+    Tests whether ``Guild.banner_url`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Identifier to create guild with.
+    
+    icon : ``None | Icon``
+        Icon to create the guild with.
+    
+    Returns
+    -------
+    has_banner_url : `bool`
+    """
+    guild = Guild.precreate(
+        guild_id,
+        banner = icon,
+    )
+    
+    output = guild.banner_url
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__banner_url_as():
+    yield 202505290022, None, {'ext': 'webp', 'size': 128}, False
+    yield 202505290023, Icon(IconType.animated, 5), {'ext': 'webp', 'size': 128}, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__banner_url_as()).returning_last())
+def test__Guild__banner_url_as(guild_id, icon, keyword_parameters):
+    """
+    Tests whether ``Guild.banner_url_as`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Identifier to create guild with.
+    
+    icon : ``None | Icon``
+        Icon to create the guild with.
+    
+    keyword_parameters : `dict<str, object>`
+        Additional keyword parameters to pass.
+    
+    Returns
+    -------
+    has_banner_url : `bool`
+    """
+    guild = Guild.precreate(
+        guild_id,
+        banner = icon,
+    )
+    
+    output = guild.banner_url_as(**keyword_parameters)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__widget_url():
+    yield 202505290024, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__widget_url()).returning_last())
+def test__Guild__widget_url(guild_id):
+    """
+    Tests whether ``Guild.widget_url`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Identifier to create guild with.
+    
+    Returns
+    -------
+    has_widget_url : `bool`
+    """
+    guild = Guild.precreate(
+        guild_id,
+    )
+    
+    output = guild.widget_url
+    vampytest.assert_instance(output, str)
+    return True
+
+
+def _iter_options__widget_url_as__passing():
+    yield 202505290025, 'shield', True
+    yield 202505290026, 'banner1', True
+    yield 202505290027, 'banner2', True
+    yield 202505290028, 'banner3', True
+    yield 202505290029, 'banner4', True
+
+
+def _iter_options__widget_url_as__value_error():
+    yield 202505290030, 'shield1'
+    yield 202505290026, 'banner11'
+    yield 202505290027, 'banner5'
+    yield 202505290028, 'banner0'
+
+
+@vampytest._(vampytest.call_from(_iter_options__widget_url_as__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__widget_url_as__value_error()).raising(ValueError))
+def test__Guild__widget_url_as(guild_id, style):
+    """
+    Tests whether ``Guild.widget_url_as`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Identifier to create guild with.
+    
+    style : `str`
+        Widget style.
+    
+    Returns
+    -------
+    has_widget_url : `bool`
+    """
+    guild = Guild.precreate(
+        guild_id,
+    )
+    
+    output = guild.widget_url_as(style)
+    vampytest.assert_instance(output, str)
+    return True
+
+
+def _iter_options__widget_json_url():
+    yield 202505290029, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__widget_json_url()).returning_last())
+def test__Guild__widget_json_url(guild_id):
+    """
+    Tests whether ``Guild.widget_json_url`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Identifier to create guild with.
+    
+    Returns
+    -------
+    has_widget_url : `bool`
+    """
+    guild = Guild.precreate(
+        guild_id,
+    )
+    
+    output = guild.widget_json_url
+    vampytest.assert_instance(output, str)
+    return True
+
+
+def _iter_options__home_splash_url():
+    yield 202505300032, None, False
+    yield 202505300033, Icon(IconType.animated, 5), True
+
+
+@vampytest._(vampytest.call_from(_iter_options__home_splash_url()).returning_last())
+def test__Guild__home_splash_url(guild_id, icon):
+    """
+    Tests whether ``Guild.home_splash_url`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Identifier to create guild with.
+    
+    icon : ``None | Icon``
+        Icon to create the guild with.
+    
+    Returns
+    -------
+    has_home_splash_url : `bool`
+    """
+    guild = Guild.precreate(
+        guild_id,
+        home_splash = icon,
+    )
+    
+    output = guild.home_splash_url
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__home_splash_url_as():
+    yield 202505300034, None, {'ext': 'webp', 'size': 128}, False
+    yield 202505300035, Icon(IconType.animated, 5), {'ext': 'webp', 'size': 128}, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__home_splash_url_as()).returning_last())
+def test__Guild__home_splash_url_as(guild_id, icon, keyword_parameters):
+    """
+    Tests whether ``Guild.home_splash_url_as`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Identifier to create guild with.
+    
+    icon : ``None | Icon``
+        Icon to create the guild with.
+    
+    keyword_parameters : `dict<str, object>`
+        Additional keyword parameters to pass.
+    
+    Returns
+    -------
+    has_home_splash_url : `bool`
+    """
+    guild = Guild.precreate(
+        guild_id,
+        home_splash = icon,
+    )
+    
+    output = guild.home_splash_url_as(**keyword_parameters)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__vanity_url():
+    yield 202505310004, None, False
+    yield 202505310005, 'tewi', True
+
+
+@vampytest._(vampytest.call_from(_iter_options__vanity_url()).returning_last())
+def test__Guild__vanity_url(guild_id, vanity_code):
+    """
+    Tests whether ``Guild.vanity_url`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Identifier to create guild with.
+    
+    vanity_code : `None | str`
+        Vanity code to create the guild with,
+    
+    Returns
+    -------
+    hash_vanity_url : `bool`
+    """
+    guild = Guild.precreate(
+        guild_id,
+        vanity_code = vanity_code,
+    )
+    
+    output = guild.vanity_url
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)

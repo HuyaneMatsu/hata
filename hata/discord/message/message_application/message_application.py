@@ -1,7 +1,10 @@
 __all__ = ('MessageApplication',)
 
 from ...bases import DiscordEntity, ICON_TYPE_NONE, IconSlot
-from ...http import urls as module_urls
+from ...http.urls import (
+    build_application_cover_url, build_application_cover_url_as, build_application_icon_url,
+    build_application_icon_url_as
+)
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 
 from .fields import (
@@ -9,21 +12,9 @@ from .fields import (
     validate_description, validate_id, validate_name
 )
 
-APPLICATION_COVER = IconSlot(
-    'cover',
-    'cover_image',
-    module_urls.application_cover_url,
-    module_urls.application_cover_url_as,
-    add_updater = False,
-)
+APPLICATION_COVER = IconSlot('cover', 'cover_image', add_updater = False)
+APPLICATION_ICON = IconSlot('icon', 'icon', add_updater = False)
 
-APPLICATION_ICON = IconSlot(
-    'icon',
-    'icon',
-    module_urls.application_icon_url,
-    module_urls.application_icon_url_as,
-    add_updater = False,
-)
 
 PRECREATE_FIELDS = {
     'cover': ('cover', APPLICATION_COVER.validate_icon),
@@ -44,7 +35,7 @@ class MessageApplication(DiscordEntity):
         this image will be used at the store.
     cover_type : ``IconType``
         The respective application's store cover image's type.
-    description : `None` `str`
+    description : `None | str`
         The description of the application. Defaults to empty string.
     icon_hash : `int`
         The application's icon's hash as `uint128`.
@@ -136,13 +127,13 @@ class MessageApplication(DiscordEntity):
         
         Other Parameters
         ----------------
-        cover : `None`, ``Icon``, Optional (Keyword only)
+        cover : ``None | Icon``, Optional (Keyword only)
             The cover of the message application.
         
         description : `None`, `str`, Optional (Keyword only)
             The description of the application.
         
-        icon : `None`, ``Icon``, Optional (Keyword only)
+        icon : ``None | Icon``, Optional (Keyword only)
             The icon of the message application.
         
         name : `None, `str`, Optional (Keyword only)
@@ -453,3 +444,69 @@ class MessageApplication(DiscordEntity):
         new.id = 0
         new.name = name
         return new
+    
+    
+    # urls
+    
+    @property
+    def cover_url(self):
+        """
+        Returns the application's cover's url. If the application has no cover, then returns `None`.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_application_cover_url(self.id, self.cover_type, self.cover_hash)
+    
+    
+    def cover_url_as(self, ext = None, size = None):
+        """
+        Returns the application's cover's url. If the application has no cover, then returns `None`.
+        
+        Parameters
+        ----------
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+            If the application has animated cover, it can be `'gif'` as well.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_application_cover_url_as(self.id, self.cover_type, self.cover_hash, ext, size)
+    
+    
+    @property
+    def icon_url(self):
+        """
+        Returns the application's icon's url. If the application has no icon, then returns `None`.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_application_icon_url(self.id, self.icon_type, self.icon_hash)
+    
+    
+    def icon_url_as(self, ext = None, size = None):
+        """
+        Returns the application's icon's url. If the application has no icon, then returns `None`.
+        
+        Parameters
+        ----------
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+            If the application has animated icon, it can be `'gif'` as well.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_application_icon_url_as(self.id, self.icon_type, self.icon_hash, ext, size)

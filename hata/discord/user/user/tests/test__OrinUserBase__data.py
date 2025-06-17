@@ -5,6 +5,7 @@ from ....color import Color
 from ....guild import GuildBadge
 
 from ...avatar_decoration import AvatarDecoration
+from ...name_plate import NamePlate
 
 from ..flags import UserFlag
 from ..orin_user_base import OrinUserBase
@@ -35,6 +36,10 @@ def test__OrinUserBase__to_data():
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'suika'
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202506030004,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180003, tag = 'miau')
     
     user = OrinUserBase(
@@ -46,13 +51,14 @@ def test__OrinUserBase__to_data():
         display_name = display_name,
         flags = flags,
         name = name,
+        name_plate = name_plate,
         primary_guild_badge = primary_guild_badge,
     )
     user.id = user_id
     
     expected_output = {
         'avatar': avatar.as_base_16_hash,
-        'avatar_decoration_data': avatar_decoration.to_data(),
+        'avatar_decoration_data': avatar_decoration.to_data(defaults = True),
         'accent_color': int(banner_color),
         'discriminator': str(discriminator).rjust(4, '0'),
         'global_name': display_name,
@@ -61,6 +67,9 @@ def test__OrinUserBase__to_data():
         'id': str(user_id),
         'public_flags': int(flags),
         'bot': False,
+        'collectibles': {
+            'nameplate': name_plate.to_data(defaults = True),
+        },
         'primary_guild': primary_guild_badge.to_data(defaults = True),
     }
     
@@ -82,6 +91,10 @@ def test__OrinUserBase__update_attributes():
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'suika'
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202506030005,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180004, tag = 'miau')
     
     user = OrinUserBase()
@@ -95,6 +108,9 @@ def test__OrinUserBase__update_attributes():
         'global_name': display_name,
         'public_flags': int(flags),
         'username': name,
+        'collectibles': {
+            'nameplate': name_plate.to_data(),
+        },
         'primary_guild': primary_guild_badge.to_data(),
     }
     
@@ -108,6 +124,7 @@ def test__OrinUserBase__update_attributes():
     vampytest.assert_eq(user.display_name, display_name)
     vampytest.assert_eq(user.flags, flags)
     vampytest.assert_eq(user.name, name)
+    vampytest.assert_eq(user.name_plate, name_plate)
     vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
 
 
@@ -123,6 +140,10 @@ def test__OrinUserBase__difference_update_attributes():
     old_display_name = 'Far'
     old_flags = UserFlag(1)
     old_name = 'suika'
+    old_name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202506030006,
+    )
     old_primary_guild_badge = GuildBadge(guild_id = 202405180005, tag = 'miau')
     
     new_avatar = Icon(IconType.animated, 13)
@@ -133,6 +154,10 @@ def test__OrinUserBase__difference_update_attributes():
     new_display_name = 'East'
     new_flags = UserFlag(2)
     new_name = 'ibuki'
+    new_name_plate = NamePlate(
+        asset_path = 'koishi/koishi/eye/',
+        sku_id = 202506030004,
+    )
     new_primary_guild_badge = GuildBadge(guild_id = 202405180006, tag = 'meow')
     
     user = OrinUserBase(
@@ -144,6 +169,7 @@ def test__OrinUserBase__difference_update_attributes():
         display_name = old_display_name,
         flags = old_flags,
         name = old_name,
+        name_plate = old_name_plate,
         primary_guild_badge = old_primary_guild_badge,
     )
     
@@ -156,6 +182,9 @@ def test__OrinUserBase__difference_update_attributes():
         'global_name': new_display_name,
         'public_flags': int(new_flags),
         'username': new_name,
+        'collectibles': {
+            'nameplate': new_name_plate.to_data(),
+        },
         'primary_guild': new_primary_guild_badge.to_data(),
     }
     
@@ -169,6 +198,7 @@ def test__OrinUserBase__difference_update_attributes():
     vampytest.assert_eq(user.display_name, new_display_name)
     vampytest.assert_eq(user.flags, new_flags)
     vampytest.assert_eq(user.name, new_name)
+    vampytest.assert_eq(user.name_plate, new_name_plate)
     vampytest.assert_eq(user.primary_guild_badge, new_primary_guild_badge)
     
     vampytest.assert_eq(
@@ -182,6 +212,7 @@ def test__OrinUserBase__difference_update_attributes():
             'display_name': old_display_name,
             'flags': old_flags,
             'name': old_name,
+            'name_plate': old_name_plate,
             'primary_guild_badge': old_primary_guild_badge,
         },
     )

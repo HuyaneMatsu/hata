@@ -2,7 +2,7 @@ __all__ = ('SoundboardSound',)
 
 from ...bases import DiscordEntity
 from ...core import GUILDS, SOUNDBOARD_SOUNDS
-from ...http import urls as module_urls
+from ...http.urls import build_soundboard_sound_url
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 from ...user import ZEROUSER, create_partial_user_from_id
 
@@ -681,9 +681,6 @@ class SoundboardSound(DiscordEntity, immortal = True):
                         guild.soundboard_sounds = None
     
     
-    url = property(module_urls.soundboard_sound_url)
-    
-    
     @property
     def guild(self):
         """
@@ -754,3 +751,15 @@ class SoundboardSound(DiscordEntity, immortal = True):
         mention : `str`
         """
         return f'<sound:{self.guild_id!s}:{self.id!s}>'
+    
+    
+    @property
+    def url(self):
+        """
+        Returns the soundboard sound's url.
+        
+        Returns
+        -------
+        url : `str`
+        """
+        return build_soundboard_sound_url(self.id)

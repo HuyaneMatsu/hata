@@ -55,10 +55,10 @@ class AutoModerationRule(DiscordEntity, immortal = True):
     event_type : ``AutoModerationEventType``
         For which events is the rule applied.
     
-    excluded_channel_ids : `None`, `tuple` of `int`
+    excluded_channel_ids : `None | tuple<int>`
         The excluded channels' identifiers.
     
-    excluded_role_ids : `None`, `tuple` of `int`
+    excluded_role_ids : `None | tuple<int>`
         The excluded roles' identifiers.
     
     guild_id : `int`
@@ -135,7 +135,7 @@ class AutoModerationRule(DiscordEntity, immortal = True):
         mention_limit : `None | int`, Optional (Keyword only)
             The amount of mentions in a message after the rule is triggered.
         
-        regex_patterns : `None`, `tuple` of `str`, Optional (Keyword only)
+        regex_patterns : `None | tuple<str>`, Optional (Keyword only)
             Regular expression patterns which are matched against content.
         
         Raises
@@ -339,9 +339,9 @@ class AutoModerationRule(DiscordEntity, immortal = True):
             +-------------------------------+-----------------------------------------------------------+
             | event_type                    | ``AutoModerationEventType``                               |
             +-------------------------------+-----------------------------------------------------------+
-            | excluded_channel_ids          | `None`, `tuple` of `int`                                  |
+            | excluded_channel_ids          | `None | tuple<int>`                                       |
             +-------------------------------+-----------------------------------------------------------+
-            | excluded_role_ids             | `None`, `tuple` of `int`                                  |
+            | excluded_role_ids             | `None | tuple<int>`                                       |
             +-------------------------------+-----------------------------------------------------------+
             | name                          | `str`                                                     |
             +-------------------------------+-----------------------------------------------------------+
@@ -808,7 +808,7 @@ class AutoModerationRule(DiscordEntity, immortal = True):
         mention_limit : `None | int`, Optional (Keyword only)
             The amount of mentions in a message after the rule is triggered.
         
-        regex_patterns : `None`, `tuple` of `str`, Optional (Keyword only)
+        regex_patterns : `None | tuple<str>`, Optional (Keyword only)
             Regular expression patterns which are matched against content.
         
         Returns
@@ -981,7 +981,7 @@ class AutoModerationRule(DiscordEntity, immortal = True):
         mention_limit : `None | int`, Optional (Keyword only)
             The amount of mentions in a message after the rule is triggered.
         
-        regex_patterns : `None`, `tuple` of `str`, Optional (Keyword only)
+        regex_patterns : `None | tuple<str>`, Optional (Keyword only)
             Regular expression patterns which are matched against content.
         
         Returns
@@ -1176,7 +1176,7 @@ class AutoModerationRule(DiscordEntity, immortal = True):
         
         Returns
         -------
-        excluded_roles : `None`, `tuple` of ``Role``
+        excluded_roles : ``None | tuple<Role>``
         """
         excluded_role_ids = self.excluded_role_ids
         if (excluded_role_ids is None):

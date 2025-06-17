@@ -17,7 +17,7 @@ class ThreadProfile(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    joined_at : `None`, `datetime`
+    joined_at : `None | DateTime`
         The date when the user joined the thread.
     flags : ``ThreadProfileFlag``
         user specific settings of the profile.
@@ -33,7 +33,7 @@ class ThreadProfile(RichAttributeErrorBaseType):
         ----------
         flags : ``ThreadProfileFlag``, `int`, Optional (Keyword only)
             user specific settings of the profile.
-        joined_at : `None`, `datetime`, Optional (Keyword only)
+        joined_at : `None | DateTime`, Optional (Keyword only)
             The date when the user joined the thread.
         
         Raises
@@ -213,7 +213,7 @@ class ThreadProfile(RichAttributeErrorBaseType):
         ----------
         flags : ``ThreadProfileFlag``, `int`, Optional (Keyword only)
             user specific settings of the profile.
-        joined_at : `None`, `datetime`, Optional (Keyword only)
+        joined_at : `None | DateTime`, Optional (Keyword only)
             The date when the user joined the thread.
         
         Returns

@@ -5,6 +5,7 @@ from ....color import Color
 from ....guild import GuildBadge
 
 from ...avatar_decoration import AvatarDecoration
+from ...name_plate import NamePlate
 
 from ..flags import UserFlag
 from ..client_user_base import ClientUserBase
@@ -19,12 +20,16 @@ def test__ClientUserBase__repr():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160031)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    bot = True
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'orin'
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202506030025,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180035, tag = 'miau')
-    bot = True
     
     user = ClientUserBase._create_empty(user_id)
     vampytest.assert_instance(repr(user), str)
@@ -34,12 +39,13 @@ def test__ClientUserBase__repr():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
+        bot = bot,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
         name = name,
+        name_plate = name_plate,
         primary_guild_badge = primary_guild_badge,
-        bot = bot,
     )
     vampytest.assert_instance(repr(user), str)
 
@@ -53,12 +59,16 @@ def test__ClientUserBase__hash():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160032)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    bot = True
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'orin'
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202506030026,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180036, tag = 'miau')
-    bot = True
     
     user = ClientUserBase._create_empty(user_id)
     vampytest.assert_instance(repr(user), str)
@@ -68,12 +78,13 @@ def test__ClientUserBase__hash():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
+        bot = bot,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
         name = name,
+        name_plate = name_plate,
         primary_guild_badge = primary_guild_badge,
-        bot = bot,
     )
     vampytest.assert_instance(repr(user), str)
 
@@ -99,27 +110,32 @@ def test__ClientUserBase__eq__non_partial_and_different_object():
 
 def _iter_options__eq():
     avatar = Icon(IconType.static, 14)
-    name = 'orin'
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160036)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    bot = True
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
+    name = 'orin'
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202506030027,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180009, tag = 'miau')
-    bot = True
     
     keyword_parameters = {
         'avatar': avatar,
-        'name': name,
         'avatar_decoration': avatar_decoration,
         'banner': banner,
         'banner_color': banner_color,
+        'bot': bot,
         'discriminator': discriminator,
         'display_name': display_name,
         'flags': flags,
+        'name': name,
+        'name_plate': name_plate,
         'primary_guild_badge': primary_guild_badge,
-        'bot': bot,
     }
     
     yield (
@@ -133,15 +149,6 @@ def _iter_options__eq():
         {
             **keyword_parameters,
             'avatar': None,
-        },
-        False,
-    )
-    
-    yield (
-        keyword_parameters,
-        {
-            **keyword_parameters,
-            'name': 'okuu',
         },
         False,
     )
@@ -177,6 +184,15 @@ def _iter_options__eq():
         keyword_parameters,
         {
             **keyword_parameters,
+            'bot': False,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
             'discriminator': 0,
         },
         False,
@@ -204,7 +220,7 @@ def _iter_options__eq():
         keyword_parameters,
         {
             **keyword_parameters,
-            'primary_guild_badge': None,
+            'name': 'okuu',
         },
         False,
     )
@@ -213,7 +229,16 @@ def _iter_options__eq():
         keyword_parameters,
         {
             **keyword_parameters,
-            'bot': False,
+            'name_plate': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'primary_guild_badge': None,
         },
         False,
     )
@@ -254,24 +279,29 @@ def test__ClientUserBase__format():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160051)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    bot = True
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'orin'
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202506030028,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180038, tag = 'miau')
-    bot = True
     
     user = ClientUserBase(
         avatar = avatar,
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
+        bot = bot,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
         name = name,
+        name_plate = name_plate,
         primary_guild_badge = primary_guild_badge,
-        bot = bot,
     )
     
     vampytest.assert_instance(format(user, ''), str)

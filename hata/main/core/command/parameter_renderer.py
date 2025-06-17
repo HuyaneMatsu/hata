@@ -380,7 +380,7 @@ def get_render_generic_line_length(lengths):
     
     Parameters
     ----------
-    lengths : `None`, `tuple` of `int`
+    lengths : `None | tuple<int>`
         Lengths representing each column's width.
     
     Returns
@@ -418,7 +418,7 @@ def get_render_modifier_line_length(lengths):
         
     Parameters
     ----------
-    lengths : `None`, `tuple` of `int`
+    lengths : `None | tuple<int>`
         Lengths representing each column's width.
     
     Returns
@@ -506,7 +506,7 @@ def get_lengths(parameter_renderers, getter):
     
     Returns
     -------
-    lengths : `None`, `tuple` of `str`
+    lengths : `None | tuple<str>`
         Returns `None` if the `parameter_renderers` is empty.
     """
     if (parameter_renderers is None) or (not parameter_renderers):

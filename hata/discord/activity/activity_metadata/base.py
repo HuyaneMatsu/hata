@@ -182,7 +182,7 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         +===================+===================================+
         | assets            | `None`, ``ActivityAssets``        |
         +-------------------+-----------------------------------+
-        | buttons           | `None`, `tuple` of `str`          |
+        | buttons           | `None | tuple<str>`               |
         +-------------------+-----------------------------------+
         | created_at        | `None`, `dateTime`                |
         +-------------------+-----------------------------------+
@@ -300,7 +300,7 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        buttons : `None`, `tuple` of `str`
+        buttons : `None | tuple<str>`
         """
     )
     

@@ -15,7 +15,7 @@ class AutoModerationRuleTriggerMetadataKeywordPreset(AutoModerationRuleTriggerMe
     
     Attributes
     ----------
-    excluded_keywords : `None`, `tuple` of `str`
+    excluded_keywords : `None | tuple<str>`
         Excluded keywords from under the rule.
     
     keyword_presets : `None`, `tuple` of ``AutoModerationKeywordPresetType``

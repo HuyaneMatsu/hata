@@ -538,7 +538,7 @@ class SlasherSyncError(BaseException):
         entity: ``SlashCommand``
             The entity, who's sync failed.
         
-        err : ``BaseException``
+        err : `BaseException`
             Source exception.
         """
         self = BaseException.__new__(cls, entity)

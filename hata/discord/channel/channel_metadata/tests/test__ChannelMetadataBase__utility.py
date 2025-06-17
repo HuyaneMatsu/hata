@@ -18,7 +18,7 @@ def test__ChannelMetadataBase__copy():
     vampytest.assert_eq(copy, channel_metadata)
 
 
-def test__ChannelMetadataBase__copy_with__0():
+def test__ChannelMetadataBase__copy_with__no_fields():
     """
     Tests whether ``ChannelMetadataBase.copy_with` works as intended.
     
@@ -33,11 +33,11 @@ def test__ChannelMetadataBase__copy_with__0():
     vampytest.assert_eq(copy, channel_metadata)
 
 
-def test__ChannelMetadataBase__copy_with_keyword_parameters__0():
+def test__ChannelMetadataBase__copy_with_keyword_parameters__al_fields():
     """
     Tests whether ``ChannelMetadataBase.copy_with_keyword_parameters` works as intended.
     
-    Case: No fields.
+    Case: All fields.
     """
     channel_metadata = ChannelMetadataBase()
     

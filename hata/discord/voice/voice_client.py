@@ -55,7 +55,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         Data encoder & decoder type. Set before ``._encryption_adapter`` is actually instantiated.
     _endpoint : `None`, `str`
         The endpoint, where the voice client sends the audio data.
-    _endpoint_ip : `None`, `tuple` of `int`
+    _endpoint_ip : `None | tuple<int>`
         The ip version of the `._endpoint` attribute.
     _endpoint_port : `int`
         The port, where the voice client should send the audio data.

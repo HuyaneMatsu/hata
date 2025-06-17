@@ -4,7 +4,7 @@ from scarletio import export
 
 from ...bases import DiscordEntity
 from ...core import STICKER_PACKS
-from ...http import urls as module_urls
+from ...http.urls import build_sticker_pack_banner_url, build_sticker_pack_banner_url_as
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 
 from .fields import (
@@ -539,9 +539,6 @@ class StickerPack(DiscordEntity, immortal = True):
         return new
     
     
-    banner_url = property(module_urls.sticker_pack_banner)
-    
-    
     @property
     def partial(self):
         """
@@ -587,3 +584,34 @@ class StickerPack(DiscordEntity, immortal = True):
             return False
         
         return (sticker in stickers)
+    
+    
+    @property
+    def banner_url(self):
+        """
+        Returns the sticker pack's banner's url. If the sticker pack has no banner, then returns `None`.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_sticker_pack_banner_url(self.banner_id)
+    
+    
+    def banner_url_as(self, ext = None, size = None):
+        """
+        Returns the sticker pack's banner's url. If the sticker pack has no banner, then returns `None`.
+        
+        Parameters
+        ----------
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_sticker_pack_banner_url_as(self.banner_id, ext, size)

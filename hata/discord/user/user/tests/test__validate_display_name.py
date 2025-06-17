@@ -30,16 +30,18 @@ def test__validate_display_name(input_value):
     
     Parameters
     ----------
-    input_value : `None`, `str`
+    input_value : `object`
         The value to validate.
     
     Returns
     -------
-    output : `str`
+    output : `None | str`
     
     Raises
     ------
     TypeError
     ValueError
     """
-    return validate_display_name(input_value)
+    output = validate_display_name(input_value)
+    vampytest.assert_instance(output, str, nullable = True)
+    return output

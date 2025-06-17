@@ -50,9 +50,9 @@ class SetupFunction:
         The represented extension's full name.
     extension_short_name : `str`
         The represented extension's short name.
-    optional_parameters : `None`, `tuple` of `str`
+    optional_parameters : `None | tuple<str>`
         Optional parameters of the `setup_function`.
-    required_parameters : `None`, `tuple` of `str`
+    required_parameters : `None | tuple<str>`
         Required parameters by the `setup_function`.
     setup_function : ``FunctionType``
         The setup function itself.
@@ -71,9 +71,9 @@ class SetupFunction:
             The represented extension's full name.
         setup_function : ``FunctionType``
             The setup function itself.
-        required_parameters : `None`, `tuple` of `str`
+        required_parameters : `None | tuple<str>`
             Required parameters by the `setup_function`.
-        optional_parameters : `None`, `tuple` of `str`
+        optional_parameters : `None | tuple<str>`
             Optional parameters of the `setup_function`.
         """
         dot_index = extension_name.find('.')
@@ -132,9 +132,9 @@ def register_setup_function(extension_name, setup_function, required_parameters,
         The extension's system name.
     setup_function : `FunctionType``
         The setup function of the extension.
-    required_parameters : `None`, `tuple` of `str`
+    required_parameters : `None | tuple<str>`
         Required parameters by the `setup_function`.
-    optional_parameters : `None`, `tuple` of `str`
+    optional_parameters : `None | tuple<str>`
         Optional parameters of the `setup_function`.
     """
     setup_function = SetupFunction(extension_name, setup_function, required_parameters, optional_parameters)

@@ -371,7 +371,7 @@ def entity_id_array_validator_factory(field_name, entity_type = None, *, include
         
         Returns
         -------
-        entity_id_array : `None`, `tuple` of `int`
+        entity_id_array : `None | tuple<int>`
             The entities identifiers.
         
         Raises
@@ -1339,12 +1339,12 @@ def nullable_sorted_int_array_conditional_validator_factory(field_name, conditio
         
         Parameters
         ----------
-        string_array : `None | int | iterable<int>`
+        int_array : `None | int | iterable<int>`
             The string to validate.
         
         Returns
         -------
-        string_array : `None | tuple<int>`
+        int_array : `None | tuple<int>`
                 
         Raises
         ------
@@ -1406,7 +1406,8 @@ def url_optional_validator_factory(field_name, *, length_max = ...):
     ----------
     field_name : `str`
         The field's name.
-    max_length : `int`
+    
+    length_max : `int`, Optional (Keyword only)
         The maximal allowed length of the url.
     
     Returns
@@ -2256,5 +2257,71 @@ def duration_validator_factory(field_name):
             f'`{field_name}` can be `int`, `float`, `{TimeDelta.__name__}`, got '
             f'{type(duration).__name__}; {duration!r}.'
         )
+    
+    return validator
+
+
+def nullable_bytes_validator_factory(field_name, length_min, length_max):
+    """
+    Returns a nullable bytes validator.
+    
+    Parameters
+    ----------
+    field_name : `bytes`
+        The field's name.
+    
+    length_min : `int`
+        The minimal allowed bytes length.
+    
+    length_max : `int`
+        The maximal allowed bytes length.
+    
+    Returns
+    -------
+    validator : `FunctionType`
+    """
+    def validator(value):
+        """
+        Validates the given bytes value.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        value : `None | bytes`
+            The bytes to validate.
+        
+        Returns
+        -------
+        value : `None | bytes`
+                
+        Raises
+        ------
+        TypeError
+            - If `value` is not `None | bytes`.
+        ValueError
+            - If `value`'s length is out of the expected range.
+        """
+        nonlocal field_name
+        nonlocal length_min
+        nonlocal length_max
+        
+        if (value is not None):
+            if not isinstance(value, bytes):
+                raise TypeError(
+                    f'`{field_name}` can be `None | bytes`, got {type(value).__name__}; {value!r}.'
+                )
+            
+            value_length = len(value)
+            if not value_length:
+                value = None
+            
+            elif (value_length < length_min) or (value_length > length_max):
+                raise ValueError(
+                    f'`{field_name}\'s length can be in range [{length_min} : {length_max}], '
+                    f'got {value_length}; {value!r}'
+                )
+        
+        return value
     
     return validator

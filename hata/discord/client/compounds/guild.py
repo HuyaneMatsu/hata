@@ -268,7 +268,7 @@ class ClientCompoundGuildEndpoints(Compound):
         description  : `None`, `str`, Optional (Keyword only)
             The guild's description shown in the verification screen.
         
-        edited_at : `None`, `datetime`, Optional (Keyword only)
+        edited_at : `None | DateTime`, Optional (Keyword only)
             When the last version of the screen was created.
         
         enabled : `bool`, Optional (Keyword only)
@@ -835,7 +835,7 @@ class ClientCompoundGuildEndpoints(Compound):
         afk_timeout : `int`, Optional (Keyword only)
             The afk timeout at the `afk_channel`.
         
-        banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        banner : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The guild's banner.
         
         boost_progress_bar_enabled : `bool`, Optional (Keyword only)
@@ -847,7 +847,7 @@ class ClientCompoundGuildEndpoints(Compound):
         description : `None`, `str`
             Description of the guild. The guild must be a Community guild.
         
-        discovery_splash : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        discovery_splash : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The guild's discovery splash.
         
         features : `None`, `iterable` of `(`int`, `GuildFeature``), Optional (Keyword only)
@@ -856,10 +856,10 @@ class ClientCompoundGuildEndpoints(Compound):
         hub_type : ``HubType``, `int`, Optional (Keyword only)
             The guild's hub type.
         
-        icon : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        icon : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The guild's icon.
         
-        invite_splash : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        invite_splash : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The guild's invite splash.
         
         locale : ``Locale``, `int`, Optional (Keyword only)
@@ -1438,16 +1438,16 @@ class ClientCompoundGuildEndpoints(Compound):
         description : `None | str`, Optional (Keyword only)
             Description of the represented guild.
         
-        discovery_splash : `None | Icon | str | bytes-like`, Optional (Keyword only)
+        discovery_splash : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The represented guild's discovery splash.
         
-        icon : `None | Icon | str | bytes-like`, Optional (Keyword only)
+        icon : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The represented guild's icon.
         
         name : `str`, Optional (Keyword only)
             Name of the represented guild.
         
-        privacy_level : ``None | PrivacyLevel | int``, Optional (Keyword only)
+        privacy_level : ``None | int | PrivacyLevel``, Optional (Keyword only)
             For who is the guild overview visible for and other related information.
         
         tags : ``None | iterable<GuildActivityOverviewTag>``, Optional (Keyword only)

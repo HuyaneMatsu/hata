@@ -2,7 +2,7 @@ __all__ = ('Team', )
 
 from ...bases import DiscordEntity, ICON_TYPE_NONE, IconSlot
 from ...core import TEAMS
-from ...http import urls as module_urls
+from ...http.urls import build_team_icon_url, build_team_icon_url_as
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 from ...user import ClientUserBase, ZEROUSER, create_partial_user_from_id
 
@@ -14,13 +14,8 @@ from .fields import (
 )
 
 
-TEAM_ICON = IconSlot(
-    'icon',
-    'icon',
-    module_urls.team_icon_url,
-    module_urls.team_icon_url_as,
-    add_updater = False,
-)
+TEAM_ICON = IconSlot('icon', 'icon', add_updater = False)
+
 
 PRECREATE_FIELDS = {
     'icon': ('icon', TEAM_ICON.validate_icon),
@@ -63,7 +58,7 @@ class Team(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        icon : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        icon : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The team's icon.
         
         members : `None`, `iterable` of ``TeamMember``, Optional (Keyword only)
@@ -183,7 +178,7 @@ class Team(DiscordEntity, immortal = True):
         
         Other Parameters
         ----------------
-        icon : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        icon : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The team's icon.
         
         members : `None`, `iterable` of ``TeamMember``, Optional (Keyword only)
@@ -487,7 +482,7 @@ class Team(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        icon : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        icon : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The team's icon.
         
         members : `None`, `iterable` of ``TeamMember``, Optional (Keyword only)
@@ -555,3 +550,35 @@ class Team(DiscordEntity, immortal = True):
         partial : `bool
         """
         return (self.id == 0)
+    
+    
+    @property
+    def icon_url(self):
+        """
+        Returns the team's icon's url. If the team has no icon, then returns `None`.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_team_icon_url(self.id, self.icon_type, self.icon_hash)
+    
+    
+    def icon_url_as(self, ext = None, size = None):
+        """
+        Returns the team's icon's url. If the team has no icon, then returns `None`.
+        
+        Parameters
+        ----------
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+            If the team has animated icon, it can be `'gif'` as well.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_team_icon_url_as(self.id, self.icon_type, self.icon_hash, ext, size)

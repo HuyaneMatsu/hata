@@ -11,10 +11,10 @@ class ActivityChange(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    added : `None`, `list` of ``Activity``
+    added : ``None | list<Activity>``
         The added activities to the respective user. Defaults to `None`.
     
-    removed: `None`, `list` of ``Activity``
+    removed: ``None | list<Activity>``
         The removed activities from the respective user. Defaults to `None`.
     
     updated : `None`, `list` of ``ActivityUpdate``
@@ -77,11 +77,11 @@ class ActivityChange(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        added : `None`, `list` of ``Activity``
+        added : ``None | list<Activity>``
             The added activities to the user.
         updated : `None`, `list` of ``ActivityUpdate``
             The updated activities of the user.
-        removed: `None`, `list` of ``Activity``
+        removed: ``None | list<Activity>``
             The removed activities from the user.
         """
         self = object.__new__(cls)

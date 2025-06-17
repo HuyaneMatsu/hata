@@ -2,7 +2,10 @@ __all__ = ('ACTIVITY_UNKNOWN', 'Activity')
 
 from scarletio import RichAttributeErrorBaseType, copy_docs
 
-from ...http import urls as module_urls
+from ...http.urls import (
+    build_activity_asset_image_large_url, build_activity_asset_image_large_url_as,
+    build_activity_asset_image_small_url, build_activity_asset_image_small_url_as
+)
 
 from ..activity_metadata import ActivityMetadataBase
 
@@ -34,7 +37,7 @@ class Activity(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        name : `None`, `str` =  `None`, Optional
+        name : `None | str` =  `None`, Optional
             The name of the activity.
         
         activity_type : `int`, ``ActivityType``, Optional (Keyword only)
@@ -270,11 +273,11 @@ class Activity(RichAttributeErrorBaseType):
         +===================+===================================+
         | assets            | `None`, ``ActivityAssets``        |
         +-------------------+-----------------------------------+
-        | buttons           | `None`, `tuple` of `str`          |
+        | buttons           | `None | tuple<str>`               |
         +-------------------+-----------------------------------+
         | created_at        | `None | DateTime`                 |
         +-------------------+-----------------------------------+
-        | details           | `None`, `str`                     |
+        | details           | `None | str`                      |
         +-------------------+-----------------------------------+
         | emoji             | `None`, ``Emoji``                 |
         +-------------------+-----------------------------------+
@@ -290,17 +293,17 @@ class Activity(RichAttributeErrorBaseType):
         +-------------------+-----------------------------------+
         | secrets           | `None`, ``ActivitySecrets``       |
         +-------------------+-----------------------------------+
-        | session_id        | `None`, `str`                     |
+        | session_id        | `None | str`                      |
         +-------------------+-----------------------------------+
-        | state             | `None`, `str`                     |
+        | state             | `None | str`                      |
         +-------------------+-----------------------------------+
-        | sync_id           | `None`, `str`                     |
+        | sync_id           | `None | str`                      |
         +-------------------+-----------------------------------+
         | timestamps        | `None`, `ActivityTimestamps``     |
         +-------------------+-----------------------------------+
         | type              | ``ActivityType``                  |
         +-------------------+-----------------------------------+
-        | url               | `None`, `str`                     |
+        | url               | `None | str`                      |
         +-------------------+-----------------------------------+
         """
         activity_type = parse_type(data)
@@ -606,7 +609,7 @@ class Activity(RichAttributeErrorBaseType):
         
         Returns
         -------
-        name : `None`, `str`
+        name : `None | str`
         """
         if self.type is not ActivityType.stream:
             return None
@@ -634,7 +637,7 @@ class Activity(RichAttributeErrorBaseType):
         
         Returns
         -------
-        preview_image_url : `None`, `str`
+        preview_image_url : `None | str`
         """
         twitch_name = self.twitch_name
         if (twitch_name is not None):
@@ -650,7 +653,7 @@ class Activity(RichAttributeErrorBaseType):
         
         Returns
         -------
-        video_id : `None`, `str`
+        video_id : `None | str`
         """
         if self.type is not ActivityType.stream:
             return None
@@ -678,7 +681,7 @@ class Activity(RichAttributeErrorBaseType):
         
         Returns
         -------
-        preview_image_url : `None`, `str`
+        preview_image_url : `None | str`
         """
         youtube_video_id = self.youtube_video_id
         if (youtube_video_id is not None):
@@ -720,7 +723,7 @@ class Activity(RichAttributeErrorBaseType):
         
         Returns
         -------
-        name : `None`, `str`
+        name : `None | str`
         """
         if self.type is not ActivityType.spotify:
             return None
@@ -748,7 +751,7 @@ class Activity(RichAttributeErrorBaseType):
         
         Returns
         -------
-        album_cover_url : `None`, `str`
+        album_cover_url : `None | str`
         """
         spotify_cover_id = self.spotify_cover_id
         if (spotify_cover_id is not None):
@@ -764,7 +767,7 @@ class Activity(RichAttributeErrorBaseType):
         
         Returns
         -------
-        track_id : `None`, `str`
+        track_id : `None | str`
         """
         if self.type is not ActivityType.spotify:
             return None
@@ -781,17 +784,114 @@ class Activity(RichAttributeErrorBaseType):
         
         Returns
         -------
-        url : `None`, `str`
+        url : `None | str`
         """
         spotify_track_id = self.spotify_track_id
         if (spotify_track_id is not None):
             return f'https://open.spotify.com/track/{spotify_track_id}'
     
     
-    image_large_url = property(module_urls.activity_asset_image_large_url)
-    image_large_url_as = module_urls.activity_asset_image_large_url_as
-    image_small_url = property(module_urls.activity_asset_image_small_url)
-    image_small_url_as = module_urls.activity_asset_image_small_url_as
+    @property
+    def image_large_url(self):
+        """
+        Returns the activity's large asset image's url. If the activity has no large asset image, then returns `None`.
+        
+        Returns
+        -------
+        image_large_url : `None | str`
+        """
+        application_id = self.application_id
+        
+        assets = self.assets
+        if assets is None:
+            image_large = None
+        else:
+            image_large = assets.image_large
+        
+        return build_activity_asset_image_large_url(application_id, image_large)
+    
+    
+    def image_large_url_as(self, ext = None, size = None):
+        """
+        Returns the activity's large asset image's url. If the activity has no large asset image, then returns `None`.
+        
+        Parameters
+        ----------
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        
+        Raises
+        ------
+        ValueError
+            If `ext`, `size` was not passed as any of the expected values.
+        """
+        application_id = self.application_id
+        
+        assets = self.assets
+        if assets is None:
+            image_large = None
+        else:
+            image_large = assets.image_large
+        
+        return build_activity_asset_image_large_url_as(application_id, image_large, ext, size)
+    
+    @property
+    def image_small_url(self):
+        """
+        Returns the activity's small asset image's url. If the activity has no small asset image, then returns `None`.
+        
+        Returns
+        -------
+        image_small_url : `None | str`
+        """
+        application_id = self.application_id
+        
+        assets = self.assets
+        if assets is None:
+            image_small = None
+        else:
+            image_small = assets.image_small
+        
+        return build_activity_asset_image_small_url(application_id, image_small)
+    
+    
+    def image_small_url_as(self, ext = None, size = None):
+        """
+        Returns the activity's small asset image's url. If the activity has no small asset image, then returns `None`.
+        
+        Parameters
+        ----------
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        
+        Raises
+        ------
+        ValueError
+            If `ext`, `size` was not passed as any of the expected values.
+        """
+        application_id = self.application_id
+        
+        assets = self.assets
+        if assets is None:
+            image_small = None
+        else:
+            image_small = assets.image_small
+        
+        return build_activity_asset_image_small_url_as(application_id, image_small, ext, size)
     
     
     @property

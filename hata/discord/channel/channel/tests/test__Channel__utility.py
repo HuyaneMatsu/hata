@@ -1,5 +1,6 @@
 import vampytest
 
+from ....bases import Icon, IconType
 from ....client import Client
 from ....guild import Guild
 from ....permission import Permission
@@ -1058,3 +1059,112 @@ def test__Channel__moderators():
     output = channel_0.moderators
     vampytest.assert_instance(output, list)
     vampytest.assert_eq({*output}, {user_0})
+
+
+def _iter_options__icon_url():
+    yield 202505300000, ChannelType.guild_text, False, None, False
+    yield 202505300001, ChannelType.private, False, None, False
+    yield 202505300002, ChannelType.guild_voice, False, None, False
+    yield 202505300003, ChannelType.private_group, False, None, False
+    yield 202505300004, ChannelType.guild_category, False, None, False
+    yield 202505300005, ChannelType.guild_announcements, False, None, False
+    yield 202505300006, ChannelType.guild_store, False, None, False
+    yield 202505300007, ChannelType.thread, False, None, False
+    yield 202505300008, ChannelType.guild_thread_announcements, False, None, False
+    yield 202505300009, ChannelType.guild_thread_public, False, None, False
+    yield 202505300010, ChannelType.guild_thread_private, False, None, False
+    yield 202505300011, ChannelType.guild_stage, False, None, False
+    yield 202505300012, ChannelType.guild_directory, False, None, False
+    yield 202505300013, ChannelType.guild_forum, False, None, False
+    yield 202505300014, ChannelType.guild_media, False, None, False
+    
+    yield 202505300015, ChannelType.private_group, True, Icon(IconType.static, 2), True
+
+
+@vampytest._(vampytest.call_from(_iter_options__icon_url()).returning_last())
+def test__Channel__icon_url(channel_id, channel_type, create_with_icon, icon):
+    """
+    Tests whether ``Channel.icon_url`` works as intended.
+    
+    Parameters
+    ----------
+    channel_id : `int`
+        Channel identifier.
+    
+    channel_type : ``ChannelType``
+        Channel type.
+    
+    create_with_icon : `bool`
+        Whether the channel should be created with icon.
+    
+    icon : ``None | Icon``
+        Icon to create the channel with.
+    
+    Returns
+    -------
+    has_icon_url : `bool`
+    """
+    if create_with_icon:
+        channel = Channel.precreate(channel_id, channel_type = channel_type, icon = icon)
+    else:
+        channel = Channel.precreate(channel_id, channel_type = channel_type)
+    
+    output = channel.icon_url
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__icon_url_as():
+    yield 202505300016, ChannelType.guild_text, False, None, {'ext': 'webp', 'size': 128}, False
+    yield 202505300017, ChannelType.private, False, None, {'ext': 'webp', 'size': 128}, False
+    yield 202505300018, ChannelType.guild_voice, False, None, {'ext': 'webp', 'size': 128}, False
+    yield 202505300019, ChannelType.private_group, False, None, {'ext': 'webp', 'size': 128}, False
+    yield 202505300020, ChannelType.guild_category, False, None, {'ext': 'webp', 'size': 128}, False
+    yield 202505300021, ChannelType.guild_announcements, False, None, {'ext': 'webp', 'size': 128}, False
+    yield 202505300022, ChannelType.guild_store, False, None, {'ext': 'webp', 'size': 128}, False
+    yield 202505300023, ChannelType.thread, False, None, {'ext': 'webp', 'size': 128}, False
+    yield 202505300024, ChannelType.guild_thread_announcements, False, None, {'ext': 'webp', 'size': 128}, False
+    yield 202505300025, ChannelType.guild_thread_public, False, None, {'ext': 'webp', 'size': 128}, False
+    yield 202505300026, ChannelType.guild_thread_private, False, None, {'ext': 'webp', 'size': 128}, False
+    yield 202505300027, ChannelType.guild_stage, False, None, {'ext': 'webp', 'size': 128}, False
+    yield 202505300028, ChannelType.guild_directory, False, None, {'ext': 'webp', 'size': 128}, False
+    yield 202505300029, ChannelType.guild_forum, False, None, {'ext': 'webp', 'size': 128}, False
+    yield 202505300030, ChannelType.guild_media, False, None, {'ext': 'webp', 'size': 128}, False
+    
+    yield 202505300031, ChannelType.private_group, True, Icon(IconType.static, 2), {'ext': 'webp', 'size': 128}, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__icon_url_as()).returning_last())
+def test__Channel__icon_url_as(channel_id, channel_type, create_with_icon, icon, keyword_parameters):
+    """
+    Tests whether ``Channel.icon_url`` works as intended.
+    
+    Parameters
+    ----------
+    channel_id : `int`
+        Channel identifier.
+    
+    channel_type : ``ChannelType``
+        Channel type.
+    
+    create_with_icon : `bool`
+        Whether the channel should be created with icon.
+    
+    icon : ``None | Icon``
+        Icon to create the channel with.
+    
+    keyword_parameters : `dict<str, object>`
+        Additional keyword parameters to pass.
+    
+    Returns
+    -------
+    has_icon_url : `bool`
+    """
+    if create_with_icon:
+        channel = Channel.precreate(channel_id, channel_type = channel_type, icon = icon)
+    else:
+        channel = Channel.precreate(channel_id, channel_type = channel_type)
+    
+    output = channel.icon_url_as(**keyword_parameters)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)

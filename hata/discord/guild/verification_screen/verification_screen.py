@@ -18,7 +18,7 @@ class VerificationScreen(RichAttributeErrorBaseType):
     ----------
     description  : `None`, `str`
         The guild's description shown in the verification screen.
-    edited_at : `None`, `datetime`
+    edited_at : `None | DateTime`
         When the last version of the screen was created.
     steps : `None`, `tuple` of ``VerificationScreenStep``
         The step in the verification screen.
@@ -33,7 +33,7 @@ class VerificationScreen(RichAttributeErrorBaseType):
         ----------
         description  : `None`, `str`, Optional (Keyword only)
             The guild's description shown in the verification screen.
-        edited_at : `None`, `datetime`, Optional (Keyword only)
+        edited_at : `None | DateTime`, Optional (Keyword only)
             When the last version of the screen was created.
         steps : `None`, `tuple` of ``VerificationScreenStep``, Optional (Keyword only)
             The step in the verification screen.
@@ -238,7 +238,7 @@ class VerificationScreen(RichAttributeErrorBaseType):
         ----------
         description  : `None`, `str`, Optional (Keyword only)
             The guild's description shown in the verification screen.
-        edited_at : `None`, `datetime`, Optional (Keyword only)
+        edited_at : `None | DateTime`, Optional (Keyword only)
             When the last version of the screen was created.
         steps : `None`, `tuple` of ``VerificationScreenStep``, Optional (Keyword only)
             The step in the verification screen.

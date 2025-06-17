@@ -1,7 +1,6 @@
 __all__ = ('PluginModuleProxyType',)
 
 from types import ModuleType
-from warnings import warn
 
 from scarletio import get_last_module_frame, include
 
@@ -60,12 +59,18 @@ class PluginModuleProxyType(ModuleType):
             if (spec is None) or is_spec_in_test_directory(spec):
                 return
         
-        warn(
-            f'Unallowed attribute assignment: `{attribute_name} = {attribute_value!r}` of type '
-            f'`{type(attribute_value).__name__}` to `{self.__spec__.name}`',
-            ResourceWarning,
-            stacklevel = 2,
-        )
+        
+        spec = self.__spec__
+        module = spec.get_module()
+        if (module is not None):
+            setattr(module, attribute_name, attribute_value)
+        
+        current_plugin = PLUGINS.get(spec.name, None)
+        if (current_plugin is not None):
+            plugin = _try_get_source_plugin()
+            if (plugin is not None):
+                plugin.add_child_plugin(current_plugin)
+                current_plugin.add_parent_plugin(plugin)
     
     
     def __getattr__(self, attribute_name):
@@ -85,22 +90,11 @@ class PluginModuleProxyType(ModuleType):
             ) from None
         
         current_plugin = PLUGINS.get(spec.name, None)
-        
-        frame = get_last_module_frame()
-        if (frame is None):
-            spec = None
-        else:
-            spec = frame.f_globals.get('__spec__', None)
-        
-        if spec is None:
-            plugin = None
-        else:
-            plugin = PLUGINS.get(spec.name)
-        
-        
-        if (plugin is not None) and (current_plugin is not None):
-            plugin.add_child_plugin(plugin)
-            current_plugin.add_parent_plugin(current_plugin)
+        if (current_plugin is not None):
+            plugin = _try_get_source_plugin()
+            if (plugin is not None):
+                plugin.add_child_plugin(current_plugin)
+                current_plugin.add_parent_plugin(plugin)
         
         return attribute_value
     
@@ -130,3 +124,22 @@ class PluginModuleProxyType(ModuleType):
             directory.update(dir(module))
         
         return sorted(directory)
+
+
+def _try_get_source_plugin():
+    """
+    Tries to get the source plugin where the call was made from.
+    
+    Returns
+    -------
+    plugin : ``None | Plugin``
+    """
+    frame = get_last_module_frame()
+    if (frame is None):
+        return
+    
+    spec = frame.f_globals.get('__spec__', None)
+    if spec is None:
+        return
+    
+    return PLUGINS.get(spec.name)

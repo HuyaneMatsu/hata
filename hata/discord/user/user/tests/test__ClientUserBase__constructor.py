@@ -7,6 +7,7 @@ from ....guild import GuildBadge
 
 from ...avatar_decoration import AvatarDecoration
 from ...guild_profile import GuildProfile
+from ...name_plate import NamePlate
 from ...thread_profile import ThreadProfile
 
 from ..flags import UserFlag
@@ -27,14 +28,15 @@ def _assert_fields_set(user):
     vampytest.assert_instance(user.avatar_decoration, AvatarDecoration, nullable = True)
     vampytest.assert_instance(user.banner, Icon)
     vampytest.assert_instance(user.banner_color, Color, nullable = True)
+    vampytest.assert_instance(user.bot, bool)
     vampytest.assert_instance(user.discriminator, int)
     vampytest.assert_instance(user.display_name, str, nullable = True)
+    vampytest.assert_instance(user.guild_profiles, dict)
     vampytest.assert_instance(user.flags, UserFlag)
     vampytest.assert_instance(user.id, int)
     vampytest.assert_instance(user.name, str)
+    vampytest.assert_instance(user.name_plate, NamePlate, nullable = True)
     vampytest.assert_instance(user.primary_guild_badge, GuildBadge, nullable = True)
-    vampytest.assert_instance(user.bot, bool)
-    vampytest.assert_instance(user.guild_profiles, dict)
     vampytest.assert_instance(user.thread_profiles, dict, nullable = True)
 
 
@@ -58,24 +60,29 @@ def test__ClientUserBase__new__all_fields():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160025)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    bot = True
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'voice in the dark'
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202506030020,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180029, tag = 'miau')
-    bot = True
     
     user = ClientUserBase(
         avatar = avatar,
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
+        bot = bot,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
         name = name,
+        name_plate = name_plate,
         primary_guild_badge = primary_guild_badge,
-        bot = bot,
     )
     _assert_fields_set(user)
     
@@ -83,12 +90,13 @@ def test__ClientUserBase__new__all_fields():
     vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
     vampytest.assert_eq(user.banner, banner)
     vampytest.assert_eq(user.banner_color, banner_color)
+    vampytest.assert_eq(user.bot, bot)
     vampytest.assert_eq(user.discriminator, discriminator)
     vampytest.assert_eq(user.display_name, display_name)
     vampytest.assert_eq(user.flags, flags)
     vampytest.assert_eq(user.name, name)
+    vampytest.assert_eq(user.name_plate, name_plate)
     vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
-    vampytest.assert_eq(user.bot, bot)
 
 
 def test__ClientUserBase__create_empty():
@@ -112,12 +120,16 @@ def test__ClientUserBase___from_client__include_internals():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160026)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    bot = True
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'voice in the dark'
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202506030021,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180030, tag = 'miau')
-    bot = True
     
     user_id = 202302060032
     guild_profiles = {202302060028: GuildProfile(nick = 'hello')}
@@ -134,6 +146,7 @@ def test__ClientUserBase___from_client__include_internals():
         display_name = display_name,
         flags = flags,
         name = name,
+        name_plate = name_plate,
         primary_guild_badge = primary_guild_badge,
         bot = bot,
     )
@@ -153,6 +166,7 @@ def test__ClientUserBase___from_client__include_internals():
         vampytest.assert_eq(user.display_name, display_name)
         vampytest.assert_eq(user.flags, flags)
         vampytest.assert_eq(user.name, name)
+        vampytest.assert_eq(user.name_plate, name_plate)
         vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
         vampytest.assert_eq(user.bot, bot)
         

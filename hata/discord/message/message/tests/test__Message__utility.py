@@ -1466,7 +1466,7 @@ def test__Message__iter_mentioned_users(input_value):
     
     Parameters
     ----------
-    input_value : `None | list<ClientUserBase>`
+    input_value : ``None | list<ClientUserBase>``
         Value to test with.
     
     Returns
@@ -1995,7 +1995,7 @@ def test__Message__has_mentioned_users(input_value):
     
     Parameters
     ----------
-    input_value : `None | list<ClientUserBase>`
+    input_value : ``None | list<ClientUserBase>``
         Value to test with.
     
     Returns
@@ -2133,7 +2133,7 @@ def test__Message__has_referenced_message(input_value):
     
     Parameters
     ----------
-    input_value : `None | Message`
+    input_value : ``None | Message``
         Value to test with.
     
     Returns
@@ -2662,3 +2662,33 @@ def test__Message__has_any_content_field(keyword_parameters):
     output = message.has_any_content_field()
     vampytest.assert_instance(output, bool)
     return output
+
+
+def _iter_options__url():
+    yield 202505280000, 202505280001, 202505280002, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__url()).returning_last())
+def test__Message__url(guild_id, channel_id, message_id):
+    """
+    Tests whether ``Message.url`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Guild identifier to create message with.
+    
+    channel_id : `int`
+        Channel identifier to create message with.
+    
+    message_id : `int`
+        Message identifier to create message with.
+    
+    Returns
+    -------
+    has_url : `bool˙
+    """
+    message = Message.precreate(message_id, channel_id = channel_id, guild_id = guild_id)
+    output = message.url
+    vampytest.assert_instance(output, str)
+    return True

@@ -13,7 +13,7 @@ from .client_user_base import ClientUserBase
 from .client_user_presence_base import ClientUserPBase
 from .fields import (
     parse_bot, parse_id, validate_activities, validate_avatar_decoration, validate_banner_color, validate_bot,
-    validate_discriminator, validate_display_name, validate_flags, validate_id, validate_name,
+    validate_discriminator, validate_display_name, validate_flags, validate_id, validate_name, validate_name_plate,
     validate_primary_guild_badge, validate_status, validate_statuses
 )
 from .flags import UserFlag
@@ -32,6 +32,7 @@ PRECREATE_FIELDS = {
     'display_name': ('display_name', validate_display_name),
     'flags': ('flags', validate_flags),
     'name': ('name', validate_name),
+    'name_plate': ('name_plate', validate_name_plate),
     'primary_guild_badge': ('primary_guild_badge', validate_primary_guild_badge),
 }
 
@@ -55,7 +56,7 @@ class User(USER_BASE_TYPE):
     
     Attributes
     ----------
-    activities : `None`, `list` of ``Activity``
+    activities : ``None | list<Activity>``
         A list of the client's activities. Defaults to `None`
         
         > Only available if presence caching is enabled.
@@ -66,7 +67,7 @@ class User(USER_BASE_TYPE):
     avatar_type : ``IconType``
         The user's avatar's type.
     
-    avatar_decoration : `None`, ``AvatarDecoration``
+    avatar_decoration : ``None | AvatarDecoration``
         The user's avatar decorations.
     
     banner_color : `None`, ``Color``
@@ -90,7 +91,7 @@ class User(USER_BASE_TYPE):
     flags : ``UserFlag``
         The user's user flags.
     
-    guild_profiles : `dict` of (`int`, ``GuildProfile``) items
+    guild_profiles : ``dict<int, GuildProfile>``
         A dictionary, which contains the user's guild profiles. If a user is member of a guild, then it should
         have a respective guild profile accordingly.
     
@@ -99,6 +100,9 @@ class User(USER_BASE_TYPE):
     
     name : `str`
         The user's name.
+    
+    name_plate : ``None | NamePlate``
+        The user's name plate.
     
     primary_guild_badge : ``None | GuildBadge``
         The user's primary guild's badge.
@@ -258,13 +262,16 @@ class User(USER_BASE_TYPE):
             
             > Only available if presence caching is enabled.
         
-        avatar : `None`, ``Icon``, `str`, Optional (Keyword only)
+        avatar : ``None | str | Icon``, Optional (Keyword only)
             The user's avatar.
         
-        avatar_decoration : `None`, ``AvatarDecoration``, Optional (Keyword only)
+        avatar_decoration : ``None | AvatarDecoration``, Optional (Keyword only)
             The user's avatar decoration.
         
-        banner : `None`, ``Icon``, `str`, Optional (Keyword only)
+        name_plate : ``None | NamePlate``, Optional (Keyword only)
+            The user's name plate.
+        
+        banner : ``None | str | Icon``, Optional (Keyword only)
             The user's banner.
             
             > Mutually exclusive with `banner_type` and `banner_hash`.

@@ -33,7 +33,7 @@ def test__ChannelMetadataPrivateGroup__copy():
     vampytest.assert_eq(copy, channel_metadata)
 
 
-def test__ChannelMetadataPrivateGroup__copy_with__0():
+def test__ChannelMetadataPrivateGroup__copy_with__no_fields():
     """
     Tests whether ``ChannelMetadataPrivateGroup.copy_with` works as intended.
     
@@ -60,7 +60,7 @@ def test__ChannelMetadataPrivateGroup__copy_with__0():
     vampytest.assert_eq(copy, channel_metadata)
 
 
-def test__ChannelMetadataPrivateGroup__copy_with__1():
+def test__ChannelMetadataPrivateGroup__copy_with__all_fields():
     """
     Tests whether ``ChannelMetadataPrivateGroup.copy_with` works as intended.
     
@@ -103,7 +103,7 @@ def test__ChannelMetadataPrivateGroup__copy_with__1():
     vampytest.assert_eq(copy.owner_id, new_owner_id)
 
 
-def test__ChannelMetadataPrivateGroup__copy_with_keyword_parameters__0():
+def test__ChannelMetadataPrivateGroup__copy_with_keyword_parameters__no_fields():
     """
     Tests whether ``ChannelMetadataPrivateGroup.copy_with_keyword_parameters` works as intended.
     
@@ -132,7 +132,7 @@ def test__ChannelMetadataPrivateGroup__copy_with_keyword_parameters__0():
     vampytest.assert_eq(copy, channel_metadata)
 
 
-def test__ChannelMetadataPrivateGroup__copy_with_keyword_parameters__1():
+def test__ChannelMetadataPrivateGroup__copy_with_keyword_parameters__all_fields():
     """
     Tests whether ``ChannelMetadataPrivateGroup.copy_with_keyword_parameters` works as intended.
     

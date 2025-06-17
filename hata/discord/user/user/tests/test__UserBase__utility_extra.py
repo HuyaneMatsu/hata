@@ -8,9 +8,9 @@ from ....guild import Guild, GuildBadge
 from ....localization import Locale
 from ....message import Message
 from ....role import Role
-from ....utils import is_url
 
 from ...avatar_decoration import AvatarDecoration
+from ...name_plate import NamePlate
 
 from ..flags import UserFlag
 from ..preinstanced import DefaultAvatar, PremiumType, Status
@@ -37,59 +37,12 @@ def test__UserBase__placeholders():
     vampytest.assert_instance(user.guild_profiles, dict)
     vampytest.assert_instance(user.locale, Locale)
     vampytest.assert_instance(user.mfa_enabled, bool)
+    vampytest.assert_instance(user.name_plate, NamePlate, nullable = True)
     vampytest.assert_instance(user.premium_type, PremiumType)
     vampytest.assert_instance(user.primary_guild_badge, GuildBadge, nullable = True)
     vampytest.assert_instance(user.status, Status)
     vampytest.assert_instance(user.statuses, dict, nullable = True)
     vampytest.assert_instance(user.thread_profiles, dict, nullable = True)
-
-
-def test__UserBase__banner_url():
-    """
-    Tests whether ``UserBase.banner_url`` work as intended.
-    """
-    user = UserBase()
-    banner_url = user.banner_url
-    
-    vampytest.assert_instance(banner_url, str, nullable = True)
-    if (banner_url is not None):
-        vampytest.assert_true(is_url(banner_url))
-
-
-def test__UserBase__banner_url_as():
-    """
-    Tests whether ``UserBase.banner_url_as`` work as intended.
-    """
-    user = UserBase()
-    banner_url = user.banner_url_as(ext = 'jpg', size = 4096)
-    
-    vampytest.assert_instance(banner_url, str, nullable = True)
-    if (banner_url is not None):
-        vampytest.assert_true(is_url(banner_url))
-
-
-def test__UserBase__avatar_decoration_url():
-    """
-    Tests whether ``UserBase.avatar_decoration_url`` work as intended.
-    """
-    user = UserBase()
-    avatar_decoration_url = user.avatar_decoration_url
-    
-    vampytest.assert_instance(avatar_decoration_url, str, nullable = True)
-    if (avatar_decoration_url is not None):
-        vampytest.assert_true(is_url(avatar_decoration_url))
-
-
-def test__UserBase__avatar_decoration_url_as():
-    """
-    Tests whether ``UserBase.avatar_decoration_url_as`` work as intended.
-    """
-    user = UserBase()
-    avatar_decoration_url = user.avatar_decoration_url_as(ext = 'png', size = 4096)
-    
-    vampytest.assert_instance(avatar_decoration_url, str, nullable = True)
-    if (avatar_decoration_url is not None):
-        vampytest.assert_true(is_url(avatar_decoration_url))
 
 
 def test__UserBase__full_name():
@@ -114,25 +67,6 @@ def test__UserBase__mention_nick():
     """
     user = UserBase()
     vampytest.assert_instance(user.mention_nick, str)
-
-
-def test__UserBase__default_avatar_url():
-    """
-    Tests whether ``Userbase.default_avatar_url`` works as intended.
-    """
-    user = UserBase()
-    default_avatar_url = user.default_avatar_url
-    
-    vampytest.assert_instance(default_avatar_url, str)
-    vampytest.assert_true(is_url(default_avatar_url))
-
-
-def test__UserBase__default_avatar():
-    """
-    Tests whether ``Userbase.default_avatar`` works as intended.
-    """
-    user = UserBase()
-    vampytest.assert_instance(user.default_avatar, DefaultAvatar)
 
 
 def test__UserBase__iter_activities():
@@ -369,69 +303,6 @@ def test__UserBase__is_boosting():
     vampytest.assert_eq(user.is_boosting(guild_id), False)
 
 
-def test__UserBase__avatar_url_for():
-    """
-    Tests whether ``Userbase.avatar_url_for`` works as intended.
-    """
-    avatar = Icon(IconType.static, 14)
-    user = UserBase(
-        avatar = avatar,
-    )
-    
-    guild_id = 2023020400016
-    
-    output = user.avatar_url_for(guild_id)
-    vampytest.assert_is(output, None)
-
-
-
-def test__UserBase__avatar_url_for_as():
-    """
-    Tests whether ``Userbase.avatar_url_for_as`` works as intended.
-    """
-    avatar = Icon(IconType.static, 14)
-    user = UserBase(
-        avatar = avatar,
-    )
-    
-    guild_id = 2023020400017
-    
-    output = user.avatar_url_for_as(guild_id)
-    vampytest.assert_is(output, None)
-
-
-def test__UserBase__avatar_url_at():
-    """
-    Tests whether ``Userbase.avatar_url_at`` works as intended.
-    """
-    avatar = Icon(IconType.static, 14)
-    user = UserBase(
-        avatar = avatar,
-    )
-    
-    guild_id = 2023020400018
-    
-    output = user.avatar_url_at(guild_id)
-    vampytest.assert_instance(output, str)
-    vampytest.assert_true(is_url(output))
-
-
-def test__UserBase__avatar_url_at_as():
-    """
-    Tests whether ``Userbase.avatar_url_at_as`` works as intended.
-    """
-    avatar = Icon(IconType.static, 14)
-    user = UserBase(
-        avatar = avatar,
-    )
-    
-    guild_id = 2023020400019
-    
-    output = user.avatar_url_at_as(guild_id)
-    vampytest.assert_instance(output, str)
-    vampytest.assert_true(is_url(output))
-
-
 def test__UserBase__delete():
     """
     Tests whether ``Userbase._delete`` works as intended.
@@ -528,3 +399,597 @@ def test__UserBase__get_status_by_platform():
     
     vampytest.assert_instance(output, Status)
     vampytest.assert_is(output, Status.offline)
+
+
+def _iter_options__avatar_decoration_url():
+    yield None, False
+
+
+@vampytest._(vampytest.call_from(_iter_options__avatar_decoration_url()).returning_last())
+def test__UserBase__avatar_decoration_url(avatar_decoration):
+    """
+    Tests whether ``UserBase.avatar_decoration_url`` work as intended.
+    
+    Parameters
+    ----------
+    avatar_decoration : ``None | AvatarDecoration``
+        Avatar decoration to create the user with.
+    
+    Returns
+    -------
+    has_avatar_decoration_url : `bool`
+    """
+    assert avatar_decoration is None
+    user = UserBase()
+    output = user.avatar_decoration_url
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__avatar_decoration_url_as():
+    yield None, {'ext': 'jpg', 'size': 128}, False
+
+
+@vampytest._(vampytest.call_from(_iter_options__avatar_decoration_url_as()).returning_last())
+def test__UserBase__avatar_decoration_url_as(avatar_decoration, keyword_parameters):
+    """
+    Tests whether ``UserBase.avatar_decoration_url_as`` work as intended.
+    
+    Parameters
+    ----------
+    avatar_decoration : ``None | AvatarDecoration``
+        Avatar decoration to create the user with.
+    
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to use.
+    
+    Returns
+    -------
+    has_avatar_decoration_url : `bool`
+    """
+    assert avatar_decoration is None
+    user = UserBase()
+    output = user.avatar_decoration_url_as(**keyword_parameters)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__default_avatar_url():
+    yield 202506010038 << 22, 0, True
+    yield 202506010039 << 22, 0, True
+    yield 202506010040 << 22, 0, True
+    yield 202506010041 << 22, 0, True
+    yield 202506010042 << 22, 0, True
+    yield 202506010043 << 22, 0, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__default_avatar_url()).returning_last())
+def test__UserBase__default_avatar_url(user_id, discriminator):
+    """
+    Tests whether ``Userbase.default_avatar_url`` works as intended.
+    
+    Parameters
+    ----------
+    user_id : `int`
+        User identifier to create user with.
+    
+    discriminator : `int`
+        Discriminator to create user with.
+    
+    Returns
+    -------
+    has_default_avatar_url : `int`
+    """
+    assert discriminator == 0
+    
+    user = UserBase()
+    user.id = user_id
+    
+    output = user.default_avatar_url
+    vampytest.assert_instance(output, str)
+    return True
+
+
+def _iter_options__default_avatar():
+    yield 202506010044 << 22, 0, DefaultAvatar.blue
+    yield 202506010045 << 22, 0, DefaultAvatar.gray
+    yield 202506010046 << 22, 0, DefaultAvatar.green
+    yield 202506010047 << 22, 0, DefaultAvatar.orange
+    yield 202506010048 << 22, 0, DefaultAvatar.red
+    yield 202506010049 << 22, 0, DefaultAvatar.pink
+
+
+@vampytest._(vampytest.call_from(_iter_options__default_avatar()).returning_last())
+def test__UserBase__default_avatar(user_id, discriminator):
+    """
+    Tests whether ``Userbase.default_avatar`` works as intended.
+    
+    Parameters
+    ----------
+    user_id : `int`
+        User identifier to create user with.
+    
+    discriminator : `int`
+        Discriminator to create user with.
+    
+    Returns
+    -------
+    default_avatar : ``DefaultAvatar``
+    """
+    assert discriminator == 0
+    
+    user = UserBase()
+    user.id = user_id
+    
+    output = user.default_avatar
+    vampytest.assert_instance(output, DefaultAvatar)
+    return output
+
+
+def _iter_options__avatar_url():
+    yield 202506010064, None, True
+    yield 202506010065, Icon(IconType.animated, 5), True
+
+
+@vampytest._(vampytest.call_from(_iter_options__avatar_url()).returning_last())
+def test__UserBase__avatar_url(user_id, icon):
+    """
+    Tests whether ``UserBase.avatar_url`` works as intended.
+    
+    Parameters
+    ----------
+    user_id : `int`
+        Identifier to create user with.
+    
+    icon : ``None | Icon``
+        Icon to create the user with.
+    
+    Returns
+    -------
+    has_avatar_url : `bool`
+    """
+    user = UserBase(
+        avatar = icon,
+    )
+    user.id = user_id
+    
+    output = user.avatar_url
+    vampytest.assert_instance(output, str)
+    return True
+
+
+def _iter_options__avatar_url_as():
+    yield 202506010062, None, {'ext': 'webp', 'size': 128}, True
+    yield 202506010063, Icon(IconType.animated, 5), {'ext': 'webp', 'size': 128}, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__avatar_url_as()).returning_last())
+def test__UserBase__avatar_url_as(user_id, icon, keyword_parameters):
+    """
+    Tests whether ``UserBase.avatar_url_as`` works as intended.
+    
+    Parameters
+    ----------
+    user_id : `int`
+        Identifier to create user with.
+    
+    icon : ``None | Icon``
+        Icon to create the user with.
+    
+    keyword_parameters : `dict<str, object>`
+        Additional keyword parameters to pass.
+    
+    Returns
+    -------
+    has_avatar_url : `bool`
+    """
+    user = UserBase(
+        avatar = icon,
+    )
+    user.id = user_id
+    
+    output = user.avatar_url_as(**keyword_parameters)
+    vampytest.assert_instance(output, str)
+    return True
+
+
+def _iter_options__avatar_url_for():
+    yield 202506020000, 0, None, False
+
+
+@vampytest._(vampytest.call_from(_iter_options__avatar_url_for()).returning_last())
+def test__UserBase__avatar_url_for(user_id, guild_id, icon):
+    """
+    Tests whether ``UserBase.avatar_url_for`` works as intended.
+    
+    Parameters
+    ----------
+    user_id : `int`
+        Identifier to create user with.
+    
+    guild_id : `int`
+        Guild identifier to add guild profile for.
+    
+    icon : ``None | Icon``
+        Icon to create the user with.
+    
+    Returns
+    -------
+    has_avatar_url_for : `bool`
+    """
+    assert guild_id == 0
+    assert icon is None
+    
+    user = UserBase()
+    user.id = user_id
+    
+    output = user.avatar_url_for(guild_id)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__avatar_url_for_as():
+    yield 202506020001, 0, None, {'ext': 'webp', 'size': 128}, False
+
+
+@vampytest._(vampytest.call_from(_iter_options__avatar_url_for_as()).returning_last())
+def test__UserBase__avatar_url_for_as(user_id, guild_id, icon, keyword_parameters):
+    """
+    Tests whether ``UserBase.avatar_url_for_as`` works as intended.
+    
+    Parameters
+    ----------
+    user_id : `int`
+        Identifier to create user with.
+    
+    guild_id : `int`
+        Guild identifier to add guild profile for.
+    
+    icon : ``None | Icon``
+        Icon to create the user with.
+    
+    keyword_parameters : `dict<str, object>`
+        Additional keyword parameters to pass.
+    
+    Returns
+    -------
+    has_avatar_url_for : `bool`
+    """
+    assert guild_id == 0
+    assert icon is None
+    
+    user = UserBase()
+    user.id = user_id
+    
+    output = user.avatar_url_for_as(guild_id, **keyword_parameters)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__avatar_url_at():
+    yield 202506020003, None, 0, None, True
+    yield 202506020004, Icon(IconType.animated, 3), 0, None, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__avatar_url_at()).returning_last())
+def test__UserBase__avatar_url_at(user_id, global_icon, guild_id, local_icon):
+    """
+    Tests whether ``UserBase.avatar_url_at`` works as intended.
+    
+    Parameters
+    ----------
+    user_id : `int`
+        Identifier to create user with.
+    
+    global_icon : ``None | Icon``
+        Icon to create the user with.
+    
+    guild_id : `int`
+        Guild identifier to add guild profile at.
+    
+    local_icon : ``None | Icon``
+        Icon to create the user with.
+    
+    Returns
+    -------
+    has_avatar_url_at : `bool`
+    """
+    assert guild_id == 0
+    assert local_icon is None
+    
+    user = UserBase(
+        avatar = global_icon
+    )
+    user.id = user_id
+    
+    output = user.avatar_url_at(guild_id)
+    vampytest.assert_instance(output, str)
+    return True
+
+
+def _iter_options__avatar_url_at_as():
+    yield 202506020005, None, 0, None, {'ext': 'webp', 'size': 128}, True
+    yield 202506020006, Icon(IconType.animated, 3), 0, None, {'ext': 'webp', 'size': 128}, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__avatar_url_at_as()).returning_last())
+def test__UserBase__avatar_url_at_as(user_id, global_icon, guild_id, local_icon, keyword_parameters):
+    """
+    Tests whether ``UserBase.avatar_url_at_as`` works as intended.
+    
+    Parameters
+    ----------
+    user_id : `int`
+        Identifier to create user with.
+    
+    global_icon : ``None | Icon``
+        Icon to create the user with.
+    
+    guild_id : `int`
+        Guild identifier to add guild profile at.
+    
+    local_icon : ``None | Icon``
+        Icon to create the user with.
+    
+    keyword_parameters : `dict<str, object>`
+        Additional keyword parameters to pass.
+    
+    Returns
+    -------
+    has_avatar_url_at : `bool`
+    """
+    assert guild_id == 0
+    assert local_icon is None
+    
+    user = UserBase(
+        avatar = global_icon
+    )
+    user.id = user_id
+    
+    output = user.avatar_url_at_as(guild_id, **keyword_parameters)
+    vampytest.assert_instance(output, str)
+    return True
+
+
+def _iter_options__banner_url():
+    yield 202506020057, None, False
+
+
+@vampytest._(vampytest.call_from(_iter_options__banner_url()).returning_last())
+def test__UserBase__banner_url(user_id, icon):
+    """
+    Tests whether ``UserBase.banner_url`` works as intended.
+    
+    Parameters
+    ----------
+    user_id : `int`
+        Identifier to create user with.
+    
+    icon : ``None | Icon``
+        Icon to create the user with.
+    
+    Returns
+    -------
+    has_banner_url : `bool`
+    """
+    assert icon is None
+    
+    user = UserBase()
+    user.id = user_id
+    
+    output = user.banner_url
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__banner_url_as():
+    yield 202506020059, None, {'ext': 'webp', 'size': 128}, False
+
+
+@vampytest._(vampytest.call_from(_iter_options__banner_url_as()).returning_last())
+def test__UserBase__banner_url_as(user_id, icon, keyword_parameters):
+    """
+    Tests whether ``UserBase.banner_url_as`` works as intended.
+    
+    Parameters
+    ----------
+    user_id : `int`
+        Identifier to create user with.
+    
+    icon : ``None | Icon``
+        Icon to create the user with.
+    
+    keyword_parameters : `dict<str, object>`
+        Additional keyword parameters to pass.
+    
+    Returns
+    -------
+    has_banner_url : `bool`
+    """
+    assert icon is None
+    
+    user = UserBase()
+    user.id = user_id
+    
+    output = user.banner_url_as(**keyword_parameters)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__banner_url_for():
+    yield 202506020061, 0, None, False
+
+
+@vampytest._(vampytest.call_from(_iter_options__banner_url_for()).returning_last())
+def test__UserBase__banner_url_for(user_id, guild_id, icon):
+    """
+    Tests whether ``UserBase.banner_url_for`` works as intended.
+    
+    Parameters
+    ----------
+    user_id : `int`
+        Identifier to create user with.
+    
+    guild_id : `int`
+        Guild identifier to add guild profile for.
+    
+    icon : ``None | Icon``
+        Icon to create the user with.
+    
+    Returns
+    -------
+    has_banner_url_for : `bool`
+    """
+    assert guild_id == 0
+    assert icon is None
+    
+    user = UserBase()
+    user.id = user_id
+    
+    output = user.banner_url_for(guild_id)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__banner_url_for_as():
+    yield 202506020062, 0, None, {'ext': 'webp', 'size': 128}, False
+
+
+@vampytest._(vampytest.call_from(_iter_options__banner_url_for_as()).returning_last())
+def test__UserBase__banner_url_for_as(user_id, guild_id, icon, keyword_parameters):
+    """
+    Tests whether ``UserBase.banner_url_for_as`` works as intended.
+    
+    Parameters
+    ----------
+    user_id : `int`
+        Identifier to create user with.
+    
+    guild_id : `int`
+        Guild identifier to add guild profile for.
+    
+    icon : ``None | Icon``
+        Icon to create the user with.
+    
+    keyword_parameters : `dict<str, object>`
+        Additional keyword parameters to pass.
+    
+    Returns
+    -------
+    has_banner_url_for : `bool`
+    """
+    assert guild_id == 0
+    assert icon is None
+    
+    user = UserBase()
+    user.id = user_id
+    
+    output = user.banner_url_for_as(guild_id, **keyword_parameters)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__banner_url_at():
+    yield 202506020063, None, 0, None, False
+
+
+@vampytest._(vampytest.call_from(_iter_options__banner_url_at()).returning_last())
+def test__UserBase__banner_url_at(user_id, global_icon, guild_id, local_icon):
+    """
+    Tests whether ``UserBase.banner_url_at`` works as intended.
+    
+    Parameters
+    ----------
+    user_id : `int`
+        Identifier to create user with.
+    
+    global_icon : ``None | Icon``
+        Icon to create the user with.
+    
+    guild_id : `int`
+        Guild identifier to add guild profile at.
+    
+    local_icon : ``None | Icon``
+        Icon to create the user with.
+    
+    Returns
+    -------
+    has_banner_url_at : `bool`
+    """
+    assert guild_id == 0
+    assert local_icon is None
+    assert global_icon is None
+    
+    user = UserBase()
+    user.id = user_id
+    
+    output = user.banner_url_at(guild_id)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__banner_url_at_as():
+    yield 202506020064, None, 0, None, {'ext': 'webp', 'size': 128}, False
+
+
+@vampytest._(vampytest.call_from(_iter_options__banner_url_at_as()).returning_last())
+def test__UserBase__banner_url_at_as(user_id, global_icon, guild_id, local_icon, keyword_parameters):
+    """
+    Tests whether ``UserBase.banner_url_at_as`` works as intended.
+    
+    Parameters
+    ----------
+    user_id : `int`
+        Identifier to create user with.
+    
+    global_icon : ``None | Icon``
+        Icon to create the user with.
+    
+    guild_id : `int`
+        Guild identifier to add guild profile at.
+    
+    local_icon : ``None | Icon``
+        Icon to create the user with.
+    
+    keyword_parameters : `dict<str, object>`
+        Additional keyword parameters to pass.
+    
+    Returns
+    -------
+    has_banner_url_at : `bool`
+    """
+    assert guild_id == 0
+    assert local_icon is None
+    assert global_icon is None
+    
+    user = UserBase()
+    user.id = user_id
+    
+    output = user.banner_url_at_as(guild_id, **keyword_parameters)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__name_plate_url():
+    yield None, False
+
+
+@vampytest._(vampytest.call_from(_iter_options__name_plate_url()).returning_last())
+def test__UserBase__name_plate_url(name_plate):
+    """
+    Tests whether ``UserBase.name_plate_url`` work as intended.
+    
+    Parameters
+    ----------
+    name_plate : ``None | NamePlate``
+        Avatar decoration to create the user with.
+    
+    Returns
+    -------
+    has_name_plate_url : `bool`
+    """
+    assert name_plate is None
+    user = UserBase()
+    output = user.name_plate_url
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)

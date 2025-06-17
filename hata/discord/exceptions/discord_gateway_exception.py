@@ -28,7 +28,7 @@ GATEWAY_EXCEPTION_CODE_TABLE = {
 }
 
 """
-GATEWAY_EXCEPTION_CODE_TABLE : `dict` of (`int`, `str`) items
+GATEWAY_EXCEPTION_CODE_TABLE : `dict<int, str>`
     A dictionary to store the descriptions for each gateway close code.
 INTENT_ERROR_CODES : `frozenset` of `int` = (`4013`, `4014`)
     Close codes of intent errors.

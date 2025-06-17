@@ -1,7 +1,7 @@
 __all__ = ('GuildWidget',)
 
 from ...bases import DiscordEntity
-from ...http import urls as module_urls
+from ...http.urls import build_guild_widget_json_url
 
 from ..guild import Guild
 
@@ -380,7 +380,16 @@ class GuildWidget(DiscordEntity):
         return new
     
     
-    json_url = property(module_urls.guild_widget_json_url)
+    @property
+    def json_url(self):
+        """
+        Returns an url to request the guild's widget data.
+        
+        Returns
+        -------
+        url : `str`
+        """
+        return build_guild_widget_json_url(self.id)
     
     
     @property

@@ -71,7 +71,7 @@ def _sort_plugins(plugins):
 
         else:
             raise RuntimeError(
-                f'Plugins with circular satisfaction: {plugins_to_check_ordered!r}'
+                f'Plugins with circular satisfaction: {plugins_to_check_ordered!r}; plugin = {plugin!r}.'
             )
     
     return plugins_satisfied_ordered

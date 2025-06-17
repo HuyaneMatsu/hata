@@ -171,7 +171,7 @@ def parse_name_and_sub_command_name_stack(data):
     -------
     name : `str`
         Message interaction name.
-    sub_command_name_stack : `None`, `tuple` of `str`
+    sub_command_name_stack : `None | tuple<str>`
         The sub-command-group and sub-command names.
     """
     raw_name = data.get('name', None)

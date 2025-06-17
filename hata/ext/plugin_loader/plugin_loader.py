@@ -1277,14 +1277,14 @@ class PluginLoader(RichAttributeErrorBaseType):
         ----------
         plugin_trees : `list` of ``PluginTree``
             The plugin trees to unload.
-        exceptions : `None`, `list` of ``BaseException``
+        exceptions : `None`, `list` of `BaseException`
             Occurred exceptions.
         plugin_tree_iterators : `None`, `list` of ``PluginTreeIterator`
             Plugin tree iterators.
         
         Returns
         -------
-        exceptions : `None`, `list` of ``BaseException``
+        exceptions : `None`, `list` of `BaseException`
             Occurred exceptions.
         plugin_tree_iterators : `None`, `list` of ``PluginTreeIterator`
             Plugin tree iterators.
@@ -1318,14 +1318,14 @@ class PluginLoader(RichAttributeErrorBaseType):
         ----------
         plugin_trees : `list` of ``PluginTree``
             The plugin trees to unload.
-        exceptions : `None`, `list` of ``BaseException``
+        exceptions : `None`, `list` of `BaseException`
             Occurred exceptions.
         plugin_tree_iterators : `None`, `list` of ``PluginTreeIterator`
             Plugin tree iterators.
         
         Returns
         -------
-        exceptions : `None`, `list` of ``BaseException``
+        exceptions : `None`, `list` of `BaseException`
             Occurred exceptions.
         plugin_tree_iterators : `None`, `list` of ``PluginTreeIterator`
             Plugin tree iterators.
@@ -1675,14 +1675,14 @@ class PluginLoader(RichAttributeErrorBaseType):
         ----------
         plugin_trees : `list` of ``PluginTree``
             A list of plugin trees to check their syntax.
-        exceptions : `None`, `list` of ``BaseException``
+        exceptions : `None`, `list` of `BaseException`
             Occurred exceptions.
         plugin_tree_iterators : `None`, `list` of ``PluginTreeIterator`
             Plugin tree iterators.
         
         Returns
         -------
-        exceptions : `None`, `list` of ``BaseException``
+        exceptions : `None`, `list` of `BaseException`
             Occurred exceptions.
         plugin_tree_iterators : `None`, `list` of ``PluginTreeIterator`
             Plugin tree iterators.
@@ -1702,14 +1702,14 @@ class PluginLoader(RichAttributeErrorBaseType):
         ----------
         plugin-trees : `list` of ``PluginTree``
             A list of plugin trees to check their syntax.
-        exceptions : `None`, `list` of ``BaseException``
+        exceptions : `None`, `list` of `BaseException`
             Occurred exceptions.
         plugin_tree_iterators : `None`, `list` of ``PluginTreeIterator`
             Plugin tree iterators.
         
         Returns
         -------
-        exceptions : `None`, `list` of ``BaseException``
+        exceptions : `None`, `list` of `BaseException`
             Occurred exceptions.
         plugin_tree_iterators : `None`, `list` of ``PluginTreeIterator`
             Plugin tree iterators.

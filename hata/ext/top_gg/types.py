@@ -7,7 +7,8 @@ from scarletio import copy_docs
 
 from ...discord.bases import IconSlot, Slotted
 from ...discord.color import Color
-from ...discord.http import urls as module_urls
+from ...discord.http.urls import build_default_avatar_url, build_user_avatar_url, build_user_avatar_url_as
+from ...discord.user import DefaultAvatar
 from ...discord.utils import timestamp_to_datetime
 
 from .constants import (
@@ -44,13 +45,13 @@ class BotInfo(metaclass = Slotted):
         The bot's avatar's type.
     banner_url : `None`, `str`
         Url for the bot's banner image.
-    certified_at : `None`, `datetime`
+    certified_at : `None | DateTime`
         When the bot was approved. Set as `None` if was not yet.
     discriminator : `int`
         The bot's discriminator.
     donate_bot_guild_id : `int`
         The guild id for the donate bot setup(?).
-    featured_guild_ids : `None`, `tuple` of `int`
+    featured_guild_ids : `None | tuple<int>`
         The featured guild's identifiers on the bot's page.
     github_url : `None`, `str`
         Link to the github repo of the bot.
@@ -72,7 +73,7 @@ class BotInfo(metaclass = Slotted):
         The short description of the bot.
     support_server_invite_url : `None`, `str`
         Url to the bot's support server.
-    tags : `None`, `tuple` of `str`
+    tags : `None | tuple<str>`
         The tags of the bot.
     upvotes : `int`
         The amount of upvotes the bot has.
@@ -89,12 +90,7 @@ class BotInfo(metaclass = Slotted):
         'support_server_invite_url', 'tags', 'upvotes', 'upvotes_monthly', 'vanity_url', 'website_url'
     )
     
-    avatar = IconSlot(
-        'avatar',
-        JSON_KEY_BOT_INFO_AVATAR_BASE64,
-        module_urls.user_avatar_url,
-        module_urls.user_avatar_url_as,
-    )
+    avatar = IconSlot('avatar', JSON_KEY_BOT_INFO_AVATAR_BASE64)
     
     @classmethod
     def from_data(cls, data):
@@ -193,7 +189,67 @@ class BotInfo(metaclass = Slotted):
     
     def __repr__(self):
         """Returns the bot info's representation."""
-        return f'<{self.__class__.__name__} id = {self.id} name = {self.name}>'
+        return f'<{type(self).__name__} id = {self.id} name = {self.name}>'
+    
+    
+    @property
+    def default_avatar_url(self):
+        """
+        Returns the user's default avatar's url.
+        
+        Returns
+        -------
+        default_avatar_url : `str`
+        """
+        discriminator = self.discriminator
+        if discriminator:
+            key = discriminator
+        else:
+            key = self.id >> 22
+        
+        return build_default_avatar_url(key % len(DefaultAvatar.INSTANCES))
+    
+    
+    @property
+    def avatar_url(self):
+        """
+        Returns the user's avatar url.
+        If the user has no avatar then returns its default avatar's url.
+        
+        Returns
+        -------
+        url : `str`
+        """
+        url = build_user_avatar_url(self.id, self.avatar_type, self.avatar_hash)
+        if url is None:
+            url = self.default_avatar_url
+        
+        return url
+    
+    
+    def avatar_url_as(self, ext = None, size = None):
+        """
+        Returns the user's avatar url.
+        If the user has no avatar then returns its default avatar's url.
+        
+        Parameters
+        ----------
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+            If the user has animated avatar, it can be `'gif'` as well.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `str`
+        """
+        url = build_user_avatar_url_as(self.id, self.avatar_type, self.avatar_hash, ext, size)
+        if url is None:
+            url = self.default_avatar_url
+        
+        return url
 
 
 class BotStats:
@@ -250,7 +306,7 @@ class BotStats:
     
     def __repr__(self):
         """Returns the bot stats' representation."""
-        return f'<{self.__class__.__name__}>'
+        return f'<{type(self).__name__}>'
 
 
 class UserInfo(metaclass = Slotted):
@@ -293,12 +349,7 @@ class UserInfo(metaclass = Slotted):
         'is_moderator', 'is_supporter', 'is_website_moderator', 'name'
     )
 
-    avatar = IconSlot(
-        'avatar',
-        JSON_KEY_USER_INFO_AVATAR_BASE64,
-        module_urls.user_avatar_url,
-        module_urls.user_avatar_url_as,
-    )
+    avatar = IconSlot('avatar', JSON_KEY_USER_INFO_AVATAR_BASE64)
     
     @classmethod
     def from_data(cls, data):
@@ -364,7 +415,67 @@ class UserInfo(metaclass = Slotted):
     
     def __repr__(self):
         """Returns the bot info's representation."""
-        return f'<{self.__class__.__name__} id = {self.id} name = {self.name}>'
+        return f'<{type(self).__name__} id = {self.id} name = {self.name}>'
+    
+    
+    @property
+    def default_avatar_url(self):
+        """
+        Returns the user's default avatar's url.
+        
+        Returns
+        -------
+        default_avatar_url : `str`
+        """
+        discriminator = self.discriminator
+        if discriminator:
+            key = discriminator
+        else:
+            key = self.id >> 22
+        
+        return build_default_avatar_url(key % len(DefaultAvatar.INSTANCES))
+    
+    
+    @property
+    def avatar_url(self):
+        """
+        Returns the user's avatar url.
+        If the user has no avatar then returns its default avatar's url.
+        
+        Returns
+        -------
+        url : `str`
+        """
+        url = build_user_avatar_url(self.id, self.avatar_type, self.avatar_hash)
+        if url is None:
+            url = self.default_avatar_url
+        
+        return url
+    
+    
+    def avatar_url_as(self, ext = None, size = None):
+        """
+        Returns the user's avatar url.
+        If the user has no avatar then returns its default avatar's url.
+        
+        Parameters
+        ----------
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+            If the user has animated avatar, it can be `'gif'` as well.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `str`
+        """
+        url = build_user_avatar_url_as(self.id, self.avatar_type, self.avatar_hash, ext, size)
+        if url is None:
+            url = self.default_avatar_url
+        
+        return url
 
 
 class UserConnections:
@@ -422,7 +533,7 @@ class UserConnections:
     
     def __repr__(self):
         """Returns the bot info's representation."""
-        return f'<{self.__class__.__name__}>'
+        return f'<{type(self).__name__}>'
 
 
 class BriefUserInfo(metaclass = Slotted):
@@ -444,12 +555,7 @@ class BriefUserInfo(metaclass = Slotted):
     """
     __slots__ = ('discriminator', 'id', 'name')
 
-    avatar = IconSlot(
-        'avatar',
-        JSON_KEY_USER_INFO_AVATAR_BASE64,
-        module_urls.user_avatar_url,
-        module_urls.user_avatar_url_as,
-    )
+    avatar = IconSlot('avatar', JSON_KEY_USER_INFO_AVATAR_BASE64)
     
     @classmethod
     def from_data(cls, data):
@@ -484,7 +590,67 @@ class BriefUserInfo(metaclass = Slotted):
     
     def __repr__(self):
         """Returns the bot info's representation."""
-        return f'<{self.__class__.__name__} id = {self.id} name = {self.name}>'
+        return f'<{type(self).__name__} id = {self.id} name = {self.name}>'
+    
+    
+    @property
+    def default_avatar_url(self):
+        """
+        Returns the user's default avatar's url.
+        
+        Returns
+        -------
+        default_avatar_url : `str`
+        """
+        discriminator = self.discriminator
+        if discriminator:
+            key = discriminator
+        else:
+            key = self.id >> 22
+        
+        return build_default_avatar_url(key % len(DefaultAvatar.INSTANCES))
+    
+    
+    @property
+    def avatar_url(self):
+        """
+        Returns the user's avatar url.
+        If the user has no avatar then returns its default avatar's url.
+        
+        Returns
+        -------
+        url : `str`
+        """
+        url = build_user_avatar_url(self.id, self.avatar_type, self.avatar_hash)
+        if url is None:
+            url = self.default_avatar_url
+        
+        return url
+    
+    
+    def avatar_url_as(self, ext = None, size = None):
+        """
+        Returns the user's avatar url.
+        If the user has no avatar then returns its default avatar's url.
+        
+        Parameters
+        ----------
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+            If the user has animated avatar, it can be `'gif'` as well.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `str`
+        """
+        url = build_user_avatar_url_as(self.id, self.avatar_type, self.avatar_hash, ext, size)
+        if url is None:
+            url = self.default_avatar_url
+        
+        return url
 
 
 class BotsQueryResult:
@@ -547,7 +713,7 @@ class BotsQueryResult:
     
     def __repr__(self):
         """Returns the bot info's representation."""
-        return f'<{self.__class__.__name__} count={self.count} total={self.total}>'
+        return f'<{type(self).__name__} count = {self.count} total = {self.total}>'
     
     def __len__(self):
         """Returns the length of the query result"""
@@ -621,7 +787,7 @@ class VoteBase:
     
     def __repr__(self):
         """Returns the vote's representation."""
-        return f'<{self.__class__.__name__} user_id = {self.user_id!r}>'
+        return f'<{type(self).__name__} user_id = {self.user_id!r}>'
 
 
 class BotVote(VoteBase):
@@ -656,7 +822,7 @@ class BotVote(VoteBase):
     
     @copy_docs(VoteBase.__repr__)
     def __repr__(self):
-        return f'<{self.__class__.__name__} user_id = {self.user_id!r} bot_id = {self.bot_id!r}>'
+        return f'<{type(self).__name__} user_id = {self.user_id!r} bot_id = {self.bot_id!r}>'
 
 
 class GuildVote(VoteBase):
@@ -687,4 +853,4 @@ class GuildVote(VoteBase):
     
     @copy_docs(VoteBase.__repr__)
     def __repr__(self):
-        return f'<{self.__class__.__name__} user_id = {self.user_id!r} guild_id = {self.guild_id!r}>'
+        return f'<{type(self).__name__} user_id = {self.user_id!r} guild_id = {self.guild_id!r}>'

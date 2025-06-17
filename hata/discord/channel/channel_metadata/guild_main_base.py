@@ -435,7 +435,7 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
         ----------
         channel_entity : ``Channel``
             The channel entity owning the metadata.
-        roles : `tuple` of ``Role``
+        roles : ``tuple<Role>``
             The roles to calculate final permissions from.
         
         Returns

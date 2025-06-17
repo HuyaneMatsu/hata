@@ -24,12 +24,12 @@ def _is_attachments(value):
     ----------
     value : `None`, `(str, object)`, `dict<str, object>, \
             `(list | Deque)<(object,) | (None | str, object) | (None | str, object, None | str)>)`
-        The value to check
+        The value to check.
     
     Yields
     ------
     attachments : `None | list<(bool<True>, int) | (bool<False>, (str, object, None | str))>`
-        The processed attachments
+        The processed attachments:
     """
     # None
     if value is None:
@@ -236,7 +236,7 @@ class CONVERSION_ATTACHMENTS(Conversion):
     
     
     if API_VERSION >= 9:
-        def serializer_putter(data, defaults, value):
+        def serializer_putter(data, required, value):
             
             file_attachment_index = 0
             
@@ -258,7 +258,7 @@ class CONVERSION_ATTACHMENTS(Conversion):
                     attachment_datas.append(_build_partial_attachment_data(attachment_id, description))
             
             
-            if (not defaults) and (attachment_datas is None):
+            if (not required) and (attachment_datas is None):
                 return data
             
             if attachment_datas is None:

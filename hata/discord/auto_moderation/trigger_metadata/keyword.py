@@ -15,13 +15,13 @@ class AutoModerationRuleTriggerMetadataKeyword(AutoModerationRuleTriggerMetadata
     
     Attributes
     ----------
-    excluded_keywords : `None`, `tuple` of `str`
+    excluded_keywords : `None | tuple<str>`
         Excluded keywords from under the rule.
     
-    keywords : `None`, `tuple` of `str`
+    keywords : `None | tuple<str>`
         Substrings which will be searched for in content.
     
-    regex_patterns : `None`, `tuple` of `str`
+    regex_patterns : `None | tuple<str>`
         Regular expression patterns which are matched against content.
         
         > Only rust flavored regex is supported.
@@ -92,7 +92,7 @@ class AutoModerationRuleTriggerMetadataKeyword(AutoModerationRuleTriggerMetadata
         keywords : `None | str | iterable<str>`, Optional
             Substrings which will be searched for in content.
         
-        regex_patterns : `None`, `tuple` of `str`, Optional
+        regex_patterns : `None | tuple<str>`, Optional
             Regular expression patterns which are matched against content.
         
         excluded_keywords : `None | str | iterable<str>`, Optional
@@ -301,7 +301,7 @@ class AutoModerationRuleTriggerMetadataKeyword(AutoModerationRuleTriggerMetadata
         keywords : `None | str | iterable<str>`, Optional (Keyword only)
             Substrings which will be searched for in content.
         
-        regex_patterns : `None`, `tuple` of `str`, Optional (Keyword only)
+        regex_patterns : `None | tuple<str>`, Optional (Keyword only)
             Regular expression patterns which are matched against content.
         
         Returns

@@ -6,7 +6,8 @@ from ....client import Client
 from ....color import Color
 from ....guild import GuildBadge
 
-from ...avatar_decoration import AvatarDecoration 
+from ...avatar_decoration import AvatarDecoration
+from ...name_plate import NamePlate
 
 from ...guild_profile import GuildProfile
 from ...thread_profile import ThreadProfile
@@ -26,20 +27,21 @@ def _assert_fields_set(user):
         The user to check.
     """
     vampytest.assert_instance(user, ClientUserPBase)
+    vampytest.assert_instance(user.activities, list, nullable = True)
     vampytest.assert_instance(user.avatar, Icon)
     vampytest.assert_instance(user.avatar_decoration, AvatarDecoration, nullable = True)
     vampytest.assert_instance(user.banner, Icon)
     vampytest.assert_instance(user.banner_color, Color, nullable = True)
+    vampytest.assert_instance(user.bot, bool)
     vampytest.assert_instance(user.discriminator, int)
     vampytest.assert_instance(user.display_name, str, nullable = True)
     vampytest.assert_instance(user.flags, UserFlag)
+    vampytest.assert_instance(user.guild_profiles, dict)
     vampytest.assert_instance(user.id, int)
     vampytest.assert_instance(user.name, str)
+    vampytest.assert_instance(user.name_plate, NamePlate, nullable = True)
     vampytest.assert_instance(user.primary_guild_badge, GuildBadge, nullable = True)
-    vampytest.assert_instance(user.bot, bool)
-    vampytest.assert_instance(user.guild_profiles, dict)
     vampytest.assert_instance(user.thread_profiles, dict, nullable = True)
-    vampytest.assert_instance(user.activities, list, nullable = True)
     vampytest.assert_instance(user.status, Status)
     vampytest.assert_instance(user.statuses, dict, nullable = True)
 
@@ -60,48 +62,54 @@ def test__ClientUserPBase__new__all_fields():
     
     Case: All fields given.
     """
+    activities = [Activity('orin dance', activity_type = ActivityType.playing)]
     avatar = Icon(IconType.static, 32)
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160055)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    bot = True
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'voice in the dark'
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202506030060,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180043, tag = 'miau')
-    bot = True
-    activities = [Activity('orin dance', activity_type = ActivityType.playing)]
     status = Status.online
     statuses = {'mobile': Status.online.value}
     
     user = ClientUserPBase(
+        activities = activities,
         avatar = avatar,
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
+        bot = bot,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
         name = name,
+        name_plate = name_plate,
         primary_guild_badge = primary_guild_badge,
-        bot = bot,
-        activities = activities,
         status = status,
         statuses = statuses,
     )
     _assert_fields_set(user)
     
+    vampytest.assert_eq(user.activities, activities)
     vampytest.assert_eq(user.avatar, avatar)
     vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
     vampytest.assert_eq(user.banner, banner)
     vampytest.assert_eq(user.banner_color, banner_color)
+    vampytest.assert_eq(user.bot, bot)
     vampytest.assert_eq(user.discriminator, discriminator)
     vampytest.assert_eq(user.display_name, display_name)
     vampytest.assert_eq(user.flags, flags)
     vampytest.assert_eq(user.name, name)
+    vampytest.assert_eq(user.name_plate, name_plate)
     vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
-    vampytest.assert_eq(user.bot, bot)
-    vampytest.assert_eq(user.activities, activities)
     vampytest.assert_is(user.status, status)
     vampytest.assert_eq(user.statuses, statuses)
 
@@ -127,12 +135,16 @@ def test_ClientUserPBase___from_client__0():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160056)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    bot = True
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'voice in the dark'
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202506030061,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180044, tag = 'miau')
-    bot = True
     
     user_id = 202302070001
     guild_profiles = {2023020700002: GuildProfile(nick = 'hello')}
@@ -149,12 +161,13 @@ def test_ClientUserPBase___from_client__0():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
+        bot = bot,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
         name = name,
+        name_plate = name_plate,
         primary_guild_badge = primary_guild_badge,
-        bot = bot,
     )
 
     client.activities = activities
@@ -173,12 +186,13 @@ def test_ClientUserPBase___from_client__0():
         vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
         vampytest.assert_eq(user.banner, banner)
         vampytest.assert_eq(user.banner_color, banner_color)
+        vampytest.assert_eq(user.bot, bot)
         vampytest.assert_eq(user.discriminator, discriminator)
         vampytest.assert_eq(user.display_name, display_name)
         vampytest.assert_eq(user.flags, flags)
         vampytest.assert_eq(user.name, name)
+        vampytest.assert_eq(user.name_plate, name_plate)
         vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
-        vampytest.assert_eq(user.bot, bot)
         
         vampytest.assert_eq(user.id, user_id)
         vampytest.assert_eq(user.guild_profiles, guild_profiles)
@@ -205,12 +219,16 @@ def test_ClientUserPBase___from_client__1():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160057)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    bot = True
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'voice in the dark'
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202506030062,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180045, tag = 'miau')
-    bot = True
     
     user_id = 202302070004
     guild_profiles = {202302070005: GuildProfile(nick = 'hello')}
@@ -227,12 +245,13 @@ def test_ClientUserPBase___from_client__1():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
+        bot = bot,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
         name = name,
+        name_plate = name_plate,
         primary_guild_badge = primary_guild_badge,
-        bot = bot,
     )
     
     client.activities = activities

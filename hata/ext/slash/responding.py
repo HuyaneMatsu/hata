@@ -370,7 +370,7 @@ class InteractionResponse(
         embeds : `None`, `list<Embed>`, Optional
             The new embedded content of the message.
         
-        event : `None`, ``InteractionEvent`` = `None`, Optional
+        event : ``None | InteractionEvent`` = `None`, Optional
             Alternative for `interaction_event`.
         
         file : `None`, `object`, Optional (Keyword only)
@@ -382,7 +382,7 @@ class InteractionResponse(
         flags : `int`, ``MessageFlag`, Optional
             The message's flags.
         
-        interaction_event : `None`, ``InteractionEvent`` = `None`, Optional
+        interaction_event : ``None | InteractionEvent`` = `None`, Optional
             A specific event ot answer instead of the command's.
         
         message : `None`, ``Message``, Optional (Keyword only)
@@ -399,6 +399,9 @@ class InteractionResponse(
         
         tts : `bool` = `False`, Optional (Keyword only)
             Whether the message is text-to-speech.
+        
+        voice_attachment : ``None | VoiceAttachment``, Optional (Keyword only)
+            Modifies the message to be a voice message, allowing it to contain just a single voice attachment.
         
         Raises
         ------
@@ -488,7 +491,7 @@ class InteractionResponse(
             
             if (not interaction_event.is_unanswered()):
                 need_acknowledging = False
-            elif (self.attachments is not None):
+            elif (self.attachments is not None) or (self.voice_attachment is not None):
                 need_acknowledging = True
             elif self.abort:
                 need_acknowledging = False
@@ -532,7 +535,7 @@ class InteractionResponse(
                 yield client.interaction_followup_message_create(interaction_event, self)
                 
             elif interaction_event.is_unanswered():
-                if (self.attachments is not None):
+                if (self.attachments is not None) or (self.voice_attachment is not None):
                     need_acknowledging = True
                 else:
                     need_acknowledging = False
@@ -628,7 +631,7 @@ def abort(
     embeds : `None`, `list<Embed>`, Optional
         The new embedded content of the message.
     
-    event : `None`, ``InteractionEvent`` = `None`, Optional
+    event : ``None | InteractionEvent`` = `None`, Optional
         Alternative for `interaction_event`.
     
     file : `None`, `object`, Optional (Keyword only)
@@ -640,7 +643,7 @@ def abort(
     flags : `int`, ``MessageFlag`, Optional
         The message's flags.
     
-    interaction_event : `None`, ``InteractionEvent`` = `None`, Optional
+    interaction_event : ``None | InteractionEvent`` = `None`, Optional
         A specific event ot answer instead of the command's.
     
     message : `None`, ``Message``, Optional (Keyword only)
@@ -654,6 +657,9 @@ def abort(
     
     tts : `bool` = `False`, Optional (Keyword only)
         Whether the message is text-to-speech.
+    
+    voice_attachment : ``None | VoiceAttachment``, Optional (Keyword only)
+        Modifies the message to be a voice message, allowing it to contain just a single voice attachment.
     
     Raises
     ------

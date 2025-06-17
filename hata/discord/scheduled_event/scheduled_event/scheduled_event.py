@@ -3,7 +3,7 @@ __all__ = ('ScheduledEvent', )
 from ...bases import DiscordEntity, ICON_TYPE_NONE, IconSlot
 from ...channel import ChannelType, create_partial_channel_from_id
 from ...core import GUILDS, SCHEDULED_EVENTS
-from ...http import urls as module_urls
+from ...http.urls import build_scheduled_event_image_url, build_scheduled_event_image_url_as, build_scheduled_event_url
 from ...precreate_helpers import process_precreate_parameters
 from ...user import ZEROUSER
 
@@ -23,12 +23,7 @@ from .helpers import guess_scheduled_event_entity_type_from_keyword_parameters
 from .preinstanced import PrivacyLevel, ScheduledEventEntityType, ScheduledEventStatus
 
 
-SCHEDULED_EVENT_IMAGE = IconSlot(
-    'image',
-    'image',
-    module_urls.scheduled_event_image_url,
-    module_urls.scheduled_event_image_url_as,
-)
+SCHEDULED_EVENT_IMAGE = IconSlot('image', 'image')
 
 
 PRECREATE_FIELDS = {
@@ -85,7 +80,7 @@ class ScheduledEvent(DiscordEntity):
         How the scheduled event should re-occur.
     start : `None | DateTime`
         The scheduled start time of the event.
-    sku_ids : `None`, `tuple` of `int`
+    sku_ids : `None | tuple<int>`
         Stock keeping unit identifiers used at the event.
     status : ``ScheduledEventStatus``
         The status of the event.
@@ -127,11 +122,11 @@ class ScheduledEvent(DiscordEntity):
             The event's stage's channel or its identifier.
         description : `None`, `str`, Optional (Keyword only)
             Description of the event.
-        end : `None`, `datetime`, Optional (Keyword only)
+        end : `None | DateTime`, Optional (Keyword only)
             The scheduled end time of the event.
         entity_type : ``ScheduledEventEntityType``, `int`, Optional (Keyword only)
             To which type of entity the event is bound to.
-        image : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        image : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The schedule event's image.
         name : `str`
             The event's name.
@@ -139,7 +134,7 @@ class ScheduledEvent(DiscordEntity):
             The privacy level of the event.
         schedule : `None | Schedule`, Optional (Keyword only)
             How the scheduled event should re-occur.
-        start : `None`, `datetime`, Optional (Keyword only)
+        start : `None | DateTime`, Optional (Keyword only)
             The scheduled start time of the event.
         status : ``ScheduledEventStatus``, Optional (Keyword only)
             The status of the event.
@@ -533,7 +528,7 @@ class ScheduledEvent(DiscordEntity):
             +---------------------------+-----------------------------------------------+
             | schedule                  | `None`, ``Schedule``                          |
             +---------------------------+-----------------------------------------------+
-            | sku_ids                   | `None`, `tuple` of `int`                      |
+            | sku_ids                   | `None | tuple<int>`                           |
             +---------------------------+-----------------------------------------------+
             | start                     | `None | DateTime`                             |
             +---------------------------+-----------------------------------------------+
@@ -872,7 +867,7 @@ class ScheduledEvent(DiscordEntity):
             The event's creator.
         description : `None`, `str`, Optional (Keyword only)
             Description of the event.
-        end : `None`, `datetime`, Optional (Keyword only)
+        end : `None | DateTime`, Optional (Keyword only)
             The scheduled end time of the event.
         entity_id : `int`, Optional (Keyword only)
             The event's entity's identifier.
@@ -882,7 +877,7 @@ class ScheduledEvent(DiscordEntity):
             Alternative for `guild_id`.
         guild_id : `int`, ``Guild``, Optional (Keyword only)
             The scheduled event's guild or its identifier.
-        image : `None`, ``Icon``, `str`, Optional (Keyword only)
+        image : ``None | str | Icon``, Optional (Keyword only)
             The schedule event's image.
         location : `None`, `str`, Optional (Keyword only)
             The place where the event will take place.
@@ -896,7 +891,7 @@ class ScheduledEvent(DiscordEntity):
             Stock keeping unit identifiers used at the event.
         speaker_ids : `None`, `iterable` of (`int`, `ClientUserBase`), Optional (Keyword only)
             The speakers' identifier of the stage channel.
-        start : `None`, `datetime`, Optional (Keyword only)
+        start : `None | DateTime`, Optional (Keyword only)
             The scheduled start time of the event.
         status : ``ScheduledEventStatus``, Optional (Keyword only)
             The status of the event.
@@ -1020,11 +1015,11 @@ class ScheduledEvent(DiscordEntity):
             The event's stage's channel or its identifier.
         description : `None`, `str`, Optional (Keyword only)
             Description of the event.
-        end : `None`, `datetime`, Optional (Keyword only)
+        end : `None | DateTime`, Optional (Keyword only)
             The scheduled end time of the event.
         entity_type : ``ScheduledEventEntityType``, `int`, Optional (Keyword only)
             To which type of entity the event is bound to.
-        image : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        image : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The schedule event's image.
         name : `str`
             The event's name.
@@ -1032,7 +1027,7 @@ class ScheduledEvent(DiscordEntity):
             The privacy level of the event.
         schedule : `None | Schedule`, Optional (Keyword only)
             How the scheduled event should re-occur.
-        start : `None`, `datetime`, Optional (Keyword only)
+        start : `None | DateTime`, Optional (Keyword only)
             The scheduled start time of the event.
         status : ``ScheduledEventStatus``, Optional (Keyword only)
             The status of the event.
@@ -1156,9 +1151,6 @@ class ScheduledEvent(DiscordEntity):
         return new
     
     
-    url = property(module_urls.scheduled_event_url)
-    
-    
     @property
     def partial(self):
         """
@@ -1269,3 +1261,47 @@ class ScheduledEvent(DiscordEntity):
         sku_ids = self.sku_ids
         if (sku_ids is not None):
             yield from sku_ids
+    
+    
+    @property
+    def url(self):
+        """
+        Returns the scheduled event's url.
+        
+        Returns
+        -------
+        url : `str`
+        """
+        return build_scheduled_event_url(self.guild_id, self.id)
+
+    
+    @property
+    def image_url(self):
+        """
+        Returns the scheduled event's image's url. If the scheduled event has no image, then returns `None`.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_scheduled_event_image_url(self.id, self.image_type, self.image_hash)
+    
+    
+    def image_url_as(self, ext = None, size = None):
+        """
+        Returns the scheduled event's image's url. If the scheduled event has no image, then returns `None`.
+        
+        Parameters
+        ----------
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_scheduled_event_image_url_as(self.id, self.image_type, self.image_hash, ext, size)
+    

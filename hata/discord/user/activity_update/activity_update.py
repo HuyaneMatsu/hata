@@ -27,7 +27,7 @@ class ActivityUpdate(RichAttributeErrorBaseType):
         +===================+===================================+
         | assets            | `None`, ``ActivityAssets``        |
         +-------------------+-----------------------------------+
-        | buttons           | `None`, `tuple` of `str`          |
+        | buttons           | `None | tuple<str>`               |
         +-------------------+-----------------------------------+
         | created_at        | `DateTime`                        |
         +-------------------+-----------------------------------+

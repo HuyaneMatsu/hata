@@ -29,7 +29,7 @@ class Oauth2User(OrinUserBase):
     avatar_type : ``IconType``
         The user's avatar's type.
     
-    avatar_decoration : `None`, ``AvatarDecoration``
+    avatar_decoration : ``None | AvatarDecoration``
         The user's avatar decorations.
     
     banner_color : `None`, ``Color``
@@ -44,10 +44,10 @@ class Oauth2User(OrinUserBase):
     discriminator : `int`
         The user's discriminator. Given to avoid overlapping names.
     
-    display_name : `None`, `str`
+    display_name : `None | str`
         The user's non-unique display name.
     
-    email : `None`, `str`
+    email : `None | str`
         The user's email. Defaults to `None`.
     
     email_verified : `bool`
@@ -67,6 +67,9 @@ class Oauth2User(OrinUserBase):
     
     name : str
         The user's username.
+    
+    name_plate : ``None | NamePlate``
+        The user's name plate.
     
     premium_type : ``PremiumType``
         The Nitro subscription type of the user.
@@ -91,6 +94,7 @@ class Oauth2User(OrinUserBase):
         locale = ...,
         mfa_enabled = ...,
         name = ...,
+        name_plate = ...,
         premium_type = ...,
         primary_guild_badge = ...,
     ):
@@ -99,13 +103,13 @@ class Oauth2User(OrinUserBase):
         
         Parameters
         ----------
-        avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        avatar : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The user's avatar.
         
-        avatar_decoration : `None`, ``AvatarDecoration``, Optional (Keyword only)
+        avatar_decoration : ``None | AvatarDecoration``, Optional (Keyword only)
             The user's avatar decoration.
         
-        banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        banner : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The user's banner.
         
         banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
@@ -114,7 +118,7 @@ class Oauth2User(OrinUserBase):
         discriminator : `str`, `int`, Optional (Keyword only)
             The user's discriminator.
         
-        display_name : `None`, `str`, Optional (Keyword only)
+        display_name : `None | str`, Optional (Keyword only)
             The user's non-unique display name.
         
         email : `None, `str`, Optional (Keyword only)
@@ -135,7 +139,10 @@ class Oauth2User(OrinUserBase):
         name : `str`, Optional (Keyword only)
             The user's name.
         
-        premium_type : ``None | PremiumType | int``, Optional (Keyword only)
+        name_plate : ``None | NamePlate``, Optional (Keyword only)
+            The user's name plate.
+        
+        premium_type : ``None | int | PremiumType``, Optional (Keyword only)
             The Nitro subscription type of the user.
         
         primary_guild_badge : ``None | GuildBadge``, Optional (Keyword only)
@@ -189,6 +196,7 @@ class Oauth2User(OrinUserBase):
             display_name = display_name,
             flags = flags,
             name = name,
+            name_plate = name_plate,
             primary_guild_badge = primary_guild_badge,
         )
         self.access = Oauth2Access()
@@ -317,6 +325,7 @@ class Oauth2User(OrinUserBase):
         locale = ...,
         mfa_enabled = ...,
         name = ...,
+        name_plate = ...,
         premium_type = ...,
         primary_guild_badge = ...,
     ):
@@ -325,13 +334,13 @@ class Oauth2User(OrinUserBase):
         
         Parameters
         ----------
-        avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        avatar : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The user's avatar.
         
-        avatar_decoration : `None`, ``AvatarDecoration``, Optional (Keyword only)
+        avatar_decoration : ``None | AvatarDecoration``, Optional (Keyword only)
             The user's avatar decoration.
         
-        banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        banner : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The user's banner.
         
         banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
@@ -340,7 +349,7 @@ class Oauth2User(OrinUserBase):
         discriminator : `str`, `int`, Optional (Keyword only)
             The user's discriminator.
         
-        display_name : `None`, `str`, Optional (Keyword only)
+        display_name : `None | str`, Optional (Keyword only)
             The user's non-unique display name.
         
         email : `None, `str`, Optional (Keyword only)
@@ -361,7 +370,10 @@ class Oauth2User(OrinUserBase):
         name : `str`, Optional (Keyword only)
             The user's name.
         
-        premium_type : ``None | PremiumType | int``, Optional (Keyword only)
+        name_plate : ``None | NamePlate``, Optional (Keyword only)
+            The user's name plate.
+        
+        premium_type : ``None | int | PremiumType``, Optional (Keyword only)
             The Nitro subscription type of the user.
         
         primary_guild_badge : ``None | GuildBadge``, Optional (Keyword only)
@@ -415,6 +427,7 @@ class Oauth2User(OrinUserBase):
             display_name = display_name,
             flags = flags,
             name = name,
+            name_plate = name_plate,
             primary_guild_badge = primary_guild_badge,
         )
         new.access = Oauth2Access()

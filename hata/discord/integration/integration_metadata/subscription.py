@@ -37,7 +37,7 @@ class IntegrationMetadataSubscription(IntegrationMetadataBase):
         The role's identifier what the integration uses for subscribers.
     subscriber_count : `int`
         How many subscribers the integration has.
-    synced_at : `None`, `datetime`
+    synced_at : `None | DateTime`
         When the integration was last synced.
     syncing : `bool`
         Whether the integration syncing.
@@ -77,7 +77,7 @@ class IntegrationMetadataSubscription(IntegrationMetadataBase):
             The role's identifier what the integration uses for subscribers.
         subscriber_count : `int`, Optional (Keyword only)
             How many subscribers the integration has.
-        synced_at : `None`, `datetime`, Optional (Keyword only)
+        synced_at : `None | DateTime`, Optional (Keyword only)
             When the integration was last synced.
         syncing : `bool`, Optional (Keyword only)
             Whether the integration syncing.
@@ -358,7 +358,7 @@ class IntegrationMetadataSubscription(IntegrationMetadataBase):
             The role's identifier what the integration uses for subscribers.
         subscriber_count : `int`, Optional (Keyword only)
             How many subscribers the integration has.
-        synced_at : `None`, `datetime`, Optional (Keyword only)
+        synced_at : `None | DateTime`, Optional (Keyword only)
             When the integration was last synced.
         syncing : `bool`, Optional (Keyword only)
             Whether the integration syncing.

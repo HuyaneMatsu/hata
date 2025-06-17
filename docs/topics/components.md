@@ -88,11 +88,11 @@ components = [
 
 Currently components can be separated to 2 versions.
 
-#### version 1
+### version 1
 
 They can be attached to any message. See the table [overview](#overview) for supported components.
 
-#### version 2
+### version 2
 
 They consist of content components and related layout components.
 These content and layout components allow you to structure your message in a more relaxed way.
@@ -103,9 +103,9 @@ Hata does this for you automatically.
 
 ## Limitations
 
-- A message can have up to `5` top level components if v1, or `10` if v2.
+- A message can have up to `5` top level components if v1, there is no such a limit in v2.
 - `custom_id` can be `100` character long.
-- A message can have up to `30` total components if v1, or up to `40` if v2.
+- A message can have up to `40` total components.
 - The displayable content cannot exceed `4000` characters.
     This excludes the text on interactive components and media descriptions.
 

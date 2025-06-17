@@ -22,6 +22,8 @@ def test__parse_name(input_data):
     
     Returns
     -------
-    name : `str`
+    name : `None | str`
     """
-    return parse_name(input_data)
+    output = parse_name(input_data)
+    vampytest.assert_instance(output, str, nullable = True)
+    return output

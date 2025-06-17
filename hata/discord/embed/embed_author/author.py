@@ -18,13 +18,13 @@ class EmbedAuthor(EmbedFieldBase):
     
     Attributes
     ----------
-    icon_url : `None`, `str`
+    icon_url : `None | str`
         Url of the author's icon.
-    icon_proxy_url : `None`, `str`
+    icon_proxy_url : `None | str`
         A proxied url to the url of the author's icon.
-    name : `None`, `str`
+    name : `None | str`
         The name of the author.
-    url : `None`, `str`
+    url : `None | str`
         The url of the author.
     """
     __slots__ = ('icon_url', 'icon_proxy_url', 'name', 'url')
@@ -35,11 +35,11 @@ class EmbedAuthor(EmbedFieldBase):
         
         Parameters
         ----------
-        name : `None`, `str`, Optional
+        name : `None | str`, Optional
             The name of the author.
-        icon_url: `None`, `str`, Optional
+        icon_url: `None | str`, Optional
             An url of the author's icon. Can be http(s) or attachment.
-        url : `None`, `str`, Optional
+        url : `None | str`, Optional
             The url of the author.
         
         Raises
@@ -223,11 +223,11 @@ class EmbedAuthor(EmbedFieldBase):
         
         Parameters
         ----------
-        icon_url : `None`, `str`, Optional (Keyword only)
+        icon_url : `None | str`, Optional (Keyword only)
             An url of the author's icon. Can be http(s) or attachment.
-        name : `None`, `str`, Optional (Keyword only)
+        name : `None | str`, Optional (Keyword only)
             The name of the author.
-        url : `None`, `str`, Optional (Keyword only)
+        url : `None | str`, Optional (Keyword only)
             The url of the author.
         
         Returns

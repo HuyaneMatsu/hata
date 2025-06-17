@@ -29,9 +29,9 @@ class ActivityTimestamps(ActivityFieldBase):
         
         Parameters
         ----------
-        end : `None`, `datetime`, Optional (Keyword only)
+        end : `None | DateTime`, Optional (Keyword only)
             When the activity ends. 
-        start : `None`, `datetime`, Optional (Keyword only)
+        start : `None | DateTime`, Optional (Keyword only)
            When the activity starts.
        
         Raises
@@ -163,9 +163,9 @@ class ActivityTimestamps(ActivityFieldBase):
         
         Parameters
         ----------
-        end : `None`, `datetime`, Optional (Keyword only)
+        end : `None | DateTime`, Optional (Keyword only)
             When the activity ends. 
-        start : `None`, `datetime`, Optional (Keyword only)
+        start : `None | DateTime`, Optional (Keyword only)
            When the activity starts.
         
         Returns

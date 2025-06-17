@@ -2,7 +2,7 @@ __all__ = ()
 
 from scarletio import CallableAnalyzer, include_with_callback
 
-from .utils import datetime_to_timestamp
+from .utils import datetime_to_timestamp, datetime_to_unix_time
 
 
 def _has_entity_include_internals_parameter(entity_type):
@@ -143,7 +143,7 @@ def optional_entity_id_array_optional_putter_factory(field_key):
         
         Parameters
         ----------
-        entity_id_array : `None`, `tuple` of `int`
+        entity_id_array : `None | tuple<int>`
             An entity's identifier.
         data : `dict<str, object>`
             Json serializable dictionary.
@@ -190,7 +190,7 @@ def nullable_entity_id_array_putter_factory(field_key):
         
         Parameters
         ----------
-        entity_id_array : `None`, `tuple` of `int`
+        entity_id_array : `None | tuple<int>`
             An entity's identifier.
         data : `dict<str, object>`
             Json serializable dictionary.
@@ -450,6 +450,22 @@ def int_postprocess_putter_factory(field_key, postprocessor):
         return data
     
     return putter
+
+
+def float_putter_factory(field_key):
+    """
+    Returns an `float` putter.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    
+    Returns
+    -------
+    putter : `FunctionType`
+    """
+    return field_putter_factory(field_key)
 
 
 def field_putter_factory(field_key):
@@ -780,6 +796,7 @@ def negated_bool_optional_putter_factory(field_key, default_value):
     ----------
     field_key : `str`
         The field's key used in payload.
+    
     default_value : `bool`
         The default value to ignore if defaults are not required.
     
@@ -797,8 +814,10 @@ def negated_bool_optional_putter_factory(field_key, default_value):
         ----------
         field_value : `bool`
             Boolean field value.
+        
         data : `dict<str, object>`
             Json serializable dictionary.
+        
         defaults : `bool`
             Whether default values should be included as well.
         
@@ -840,8 +859,10 @@ def nullable_date_time_putter_factory(field_key):
         ----------
         field_value : `DateTime`
             Date time field value.
+        
         data : `dict<str, object>`
             Json serializable dictionary.
+        
         defaults : `bool`
             Whether default values should be included as well.
         
@@ -885,8 +906,10 @@ def nullable_date_time_optional_putter_factory(field_key):
         ----------
         field_value : `DateTime`
             Date time field value.
+        
         data : `dict<str, object>`
             Json serializable dictionary.
+        
         defaults : `bool`
             Whether default values should be included as well.
         
@@ -902,6 +925,101 @@ def nullable_date_time_optional_putter_factory(field_key):
             else:
                 timestamp = datetime_to_timestamp(field_value)
             data[field_key] = timestamp
+        
+        return data
+    
+    return putter
+
+
+def nullable_unix_time_putter_factory(field_key):
+    """
+    Returns a new nullable date time putter.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    
+    Returns
+    -------
+    putter : `FunctionType`
+    """
+    def putter(field_value, data, defaults):
+        """
+        Puts the given `DateTime` into the given `data` json serializable object.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        field_value : `DateTime`
+            Date time field value.
+        
+        data : `dict<str, object>`
+            Json serializable dictionary.
+        
+        defaults : `bool`
+            Whether default values should be included as well.
+        
+        Returns
+        -------
+        data : `dict<str, object>`
+        """
+        nonlocal field_key
+        
+        if field_value is None:
+            unix_time = None
+        else:
+            unix_time = datetime_to_unix_time(field_value)
+        data[field_key] = unix_time
+        
+        return data
+    
+    return putter
+
+
+def nullable_unix_time_optional_putter_factory(field_key):
+    """
+    Returns a new nullable date time optional putter.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    
+    Returns
+    -------
+    putter : `FunctionType`
+    """
+    def putter(field_value, data, defaults):
+        """
+        Puts the given `DateTime` into the given `data` json serializable object.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        field_value : `DateTime`
+            Date time field value.
+        
+        data : `dict<str, object>`
+            Json serializable dictionary.
+        
+        defaults : `bool`
+            Whether default values should be included as well.
+        
+        Returns
+        -------
+        data : `dict<str, object>`
+        """
+        nonlocal field_key
+        
+        if defaults or (field_value is not None):
+            if field_value is None:
+                unix_time = None
+            else:
+                unix_time = datetime_to_unix_time(field_value)
+            data[field_key] = unix_time
         
         return data
     

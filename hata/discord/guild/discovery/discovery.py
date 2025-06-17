@@ -19,13 +19,13 @@ class GuildDiscovery(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    application_actioned : `None`, `datetime`
+    application_actioned : `None | DateTime`
         When the guild's application was accepted or rejected.
-    application_requested : `None`, `datetime`
+    application_requested : `None | DateTime`
         When the guild applied to guild discovery. Only set if pending.
     emoji_discovery : `bool`
         Whether guild info is shown when the respective guild's emojis are clicked.
-    keywords : `None`, `tuple` of `str`
+    keywords : `None | tuple<str>`
         The set discovery search keywords for the guild.
     primary_category : ``DiscoveryCategory``
         The primary discovery category of the guild.
@@ -52,9 +52,9 @@ class GuildDiscovery(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        application_actioned : `None`, `datetime`, Optional (Keyword only)
+        application_actioned : `None | DateTime`, Optional (Keyword only)
             When the guild's application was accepted or rejected.
-        application_requested : `None`, `datetime`, Optional (Keyword only)
+        application_requested : `None | DateTime`, Optional (Keyword only)
             When the guild applied to guild discovery. Only set if pending.
         emoji_discovery : `bool`, Optional (Keyword only)
             Whether guild info is shown when the respective guild's emojis are clicked.
@@ -403,9 +403,9 @@ class GuildDiscovery(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        application_actioned : `None`, `datetime`, Optional (Keyword only)
+        application_actioned : `None | DateTime`, Optional (Keyword only)
             When the guild's application was accepted or rejected.
-        application_requested : `None`, `datetime`, Optional (Keyword only)
+        application_requested : `None | DateTime`, Optional (Keyword only)
             When the guild applied to guild discovery. Only set if pending.
         emoji_discovery : `bool`, Optional (Keyword only)
             Whether guild info is shown when the respective guild's emojis are clicked.

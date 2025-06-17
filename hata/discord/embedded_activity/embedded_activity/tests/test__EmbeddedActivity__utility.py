@@ -265,7 +265,7 @@ def test__EmbeddedActivity__iter_users(embedded_activity_id, user_states):
     ----------
     embedded_activity_id : `int`
         Identifier to create instance with.
-    user_states : `None | list<ClientUserBase>`
+    user_states : ``None | list<ClientUserBase>``
         User states to create the activity with.
     
     Returns

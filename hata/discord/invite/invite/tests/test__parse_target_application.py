@@ -26,7 +26,7 @@ def test__parse_target_application(input_data):
     
     Returns
     -------
-    output : `None | Application`
+    output : ``None | Application``
     """
     output = parse_target_application(input_data)
     vampytest.assert_instance(output, Application, nullable = True)

@@ -166,12 +166,12 @@ def parse_stickers(data, entities):
     ----------
     data : `dict<str, object>`
         Guild preview data.
-    entities : `dict` of (`int`, ``Sticker``) items
+    entities : ``dict<int, Sticker>``
         The entity container to populate.
     
     Returns
     -------
-    entities : `dict` of (`int`, ``Sticker``) items
+    entities : ``dict<int, Sticker>``
     """
     sticker_datas = data.get('stickers', None)
     if sticker_datas is None:
@@ -194,7 +194,7 @@ def put_stickers(entities, data, defaults):
     
     Parameters
     ----------
-    entities : `dict` of (`int`, ``Sticker``) items
+    entities : ``dict<int, Sticker>``
         Stickers to put into the given data.
     data : `dict<str, object>`
         Guild preview data.
@@ -222,7 +222,7 @@ def validate_stickers(stickers):
     
     Returns
     -------
-    stickers : `dict` of (`int`, ``Sticker``) items
+    stickers : ``dict<int, Sticker>``
         The validated stickers.
     
     Raises

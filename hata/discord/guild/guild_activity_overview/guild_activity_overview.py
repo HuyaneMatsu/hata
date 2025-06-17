@@ -1,11 +1,13 @@
 __all__ = ('GuildActivityOverview',)
 
 from ...bases import DiscordEntity, IconSlot
-from ...http import urls as module_urls
+from ...http.urls import (
+    build_guild_badge_icon_url, build_guild_badge_icon_url_as, build_guild_discovery_splash_url,
+    build_guild_discovery_splash_url_as, build_guild_icon_url, build_guild_icon_url_as
+)
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 from ...scheduled_event import PrivacyLevel
 
-from ..guild.guild import GUILD_ICON
 from ..guild_activity_overview_activity import GuildActivityOverviewActivity, GuildActivityOverviewActivityLevel
 
 from .fields import (
@@ -21,20 +23,9 @@ from .fields import (
     validate_id, validate_name, validate_privacy_level, validate_tags, 
 )
 
-
-GUILD_ACTIVITY_OVERVIEW_BADGE_ICON = IconSlot(
-    'badge_icon',
-    'badge_hash',
-    module_urls.guild_activity_overview_badge_icon_url,
-    module_urls.guild_activity_overview_badge_icon_url_as,
-)
-
-GUILD_ACTIVITY_OVERVIEW_DISCOVERY_SPLASH = IconSlot(
-    'discovery_splash',
-    'custom_banner_hash',
-    module_urls.guild_discovery_splash_url,
-    module_urls.guild_discovery_splash_url_as,
-)
+GUILD_ACTIVITY_OVERVIEW_BADGE_ICON = IconSlot('badge_icon', 'badge_hash')
+GUILD_ACTIVITY_OVERVIEW_DISCOVERY_SPLASH = IconSlot('discovery_splash', 'custom_banner_hash')
+GUILD_ACTIVITY_OVERVIEW_ICON = IconSlot('icon', 'icon')
 
 
 PRECREATE_FIELDS = {
@@ -53,7 +44,7 @@ PRECREATE_FIELDS = {
     'description' : ('description', validate_description),
     'discovery_splash': ('discovery_splash', GUILD_ACTIVITY_OVERVIEW_DISCOVERY_SPLASH.validate_icon),
     'features' : ('features', validate_features),
-    'icon' : ('icon', GUILD_ICON.validate_icon),
+    'icon' : ('icon', GUILD_ACTIVITY_OVERVIEW_ICON.validate_icon),
     'name' : ('name', validate_name),
     'privacy_level': ('privacy_level', validate_privacy_level),
     'tags' : ('tags', validate_tags),
@@ -162,7 +153,7 @@ class GuildActivityOverview(DiscordEntity):
     )
     
     discovery_splash = GUILD_ACTIVITY_OVERVIEW_DISCOVERY_SPLASH
-    icon = GUILD_ICON
+    icon = GUILD_ACTIVITY_OVERVIEW_ICON
     badge_icon = GUILD_ACTIVITY_OVERVIEW_BADGE_ICON
     
     def __new__(
@@ -191,16 +182,16 @@ class GuildActivityOverview(DiscordEntity):
         description : `None | str`, Optional (Keyword only)
             Description of the represented guild.
         
-        discovery_splash : `None | Icon | str | bytes-like`, Optional (Keyword only)
+        discovery_splash : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The represented guild's discovery splash.
         
-        icon : `None | Icon | str | bytes-like`, Optional (Keyword only)
+        icon : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The represented guild's icon.
         
         name : `str`, Optional (Keyword only)
             Name of the represented guild.
         
-        privacy_level : ``None | PrivacyLevel | int``, Optional (Keyword only)
+        privacy_level : ``None | int | PrivacyLevel``, Optional (Keyword only)
             For who is the guild overview visible for and other related information.
         
         tags : ``None | iterable<GuildActivityOverviewTag>``, Optional (Keyword only)
@@ -913,7 +904,7 @@ class GuildActivityOverview(DiscordEntity):
         badge_color_secondary : `None | int | Color`, Optional (Keyword only)
             Auto generated secondary banner color.
         
-        badge_icon : `None | Icon | str`, Optional (Keyword only)
+        badge_icon : ``None | str | Icon``, Optional (Keyword only)
             The guild's badge icon.
         
         badge_tag : `None | str`, Optional (Keyword only)
@@ -931,19 +922,19 @@ class GuildActivityOverview(DiscordEntity):
         description : `None | str`, Optional (Keyword only)
             Description of the represented guild.
         
-        discovery_splash : `None | Icon | str`, Optional (Keyword only)
+        discovery_splash : ``None | str | Icon``, Optional (Keyword only)
             The represented guild's discovery splash.
         
         features : `None | iterable<GuildFeature> | iterable<str>``, Optional (Keyword only)
             The represented guild's features.
         
-        icon : `None | Icon | str`, Optional (Keyword only)
+        icon : ``None | str | Icon``, Optional (Keyword only)
             The guild's icon.
         
         name : `str`, Optional (Keyword only)
             The represented guild's name.
         
-        privacy_level : ``None | PrivacyLevel | int``, Optional (Keyword only)
+        privacy_level : ``None | int | PrivacyLevel``, Optional (Keyword only)
             For who is the guild overview visible for and other related information.
         
         tags : ``None | iterable<GuildActivityOverviewTag>``, Optional (Keyword only)
@@ -1044,10 +1035,10 @@ class GuildActivityOverview(DiscordEntity):
         description : `None | str`, Optional (Keyword only)
             Description of the represented guild.
         
-        discovery_splash : `None | Icon | str | bytes-like`, Optional (Keyword only)
+        discovery_splash : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The represented guild's discovery splash.
         
-        icon : `None | Icon | str | bytes-like`, Optional (Keyword only)
+        icon : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The represented guild's icon.
         
         name : `str`, Optional (Keyword only)
@@ -1056,7 +1047,7 @@ class GuildActivityOverview(DiscordEntity):
         tags : ``None | iterable<GuildActivityOverviewTag>``, Optional (Keyword only)
             Additional tags assigned to the guild.
         
-        privacy_level : ``None | PrivacyLevel | int``, Optional (Keyword only)
+        privacy_level : ``None | int | PrivacyLevel``, Optional (Keyword only)
             For who is the guild overview visible for and other related information.
         
         Returns
@@ -1235,3 +1226,99 @@ class GuildActivityOverview(DiscordEntity):
         tags = self.tags
         if (tags is not None):
             yield from tags
+    
+    
+    @property
+    def badge_icon_url(self):
+        """
+        Returns the guild badge's icon's url. If the guild badge has no icon, then returns `None`.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_guild_badge_icon_url(self.id, self.badge_icon_type, self.badge_icon_hash)
+    
+    
+    def badge_icon_url_as(self, ext = None, size = None):
+        """
+        Returns the guild badge's icon's url. If the guild badge has no icon, then returns `None`.
+        
+        Parameters
+        ----------
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+            If the guild has animated badge icon, it can be `'gif'` as well.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_guild_badge_icon_url_as(self.id, self.badge_icon_type, self.badge_icon_hash, ext, size)
+    
+    
+    @property
+    def discovery_splash_url(self):
+        """
+        Returns the guild's discovery splash's url. If the guild has no discovery_splash, then returns `None`.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_guild_discovery_splash_url(self.id, self.discovery_splash_type, self.discovery_splash_hash)
+    
+    
+    def discovery_splash_url_as(self, ext = None, size = None):
+        """
+        Returns the guild's discovery splash's url. If the guild has no discovery splash, then returns `None`.
+        
+        Parameters
+        ----------
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+            If the guild has animated discovery splash, it can be `'gif'` as well.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_guild_discovery_splash_url_as(self.id, self.discovery_splash_type, self.discovery_splash_hash, ext, size)
+    
+    
+    @property
+    def icon_url(self):
+        """
+        Returns the guild's icon's url. If the guild has no icon, then returns `None`.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_guild_icon_url(self.id, self.icon_type, self.icon_hash)
+    
+    
+    def icon_url_as(self, ext = None, size = None):
+        """
+        Returns the guild's icon's url. If the guild has no icon, then returns `None`.
+        
+        Parameters
+        ----------
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+            If the guild has animated icon, it can `'gif'` as well.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_guild_icon_url_as(self.id, self.icon_type, self.icon_hash, ext, size)

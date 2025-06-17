@@ -25,6 +25,7 @@ from .stickers import *
 from .suppress_embeds import *
 from .thread_name import *
 from .tts import *
+from .voice_attachment import *
 
 
 __all__ = ()

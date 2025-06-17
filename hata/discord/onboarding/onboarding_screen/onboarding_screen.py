@@ -31,7 +31,7 @@ class OnboardingScreen(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    default_channel_ids : `None`, `tuple` of `int`
+    default_channel_ids : `None | tuple<int>`
         The channels' identifiers that new members get opted into automatically.
     enabled : `bool`
         Whether onboarding is enabled.

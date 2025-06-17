@@ -2,11 +2,13 @@ __all__ = (
     'DefaultAvatar', 'FriendRequestFlag', 'HypesquadHouse', 'PremiumType', 'RelationshipType', 'Status', 'Theme'
 )
 
+from warnings import warn
+
 from scarletio import copy_docs, export
 
 from ...bases import Preinstance as P, PreinstancedBase
 from ...color import Color
-from ...http import urls as module_urls
+from ...http.urls import build_default_avatar_url
 
 
 class DefaultAvatar(PreinstancedBase, value_type = int):
@@ -86,6 +88,12 @@ class DefaultAvatar(PreinstancedBase, value_type = int):
         -------
         default_avatar : ``DefaultAvatar``
         """
+        warn(
+            'Deprecated and will be removed in 2025 December. Please use `UserBase.default_avatar` instead.',
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
         INSTANCES = cls.INSTANCES
         
         discriminator = user.discriminator
@@ -103,7 +111,16 @@ class DefaultAvatar(PreinstancedBase, value_type = int):
         repr_parts.append(repr(self.color))
     
     
-    url = property(module_urls.default_avatar_url)
+    @property
+    def url(self):
+        """
+        Returns the default avatar's url.
+        
+        Returns
+        -------
+        url : `str`
+        """ 
+        return build_default_avatar_url(self.value)
     
     
     # predefined

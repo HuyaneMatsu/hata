@@ -1021,7 +1021,7 @@ class Poll(RichAttributeErrorBaseType):
         
         Yields
         ------
-        item : `(PollAnswer, PollResult)`
+        item : ``(PollAnswer, PollResult)``
         """
         for answer in self.iter_answers():
             yield answer, self._get_or_create_result(answer.id)

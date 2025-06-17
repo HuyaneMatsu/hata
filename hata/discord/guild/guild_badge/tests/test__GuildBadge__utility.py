@@ -121,3 +121,70 @@ def test__GuildBadge__guild(guild_id):
     output = guild_badge.guild
     vampytest.assert_instance(output, Guild, nullable = True)
     return output
+
+
+def _iter_options__icon_url():
+    yield 202505310026, None, False
+    yield 202505310027, Icon(IconType.animated, 5), True
+
+
+@vampytest._(vampytest.call_from(_iter_options__icon_url()).returning_last())
+def test__GuildBadge__icon_url(guild_id, icon):
+    """
+    Tests whether ``GuildBadge.icon_url`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Identifier to create guild badge with.
+    
+    icon : ``None | Icon``
+        Icon to create the guild badge with.
+    
+    Returns
+    -------
+    has_icon_url : `bool`
+    """
+    guild_badge = GuildBadge(
+        guild_id = guild_id,
+        icon = icon,
+    )
+    
+    output = guild_badge.icon_url
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__icon_url_as():
+    yield 202505310028, None, {'ext': 'webp', 'size': 128}, False
+    yield 202505310029, Icon(IconType.animated, 5), {'ext': 'webp', 'size': 128}, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__icon_url_as()).returning_last())
+def test__GuildBadge__icon_url_as(guild_id, icon, keyword_parameters):
+    """
+    Tests whether ``GuildBadge.icon_url_as`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Identifier to create guild badge with.
+    
+    icon : ``None | Icon``
+        Icon to create the guild badge with.
+    
+    keyword_parameters : `dict<str, object>`
+        Additional keyword parameters to pass.
+    
+    Returns
+    -------
+    has_icon_url : `bool`
+    """
+    guild_badge = GuildBadge(
+        guild_id = guild_id,
+        icon = icon,
+    )
+    
+    output = guild_badge.icon_url_as(**keyword_parameters)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)

@@ -398,30 +398,68 @@ def test__Role__copy_with__3():
     vampytest.assert_is(role.unicode_emoji, None)
 
 
-def test__Role__icon_url__0():
+def _iter_options__icon_url():
+    yield 202506010008, None, False
+    yield 202506010009, Icon(IconType.animated, 5), True
+
+
+@vampytest._(vampytest.call_from(_iter_options__icon_url()).returning_last())
+def test__Role__icon_url(role_id, icon):
     """
     Tests whether ``Role.icon_url`` works as intended.
     
-    Case: has icon.
+    Parameters
+    ----------
+    role_id : `int`
+        Identifier to create role with.
+    
+    icon : ``None | Icon``
+        Icon to create the role with.
+    
+    Returns
+    -------
+    has_icon_url : `bool`
     """
-    role_id = 202211040047
+    role = Role.precreate(
+        role_id,
+        icon = icon,
+    )
     
-    role = Role.precreate(role_id, icon = Icon(IconType.static, 56))
-    
-    icon_url = role.icon_url
-    vampytest.assert_instance(icon_url, str)
-    vampytest.assert_true(is_url(icon_url))
+    output = role.icon_url
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
 
 
-def test__Role__icon_url__1():
+def _iter_options__icon_url_as():
+    yield 202506010010, None, {'ext': 'webp', 'size': 128}, False
+    yield 202506010011, Icon(IconType.animated, 5), {'ext': 'webp', 'size': 128}, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__icon_url_as()).returning_last())
+def test__Role__icon_url_as(role_id, icon, keyword_parameters):
     """
-    Tests whether ``Role.icon_url`` works as intended.
+    Tests whether ``Role.icon_url_as`` works as intended.
     
-    Case: no icon.
+    Parameters
+    ----------
+    role_id : `int`
+        Identifier to create role with.
+    
+    icon : ``None | Icon``
+        Icon to create the role with.
+    
+    keyword_parameters : `dict<str, object>`
+        Additional keyword parameters to pass.
+    
+    Returns
+    -------
+    has_icon_url : `bool`
     """
-    role_id = 202211040048
+    role = Role.precreate(
+        role_id,
+        icon = icon,
+    )
     
-    role = Role.precreate(role_id, icon = None)
-    
-    icon_url = role.icon_url
-    vampytest.assert_is(icon_url, None)
+    output = role.icon_url_as(**keyword_parameters)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)

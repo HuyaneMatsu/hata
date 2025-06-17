@@ -18,6 +18,7 @@ def test__put_type(input_value, defaults):
     ----------
     input_value : ``InviteType``
         Input value.
+    
     defaults : `bool`
         Whether fields with their default values should be included as well.
     

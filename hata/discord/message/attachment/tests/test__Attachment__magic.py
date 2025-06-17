@@ -77,7 +77,7 @@ def test__Attachment__hash():
     temporary = True
     title = 'flandre'
     url = 'https://www.astil.dev/'
-    waveform = 'kisaki'
+    waveform = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
     width = 998
     
     attachment = Attachment.precreate(
@@ -120,7 +120,7 @@ def _iter_options__eq():
     temporary = True
     title = 'flandre'
     url = 'https://www.astil.dev/'
-    waveform = 'kisaki'
+    waveform = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
     width = 998
     
     keyword_parameters = {
@@ -271,7 +271,7 @@ def _iter_options__eq():
         keyword_parameters,
         {
             **keyword_parameters,
-            'waveform': 'revenge',
+            'waveform': b'\x01' * len(waveform),
         },
         False,
     )

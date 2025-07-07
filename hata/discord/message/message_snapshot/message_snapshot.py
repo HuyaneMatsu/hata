@@ -28,7 +28,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    _cache_mentioned_channels : `None`, `tuple` of ``Channel``
+    _cache_mentioned_channels : ``None | tuple<Channel>``
         Mentioned channels by the message. Parsed from ``.content``. Defaults to `None`.
         
         Cache field used by ``.mentioned_channels``.
@@ -36,7 +36,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
     _state : `int`
         Bitwise mask used to track the message's state.
     
-    attachments : `None | tuple<Attachment>`
+    attachments : ``None | tuple<Attachment>``
         The snapshotted message's attachments.
     
     components : ``None | tuple<Component>``
@@ -48,10 +48,10 @@ class MessageSnapshot(RichAttributeErrorBaseType):
     created_at : `DateTime`
         When the snapshotted message was created.
     
-    edited_at : `None | Datetime`
+    edited_at : `None | DateTime`
         When the snapshotted message was edited.
     
-    embeds : `None | tuple<Embed>`
+    embeds : ``None | tuple<Embed>``
         The snapshotted message's embeds.
     
     flags : ``MessageFlag``
@@ -60,10 +60,10 @@ class MessageSnapshot(RichAttributeErrorBaseType):
     mentioned_role_ids : `None | tuple<int>`
         The mentioned roles' identifiers.
     
-    mentioned_users : `None | tuple<ClientUserBase>`
+    mentioned_users : ``None | tuple<ClientUserBase>``
         The mentioned users.
     
-    soundboard_sounds : `None | tuple<SoundboardSound>`
+    soundboard_sounds : ``None | tuple<SoundboardSound>``
         The soundboard sounds attached to the message. 
     
     stickers : `None | tuple<Sticker>`
@@ -110,7 +110,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         created_at : `DateTime`, Optional (Keyword only)
             When the snapshotted message was created.
         
-        edited_at : `None | Datetime`, Optional (Keyword only)
+        edited_at : `None | DateTime`, Optional (Keyword only)
             When the snapshotted message was edited.
         
         embeds : `None | iterable<Embed>`, Optional (Keyword only)
@@ -673,7 +673,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         created_at : `DateTime`, Optional (Keyword only)
             When the snapshotted message was created.
         
-        edited_at : `None | Datetime`, Optional (Keyword only)
+        edited_at : `None | DateTime`, Optional (Keyword only)
             When the snapshotted message was edited.
         
         embeds : `None | iterable<Embed>`, Optional (Keyword only)
@@ -976,7 +976,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         
         Returns
         -------
-        channel_mentions : `None`, `tuple` of ``Channel``
+        channel_mentions : ``None | tuple<Channel>``
             The parsed channel mentions.
         """
         mentioned_channels = None
@@ -1010,7 +1010,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         
         Returns
         -------
-        mentioned_channels : `None`, `tuple` of ``Channel``
+        mentioned_channels : ``None | tuple<Channel>``
         """
         state = self._state
         if state & MESSAGE_STATE_MASK_CACHE_MENTIONED_CHANNELS:
@@ -1021,7 +1021,6 @@ class MessageSnapshot(RichAttributeErrorBaseType):
             self._state = state | MESSAGE_STATE_MASK_CACHE_MENTIONED_CHANNELS
         
         return mentioned_channels
-    
     
     # get one
     
@@ -1060,7 +1059,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         
         Returns
         -------
-        soundboard_sound : `None | SoundboardSound`
+        soundboard_sound : ``None | SoundboardSound``
         """
         soundboard_sounds = self.soundboard_sounds
         if (soundboard_sounds is not None):

@@ -4,49 +4,36 @@ from ..fields import validate_access_type
 from ..preinstanced import SKUAccessType
 
 
-def _iter_options():
+def _iter_options__passing():
     yield None, SKUAccessType.none
-    yield SKUAccessType.full, SKUAccessType.full
     yield SKUAccessType.full.value, SKUAccessType.full
+    yield SKUAccessType.full, SKUAccessType.full
 
 
-@vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__validate_access_type__passing(input_value):
+def _iter_options__type_error():
+    yield 'a'
+    yield 12.6
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_access_type(input_value):
     """
-    Tests whether ``validate_access_type`` works as intended.
-    
-    Case: passing.
+    Tests whether `validate_access_type` works as intended.
     
     Parameters
     ----------
     input_value : `object`
-        Input value.
+        The value to validate.
     
     Returns
     -------
-    output : ``SKUAccessType``
-    """
-    output = validate_access_type(input_value)
-    vampytest.assert_instance(output, SKUAccessType)
-    return output
-
-
-@vampytest.raising(TypeError)
-@vampytest.call_with(12.6)
-@vampytest.call_with('')
-def test__validate_access_type__type_error(input_value):
-    """
-    Tests whether ``validate_access_type`` works as intended.
-    
-    Case: `TypeError`.
-    
-    Parameters
-    ----------
-    input_value : `object`
-        Input value where we are expecting `TypeError`.
+    value : ``SKUAccessType``
     
     Raises
     ------
     TypeError
     """
-    validate_access_type(input_value)
+    output = validate_access_type(input_value)
+    vampytest.assert_instance(output, SKUAccessType)
+    return output

@@ -8,8 +8,8 @@ from ....guild import Guild
 from ....integration import Integration
 from ....permission import Permission
 from ....user import ClientUserBase, GuildProfile, User
-from ....utils import is_url
 
+from ...role_color_configuration import RoleColorConfiguration
 from ...role_manager_metadata import RoleManagerMetadataBooster, RoleManagerMetadataBot, RoleManagerMetadataIntegration
 
 from ..flags import RoleFlag
@@ -42,7 +42,7 @@ def test__Role__mention():
     vampytest.assert_in(str(role_id), mention)
 
 
-def test__Role__users__0():
+def test__Role__users__non_default():
     """
     Tests whether ``Role.users`` works as intended.
     
@@ -65,7 +65,7 @@ def test__Role__users__0():
     vampytest.assert_eq({*role.users}, {user_2})
 
 
-def test__Role__users__1():
+def test__Role__users__default():
     """
     Tests whether ``Role.users`` works as intended.
     
@@ -213,6 +213,11 @@ def test__Role__copy():
     guild_id = 202211040042
     
     color = Color(123)
+    color_configuration = RoleColorConfiguration(
+        color_primary = Color(333),
+        color_secondary = Color(334),
+        color_tertiary = Color(335),
+    )
     flags = RoleFlag(12)
     icon = Icon(IconType.static, 2)
     manager_metadata = RoleManagerMetadataBooster()
@@ -228,6 +233,7 @@ def test__Role__copy():
         role_id,
         guild_id = guild_id,
         color = color,
+        color_configuration = color_configuration,
         flags = flags,
         icon = icon,
         manager = (manager_type, manager_metadata),
@@ -258,6 +264,11 @@ def test__Role__copy_with__0():
     guild_id = 202211040044
     
     color = Color(123)
+    color_configuration = RoleColorConfiguration(
+        color_primary = Color(333),
+        color_secondary = Color(334),
+        color_tertiary = Color(335),
+    )
     flags = RoleFlag(12)
     icon = Icon(IconType.static, 2)
     manager_metadata = RoleManagerMetadataBooster()
@@ -272,7 +283,7 @@ def test__Role__copy_with__0():
     role = Role.precreate(
         role_id,
         guild_id = guild_id,
-        color = color,
+        color = color,color_configuration = color_configuration,
         flags = flags,
         icon = icon,
         manager = (manager_type, manager_metadata),
@@ -300,6 +311,11 @@ def test__Role__copy_with__1():
     Case: No fields given.
     """
     old_color = Color(123)
+    old_color_configuration = RoleColorConfiguration(
+        color_primary = Color(333),
+        color_secondary = Color(334),
+        color_tertiary = Color(335),
+    )
     old_flags = RoleFlag(12)
     old_icon = Icon(IconType.static, 2)
     old_manager_metadata = RoleManagerMetadataBot(bot_id = 202211040045)
@@ -313,6 +329,11 @@ def test__Role__copy_with__1():
     
     
     new_color = Color(999)
+    new_color_configuration = RoleColorConfiguration(
+        color_primary = Color(433),
+        color_secondary = Color(354),
+        color_tertiary = Color(336),
+    )
     new_flags = RoleFlag(11)
     new_icon = None
     new_manager_metadata = RoleManagerMetadataIntegration(integration_id = 202211040046)
@@ -326,6 +347,7 @@ def test__Role__copy_with__1():
     
     role = Role(
         color = old_color,
+        color_configuration = old_color_configuration,
         flags = old_flags,
         icon = old_icon,
         manager = (old_manager_type, old_manager_metadata),
@@ -339,6 +361,7 @@ def test__Role__copy_with__1():
     
     copy = role.copy_with(
         color = new_color,
+        color_configuration = new_color_configuration,
         flags = new_flags,
         icon = new_icon,
         manager = (new_manager_type, new_manager_metadata),
@@ -353,6 +376,7 @@ def test__Role__copy_with__1():
     vampytest.assert_is_not(role, copy)
     
     vampytest.assert_eq(copy.color, new_color)
+    vampytest.assert_eq(copy.color_configuration, new_color_configuration)
     vampytest.assert_eq(copy.flags, new_flags)
     vampytest.assert_eq(copy.icon, (IconType.none, 0))
     vampytest.assert_eq(copy.manager_metadata, new_manager_metadata)

@@ -45,6 +45,26 @@ def _iter_options():
         None,
         f'{CDN_ENDPOINT}/app-assets/{application_id}/store/a_00000000000000000000000000000003.png',
     )
+    
+    application_id = 202506210000
+    yield (
+        application_id,
+        IconType.static,
+        4,
+        'webp',
+        None,
+        f'{CDN_ENDPOINT}/app-assets/{application_id}/store/00000000000000000000000000000004.webp',
+    )
+    
+    application_id = 202506210001
+    yield (
+        application_id,
+        IconType.animated,
+        4,
+        'webp',
+        None,
+        f'{CDN_ENDPOINT}/app-assets/{application_id}/store/a_00000000000000000000000000000004.webp?animated=true',
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

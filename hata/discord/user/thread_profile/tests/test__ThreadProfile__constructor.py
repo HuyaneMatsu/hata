@@ -6,7 +6,7 @@ from ..flags import ThreadProfileFlag
 from ..thread_profile import ThreadProfile
 
 
-def _check_is_all_fields_set(thread_profile):
+def _assert_fields_set(thread_profile):
     """
     Asserts whether all fields of the given thread profiles are set.
     
@@ -26,7 +26,7 @@ def test__ThreadProfile__new__0():
     Case: No parameters.
     """
     thread_profile = ThreadProfile()
-    _check_is_all_fields_set(thread_profile)
+    _assert_fields_set(thread_profile)
 
 
 
@@ -43,7 +43,7 @@ def test__ThreadProfile__new__1():
         flags = flags,
         joined_at = joined_at,
     )
-    _check_is_all_fields_set(thread_profile)
+    _assert_fields_set(thread_profile)
     
     vampytest.assert_eq(thread_profile.flags, flags)
     vampytest.assert_eq(thread_profile.joined_at, joined_at)

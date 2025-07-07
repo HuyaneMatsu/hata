@@ -423,7 +423,7 @@ class OnboardingScreen(RichAttributeErrorBaseType):
         
         Returns
         -------
-        default_channels : `None`, `tuple` of ``Channel``
+        default_channels : ``None | tuple<Channel>``
         """
         default_channel_ids = self.default_channel_ids
         if default_channel_ids is None:

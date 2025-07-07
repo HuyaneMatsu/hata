@@ -5,7 +5,7 @@ from ..guild_join_request_delete_event import GuildJoinRequestDeleteEvent
 from .test__GuildJoinRequestDeleteEvent__constructor import _assert_fields_set
 
 
-def test__GuildJoinRequestDeleteEvent__from_data__0():
+def test__GuildJoinRequestDeleteEvent__from_data():
     """
     Tests whether ``GuildJoinRequestDeleteEvent.from_data`` works as intended.
     
@@ -26,7 +26,7 @@ def test__GuildJoinRequestDeleteEvent__from_data__0():
     vampytest.assert_eq(event.user_id, user_id)
 
 
-def test__GuildJoinRequestDeleteEvent__to_data__0():
+def test__GuildJoinRequestDeleteEvent__to_data():
     """
     Tests whether ``GuildJoinRequestDeleteEvent.to_data`` works as intended.
     

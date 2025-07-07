@@ -1606,6 +1606,24 @@ Group Details
     - Limit : `5`
     - Resets after : `20.0`
 
+- scheduled_event_occasion_overwrite_create
+    - Endpoint : `/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/exceptions`
+    - Method : `POST`
+    - Required auth : `bot`
+    - Limiter : ???
+
+- scheduled_event_occasion_overwrite_delete
+    - Endpoint : `/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/exceptions/{timestamp_as_id}`
+    - Method : `DELETE`
+    - Required auth : `bot`
+    - Limiter : ???
+
+- scheduled_event_occasion_overwrite_edit
+    - Endpoint : `/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/exceptions/{timestamp_as_id}`
+    - Method : `PATCH`
+    - Required auth : `bot`
+    - Limiter : ???
+
 - scheduled_event_user_get_chunk
     - Endpoint : `/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/users`
     - Method : `PATCH`
@@ -2463,6 +2481,9 @@ scheduled_event_create = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_delete = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_get = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_edit = RateLimitGroup(LIMITER_GUILD)
+scheduled_event_occasion_overwrite_create = RateLimitGroup(LIMITER_GUILD)
+scheduled_event_occasion_overwrite_delete = RateLimitGroup(LIMITER_GUILD)
+scheduled_event_occasion_overwrite_edit = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_user_get_chunk = RateLimitGroup(LIMITER_GUILD)
 soundboard_sound_create = RateLimitGroup.unlimited()
 soundboard_sound_delete = RateLimitGroup.unlimited()

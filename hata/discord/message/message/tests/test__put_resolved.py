@@ -26,7 +26,7 @@ def test__put_resolved(input_value, defaults, guild_id):
     
     Parameters
     ----------
-    input_value : `None`, ``Resolved``
+    input_value : ``None | Resolved``
         The resolved to serialise.
     
     defaults : `bool`

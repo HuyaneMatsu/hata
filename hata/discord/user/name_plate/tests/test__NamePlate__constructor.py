@@ -6,7 +6,7 @@ from ..name_plate import NamePlate
 from ..preinstanced import Palette
 
 
-def _check_is_all_fields_set(name_plate):
+def _assert_fields_set(name_plate):
     """
     Asserts whether all fields of the given name plate are set.
     
@@ -16,6 +16,7 @@ def _check_is_all_fields_set(name_plate):
     """
     vampytest.assert_instance(name_plate, NamePlate)
     vampytest.assert_instance(name_plate.asset_path, str)
+    vampytest.assert_instance(name_plate.expires_at, DateTime, nullable = True)
     vampytest.assert_instance(name_plate.name, str)
     vampytest.assert_instance(name_plate.palette, Palette)
     vampytest.assert_instance(name_plate.sku_id, int)
@@ -28,7 +29,7 @@ def test__NamePlate__new__no_fields():
     Case: No parameters.
     """
     name_plate = NamePlate()
-    _check_is_all_fields_set(name_plate)
+    _assert_fields_set(name_plate)
 
 
 def test__NamePlate__new__all_fields():
@@ -51,7 +52,7 @@ def test__NamePlate__new__all_fields():
         palette = palette,
         sku_id = sku_id,
     )
-    _check_is_all_fields_set(name_plate)
+    _assert_fields_set(name_plate)
     
     vampytest.assert_eq(name_plate.asset_path, asset_path)
     vampytest.assert_eq(name_plate.expires_at, expires_at)

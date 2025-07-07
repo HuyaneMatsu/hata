@@ -112,7 +112,7 @@ class User(USER_BASE_TYPE):
         
         > Only available if presence caching is enabled.
     
-    statuses : `None`, `dict` of (`str`, `str`) items
+    statuses : `None | dict<str, str>`
         The user's statuses for each platform.
         
         > Only available if presence caching is enabled.
@@ -302,7 +302,7 @@ class User(USER_BASE_TYPE):
         
             > Only available if presence caching is enabled.
         
-        statuses : `None`, `dict` of (`str`, `str`) items, Optional (Keyword only)
+        statuses : `None | dict<str, str>`, Optional (Keyword only)
             The user's statuses for each platform.
         
             > Only available if presence caching is enabled.

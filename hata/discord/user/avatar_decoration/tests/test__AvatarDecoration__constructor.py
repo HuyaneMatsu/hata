@@ -7,7 +7,7 @@ from ....bases import Icon, IconType
 from ..avatar_decoration import AvatarDecoration
 
 
-def _check_is_all_fields_set(avatar_decoration):
+def _assert_fields_set(avatar_decoration):
     """
     Asserts whether all fields of the given avatar decoration are set.
     
@@ -28,7 +28,7 @@ def test__AvatarDecoration__new__no_fields():
     Case: No parameters.
     """
     avatar_decoration = AvatarDecoration()
-    _check_is_all_fields_set(avatar_decoration)
+    _assert_fields_set(avatar_decoration)
 
 
 def test__AvatarDecoration__new__all_fields():
@@ -46,7 +46,7 @@ def test__AvatarDecoration__new__all_fields():
         expires_at = expires_at,
         sku_id = sku_id,
     )
-    _check_is_all_fields_set(avatar_decoration)
+    _assert_fields_set(avatar_decoration)
     
     vampytest.assert_eq(avatar_decoration.asset, asset)
     vampytest.assert_eq(avatar_decoration.expires_at, expires_at)
@@ -60,4 +60,4 @@ def test__AvatarDecoration__create_empty():
     Case: No parameters.
     """
     avatar_decoration = AvatarDecoration._create_empty()
-    _check_is_all_fields_set(avatar_decoration)
+    _assert_fields_set(avatar_decoration)

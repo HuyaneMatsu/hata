@@ -5,7 +5,7 @@ import vampytest
 from ..flags import ThreadProfileFlag
 from ..thread_profile import ThreadProfile
 
-from .test__ThreadProfile__constructor import _check_is_all_fields_set
+from .test__ThreadProfile__constructor import _assert_fields_set
 
 
 def test__ThreadProfile__copy():
@@ -22,7 +22,7 @@ def test__ThreadProfile__copy():
     )
     copy = thread_profile.copy()
     
-    _check_is_all_fields_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_not_is(thread_profile, copy)
     vampytest.assert_eq(thread_profile, copy)
 
@@ -44,7 +44,7 @@ def test__ThreadProfile__copy_with__0():
 
     copy = thread_profile.copy_with()
     
-    _check_is_all_fields_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_not_is(thread_profile, copy)
     vampytest.assert_eq(thread_profile, copy)
 
@@ -70,7 +70,7 @@ def test__ThreadProfile__copy_with__1():
         joined_at = new_joined_at,
     )
     
-    _check_is_all_fields_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_not_is(thread_profile, copy)
 
     vampytest.assert_eq(copy.flags, new_flags)

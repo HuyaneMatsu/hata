@@ -45,6 +45,26 @@ def _iter_options():
         None,
         f'{CDN_ENDPOINT}/team-icons/{team_id}/a_00000000000000000000000000000003.png',
     )
+    
+    team_id = 202506210020
+    yield (
+        team_id,
+        IconType.static,
+        4,
+        'webp',
+        None,
+        f'{CDN_ENDPOINT}/team-icons/{team_id}/00000000000000000000000000000004.webp',
+    )
+    
+    team_id = 202506210021
+    yield (
+        team_id,
+        IconType.animated,
+        4,
+        'webp',
+        None,
+        f'{CDN_ENDPOINT}/team-icons/{team_id}/a_00000000000000000000000000000004.webp?animated=true',
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

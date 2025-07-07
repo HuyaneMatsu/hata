@@ -16,7 +16,7 @@ def _assert_fields_set(entity_metadata):
     vampytest.assert_instance(entity_metadata.speaker_ids, tuple, nullable = True)
         
 
-def test__ScheduledEventEntityMetadataStage__new__0():
+def test__ScheduledEventEntityMetadataStage__new__no_fields():
     """
     Tests whether ``ScheduledEventEntityMetadataStage.__new__`` works as intended.
     
@@ -26,7 +26,7 @@ def test__ScheduledEventEntityMetadataStage__new__0():
     _assert_fields_set(entity_metadata)
 
 
-def test__ScheduledEventEntityMetadataStage__new__1():
+def test__ScheduledEventEntityMetadataStage__new__all_fields():
     """
     Tests whether ``ScheduledEventEntityMetadataStage.__new__`` works as intended.
     
@@ -42,7 +42,7 @@ def test__ScheduledEventEntityMetadataStage__new__1():
     vampytest.assert_eq(entity_metadata.speaker_ids, tuple(speaker_ids))
 
 
-def test__ScheduledEventEntityMetadataStage__from_keyword_parameters__0():
+def test__ScheduledEventEntityMetadataStage__from_keyword_parameters__no_fields():
     """
     Tests whether ``ScheduledEventEntityMetadataStage.from_keyword_parameters`` works as intended.
     
@@ -55,7 +55,7 @@ def test__ScheduledEventEntityMetadataStage__from_keyword_parameters__0():
     vampytest.assert_eq(keyword_parameters, {})
 
 
-def test__ScheduledEventEntityMetadataStage__from_keyword_parameters__1():
+def test__ScheduledEventEntityMetadataStage__from_keyword_parameters__all_fields():
     """
     Tests whether ``ScheduledEventEntityMetadataStage.from_keyword_parameters`` works as intended.
     

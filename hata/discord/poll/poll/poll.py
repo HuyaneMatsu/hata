@@ -962,7 +962,7 @@ class Poll(RichAttributeErrorBaseType):
         ----------
         answer_id : `int`
             The answer's identifier.
-        users : `list` of ``ClientUserBase``
+        users : ``list<ClientUserBase>``
             The users who voted.
         """
         result = self._get_or_create_result(answer_id)
@@ -977,7 +977,7 @@ class Poll(RichAttributeErrorBaseType):
         ----------
         answer_id : `int`
             The answer's identifier.
-        users : `list` of ``ClientUserBase``
+        users : ``list<ClientUserBase>``
             The users who voted.
         """
         result = self._get_or_create_result(answer_id)

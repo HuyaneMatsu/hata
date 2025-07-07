@@ -80,7 +80,7 @@ def parse_resolved(data, guild_id = 0):
     
     Returns
     -------
-    resolved : `None`, ``Resolved``
+    resolved : ``None | Resolved``
     """
     resolved_data = data.get('resolved', None)
     if (resolved_data is not None) and resolved_data:
@@ -93,7 +93,7 @@ def put_resolved(resolved, data, defaults, *, guild_id = 0):
     
     Parameters
     ----------
-    resolved  : `None`, ``Resolved``
+    resolved  : ``None | Resolved``
         The instance to serialise.
         
     data : `dict<str, object>`

@@ -1,6 +1,44 @@
-__all__ = ('SKUAccessType', 'SKUFeature', 'SKUGenre', 'SKUType',)
+__all__ = ('SKUAccessType', 'SKUFeature', 'SKUGenre', 'SKUProductFamily', 'SKUType',)
 
 from ...bases import Preinstance as P, PreinstancedBase
+
+
+
+class SKUAccessType(PreinstancedBase, value_type = int):
+    """
+    Represents an SKU's access type.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the type.
+    
+    value : `int`
+        The Discord side identifier value of the SKU access type.
+        
+    Type Attributes
+    ---------------
+    Every predefined SKU access type can be accessed as type attribute as well:
+    
+    +-----------------------+---------------+-------+
+    | Type attribute name   | name          | Value |
+    +=======================+===============+=======+
+    | none                  | none          | 0     |
+    +-----------------------+---------------+-------+
+    | full                  | full          | 1     |
+    +-----------------------+---------------+-------+
+    | early_access          | early access  | 2     |
+    +-----------------------+---------------+-------+
+    | vip_access            | vip access    | 3     |
+    +-----------------------+---------------+-------+
+    """
+    __slots__ = ()
+    
+    # predefined
+    none = P(0, 'none')
+    full = P(1, 'full')
+    early_access = P(2, 'early access')
+    vip_access = P(3, 'vip access')
 
 
 class SKUFeature(PreinstancedBase, value_type = int):
@@ -295,9 +333,9 @@ class SKUGenre(PreinstancedBase, value_type = int):
     trivia_board_game = P(65, 'trivia board game')
 
 
-class SKUAccessType(PreinstancedBase, value_type = int):
+class SKUProductFamily(PreinstancedBase, value_type = int):
     """
-    Represents an SKU's access type.
+    Represents an SKU's product family.
     
     Attributes
     ----------
@@ -305,31 +343,43 @@ class SKUAccessType(PreinstancedBase, value_type = int):
         The name of the type.
     
     value : `int`
-        The Discord side identifier value of the SKU access type.
+        The Discord side identifier value of the SKU product family.
         
     Type Attributes
     ---------------
-    Every predefined SKU access type can be accessed as type attribute as well:
+    Every predefined SKU product family can be accessed as type attribute as well:
     
     +-----------------------+---------------+-------+
     | Type attribute name   | name          | Value |
     +=======================+===============+=======+
     | none                  | none          | 0     |
     +-----------------------+---------------+-------+
-    | full                  | full          | 1     |
+    | premium               | premium       | 1     |
     +-----------------------+---------------+-------+
-    | early_access          | early access  | 2     |
+    | boost                 | boost         | 2     |
     +-----------------------+---------------+-------+
-    | vip_access            | vip access    | 3     |
+    | activity_iap          | activity_iap  | 3     |
+    +-----------------------+---------------+-------+
+    | guild_role            | guild_role    | 4     |
+    +-----------------------+---------------+-------+
+    | guild_product         | guild_product | 5     |
+    +-----------------------+---------------+-------+
+    | application           | application   | 6     |
+    +-----------------------+---------------+-------+
+    | collectibles          | collectibles  | 7     |
     +-----------------------+---------------+-------+
     """
     __slots__ = ()
     
     # predefined
     none = P(0, 'none')
-    full = P(1, 'full')
-    early_access = P(2, 'early access')
-    vip_access = P(3, 'vip access')
+    premium = P(1, 'premium')
+    boost = P(2, 'boost')
+    activity_iap = P(2, 'activity iap')
+    guild_role = P(3, 'guild role')
+    guild_product = P(4, 'guild product')
+    application = P(5, 'application')
+    collectibles = P(6, 'collectibles')
 
 
 class SKUType(PreinstancedBase, value_type = int):

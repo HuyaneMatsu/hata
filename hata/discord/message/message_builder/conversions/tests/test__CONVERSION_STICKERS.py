@@ -85,6 +85,6 @@ def test__CONVERSION_STICKERS__get_processor(input_value):
     
     Returns
     -------
-    output : `None | list<Sticker>`
+    output :` `None | list<Sticker>``
     """
     return CONVERSION_STICKERS.get_processor(input_value)

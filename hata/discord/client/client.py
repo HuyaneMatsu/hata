@@ -214,7 +214,7 @@ class Client(
     status : `Status`
         The client's display status.
     
-    statuses : `None`, `dict` of (`str`, `str`) items
+    statuses : `None | dict<str, str>`
         The client's statuses for each platform.
     
     thread_profiles : `None`, `dict` (``Channel``, ``ThreadProfile``) items
@@ -1477,7 +1477,7 @@ class Client(
         ----------
         name : `str`
             The guild's name to search.
-        default : `None`, `object` = `None`, Optional
+        default : `None | object` = `None`, Optional
             The default value, what will be returned if the guild was not found.
         
         Returns

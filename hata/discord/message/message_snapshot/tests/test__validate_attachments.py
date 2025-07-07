@@ -36,7 +36,7 @@ def test__validate_attachments(input_value):
     
     Returns
     -------
-    output : `None | tuple<Attachment>`
+    output : ``None | tuple<Attachment>``
     
     Raises
     ------

@@ -4,8 +4,11 @@ import vampytest
 
 from ....utils import datetime_to_timestamp
 
+from ...sku import SKU
+
 from ..entitlement import Entitlement
-from ..preinstanced import EntitlementOwnerType, EntitlementType
+from ..fields import GiftCodeFlag
+from ..preinstanced import EntitlementOwnerType, EntitlementSourceType, EntitlementType
 
 from .test__Entitlement__constructor import _assert_fields_set
 
@@ -22,11 +25,20 @@ def test__Entitlement__from_data():
     deleted = True
     ends_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     entitlement_type = EntitlementType.user_gift
+    gift_code_flags = GiftCodeFlag(12)
     guild_id = 202310040032
+    promotion_id = 202507020001
+    source_type = EntitlementSourceType.user_gift
     sku_id = 202310040033
     starts_at = DateTime(2015, 5, 14, tzinfo = TimeZone.utc)
     subscription_id = 202310040015
     user_id = 202310040016
+    
+    sku = SKU.precreate(
+        sku_id,
+        application_id = application_id,
+        name = 'yuuka',
+    )
     
     data = {
         'id': str(entitlement_id),
@@ -35,7 +47,11 @@ def test__Entitlement__from_data():
         'deleted': deleted,
         'ends_at': datetime_to_timestamp(ends_at),
         'type': entitlement_type.value,
+        'gift_code_flags': int(gift_code_flags),
         'guild_id': str(guild_id),
+        'promotion_id': str(promotion_id),
+        'source_type': source_type.value,
+        'sku': sku.to_data(include_internals = True),
         'sku_id': str(sku_id),
         'starts_at': datetime_to_timestamp(starts_at),
         'subscription_id': str(subscription_id),
@@ -46,15 +62,19 @@ def test__Entitlement__from_data():
     _assert_fields_set(entitlement)
     vampytest.assert_eq(entitlement.id, entitlement_id)
     
+    vampytest.assert_is(entitlement._sku, sku)
     vampytest.assert_eq(entitlement.application_id, application_id)
     vampytest.assert_eq(entitlement.consumed, consumed)
     vampytest.assert_eq(entitlement.deleted, deleted)
     vampytest.assert_eq(entitlement.ends_at, ends_at)
-    vampytest.assert_is(entitlement.type, entitlement_type)
     vampytest.assert_eq(entitlement.guild_id, guild_id)
+    vampytest.assert_eq(entitlement.gift_code_flags, gift_code_flags)
+    vampytest.assert_eq(entitlement.promotion_id, promotion_id)
+    vampytest.assert_is(entitlement.source_type, source_type)
     vampytest.assert_eq(entitlement.sku_id, sku_id)
     vampytest.assert_eq(entitlement.starts_at, starts_at)
     vampytest.assert_eq(entitlement.subscription_id, subscription_id)
+    vampytest.assert_is(entitlement.type, entitlement_type)
     vampytest.assert_eq(entitlement.user_id, user_id)
 
 
@@ -87,11 +107,20 @@ def test__Entitlement__from_data_is_created():
     deleted = True
     ends_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     entitlement_type = EntitlementType.user_gift
+    gift_code_flags = GiftCodeFlag(12)
     guild_id = 202310070002
+    promotion_id = 202507020002
+    source_type = EntitlementSourceType.user_gift
     sku_id = 202310070003
     starts_at = DateTime(2015, 5, 14, tzinfo = TimeZone.utc)
     subscription_id = 202310070004
     user_id = 202310070005
+    
+    sku = SKU.precreate(
+        sku_id,
+        application_id = application_id,
+        name = 'yuuka',
+    )
     
     data = {
         'id': str(entitlement_id),
@@ -99,8 +128,12 @@ def test__Entitlement__from_data_is_created():
         'consumed': consumed,
         'deleted': deleted,
         'ends_at': datetime_to_timestamp(ends_at),
+        'gift_code_flags': int(gift_code_flags),
         'type': entitlement_type.value,
+        'promotion_id': str(promotion_id),
+        'source_type': source_type.value,
         'guild_id': str(guild_id),
+        'sku': sku.to_data(include_internals = True),
         'sku_id': str(sku_id),
         'starts_at': datetime_to_timestamp(starts_at),
         'subscription_id': str(subscription_id),
@@ -114,12 +147,16 @@ def test__Entitlement__from_data_is_created():
     vampytest.assert_instance(is_created, bool)
     vampytest.assert_eq(is_created, True)
     
+    vampytest.assert_is(entitlement._sku, sku)
     vampytest.assert_eq(entitlement.application_id, application_id)
     vampytest.assert_eq(entitlement.consumed, consumed)
     vampytest.assert_eq(entitlement.deleted, deleted)
     vampytest.assert_eq(entitlement.ends_at, ends_at)
     vampytest.assert_is(entitlement.type, entitlement_type)
     vampytest.assert_eq(entitlement.guild_id, guild_id)
+    vampytest.assert_eq(entitlement.gift_code_flags, gift_code_flags)
+    vampytest.assert_eq(entitlement.promotion_id, promotion_id)
+    vampytest.assert_is(entitlement.source_type, source_type)
     vampytest.assert_eq(entitlement.sku_id, sku_id)
     vampytest.assert_eq(entitlement.starts_at, starts_at)
     vampytest.assert_eq(entitlement.subscription_id, subscription_id)
@@ -160,19 +197,32 @@ def test__Entitlement__set_attributes():
     deleted = True
     ends_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     entitlement_type = EntitlementType.user_gift
+    gift_code_flags = GiftCodeFlag(12)
     guild_id = 202310040028
+    promotion_id = 202507020003
+    source_type = EntitlementSourceType.user_gift
     sku_id = 202310040029
     starts_at = DateTime(2015, 5, 14, tzinfo = TimeZone.utc)
     subscription_id = 202310040030
     user_id = 202310040031
+    
+    sku = SKU.precreate(
+        sku_id,
+        application_id = application_id,
+        name = 'yuuka',
+    )
     
     data = {
         'application_id': str(application_id),
         'consumed': consumed,
         'deleted': deleted,
         'ends_at': datetime_to_timestamp(ends_at),
+        'gift_code_flags': int(gift_code_flags),
         'type': entitlement_type.value,
         'guild_id': str(guild_id),
+        'promotion_id': str(promotion_id),
+        'source_type': source_type.value,
+        'sku': sku.to_data(include_internals = True),
         'sku_id': str(sku_id),
         'starts_at': datetime_to_timestamp(starts_at),
         'subscription_id': str(subscription_id),
@@ -182,12 +232,16 @@ def test__Entitlement__set_attributes():
     entitlement = Entitlement._create_empty(entitlement_id)
     entitlement._set_attributes(data)
     
+    vampytest.assert_is(entitlement._sku, sku)
     vampytest.assert_eq(entitlement.application_id, application_id)
     vampytest.assert_eq(entitlement.consumed, consumed)
     vampytest.assert_eq(entitlement.deleted, deleted)
     vampytest.assert_eq(entitlement.ends_at, ends_at)
     vampytest.assert_is(entitlement.type, entitlement_type)
+    vampytest.assert_eq(entitlement.gift_code_flags, gift_code_flags)
     vampytest.assert_eq(entitlement.guild_id, guild_id)
+    vampytest.assert_eq(entitlement.promotion_id, promotion_id)
+    vampytest.assert_is(entitlement.source_type, source_type)
     vampytest.assert_eq(entitlement.sku_id, sku_id)
     vampytest.assert_eq(entitlement.starts_at, starts_at)
     vampytest.assert_eq(entitlement.subscription_id, subscription_id)
@@ -281,12 +335,20 @@ def test__Entitlement__to_data__full():
     deleted = True
     ends_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     entitlement_type = EntitlementType.user_gift
+    gift_code_flags = GiftCodeFlag(12)
     guild_id = 202310040019
+    promotion_id = 202507020004
+    source_type = EntitlementSourceType.user_gift
     sku_id = 202310040020
     starts_at = DateTime(2015, 5, 14, tzinfo = TimeZone.utc)
     subscription_id = 202310040021
     user_id = 202310040022
     
+    sku = SKU.precreate(
+        sku_id,
+        application_id = application_id,
+        name = 'yuuka',
+    )
     
     expected_output = {
         'id': str(entitlement_id),
@@ -294,8 +356,12 @@ def test__Entitlement__to_data__full():
         'consumed': consumed,
         'deleted': deleted,
         'ends_at': datetime_to_timestamp(ends_at),
+        'gift_code_flags': int(gift_code_flags),
         'type': entitlement_type.value,
         'guild_id': str(guild_id),
+        'promotion_id': str(promotion_id),
+        'source_type': source_type.value,
+        'sku': sku.to_data(defaults = True, include_internals = True),
         'sku_id': str(sku_id),
         'starts_at': datetime_to_timestamp(starts_at),
         'subscription_id': str(subscription_id),
@@ -309,14 +375,21 @@ def test__Entitlement__to_data__full():
         deleted = deleted,
         ends_at = ends_at,
         entitlement_type = entitlement_type,
+        gift_code_flags = gift_code_flags,
         guild_id = guild_id,
+        promotion_id = promotion_id,
+        source_type = source_type,
+        sku = sku,
         sku_id = sku_id,
         starts_at = starts_at,
         subscription_id = subscription_id,
         user_id = user_id,
     )
     
-    vampytest.assert_eq(entitlement.to_data(defaults = True, include_internals = True), expected_output)
+    vampytest.assert_eq(
+        entitlement.to_data(defaults = True, include_internals = True),
+        expected_output,
+    )
 
 
 def test__Entitlement__to_data__partial():

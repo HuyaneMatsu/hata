@@ -54,6 +54,6 @@ def test__parse_entitlements(input_data):
     
     Returns
     -------
-    output : `None | tuple<ClientUserBase>`
+    output : ``None | tuple<ClientUserBase>``
     """
     return parse_entitlements(input_data)

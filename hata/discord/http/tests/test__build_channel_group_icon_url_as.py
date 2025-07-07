@@ -45,6 +45,26 @@ def _iter_options():
         None,
         f'{CDN_ENDPOINT}/channel-icons/{channel_id}/a_00000000000000000000000000000003.png',
     )
+    
+    channel_id = 202506210004
+    yield (
+        channel_id,
+        IconType.static,
+        4,
+        'webp',
+        None,
+        f'{CDN_ENDPOINT}/channel-icons/{channel_id}/00000000000000000000000000000004.webp',
+    )
+    
+    channel_id = 202506210005
+    yield (
+        channel_id,
+        IconType.animated,
+        4,
+        'webp',
+        None,
+        f'{CDN_ENDPOINT}/channel-icons/{channel_id}/a_00000000000000000000000000000004.webp?animated=true',
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

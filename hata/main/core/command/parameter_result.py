@@ -210,7 +210,7 @@ class ParameterResult(RichAttributeErrorBaseType):
         
         Returns
         -------
-        value : `None`, `object`
+        value : `None | object`
         """
         fed_items = self.fed_items
         if (fed_items is not None):

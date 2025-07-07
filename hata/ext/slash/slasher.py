@@ -952,7 +952,7 @@ class Slasher(
         A nested dictionary, which contains application command permission overwrites per guild_id and per
         `command_id`.
     
-    _translation_table : `None`, `dict` of (``Locale`, `dict` of (`str`, `str`) items) items
+    _translation_table : ``None | dict<Locale, dict<str, str>>``
         Translation table for the commands of the slasher.
     
     command_id_to_command : `dict` of (`int`, ``SlashCommand``) items

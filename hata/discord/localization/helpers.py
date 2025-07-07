@@ -132,7 +132,7 @@ def localized_dictionary_builder(dictionary, parameter_name):
     
     Returns
     -------
-    validated_dictionary : `None | dict<Locale, str>`
+    validated_dictionary : ``None | dict<Locale, str>``
     
     Raises
     ------
@@ -254,7 +254,7 @@ def get_localized_length(value, value_localizations):
     value : `None | str`
         The default value.
     
-    value_localizations : `None | dict<Locale, str>`
+    value_localizations : ``None | dict<Locale, str>``
         Localizations of the value.
     
     Returns

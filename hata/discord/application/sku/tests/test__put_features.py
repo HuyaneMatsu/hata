@@ -5,8 +5,22 @@ from ..preinstanced import SKUFeature
 
 
 def _iter_options():
-    yield (None, False, {'features': []})
-    yield (None, True, {'features': []})
+    yield (
+        None,
+        False,
+        {
+            'features': [],
+        },
+    )
+    
+    yield (
+        None,
+        True,
+        {
+            'features': [],
+        },
+    )
+    
     yield (
         (
             SKUFeature.single_player,
@@ -20,6 +34,7 @@ def _iter_options():
             ],
         },
     )
+    
     yield (
         (
             SKUFeature.single_player,
@@ -42,8 +57,9 @@ def test__put_features(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `None | tuple<SKUFeature>`
+    input_value : ``None | tuple<SKUFeature>``
         The value to serialise.
+    
     defaults : `bool`
         Whether values with their default value should be included in the output as well.
     

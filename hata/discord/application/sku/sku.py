@@ -7,24 +7,31 @@ from ...core import SKUS
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 
 from .fields import (
-    parse_access_type, parse_application_id, parse_features, parse_flags, parse_id, parse_name, parse_premium,
-    parse_release_at, parse_slug, parse_type, put_access_type, put_application_id, put_features,
-    put_flags, put_id, put_name, put_premium, put_release_at, put_slug, put_type,
-    validate_access_type, validate_application_id, validate_features, validate_flags, validate_id, validate_name,
-    validate_premium, validate_release_at, validate_slug, validate_type
+    parse_access_type, parse_application_id, parse_dependent_sku_id, parse_enhancement, parse_features, parse_flags,
+    parse_id, parse_name, parse_name_localizations, parse_premium, parse_product_family, parse_release_at, parse_slug,
+    parse_type, put_access_type, put_application_id, put_dependent_sku_id, put_enhancement, put_features, put_flags,
+    put_id, put_name, put_name_localizations, put_premium, put_product_family, put_release_at, put_slug, put_type,
+    validate_access_type, validate_application_id, validate_dependent_sku_id, validate_enhancement, validate_features,
+    validate_flags, validate_id, validate_name, validate_name_localizations, validate_premium, validate_product_family,
+    validate_release_at, validate_slug, validate_type
 )
 from .flags import SKUFlag
-from .preinstanced import SKUAccessType, SKUType
+from .preinstanced import SKUAccessType, SKUProductFamily, SKUType
 
 
 PRECREATE_FIELDS = {
     'access_type': ('access_type', validate_access_type),
     'application': ('application_id', validate_application_id),
     'application_id': ('application_id', validate_application_id),
+    'dependent_sku': ('dependent_sku_id', validate_dependent_sku_id),
+    'dependent_sku_id': ('dependent_sku_id', validate_dependent_sku_id),
+    'enhancement': ('enhancement', validate_enhancement),
     'features': ('features', validate_features),
     'flags': ('flags', validate_flags),
     'name': ('name', validate_name),
+    'name_localizations': ('name_localizations', validate_name_localizations),
     'premium': ('premium', validate_premium),
+    'product_family': ('product_family', validate_product_family),
     'release_at': ('release_at', validate_release_at),
     'slug': ('slug', validate_slug),
     'sku_type': ('type', validate_type),
@@ -44,7 +51,13 @@ class SKU(DiscordEntity):
     application_id : `int`
         The stock keeping unit's owner application identifier.
     
-    features : `None, tuple<SKUFeature>`
+    dependent_sku_id : `int`
+        Another stock keeping unit's identifier that depends this one.
+    
+    enhancement : ``None | SKUEnhancement``
+        The enhancement granted by the stock keeping unit.
+    
+    features : ``None | tuple<SKUFeature>``
         The features of the stock keeping unit.
     
     flags : ``SKUFlag``
@@ -56,14 +69,20 @@ class SKU(DiscordEntity):
     name : `str`
         The name of the stock keeping unit.
     
+    name_localizations : ``None | dict<Locale, str>``
+        The localized names of teh stock keeping unit.
+    
     premium : `bool`
         Whether the stock keeping unit is a premium one.
+    
+    product_family : ``ProductFamily``
+        The family of products where the stock keeping units belongs.
     
     release_at : `None | DateTime`
         When the stock keeping unit has its release.
         Can be both in the past and in the future as well.
     
-    slug : `None`, `str`
+    slug : `None | str`
         System generated url to the stock keeping unit generated based on its name.
     
     type : ``SKUType``
@@ -74,18 +93,22 @@ class SKU(DiscordEntity):
     Stock keeping unit instances are weakreferable.
     """
     __slots__ = (
-        '__weakref__', 'access_type', 'application_id', 'features', 'flags', 'name', 'premium', 'release_at', 'slug',
-        'type'
+        '__weakref__', 'access_type', 'application_id', 'dependent_sku_id', 'enhancement', 'features', 'flags', 'name',
+        'name_localizations', 'premium', 'product_family', 'release_at', 'slug', 'type'
     )
     
     def __new__(
         cls,
         *,
         access_type = ...,
+        dependent_sku_id = ...,
+        enhancement = ...,
         features = ...,
         flags = ...,
         name = ...,
+        name_localizations = ...,
         premium = ...,
+        product_family = ...,
         release_at = ...,
         sku_type = ...,
     ):
@@ -94,25 +117,38 @@ class SKU(DiscordEntity):
         
         Parameters
         ----------
-        access_type : ``SKUAccessType``, `int`, Optional (Keyword only)
+        access_type : ``None | int | SKUAccessType``, Optional (Keyword only)
             What kind of access the stock keeping unit provides for its content.
         
-        features : `None`, `iterable<SKUFeature | int>`, `SKUFeature`, `int`, Optional (Keyword only)
+        dependent_sku_id : ``None | int | SKU``, Optional (Keyword only)
+            Another stock keeping unit's identifier that depends this one.
+        
+        enhancement : ``None | SKUEnhancement``, Optional (Keyword only)
+            The enhancement granted by the stock keeping unit.
+        
+        features : ``None | int | SKUFeature | iterable<int> | iterable<SKUFeature>``, Optional (Keyword only)
             The features of the stock keeping unit.
         
-        flags : ``SKUFlag``, `int`, Optional (Keyword only)
+        flags : ``None | int | SKUFlag``, Optional (Keyword only)
             The flags of the stock keeping unit.
         
         name : `str`, Optional (Keyword only)
             The name of the stock keeping unit.
         
+        name_localizations : ``None | dict<str | Locale, str> | (list | set | tuple<(str | Locale, str>)`` \
+                , Optional (Keyword only)
+            The localized names of the stock keeping unit.
+        
         premium : `bool`, Optional (Keyword only)
             Whether the stock keeping unit is a premium one.
-            
+        
+        product_family : ``None | int ProductFamily``, Optional (Keyword only)
+            The family of products where the stock keeping units belongs.
+        
         release_at : `None | DateTime`, Optional (Keyword only)
             When the stock keeping unit has its release.
         
-        sku_type : ``SKUType``, `int`, Optional (Keyword only)
+        sku_type : ``None | int | SKUType``, Optional (Keyword only)
             The stock keeping unit's type.
         
         Raises
@@ -127,6 +163,18 @@ class SKU(DiscordEntity):
             access_type = SKUAccessType.none
         else:
             access_type = validate_access_type(access_type)
+        
+        # dependent_sku_id
+        if dependent_sku_id is ...:
+            dependent_sku_id = 0
+        else:
+            dependent_sku_id = validate_dependent_sku_id(dependent_sku_id)
+        
+        # enhancement
+        if enhancement is ...:
+            enhancement = None
+        else:
+            enhancement = validate_enhancement(enhancement)
         
         # features
         if features is ...:
@@ -146,11 +194,23 @@ class SKU(DiscordEntity):
         else:
             name = validate_name(name)
         
+        # name_localizations
+        if name_localizations is ...:
+            name_localizations = None
+        else:
+            name_localizations = validate_name_localizations(name_localizations)
+        
         # premium
         if premium is ...:
             premium = False
         else:
             premium = validate_premium(premium)
+        
+        # product_family
+        if product_family is ...:
+            product_family = SKUProductFamily.none
+        else:
+            product_family = validate_product_family(product_family)
         
         # release_at
         if release_at is ...:
@@ -168,11 +228,15 @@ class SKU(DiscordEntity):
         self = object.__new__(cls)
         self.access_type = access_type
         self.application_id = 0
+        self.dependent_sku_id = dependent_sku_id
+        self.enhancement = enhancement
         self.features = features
         self.flags = flags
         self.id = 0
         self.name = name
+        self.name_localizations = name_localizations
         self.premium = premium
+        self.product_family = product_family
         self.release_at = release_at
         self.slug = None
         self.type = sku_type
@@ -206,6 +270,7 @@ class SKU(DiscordEntity):
         
         return self
     
+    
     def _set_attributes(self, data):
         """
         Sets the stock keeping unit's attributes. (Except `.id`.)
@@ -217,10 +282,14 @@ class SKU(DiscordEntity):
         """
         self.access_type = parse_access_type(data)
         self.application_id = parse_application_id(data)
+        self.dependent_sku_id = parse_dependent_sku_id(data)
+        self.enhancement = parse_enhancement(data)
         self.features = parse_features(data)
         self.flags = parse_flags(data)
         self.name = parse_name(data)
+        self.name_localizations = parse_name_localizations(data)
         self.premium = parse_premium(data)
+        self.product_family = parse_product_family(data)
         self.release_at = parse_release_at(data)
         self.slug = parse_slug(data)
         self.type = parse_type(data)
@@ -245,10 +314,14 @@ class SKU(DiscordEntity):
         data = {}
         
         put_access_type(self.access_type, data, defaults)
+        put_dependent_sku_id(self.dependent_sku_id, data, defaults)
+        put_enhancement(self.enhancement, data, defaults)
         put_features(self.features, data, defaults)
         put_flags(self.flags, data, defaults)
         put_name(self.name, data, defaults)
+        put_name_localizations(self.name_localizations, data, defaults)
         put_premium(self.premium, data, defaults)
+        put_product_family(self.product_family, data, defaults)
         put_release_at(self.release_at, data, defaults)
         put_type(self.type, data, defaults)
         
@@ -277,11 +350,15 @@ class SKU(DiscordEntity):
         self = object.__new__(cls)
         self.access_type = SKUAccessType.none
         self.application_id = 0
+        self.dependent_sku_id = 0
+        self.enhancement = None
         self.features = None
         self.flags = SKUFlag()
         self.id = sku_id
         self.name = ''
+        self.name_localizations = None
         self.premium = False
+        self.product_family = SKUProductFamily.none
         self.release_at = None
         self.slug = None
         self.type = SKUType.none
@@ -303,34 +380,50 @@ class SKU(DiscordEntity):
         
         Other Parameters
         ----------------
-        access_type : ``SKUAccessType``, `int`, Optional (Keyword only)
+        access_type : ``None | int | SKUAccessType``, Optional (Keyword only)
             What kind of access the stock keeping unit provides for its content.
         
-        application : `int`, ``Application``, Optional (Keyword only)
+        application : ``None | int | Application``, Optional (Keyword only)
             Alternative for `application_id`.
         
-        application_id : `int`, ``Application``, Optional (Keyword only)
+        application_id : ``None | int | Application``, Optional (Keyword only)
             The stock keeping unit's owner application identifier.
         
-        features : `None`, `iterable<SKUFeature | int>`, `SKUFeature`, `int`, Optional (Keyword only)
+        dependent_sku_id : ``None | int | SKU``, Optional (Keyword only)
+            Another stock keeping unit's identifier that depends this one.
+        
+        dependent_sku : ``None | int | SKU``, Optional (Keyword only)
+            Alternative for `dependent_sku_id`.
+    
+        enhancement : ``None | SKUEnhancement``, Optional (Keyword only)
+            The enhancement granted by the stock keeping unit.
+        
+        features : ``None | int | SKUFeature | iterable<int> | iterable<SKUFeature>``, Optional (Keyword only)
             The features of the stock keeping unit.
         
-        flags : ``SKUFlag``, `int`, Optional (Keyword only)
+        flags : ``None | int | SKUFlag``, Optional (Keyword only)
             The flags of the stock keeping unit.
         
         name : `str`, Optional (Keyword only)
             The stock keeping unit's name.
         
+        name_localizations : ``None | dict<str | Locale, str> | (list | set | tuple<(str | Locale, str>)`` \
+                , Optional (Keyword only)
+            The localized names of the stock keeping unit.
+        
         premium : `bool`, Optional (Keyword only)
             Whether the stock keeping unit is a premium one.
+        
+        product_family : ``None | int ProductFamily``, Optional (Keyword only)
+            The family of products where the stock keeping units belongs.
             
         release_at : `None | DateTime`, Optional (Keyword only)
             When the stock keeping unit has its release.
         
-        slug : `None`, `str`, Optional (Keyword only)
+        slug : `None | str`, Optional (Keyword only)
              System generated url to the stock keeping unit generated based on its name.
         
-        sku_type : ``SKUType``, `int`, Optional (Keyword only)
+        sku_type : ``None | int | SKUType``, Optional (Keyword only)
             The stock keeping unit's type.
          
         Returns
@@ -366,7 +459,7 @@ class SKU(DiscordEntity):
     
     def __repr__(self):
         """Returns the stock keeping unit's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         sku_id = self.id
         if sku_id:
@@ -422,6 +515,14 @@ class SKU(DiscordEntity):
         
         # application_id -> ignore, internal
         
+        # dependent_sku_id
+        if self.dependent_sku_id != other.dependent_sku_id:
+            return False
+        
+        # enhancement
+        if self.enhancement != other.enhancement:
+            return False
+        
         # features
         if self.features != other.features:
             return False
@@ -434,8 +535,16 @@ class SKU(DiscordEntity):
         if self.name != other.name:
             return False
         
+        # name_localizations
+        if self.name_localizations != other.name_localizations:
+            return False
+        
         # premium
         if self.premium != other.premium:
+            return False
+        
+        # product_family
+        if self.product_family is not other.product_family:
             return False
         
         # release_at
@@ -477,6 +586,18 @@ class SKU(DiscordEntity):
         
         # application_id -> ignore, internal
         
+        # dependent_sku_id
+        dependent_sku_id = self.dependent_sku_id
+        if dependent_sku_id:
+            hash_value ^= 1 << 3
+            hash_value ^= dependent_sku_id
+        
+        # enhancement
+        enhancement = self.enhancement
+        if (enhancement is not None):
+            hash_value ^= 1 << 5
+            hash_value ^= hash(enhancement)
+        
         # features
         features = self.features
         if (features is not None):
@@ -490,8 +611,18 @@ class SKU(DiscordEntity):
         # name
         hash_value ^= hash(self.name)
         
+        # name_localizations
+        name_localizations = self.name_localizations
+        if (name_localizations is not None):
+            hash_value ^= len(name_localizations) << 16
+            for key, value in name_localizations.items():
+                hash_value ^= hash(key) & hash(value)
+        
         # premium
         hash_value ^= self.premium << 8
+        
+        # product_family
+        hash_value ^= self.product_family.value << 13
         
         # release_at
         release_at = self.release_at
@@ -517,14 +648,32 @@ class SKU(DiscordEntity):
         new = object.__new__(type(self))
         new.access_type = self.access_type
         new.application_id = 0
+        new.dependent_sku_id = self.dependent_sku_id
+        
+        # enhancement
+        enhancement = self.enhancement
+        if (enhancement is not None):
+            enhancement = enhancement.copy()
+        new.enhancement = enhancement
+        
+        # features
         features = self.features
         if (features is not None):
             features = (*features,)
         new.features = features
+        
         new.flags = self.flags
         new.id = 0
         new.name = self.name
+        
+        # name_localizations
+        name_localizations = self.name_localizations
+        if (name_localizations is not None):
+            name_localizations = name_localizations.copy()
+        new.name_localizations = name_localizations
+        
         new.premium = self.premium
+        new.product_family = self.product_family
         new.release_at = self.release_at
         new.slug = None
         new.type = self.type
@@ -535,10 +684,14 @@ class SKU(DiscordEntity):
         self,
         *,
         access_type = ...,
+        dependent_sku_id = ...,
+        enhancement = ...,
         features = ...,
         flags = ...,
         name = ...,
+        name_localizations = ...,
         premium = ...,
+        product_family = ...,
         release_at = ...,
         sku_type = ...,
     ):
@@ -547,25 +700,38 @@ class SKU(DiscordEntity):
         
         Parameters
         ----------
-        access_type : ``SKUAccessType``, `int`, Optional (Keyword only)
+        access_type : ``None | int | SKUAccessType``, Optional (Keyword only)
             What kind of access the stock keeping unit provides for its content.
         
-        features : `None`, `iterable<SKUFeature | int>`, `SKUFeature`, `int`, Optional (Keyword only)
+        dependent_sku_id : ``None | int | SKU``, Optional (Keyword only)
+            Another stock keeping unit's identifier that depends this one.
+        
+        enhancement : ``None | SKUEnhancement``, Optional (Keyword only)
+            The enhancement granted by the stock keeping unit.
+        
+        features : ``None | int | SKUFeature | iterable<int> | iterable<SKUFeature>``, Optional (Keyword only)
             The features of the stock keeping unit.
         
-        flags : ``SKUFlag``, `int`, Optional (Keyword only)
+        flags : ``None | int | SKUFlag``, Optional (Keyword only)
             The flags of the stock keeping unit.
         
         name : `str`, Optional (Keyword only)
             The stock keeping unit's name.
         
+        name_localizations : ``None | dict<str | Locale, str> | (list | set | tuple<(str | Locale, str>)`` \
+                , Optional (Keyword only)
+            The localized names of the stock keeping unit.
+        
         premium : `bool`, Optional (Keyword only)
             Whether the stock keeping unit is a premium one.
+        
+        product_family : ``None | int ProductFamily``, Optional (Keyword only)
+            The family of products where the stock keeping units belongs.
             
         release_at : `None | DateTime`, Optional (Keyword only)
             When the stock keeping unit has its release.
         
-        sku_type : ``SKUType``, `int`, Optional (Keyword only)
+        sku_type : ``None | int | SKUType``, Optional (Keyword only)
             The stock keeping unit's type.
         
         Returns
@@ -584,6 +750,20 @@ class SKU(DiscordEntity):
             access_type = self.access_type
         else:
             access_type = validate_access_type(access_type)
+        
+        # dependent_sku_id
+        if dependent_sku_id is ...:
+            dependent_sku_id = self.dependent_sku_id
+        else:
+            dependent_sku_id = validate_dependent_sku_id(dependent_sku_id)
+        
+        # enhancement
+        if enhancement is ...:
+            enhancement = self.enhancement
+            if (enhancement is not None):
+                enhancement = enhancement.copy()
+        else:
+            enhancement = validate_enhancement(enhancement)
         
         # features
         if features is ...:
@@ -605,11 +785,25 @@ class SKU(DiscordEntity):
         else:
             name = validate_name(name)
         
+        # name_localizations
+        if name_localizations is ...:
+            name_localizations = self.name_localizations
+            if (name_localizations is not None):
+                name_localizations = name_localizations.copy()
+        else:
+            name_localizations = validate_name_localizations(name_localizations)
+        
         # premium
         if premium is ...:
             premium = self.premium
         else:
             premium = validate_premium(premium)
+        
+        # product_family
+        if product_family is ...:
+            product_family = self.product_family
+        else:
+            product_family = validate_product_family(product_family)
         
         # release_at
         if release_at is ...:
@@ -627,11 +821,15 @@ class SKU(DiscordEntity):
         new = object.__new__(type(self))
         new.access_type = access_type
         new.application_id = 0
+        new.dependent_sku_id = dependent_sku_id
+        new.enhancement = enhancement
         new.features = features
         new.flags = flags
         new.id = 0
         new.name = name
+        new.name_localizations = name_localizations
         new.premium = premium
+        new.product_family = product_family
         new.release_at = release_at
         new.slug = None
         new.type = sku_type
@@ -683,3 +881,17 @@ class SKU(DiscordEntity):
         features = self.features
         if (features is not None):
             yield from features
+    
+    
+    @property
+    def dependent_sku(self):
+        """
+        Returns an other stock keeping unit that depends on this one.
+        
+        Returns
+        -------
+        dependent_sku : `None | instance<type<self>``
+        """
+        dependent_sku_id = self.dependent_sku_id
+        if dependent_sku_id:
+            return SKUS.get(dependent_sku_id, None)

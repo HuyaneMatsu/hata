@@ -8,15 +8,17 @@ from ...core import ROLES
 from ...utils import ID_RP, ROLE_MENTION_RP
 
 from .fields import (
-    put_color, put_flags, put_mentionable, put_name, put_permissions, put_position,
-    put_separated, put_unicode_emoji, validate_color, validate_flags, validate_mentionable, validate_name,
-    validate_permissions, validate_position, validate_separated, validate_unicode_emoji
+    put_color, put_color_configuration, put_flags, put_mentionable, put_name, put_permissions, put_position,
+    put_separated, put_unicode_emoji, validate_color, validate_color_configuration, validate_flags,
+    validate_mentionable, validate_name, validate_permissions, validate_position, validate_separated,
+    validate_unicode_emoji
 )
 from .role import ROLE_ICON, Role
 
 
 ROLE_FIELD_CONVERTERS = {
     'color': (validate_color, put_color),
+    'color_configuration': (validate_color_configuration, put_color_configuration),
     'flags': (validate_flags, put_flags),
     'icon': (partial_func(ROLE_ICON.validate_icon, allow_data = True), partial_func(ROLE_ICON.put_into, as_data = True)),
     'mentionable': (validate_mentionable, put_mentionable),

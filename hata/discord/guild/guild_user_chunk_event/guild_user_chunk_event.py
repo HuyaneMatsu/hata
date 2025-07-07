@@ -26,7 +26,7 @@ class GuildUserChunkEvent(EventBase):
         The guild's identifier, what received the user chunk.
     nonce : `None`, `str`
         A nonce to identify guild user chunk response.
-    users : `list` of ``ClientUserBase``
+    users : ``list<ClientUserBase>``
         The received users.
     
     Examples

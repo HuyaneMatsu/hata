@@ -6,6 +6,7 @@ from ....bases import Icon, IconType
 from ....user import User
 
 from ...schedule import Schedule
+from ...scheduled_event_occasion_overwrite import ScheduledEventOccasionOverwrite
 
 from ..preinstanced import PrivacyLevel, ScheduledEventEntityType, ScheduledEventStatus
 from ..scheduled_event import ScheduledEvent
@@ -29,6 +30,14 @@ def test__ScheduledEvent__repr():
     status = ScheduledEventStatus.active
     location = 'hell'
     
+    occasion_overwrites = [
+        ScheduledEventOccasionOverwrite(
+            timestamp = DateTime(2016, 5, 14, 13, 0, 0, tzinfo = TimeZone.utc),
+        ),
+        ScheduledEventOccasionOverwrite(
+            timestamp = DateTime(2016, 5, 16, 13, 10, 0, tzinfo = TimeZone.utc),
+        ),
+    ]
     creator = User.precreate(202303160051, name = 'Orin')
     entity_id = 202303160052
     guild_id = 202303160053
@@ -58,6 +67,7 @@ def test__ScheduledEvent__repr():
     scheduled_event = ScheduledEvent.precreate(
         scheduled_event_id,
         **keyword_parameters,
+        occasion_overwrites = occasion_overwrites,
         creator = creator,
         entity_id = entity_id,
         guild_id = guild_id,
@@ -85,6 +95,14 @@ def test__ScheduledEvent__hash():
     status = ScheduledEventStatus.active
     location = 'hell'
     
+    occasion_overwrites = [
+        ScheduledEventOccasionOverwrite(
+            timestamp = DateTime(2016, 5, 14, 13, 0, 0, tzinfo = TimeZone.utc),
+        ),
+        ScheduledEventOccasionOverwrite(
+            timestamp = DateTime(2016, 5, 16, 13, 10, 0, tzinfo = TimeZone.utc),
+        ),
+    ]
     creator = User.precreate(202303160058, name = 'Orin')
     entity_id = 202303160059
     guild_id = 202303160060
@@ -113,6 +131,7 @@ def test__ScheduledEvent__hash():
     scheduled_event = ScheduledEvent.precreate(
         scheduled_event_id,
         **keyword_parameters,
+        occasion_overwrites = occasion_overwrites,
         creator = creator,
         entity_id = entity_id,
         guild_id = guild_id,
@@ -270,6 +289,7 @@ def test__ScheduledEvent__eq(keyword_parameters_0, keyword_parameters_1):
     ----------
     keyword_parameters_0 : `dict<str, object>`
         Keyword parameters to create instance with.
+    
     keyword_parameters_1 : `dict<str, object>`
         Keyword parameters to create instance with.
     
@@ -294,6 +314,14 @@ def test__ScheduledEvent__eq__non_partial():
     scheduled_event_id = 202303160063
     name = 'hey mister'
     
+    occasion_overwrites = [
+        ScheduledEventOccasionOverwrite(
+            timestamp = DateTime(2016, 5, 14, 13, 0, 0, tzinfo = TimeZone.utc),
+        ),
+        ScheduledEventOccasionOverwrite(
+            timestamp = DateTime(2016, 5, 16, 13, 10, 0, tzinfo = TimeZone.utc),
+        ),
+    ]
     creator = User.precreate(202303160065, name = 'Orin')
     entity_id = 202303160066
     guild_id = 202303160067
@@ -303,6 +331,7 @@ def test__ScheduledEvent__eq__non_partial():
     scheduled_event = ScheduledEvent.precreate(
         scheduled_event_id,
         name = name,
+        occasion_overwrites = occasion_overwrites,
         creator = creator,
         entity_id = entity_id,
         guild_id = guild_id,

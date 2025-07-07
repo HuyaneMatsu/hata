@@ -268,7 +268,7 @@ class ClientCompoundThreadEndpoints(Compound):
         applied_tags : `None`, `(list | tuple)<int | ForumTag>`, `int`, `ForumTag`, Optional (Keyword only)
             Alternative for `applied_tag_ids`.
         
-        attachments : `None`, `object`, Optional (Keyword only)
+        attachments : `None | object`, Optional (Keyword only)
             Attachments to send.
         
         auto_archive_after : `int`, Optional (Keyword only)
@@ -286,10 +286,10 @@ class ClientCompoundThreadEndpoints(Compound):
         embeds : `None`, `list<Embed>`, Optional
             The new embedded content of the message.
         
-        file : `None`, `object`, Optional (Keyword only)
+        file : `None | object`, Optional (Keyword only)
             Alternative for `attachments`.
         
-        files : `None`, `object`, Optional (Keyword only)
+        files : `None | object`, Optional (Keyword only)
             Alternative for `attachments`.
         
         flags : `int`, ``ChannelFlag``, Optional (Keyword only)
@@ -569,7 +569,7 @@ class ClientCompoundThreadEndpoints(Compound):
         
         Returns
         -------
-        users : `list` of ``ClientUserBase``
+        users : ``list<ClientUserBase>``
             The created users.
         
         Raises

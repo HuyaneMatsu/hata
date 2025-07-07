@@ -100,7 +100,7 @@ class Message(DiscordEntity, immortal = True):
     
     Attributes
     ----------
-    _cache_mentioned_channels : `None`, `tuple` of ``Channel``
+    _cache_mentioned_channels : ``None | tuple<Channel>``
         Mentioned channels by the message. Parsed from ``.content``. Defaults to `None`.
         
         Cache field used by ``.mentioned_channels``.
@@ -162,7 +162,7 @@ class Message(DiscordEntity, immortal = True):
     interaction : `None`, ``MessageInteraction``
         Present if the message is a response to an ``InteractionEvent``. Defaults to `None`.
     
-    mentioned_channels_cross_guild : `None`, `tuple` of ``Channel``
+    mentioned_channels_cross_guild : ``None | tuple<Channel>``
         Cross guild channel mentions of a crosspost message if applicable. Defaults to `None`.
     
     mentioned_everyone : `bool`
@@ -196,18 +196,18 @@ class Message(DiscordEntity, immortal = True):
         
         Defaults to `None`.
     
-    resolved : `None`, ``Resolved``
+    resolved : ``None | Resolved``
         Resolved entities of selected options.
         
         Defaults to `None`.
     
-    role_subscription : `None`, ``MessageRoleSubscription``
+    role_subscription : ``None | MessageRoleSubscription``
         Additional role subscription information attached to the message. Defaults to `None`.
     
-    snapshots : `None`, `tuple` of ``MessageSnapshot``
+    snapshots : ``None | tuple<MessageSnapshot>``
         Forwarded snapshots of other messages.
     
-    soundboard_sounds : `None | tuple<SoundboardSound>`
+    soundboard_sounds : ``None | tuple<SoundboardSound>``
         The soundboard sounds attached to the message. 
     
     stickers : `None`, `tuple` of ``Sticker``
@@ -342,10 +342,10 @@ class Message(DiscordEntity, immortal = True):
         referenced_message : `None`, ``Message``, Optional (Keyword only)
             The referenced message.
         
-        resolved : `None`, ``Resolved``, Optional (Keyword only)
+        resolved : ``None | Resolved``, Optional (Keyword only)
             Resolved entities of selected options.
         
-        role_subscription : `None`, ``MessageRoleSubscription``, Optional (Keyword only)
+        role_subscription : ``None | MessageRoleSubscription``, Optional (Keyword only)
             Additional role subscription information attached to the message.
         
         snapshots : `None`, `iterable` of ``MessageSnapshot`, Optional (Keyword only)
@@ -1329,7 +1329,7 @@ class Message(DiscordEntity, immortal = True):
         +-----------------------------------+-----------------------------------------------------------------------+
         | flags                             | ``MessageFlag``                                                       |
         +-----------------------------------+-----------------------------------------------------------------------+
-        | mentioned_channels_cross_guild    | `None`, `tuple` of ``Channel``                                        |
+        | mentioned_channels_cross_guild    | ``None | tuple<Channel>``                                             |
         +-----------------------------------+-----------------------------------------------------------------------+
         | mentioned_everyone                | `bool`                                                                |
         +-----------------------------------+-----------------------------------------------------------------------+
@@ -1341,7 +1341,7 @@ class Message(DiscordEntity, immortal = True):
         +-----------------------------------+-----------------------------------------------------------------------+
         | poll                              | ``PollChange``                                                        |
         +-----------------------------------+-----------------------------------------------------------------------+
-        | resolved                          | `None`, ``Resolved``                                                  |
+        | resolved                          | ``None | Resolved``                                                   |
         +-----------------------------------+-----------------------------------------------------------------------+
         """
         self._clear_cache()
@@ -1967,10 +1967,10 @@ class Message(DiscordEntity, immortal = True):
         referenced_message : `None`, ``Message``, Optional (Keyword only)
             The referenced message.
         
-        resolved : `None`, ``Resolved``, Optional (Keyword only)
+        resolved : ``None | Resolved``, Optional (Keyword only)
             Resolved entities of selected options.
         
-        role_subscription : `None`, ``MessageRoleSubscription``, Optional (Keyword only)
+        role_subscription : ``None | MessageRoleSubscription``, Optional (Keyword only)
             Additional role subscription information attached to the message.
         
         snapshots : `None`, `iterable` of ``MessageSnapshot`, Optional (Keyword only)
@@ -2252,10 +2252,10 @@ class Message(DiscordEntity, immortal = True):
         referenced_message : `None`, ``Message``, Optional (Keyword only)
             The referenced message.
         
-        resolved : `None`, ``Resolved``, Optional (Keyword only)
+        resolved : ``None | Resolved``, Optional (Keyword only)
             Resolved entities of selected options.
         
-        role_subscription : `None`, ``MessageRoleSubscription``, Optional (Keyword only)
+        role_subscription : ``None | MessageRoleSubscription``, Optional (Keyword only)
             Additional role subscription information attached to the message.
         
         snapshots : `None`, `iterable` of ``MessageSnapshot`, Optional (Keyword only)
@@ -2760,7 +2760,7 @@ class Message(DiscordEntity, immortal = True):
         
         Returns
         -------
-        channel_mentions : `None`, `tuple` of ``Channel``
+        channel_mentions : ``None | tuple<Channel>``
             The parsed channel mentions.
         """
         mentioned_channels = None
@@ -2794,7 +2794,7 @@ class Message(DiscordEntity, immortal = True):
         
         Returns
         -------
-        mentioned_channels : `None`, `tuple` of ``Channel``
+        mentioned_channels : ``None | tuple<Channel>``
         """
         state = self._state
         if state & MESSAGE_STATE_MASK_CACHE_MENTIONED_CHANNELS:
@@ -2893,7 +2893,7 @@ class Message(DiscordEntity, immortal = True):
 
         Returns
         -------
-        snapshot : `None`, ``MessageSnapshot``
+        snapshot : ``None | MessageSnapshot``
         """
         snapshots = self.snapshots
         if snapshots is not None:
@@ -2906,7 +2906,7 @@ class Message(DiscordEntity, immortal = True):
         
         Returns
         -------
-        soundboard_sound : `None | SoundboardSound`
+        soundboard_sound : ``None | SoundboardSound``
         """
         soundboard_sounds = self.soundboard_sounds
         if (soundboard_sounds is not None):

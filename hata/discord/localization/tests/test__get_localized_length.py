@@ -48,7 +48,7 @@ def test__get_localized_length(value, value_localizations):
     value : `None | str`
         The default value.
     
-    value_localizations : `None | dict<Locale, str>`
+    value_localizations : ``None | dict<Locale, str>``
         Localizations of the value.
     
     Returns

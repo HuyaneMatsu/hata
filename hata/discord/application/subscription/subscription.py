@@ -42,7 +42,7 @@ class Subscription(DiscordEntity):
     country_code : `None | str`
         `ISO3166-1` country code. Present when queried through oauth2.
     
-    current_period_end : `None | Datetime`
+    current_period_end : `None | DateTime`
         When the current subscription period ends.
     
     current_period_start : `None | DateTime`
@@ -395,7 +395,7 @@ class Subscription(DiscordEntity):
         country_code : `None | str`, Optional (Keyword only)
             `ISO3166-1` country code. Present when queried through oauth2.
         
-        current_period_end : `None | Datetime`, Optional (Keyword only)
+        current_period_end : `None | DateTime`, Optional (Keyword only)
             When the current subscription period ends.
         
         current_period_start : `None | DateTime`, Optional (Keyword only)

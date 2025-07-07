@@ -1,3 +1,102 @@
+## 1.3.81 *\[2025-07-07\]*
+
+### Improvements
+
+- Add `RoleColorConfiguration`.
+- Add `Role.color_configuration`.
+- Add `color_configuration` audit log change conversion for roles.
+- Add `GuildFeature.role_colors_enhanced`.
+- Add `GuildFeature.audio_bitrate_128_kbps`.
+- Add `GuildFeature.audio_bitrate_256_kbps`.
+- Add `GuildFeature.audio_bitrate_384_kbps`.
+- Add `GuildFeature.stage_channel_150_viewers`.
+- Add `GuildFeature.stage_channel_300_viewers`.
+- Add `GuildFeature.stage_channel_50_viewers`.
+- Add `GuildFeature.video_bitrate_enhanced`.
+- Add `GuildFeature.video_quality_1080_px_60_fps`.
+- Add `GuildFeature.video_quality_720_px_60_fps`.
+- Add `GuildFeature.verification_manual_approval`.
+- Add `GuildFeature.raid_alerts_non_community`.
+- Add `GuildFeature.moderation_survey_reports`.
+- Add `GuildFeature.moderation_experience_non_community_enabled`.
+- Add `GuildFeature.attachment_size_limit_100_mb`.
+- Add `GuildFeature.attachment_size_limit_50_mb`.
+- Add `GuildFeature.levelless_boosting`.
+- Add `GuildFeature.levelless_boosting_system_messages`.
+- Add `GuildFeature.badge`.
+- Add `PollResult.iter_users`.
+- Add support for `avif` emojis.
+- Add support for animated `webp` icon urls.
+- Add `ScheduledEvent.occasion_overwrites`.
+- Add `ScheduledEvent.iter_occasion_overwrites`.
+- Add `ScheduledEventSubscribeEvent.scheduled_event`.
+- Add `ScheduledEventOccasionOverwrite`.
+- Add `ScheduledEventOccasionOverwriteCreateEvent`.
+- Add `ScheduledEventOccasionOverwriteDeleteEvent`.
+- Add `ScheduledEventOccasionOverwriteUpdateEvent`.
+- Add `OperationSystem.android`.
+- Add `OperationSystem.ios`.
+- Add `OperationSystem.playstation`.
+- Add `OperationSystem.xbox`.
+- Add `GUILD_SCHEDULED_EVENT_EXCEPTION_CREATE` gateway event parser.
+- Add `GUILD_SCHEDULED_EVENT_EXCEPTION_DELETE` gateway event parser.
+- Add `EventHandlerManager.scheduled_event_occasion_overwrite_create`.
+- Add `EventHandlerManager.scheduled_event_occasion_overwrite_delete`.
+- Add `EventHandlerManager.scheduled_event_occasion_overwrite_update`.
+- Add `Client.scheduled_event_occasion_overwrite_create`.
+- Add `Client.scheduled_event_occasion_overwrite_delete`.
+- Add `Client.scheduled_event_occasion_overwrite_edit`.
+- Add `DiscordApiClient.scheduled_event_occasion_overwrite_create`.
+- Add `DiscordApiClient.scheduled_event_occasion_overwrite_delete`.
+- Add `DiscordApiClient.scheduled_event_occasion_overwrite_edit`.
+- Add `RATE_LIMIT_GROUPS.scheduled_event_occasion_overwrite_create`.
+- Add `RATE_LIMIT_GROUPS.scheduled_event_occasion_overwrite_delete`.
+- Add `RATE_LIMIT_GROUPS.scheduled_event_occasion_overwrite_edit`.
+- Add `AuditLogEntryTargetType.scheduled_event_occasion_overwrite`.
+- Add `timestamp` audit log detail conversion for scheduled event occasion overwrites.
+- Add `cancelled` audit log change conversion for scheduled event occasion overwrites.
+- Add `end` audit log change conversion for scheduled event occasion overwrites.
+- Add `start` audit log change conversion for scheduled event occasion overwrites.
+- Add `EntitlementType.guild_enhancement`.
+- Add `SKU.name_localizations`.
+- Add `AttachmentFlag.gore`.
+- Add `SKUProductFamily.`
+- Add `SKU.product_family`.
+- Add `SKU.dependent_sku_id`.
+- Add `SKU.dependent_sku`.
+- Add `SKUEnhancementGuild`.
+- Add `SKUEnhancement`.
+- Add `SKU.enhancement`.
+- Add `GiftCodeFlag`.
+- Add `Entitlement.promotion_id`.
+- Add `EMAIL_MENTION_RP`.
+- Add `TELEPHONE_NUMBER_MENTION_RP`.
+- `sanitize_mentions` now sanitizes email mentions.
+- `sanitize_mentions` now sanitizes telephone number mentions.
+- `sanitize_mentions` now sanitises `everyone` and `here` as a second step, because they may be produced in by
+    sanitizing normal mentions.
+- Add `EntitlementSourceType`.
+- Add `Entitlement.source_type`.
+- Add `GiftCodeFlag`.
+- Add `Entitlement.gift_code_flags`.
+- Add `Entitlement.sku`.
+- Add `GuildEnhancementEntitlementsCreateEvent`.
+- Add `GuildEnhancementEntitlementsDeleteEvent`
+- Add `EventHandlerManager.guild_enhancement_entitlements_create`.
+- Add `EventHandlerManager.guild_enhancement_entitlements_delete`.
+- Add `GUILD_BOOSTS`.
+- Add `GuildBoost`.
+- Add `EventHandlerManager.guild_boost_update`.
+
+### Renames, Deprecations & Removals
+
+- Rename `GuildFeature.role_subscription_purchasable` to `role_subscriptions_purchasable`.
+    (It was never intended to be `subscription`, but `subscriptions`.)
+- Rename `AuditLogEntryType.scheduled_event_exception_create` to `scheduled_event_occasion_overwrite_create`.
+- Rename `AuditLogEntryType.scheduled_event_exception_update` to `scheduled_event_occasion_overwrite_update`.
+- Rename `AuditLogEntryType.scheduled_event_exception_delete` to `scheduled_event_occasion_overwrite_delete`.
+- Rename `AttachmentFlag.explicit` to `AttachmentFlag.erotic`.
+
 ## 1.3.80 *\[2025-06-17\]*
 
 ### Improvements

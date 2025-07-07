@@ -48,7 +48,7 @@ def test__parse_embeds(input_data):
     
     Returns
     -------
-    output : `None | tuple<Embed>`
+    output : ``None | tuple<Embed>``
     """
     output = parse_embeds(input_data)
     vampytest.assert_instance(output, tuple, nullable = True)

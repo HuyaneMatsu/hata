@@ -23,7 +23,7 @@ def test__put_created_at(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `None | Datetime`
+    input_value : `None | DateTime`
         Value to serialize.
     defaults : `bool`
         Whether fields ast heir default value should be included as well.

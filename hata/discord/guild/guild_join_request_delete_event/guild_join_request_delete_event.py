@@ -18,7 +18,8 @@ class GuildJoinRequestDeleteEvent(EventBase):
     Attributes
     ----------
     guild_id : `int`
-        The guild's identifier where the event will be.
+        The guild's identifier where the event is for.
+    
     user_id : `int`
         The user's identifier whos join request was deleted.
     """
@@ -30,10 +31,11 @@ class GuildJoinRequestDeleteEvent(EventBase):
         
         Parameters
         ----------
-        guild_id : `int`, ``Guild``, Optional (Keyword only)
+        guild_id : ``None | int | Guild``, Optional (Keyword only)
             The guild or its identifier where the event will be.
-        user_id : `int` ``ClientUserBase``, Optional (Keyword only)
-            The user or their their identifier whos join request was deleted.
+        
+        user_id : ``None | int | ClientUserBase``, Optional (Keyword only)
+            The user or it's identifier whos join request was deleted.
         
         Raises
         ------
@@ -69,7 +71,7 @@ class GuildJoinRequestDeleteEvent(EventBase):
         Parameters
         ----------
         data : `dict<str, object>`
-            Guild join request delete event.
+            Guild join request delete event data.
         
         Returns
         -------
@@ -102,11 +104,13 @@ class GuildJoinRequestDeleteEvent(EventBase):
     
     @copy_docs(EventBase.__repr__)
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
+        # guild_id
         repr_parts.append(' guild_id = ')
         repr_parts.append(repr(self.guild_id))
         
+        # user_id
         repr_parts.append(', user_id = ')
         repr_parts.append(repr(self.user_id))
         
@@ -130,9 +134,11 @@ class GuildJoinRequestDeleteEvent(EventBase):
         if type(self) is not type(other):
             return NotImplemented
         
+        # guild_id
         if self.guild_id != other.guild_id:
             return False
         
+        # user_id
         if self.user_id != other.user_id:
             return False
         
@@ -166,16 +172,17 @@ class GuildJoinRequestDeleteEvent(EventBase):
         return new
     
     
-    def copy_with(self, guild_id = ..., user_id = ...):
+    def copy_with(self, *, guild_id = ..., user_id = ...):
         """
         Copies the guild join request delete event with the given fields.
         
         Parameters
         ----------
-        guild_id : `int`, ``Guild``, Optional (Keyword only)
+        guild_id : ``None | int | Guild``, Optional (Keyword only)
             The guild or its identifier where the event will be.
-        user_id : `int` ``ClientUserBase``, Optional (Keyword only)
-            The user or their their identifier whos join request was deleted.
+        
+        user_id : ``None | int | ClientUserBase``, Optional (Keyword only)
+            The user or it's identifier whos join request was deleted.
         
         Returns
         -------

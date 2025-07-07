@@ -10,6 +10,7 @@ from .onboarding_prompt import *
 from .onboarding_screen import *
 from .role import *
 from .scheduled_event import *
+from .scheduled_event_occasion_overwrite import *
 from .soundboard_sound import *
 from .stage import *
 from .sticker import *
@@ -30,6 +31,7 @@ __all__ = (
     *onboarding_screen.__all__,
     *role.__all__,
     *scheduled_event.__all__,
+    *scheduled_event_occasion_overwrite.__all__,
     *soundboard_sound.__all__,
     *stage.__all__,
     *sticker.__all__,

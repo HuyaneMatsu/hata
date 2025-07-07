@@ -846,7 +846,7 @@ class UserBase(DiscordEntity, immortal = True):
         
         Returns
         -------
-        statuses : `None`, `dict` of (`str`, `str`) items
+        statuses : `None | dict<str, str>`
         """
     )
     
@@ -1365,7 +1365,7 @@ class UserBase(DiscordEntity, immortal = True):
         +---------------+-------------------------------------------+
         | status        | ``Status``                                |
         +---------------+-------------------------------------------+
-        | statuses      | `None`, `dict` of (`str`, `str`) items    |
+        | statuses      | `None | dict<str, str>`    |
         +---------------+-------------------------------------------+
         """
         return {}

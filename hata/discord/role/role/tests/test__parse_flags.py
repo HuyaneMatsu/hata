@@ -5,8 +5,24 @@ from ..flags import RoleFlag
 
 
 def _iter_options():
-    yield {}, RoleFlag(0)
-    yield {'flags': 1}, RoleFlag(1)
+    yield (
+        {},
+        RoleFlag(0),
+    )
+    
+    yield (
+        {
+            'flags': None,
+        },
+        RoleFlag(0),
+    )
+    
+    yield (
+        {
+            'flags': 1,
+        },
+        RoleFlag(1),
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
@@ -17,7 +33,7 @@ def test__parse_flags(input_data):
     Parameters
     ----------
     input_data : `dict<str, object>`
-        Data to parse the flags from.
+        Data to parse from.
     
     Returns
     -------

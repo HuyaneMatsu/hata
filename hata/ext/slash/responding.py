@@ -350,7 +350,7 @@ class InteractionResponse(
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
             for details.
         
-        attachments : `None`, `object`, Optional (Keyword only)
+        attachments : `None | object`, Optional (Keyword only)
             Attachments to send.
         
         components : `None`, ``Component``, `(tuple | list)<Component, (tuple | list)<Component>>`
@@ -373,10 +373,10 @@ class InteractionResponse(
         event : ``None | InteractionEvent`` = `None`, Optional
             Alternative for `interaction_event`.
         
-        file : `None`, `object`, Optional (Keyword only)
+        file : `None | object`, Optional (Keyword only)
             Alternative for `attachments`.
         
-        files : `None`, `object`, Optional (Keyword only)
+        files : `None | object`, Optional (Keyword only)
             Alternative for `attachments`.
         
         flags : `int`, ``MessageFlag`, Optional
@@ -611,7 +611,7 @@ def abort(
         Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
         for details.
     
-    attachments : `None`, `object`, Optional (Keyword only)
+    attachments : `None | object`, Optional (Keyword only)
         Attachments to send.
     
     components : `None`, ``Component``, `(tuple | list)<Component, (tuple | list)<Component>>`
@@ -634,10 +634,10 @@ def abort(
     event : ``None | InteractionEvent`` = `None`, Optional
         Alternative for `interaction_event`.
     
-    file : `None`, `object`, Optional (Keyword only)
+    file : `None | object`, Optional (Keyword only)
         Alternative for `attachments`.
     
-    files : `None`, `object`, Optional (Keyword only)
+    files : `None | object`, Optional (Keyword only)
         Alternative for `attachments`.
     
     flags : `int`, ``MessageFlag`, Optional

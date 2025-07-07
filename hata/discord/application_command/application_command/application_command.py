@@ -61,7 +61,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         
         Set as `None` for context commands.
     
-    description_localizations : `None`, `dict` of (``Locale``, `str`) items
+    description_localizations : ``None | dict<Locale, str>``
         Localized descriptions of the application command.
         
         Set as `None` for context commands.
@@ -86,7 +86,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
     name : `str`
         The name of the command. It's length can be in range [1:32].
     
-    name_localizations : `None`, `dict` of (``Locale``, `str`) items
+    name_localizations : ``None | dict<Locale, str>``
         Localized names of the application command.
     
     nsfw : `bool`
@@ -143,8 +143,8 @@ class ApplicationCommand(DiscordEntity, immortal = True):
             
             Defaults to the `name` parameter if not given.
         
-        description_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,
-                (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`), Optional (Keyword only)
+        description_localizations : ``None | dict<str | Locale, str> | (list | set | tuple<(str | Locale, str>)`` \
+                , Optional (Keyword only)
             Localized descriptions of the application command.
         
         handler_type : `ApplicationCommandHandlerType | None | int`, Optional (Keyword only)
@@ -157,8 +157,8 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         integration_types : `None | iterable<ApplicationIntegrationType | int>`, Optional (Keyword only)
             The options where the application command can be integrated to.
         
-        name_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items, \
-                (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`), Optional (Keyword only)
+        name_localizations : ``None | dict<str | Locale, str> | (list | set | tuple<(str | Locale, str>)`` \
+                , Optional (Keyword only)
             Localized names of the application command.
         
         nsfw : `None`, `bool`, Optional (Keyword only)
@@ -299,8 +299,8 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         description : `None`, `str` = `None`, Optional
             The command's description. It's length can be in range [2:100].
         
-        description_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,
-                (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`), Optional (Keyword only)
+        description_localizations : ``None | dict<str | Locale, str> | (list | set | tuple<(str | Locale, str>)`` \
+                , Optional (Keyword only)
             Localized descriptions of the application command.
         
         guild : `int`, ``Guild``, Optional (Keyword only)
@@ -322,8 +322,8 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         name : `str`
             The name of the command. It's length can be in range [1:32].
         
-        name_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,
-                (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`), Optional (Keyword only)
+        name_localizations : ``None | dict<str | Locale, str> | (list | set | tuple<(str | Locale, str>)`` \
+                , Optional (Keyword only)
             Localized names of the application command.
         
         nsfw : `None`, `bool`, Optional (Keyword only)
@@ -551,7 +551,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
             +===========================+===================================================================+
             | description               | `None`, `str`                                                     |
             +---------------------------+-------------------------------------------------------------------+
-            | description_localizations | `None`, `dict` of (``Locale``, `str`) items                       |
+            | description_localizations | ``None | dict<Locale, str>``                       |
             +---------------------------+-------------------------------------------------------------------+
             | handler_type              | ``ApplicationCommandHandlerType``                                 |
             +---------------------------+-------------------------------------------------------------------+
@@ -561,7 +561,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
             +---------------------------+-------------------------------------------------------------------+
             | name                      | `str`                                                             |
             +---------------------------+-------------------------------------------------------------------+
-            | name_localizations        | `None`, `dict` of (``Locale``, `str`) items                       |
+            | name_localizations        | ``None | dict<Locale, str>``                       |
             +---------------------------+-------------------------------------------------------------------+
             | nsfw                      | `bool`                                                            |
             +---------------------------+-------------------------------------------------------------------+
@@ -1136,8 +1136,8 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         description : `None`, `str` = `None`, Optional
             The command's description. It's length can be in range [2:100].
         
-        description_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,
-                (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`), Optional (Keyword only)
+        description_localizations : ``None | dict<str | Locale, str> | (list | set | tuple<(str | Locale, str>)`` \
+                , Optional (Keyword only)
             Localized descriptions of the application command.
         
         handler_type : `ApplicationCommandHandlerType | None | int`, Optional (Keyword only)
@@ -1153,8 +1153,8 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         name : `str`, Optional (Keyword only)
             The name of the command. It's length can be in range [1:32].
         
-        name_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,
-                (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`), Optional (Keyword only)
+        name_localizations : ``None | dict<str | Locale, str> | (list | set | tuple<(str | Locale, str>)`` \
+                , Optional (Keyword only)
             Localized names of the application command.
         
         nsfw : `None`, `bool`, Optional (Keyword only)

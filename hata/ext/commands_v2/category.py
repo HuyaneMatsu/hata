@@ -300,7 +300,7 @@ class Category:
             The command's name.
         name : `None`, `str`, `tuple` of (`None`, `Ellipsis`, `str`) = `None`, Optional
             The name to be used instead of the passed `command`'s.
-        description : `None`, `object`, `tuple` of (`None`, `Ellipsis`, `object`) = `None`, Optional
+        description : `None | object | tuple<None | Ellipsis | object>` = `None`, Optional
             Description added to the command. If no description is provided, then it will check the commands's
             `.__doc__` attribute for it. If the description is a string instance, then it will be normalized with the
             ``normalize_description`` function. If it ends up as an empty string, then `None` will be set as the

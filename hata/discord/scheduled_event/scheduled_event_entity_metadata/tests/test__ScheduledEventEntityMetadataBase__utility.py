@@ -17,7 +17,7 @@ def test__ScheduledEventEntityMetadataBase__copy():
     vampytest.assert_is_not(copy, entity_metadata)
 
 
-def test__ScheduledEventEntityMetadataBase__copy_with__0():
+def test__ScheduledEventEntityMetadataBase__copy_with__no_fields():
     """
     Tests whether ``ScheduledEventEntityMetadataBase.copy_with`` works as intended.
     
@@ -31,7 +31,7 @@ def test__ScheduledEventEntityMetadataBase__copy_with__0():
     vampytest.assert_is_not(copy, entity_metadata)
 
 
-def test__ScheduledEventEntityMetadataBase__copy_with_keyword_parameters__0():
+def test__ScheduledEventEntityMetadataBase__copy_with_keyword_parameters__all_fields():
     """
     Tests whether ``ScheduledEventEntityMetadataBase.copy_with_keyword_parameters`` works as intended.
     

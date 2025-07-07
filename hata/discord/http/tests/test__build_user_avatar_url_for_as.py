@@ -62,6 +62,28 @@ def _iter_options():
         1024,
         f'{CDN_ENDPOINT}/guilds/{guild_id}/users/{user_id}/avatars/00000000000000000000000000000002.jpg?size=1024',
     )
+    
+    user_id = 202506210024
+    yield (
+        user_id,
+        guild_id,
+        IconType.static,
+        4,
+        'webp',
+        None,
+        f'{CDN_ENDPOINT}/guilds/{guild_id}/users/{user_id}/avatars/00000000000000000000000000000004.webp',
+    )
+    
+    user_id = 202506210025
+    yield (
+        user_id,
+        guild_id,
+        IconType.animated,
+        4,
+        'webp',
+        None,
+        f'{CDN_ENDPOINT}/guilds/{guild_id}/users/{user_id}/avatars/a_00000000000000000000000000000004.webp?animated=true',
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

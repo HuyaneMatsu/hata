@@ -5,8 +5,24 @@ from ..preinstanced import SKUAccessType
 
 
 def _iter_options():
-    yield {}, SKUAccessType.none
-    yield {'access_type': SKUAccessType.full.value}, SKUAccessType.full
+    yield (
+        {},
+        SKUAccessType.none,
+    )
+    
+    yield (
+        {
+            'access_type': None,
+        },
+        SKUAccessType.none,
+    )
+    
+    yield (
+        {
+            'access_type': SKUAccessType.full.value,
+        },
+        SKUAccessType.full,
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

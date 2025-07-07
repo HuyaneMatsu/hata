@@ -363,7 +363,7 @@ class ReactionMapping(RichAttributeErrorBaseType):
         ----------
         reaction : ``Reaction``
             The reaction, which users' are updated.
-        users : `list` of ``ClientUserBase``
+        users : ``list<ClientUserBase>``
             The added reactors.
         """
         line = self._get_or_create_line(reaction)
@@ -378,7 +378,7 @@ class ReactionMapping(RichAttributeErrorBaseType):
         ----------
         reaction : ``Reaction``
             The reaction, which users' are updated.
-        users : `list` of ``ClientUserBase``
+        users : ``list<ClientUserBase>``
             The added reactors.
         """
         line = self._get_or_create_line(reaction)

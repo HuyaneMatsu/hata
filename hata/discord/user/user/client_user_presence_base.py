@@ -79,7 +79,7 @@ class ClientUserPBase(ClientUserBase):
     status : `Status`
         The user's display status.
     
-    statuses : `None`, `dict` of (`str`, `str`) items
+    statuses : `None | dict<str, str>`
         The user's statuses for each platform.
     
     thread_profiles : `None`, `dict` (``Channel``, ``ThreadProfile``) items
@@ -150,7 +150,7 @@ class ClientUserPBase(ClientUserBase):
         status : `Status`, `str`, Optional (Keyword only)
             The user's display status.
         
-        statuses : `None`, `dict` of (`str`, `str`) items, Optional (Keyword only)
+        statuses : `None | dict<str, str>`, Optional (Keyword only)
             The user's statuses for each platform.
         
         Returns
@@ -426,7 +426,7 @@ class ClientUserPBase(ClientUserBase):
         status : `Status`, `str`, Optional (Keyword only)
             The user's display status.
         
-        statuses : `None`, `dict` of (`str`, `str`) items, Optional (Keyword only)
+        statuses : `None | dict<str, str>`, Optional (Keyword only)
             The user's statuses for each platform.
         
         Returns

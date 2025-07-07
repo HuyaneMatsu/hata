@@ -5,10 +5,10 @@ from ...color import Color
 from ...emoji import create_unicode_emoji
 from ...permission import Permission
 from ...permission.constants import PERMISSION_KEY
-from ...role import RoleFlag
+from ...role import RoleColorConfiguration, RoleFlag
 from ...role.role.fields import (
-    validate_color, validate_flags, validate_mentionable, validate_name, validate_permissions, validate_position,
-    validate_separated, validate_unicode_emoji
+    validate_color, validate_color_configuration, validate_flags, validate_mentionable, validate_name,
+    validate_permissions, validate_position, validate_separated, validate_unicode_emoji
 )
 from ...role.role.role import ROLE_ICON
 
@@ -38,6 +38,30 @@ def color_value_deserializer(value):
 @COLOR_CONVERSION.set_value_serializer
 def color_value_serializer(value):
     return int(value)
+
+
+# ---- color_configuration ----
+
+COLOR_CONFIGURATION_CONVERSION = AuditLogEntryChangeConversion(
+    ('colors',),
+    'color_configuration',
+    value_validator = validate_color_configuration,
+)
+
+
+@COLOR_CONFIGURATION_CONVERSION.set_value_deserializer
+def color_configuration_value_deserializer(value):
+    if value is None:
+        value = RoleColorConfiguration.create_empty()
+    else:
+        value = RoleColorConfiguration.from_data(value)
+    
+    return value
+
+
+@COLOR_CONFIGURATION_CONVERSION.set_value_serializer
+def color_configuration_value_serializer(value):
+    return value.to_data(defaults = True)
 
 
 # ---- flags ----
@@ -186,6 +210,7 @@ def position_value_serializer(value):
 
 ROLE_CONVERSIONS = AuditLogEntryChangeConversionGroup(
     COLOR_CONVERSION,
+    COLOR_CONFIGURATION_CONVERSION,
     FLAGS_CONVERSION,
     ICON_CONVERSION,
     MENTIONABLE_CONVERSION,

@@ -1,14 +1,38 @@
-
 import vampytest
 
 from ..fields import put_nsfw
 
 
 def _iter_options():
-    yield False, False, {}
-    yield False, True, {'nsfw': False}
-    yield True, False, {'nsfw': True}
-    yield True, True, {'nsfw': True}
+    yield (
+        False,
+        False,
+        {},
+    )
+    
+    yield (
+        False,
+        True,
+        {
+            'nsfw': False,
+        },
+    )
+    
+    yield (
+        True,
+        False,
+        {
+            'nsfw': True,
+        },
+    )
+    
+    yield (
+        True,
+        True,
+        {
+            'nsfw': True
+        },
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

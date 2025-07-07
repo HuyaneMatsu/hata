@@ -108,7 +108,7 @@ class ActivityMetadataRich(ActivityMetadataBase):
         buttons : `None | str | iterable<str>`, Optional (Keyword only)
             The labels of the buttons on the activity.
         
-        created_at : `None | Datetime`, Optional (Keyword only)
+        created_at : `None | DateTime`, Optional (Keyword only)
             When the activity was created.
         
         details : `None | str`, Optional (Keyword only)
@@ -651,7 +651,7 @@ class ActivityMetadataRich(ActivityMetadataBase):
         buttons : `None | str | iterable<str>`, Optional (Keyword only)
             The labels of the buttons on the activity.
         
-        created_at : `None | Datetime`, Optional (Keyword only)
+        created_at : `None | DateTime`, Optional (Keyword only)
             When the activity was created.
         
         details : `None | str`, Optional (Keyword only)

@@ -14,8 +14,8 @@ from ..audit_logs import AuditLogEntry
 from ..auto_moderation import AutoModerationActionExecutionEvent, AutoModerationRule
 from ..channel import Channel, VoiceChannelEffect
 from ..core import (
-    APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, AUTO_MODERATION_RULES, CHANNELS, CLIENTS, ENTITLEMENTS, GUILDS,
-    KOKORO, MESSAGES, ROLES, SCHEDULED_EVENTS, STAGES, SUBSCRIPTIONS, USERS
+    APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, AUTO_MODERATION_RULES, CHANNELS, CLIENTS, ENTITLEMENTS, GUILD_BOOSTS,
+    GUILDS, KOKORO, MESSAGES, ROLES, SCHEDULED_EVENTS, STAGES, SUBSCRIPTIONS, USERS
 )
 from ..embedded_activity.embedded_activity.constants import (
     EMBEDDED_ACTIVITY_UPDATE_CREATE, EMBEDDED_ACTIVITY_UPDATE_DELETE, EMBEDDED_ACTIVITY_UPDATE_UPDATE,
@@ -30,7 +30,8 @@ from ..emoji.reaction_events.fields import (
     parse_user as parse_reaction_event_user
 )
 from ..guild import (
-    Guild, GuildJoinRequest, GuildJoinRequestDeleteEvent, GuildUserChunkEvent, create_partial_guild_from_id
+    Guild, GuildBoost, GuildEnhancementEntitlementsCreateEvent, GuildEnhancementEntitlementsDeleteEvent, GuildJoinRequest,
+    GuildJoinRequestDeleteEvent, GuildUserChunkEvent, create_partial_guild_from_id
 )
 from ..guild.guild.constants import (
     EMOJI_EVENT_CREATE, EMOJI_EVENT_DELETE, EMOJI_EVENT_UPDATE, SOUNDBOARD_SOUND_EVENT_CREATE,
@@ -38,6 +39,7 @@ from ..guild.guild.constants import (
     STICKER_EVENT_UPDATE, VOICE_STATE_EVENT_JOIN, VOICE_STATE_EVENT_LEAVE, VOICE_STATE_EVENT_MOVE,
     VOICE_STATE_EVENT_UPDATE
 )
+from ..guild.guild_boost.fields import parse_guild_id as parse_guild_boost_guild_id, parse_id as parse_guild_boost_id
 from ..integration import Integration
 from ..interaction import InteractionEvent
 from ..invite import Invite, create_partial_invite_from_data
@@ -47,9 +49,24 @@ from ..poll.poll_events.fields import (
     parse_answer_id as parse_poll_vote_event_answer_id, parse_user as parse_poll_vote_event_user
 )
 from ..role import Role, create_partial_role_from_id
-from ..scheduled_event import ScheduledEvent, ScheduledEventSubscribeEvent, ScheduledEventUnsubscribeEvent
+from ..scheduled_event import (
+    ScheduledEvent, ScheduledEventOccasionOverwrite, ScheduledEventOccasionOverwriteCreateEvent,
+    ScheduledEventOccasionOverwriteDeleteEvent, ScheduledEventOccasionOverwriteUpdateEvent,
+    ScheduledEventStatus, ScheduledEventSubscribeEvent, ScheduledEventUnsubscribeEvent
+)
 from ..scheduled_event.scheduled_event.fields import (
     parse_guild_id as parse_scheduled_event_guild_id, parse_id as parse_scheduled_event_id
+)
+from ..scheduled_event.scheduled_event.utils import (
+    scheduled_event_occasion_overwrite_add, scheduled_event_occasion_overwrite_get,
+    scheduled_event_occasion_overwrite_remove,
+)
+from ..scheduled_event.scheduled_event_occasion_overwrite.fields import (
+    parse_timestamp as parse_scheduled_event_occasion_overwrite_timestamp
+)
+from ..scheduled_event.scheduled_event_occasion_overwrite_create_event.fields import (
+    parse_guild_id as parse_scheduled_event_occasion_overwrite_create_guild_id,
+    parse_scheduled_event_id as parse_scheduled_event_occasion_overwrite_create_scheduled_event_id,
 )
 from ..soundboard import SoundboardSound, SoundboardSoundsEvent, create_partial_soundboard_sound_from_partial_data
 from ..soundboard.soundboard_sound.fields import parse_guild_id as parse_soundboard_guild_id
@@ -71,8 +88,9 @@ from .guild_sync import check_channel, guild_sync
 from .intent import (
     INTENT_MASK_AUTO_MODERATION_CONFIGURATION, INTENT_MASK_DIRECT_MESSAGES, INTENT_MASK_DIRECT_POLLS,
     INTENT_MASK_DIRECT_REACTIONS, INTENT_MASK_GUILDS, INTENT_MASK_GUILD_EXPRESSIONS, INTENT_MASK_GUILD_MESSAGES,
-    INTENT_MASK_GUILD_POLLS, INTENT_MASK_GUILD_PRESENCES, INTENT_MASK_GUILD_REACTIONS, INTENT_MASK_GUILD_USERS,
-    INTENT_MASK_GUILD_VOICE_STATES, INTENT_SHIFT_GUILD_USERS
+    INTENT_MASK_GUILD_POLLS, INTENT_MASK_GUILD_PRESENCES, INTENT_MASK_GUILD_REACTIONS,
+    INTENT_MASK_GUILD_SCHEDULED_EVENTS, INTENT_MASK_GUILD_USERS, INTENT_MASK_GUILD_VOICE_STATES,
+    INTENT_SHIFT_GUILD_USERS
 )
 
 
@@ -270,6 +288,7 @@ def MESSAGE_DELETE__CAL_MC(client, data):
             event_handler = client_.events.message_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 Task(KOKORO, event_handler(client_, message))
+
 
 def MESSAGE_DELETE__OPT_SC(client, data):
     channel_id = int(data['channel_id'])
@@ -1118,6 +1137,124 @@ del (
     GUILD_MEMBER_UPDATE__CAL_MC,
     GUILD_MEMBER_UPDATE__OPT_SC,
     GUILD_MEMBER_UPDATE__OPT_MC,
+)
+
+
+def GUILD_POWERUP_ENTITLEMENTS_CREATE__CAL(client, data):
+    event = GuildEnhancementEntitlementsCreateEvent.from_data(data)
+    Task(KOKORO, client.events.guild_enhancement_entitlements_create(client, event))
+
+
+def GUILD_POWERUP_ENTITLEMENTS_CREATE__OPT(client, data):
+    return
+
+
+add_parser(
+    'GUILD_POWERUP_ENTITLEMENTS_CREATE',
+    GUILD_POWERUP_ENTITLEMENTS_CREATE__CAL,
+    GUILD_POWERUP_ENTITLEMENTS_CREATE__CAL,
+    GUILD_POWERUP_ENTITLEMENTS_CREATE__OPT,
+    GUILD_POWERUP_ENTITLEMENTS_CREATE__OPT,
+)
+del (
+    GUILD_POWERUP_ENTITLEMENTS_CREATE__CAL,
+    GUILD_POWERUP_ENTITLEMENTS_CREATE__OPT,
+)
+
+
+def GUILD_POWERUP_ENTITLEMENTS_DELETE__CAL(client, data):
+    event = GuildEnhancementEntitlementsDeleteEvent.from_data(data)
+    Task(KOKORO, client.events.guild_enhancement_entitlements_delete(client, event))
+
+
+def GUILD_POWERUP_ENTITLEMENTS_DELETE__OPT(client, data):
+    return
+
+
+add_parser(
+    'GUILD_POWERUP_ENTITLEMENTS_DELETE',
+    GUILD_POWERUP_ENTITLEMENTS_DELETE__CAL,
+    GUILD_POWERUP_ENTITLEMENTS_DELETE__CAL,
+    GUILD_POWERUP_ENTITLEMENTS_DELETE__OPT,
+    GUILD_POWERUP_ENTITLEMENTS_DELETE__OPT,
+)
+del (
+    GUILD_POWERUP_ENTITLEMENTS_DELETE__CAL,
+    GUILD_POWERUP_ENTITLEMENTS_DELETE__OPT,
+)
+
+
+def GUILD_APPLIED_BOOSTS_UPDATE__CAL_SC(client, data):
+    guild_boost_id = parse_guild_boost_id(data)
+    
+    try:
+        guild_boost = GUILD_BOOSTS[guild_boost_id]
+    except KeyError:
+        guild_boost = GuildBoost.from_data(data)
+        old_attributes = None
+    
+    else:
+        old_attributes = guild_boost._difference_update_attributes()
+        if not old_attributes:
+            return
+    
+    Task(KOKORO, client.events.guild_boost_update(client, guild_boost, old_attributes))
+
+
+def GUILD_APPLIED_BOOSTS_UPDATE__CAL_MC(client, data):
+    guild_id = parse_guild_boost_guild_id()
+    
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        clients = None
+    
+    else:
+        clients = filter_clients(guild.clients, INTENT_MASK_GUILDS, client)
+        if clients.send(None) is not client:
+            clients.close()
+            return
+    
+    guild_boost_id = parse_guild_boost_id(data)
+    
+    try:
+        guild_boost = GUILD_BOOSTS[guild_boost_id]
+    except KeyError:
+        guild_boost = GuildBoost.from_data(data)
+        old_attributes = None
+    
+    else:
+        old_attributes = guild_boost._difference_update_attributes(data)
+        if not old_attributes:
+            return
+    
+    if clients is None:
+        event_handler = client.events.guild_boost_update
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            event_handler(client, guild_boost, old_attributes)
+        
+    else:
+        for client_ in clients:
+            event_handler = client_.events.guild_boost_update
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                event_handler(client_, guild_boost, old_attributes)
+
+
+def GUILD_APPLIED_BOOSTS_UPDATE__OPT(client, data):
+    GuildBoost.from_data(data)
+
+
+add_parser(
+    'GUILD_APPLIED_BOOSTS_UPDATE',
+    GUILD_APPLIED_BOOSTS_UPDATE__CAL_SC,
+    GUILD_APPLIED_BOOSTS_UPDATE__CAL_MC,
+    GUILD_APPLIED_BOOSTS_UPDATE__OPT,
+    GUILD_APPLIED_BOOSTS_UPDATE__OPT,
+)
+del (
+    GUILD_APPLIED_BOOSTS_UPDATE__CAL_SC,
+    GUILD_APPLIED_BOOSTS_UPDATE__CAL_MC,
+    GUILD_APPLIED_BOOSTS_UPDATE__OPT,
 )
 
 
@@ -4248,6 +4385,261 @@ del (
     GUILD_SCHEDULED_EVENT_USER_REMOVE__OPT,
 )
 
+
+def GUILD_SCHEDULED_EVENT_EXCEPTION_CREATE__CAL_SC(client, data):
+    scheduled_event_id = parse_scheduled_event_occasion_overwrite_create_scheduled_event_id(data)
+    timestamp = parse_scheduled_event_occasion_overwrite_timestamp(data)
+    
+    try:
+        scheduled_event = SCHEDULED_EVENTS[scheduled_event_id]
+    except KeyError:
+        scheduled_event_occasion_overwrite = ScheduledEventOccasionOverwrite.from_data(data)
+        old_attributes = None
+    else:
+        scheduled_event_occasion_overwrite = scheduled_event_occasion_overwrite_get(scheduled_event, timestamp)
+        if scheduled_event_occasion_overwrite is None:
+            scheduled_event_occasion_overwrite = ScheduledEventOccasionOverwrite.from_data(data)
+            scheduled_event_occasion_overwrite_add(scheduled_event, scheduled_event_occasion_overwrite)
+            old_attributes = None
+        else:
+            old_attributes = scheduled_event_occasion_overwrite._difference_update_attributes(data)
+            if not old_attributes:
+                return
+    
+    guild_id = parse_scheduled_event_occasion_overwrite_create_guild_id(data)
+    
+    if old_attributes is None:
+        event = ScheduledEventOccasionOverwriteCreateEvent.from_fields(
+            guild_id,
+            scheduled_event_id,
+            scheduled_event_occasion_overwrite,
+        )
+        
+        event_handler = client.events.scheduled_event_occasion_overwrite_create
+        if (event_handler is DEFAULT_EVENT_HANDLER):
+            Task(KOKORO, event_handler(client, event))
+    
+    else:
+        event = ScheduledEventOccasionOverwriteUpdateEvent.from_fields(
+            guild_id,
+            scheduled_event_id,
+            scheduled_event_occasion_overwrite,
+        )
+        
+        event_handler = client.events.scheduled_event_occasion_overwrite_update
+        if (event_handler is DEFAULT_EVENT_HANDLER):
+            Task(KOKORO, event_handler(client, event))
+
+
+def GUILD_SCHEDULED_EVENT_EXCEPTION_CREATE__CAL_MC(client, data):
+    guild_id = parse_scheduled_event_occasion_overwrite_create_guild_id(data)
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        clients = None
+    else:
+        clients = filter_clients(guild.clients, INTENT_MASK_GUILD_SCHEDULED_EVENTS, client)
+        if clients.send(None) is not client:
+            clients.close()
+            return
+    
+    scheduled_event_id = parse_scheduled_event_occasion_overwrite_create_scheduled_event_id(data)
+    timestamp = parse_scheduled_event_occasion_overwrite_timestamp(data)
+    
+    try:
+        scheduled_event = SCHEDULED_EVENTS[scheduled_event_id]
+    except KeyError:
+        scheduled_event_occasion_overwrite = ScheduledEventOccasionOverwrite.from_data(data)
+        old_attributes = None
+    else:
+        scheduled_event_occasion_overwrite = scheduled_event_occasion_overwrite_get(scheduled_event, timestamp)
+        if scheduled_event_occasion_overwrite is None:
+            scheduled_event_occasion_overwrite = ScheduledEventOccasionOverwrite.from_data(data)
+            scheduled_event_occasion_overwrite_add(scheduled_event, scheduled_event_occasion_overwrite)
+            old_attributes = None
+        else:
+            old_attributes = scheduled_event_occasion_overwrite._difference_update_attributes(data)
+            if not old_attributes:
+                if (clients is not None):
+                    clients.close()
+                return
+    
+    if old_attributes is None:
+        event = ScheduledEventOccasionOverwriteCreateEvent.from_fields(
+            guild_id,
+            scheduled_event_id,
+            scheduled_event_occasion_overwrite,
+        )
+        
+        if clients is None:
+            event_handler = client.events.scheduled_event_occasion_overwrite_create
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(KOKORO, event_handler(client, event))
+        
+        else:
+            for client_ in clients:
+                event_handler = client_.events.scheduled_event_occasion_overwrite_create
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(KOKORO, event_handler(client_, event))
+    
+    else:
+        event = ScheduledEventOccasionOverwriteUpdateEvent.from_fields(
+            guild_id,
+            scheduled_event_id,
+            scheduled_event_occasion_overwrite,
+        )
+        
+        if clients is None:
+            event_handler = client.events.scheduled_event_occasion_overwrite_update
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(KOKORO, event_handler(client, event))
+        
+        else:
+            for client_ in clients:
+                event_handler = client_.events.scheduled_event_occasion_overwrite_update
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(KOKORO, event_handler(client_, event))
+
+
+def GUILD_SCHEDULED_EVENT_EXCEPTION_CREATE__OPT(client, data):
+    scheduled_event_id = parse_scheduled_event_occasion_overwrite_create_scheduled_event_id(data)
+    timestamp = parse_scheduled_event_occasion_overwrite_timestamp(data)
+    
+    try:
+        scheduled_event = SCHEDULED_EVENTS[scheduled_event_id]
+    except KeyError:
+        return
+    else:
+        scheduled_event_occasion_overwrite = scheduled_event_occasion_overwrite_get(scheduled_event, timestamp)
+        if scheduled_event_occasion_overwrite is None:
+            scheduled_event_occasion_overwrite = ScheduledEventOccasionOverwrite.from_data(data)
+            scheduled_event_occasion_overwrite_add(scheduled_event, scheduled_event_occasion_overwrite)
+        else:
+            scheduled_event_occasion_overwrite._update_attributes(data)
+
+
+add_parser(
+    'GUILD_SCHEDULED_EVENT_EXCEPTION_CREATE',
+    GUILD_SCHEDULED_EVENT_EXCEPTION_CREATE__CAL_SC,
+    GUILD_SCHEDULED_EVENT_EXCEPTION_CREATE__CAL_MC,
+    GUILD_SCHEDULED_EVENT_EXCEPTION_CREATE__OPT,
+    GUILD_SCHEDULED_EVENT_EXCEPTION_CREATE__OPT,
+)
+del (
+    GUILD_SCHEDULED_EVENT_EXCEPTION_CREATE__CAL_SC,
+    GUILD_SCHEDULED_EVENT_EXCEPTION_CREATE__CAL_MC,
+    GUILD_SCHEDULED_EVENT_EXCEPTION_CREATE__OPT,
+)
+
+
+def GUILD_SCHEDULED_EVENT_EXCEPTION_DELETE__CAL_SC(client, data):
+    scheduled_event_id = parse_scheduled_event_occasion_overwrite_create_scheduled_event_id(data)
+    
+    try:
+        scheduled_event = SCHEDULED_EVENTS[scheduled_event_id]
+    except KeyError:
+        scheduled_event_occasion_overwrite = ScheduledEventOccasionOverwrite.from_data(data)
+    else:
+        # Do not trigger it if its cancelled already.
+        if scheduled_event.status is ScheduledEventStatus.cancelled:
+            return
+        
+        timestamp = parse_scheduled_event_occasion_overwrite_timestamp(data)
+        scheduled_event_occasion_overwrite = scheduled_event_occasion_overwrite_remove(scheduled_event, timestamp)
+        if scheduled_event_occasion_overwrite is None:
+            return
+    
+    event = ScheduledEventOccasionOverwriteDeleteEvent.from_fields(
+        parse_scheduled_event_occasion_overwrite_create_guild_id(data),
+        scheduled_event_id,
+        scheduled_event_occasion_overwrite,
+    )
+    
+    Task(KOKORO, client.events.scheduled_event_occasion_overwrite_deletelation(client, event))
+
+
+def GUILD_SCHEDULED_EVENT_EXCEPTION_DELETE__CAL_MC(client, data):
+    guild_id = parse_scheduled_event_occasion_overwrite_create_guild_id(data)
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        clients = None
+    else:
+        clients = filter_clients(guild.clients, INTENT_MASK_GUILD_SCHEDULED_EVENTS, client)
+        if clients.send(None) is not client:
+            clients.close()
+            return
+    
+    
+    scheduled_event_id = parse_scheduled_event_occasion_overwrite_create_scheduled_event_id(data)
+    
+    try:
+        scheduled_event = SCHEDULED_EVENTS[scheduled_event_id]
+    except KeyError:
+        scheduled_event_occasion_overwrite = ScheduledEventOccasionOverwrite.from_data(data)
+    else:
+        # Do not trigger it if its cancelled already.
+        if scheduled_event.status is ScheduledEventStatus.cancelled:
+            if (clients is not None):
+                clients.close()
+            return
+        
+        timestamp = parse_scheduled_event_occasion_overwrite_timestamp(data)
+        scheduled_event_occasion_overwrite = scheduled_event_occasion_overwrite_remove(scheduled_event, timestamp)
+        if scheduled_event_occasion_overwrite is None:
+            if (clients is not None):
+                clients.close()
+            return
+    
+    event = ScheduledEventOccasionOverwriteDeleteEvent.from_fields(
+        guild_id,
+        scheduled_event_id,
+        scheduled_event_occasion_overwrite,
+    )
+    
+    if clients is None:
+        event_handler = client.events.scheduled_event_occasion_overwrite_deletelation
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(KOKORO, event_handler(client, event))
+    
+    else:
+        for client_ in clients:
+            event_handler = client_.events.scheduled_event_occasion_overwrite_deletelation
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(KOKORO, event_handler(client_, event))
+
+
+def GUILD_SCHEDULED_EVENT_EXCEPTION_DELETE__OPT(client, data):
+    scheduled_event_id = parse_scheduled_event_occasion_overwrite_create_scheduled_event_id(data)
+    
+    try:
+        scheduled_event = SCHEDULED_EVENTS[scheduled_event_id]
+    except KeyError:
+        return
+    
+    # Do nothing if its cancelled already.
+    if scheduled_event.status is ScheduledEventStatus.cancelled:
+        return
+    
+    timestamp = parse_scheduled_event_occasion_overwrite_timestamp(data)
+    scheduled_event_occasion_overwrite_remove(scheduled_event, timestamp)
+
+
+add_parser(
+    'GUILD_SCHEDULED_EVENT_EXCEPTION_DELETE',
+    GUILD_SCHEDULED_EVENT_EXCEPTION_DELETE__CAL_SC,
+    GUILD_SCHEDULED_EVENT_EXCEPTION_DELETE__CAL_MC,
+    GUILD_SCHEDULED_EVENT_EXCEPTION_DELETE__OPT,
+    GUILD_SCHEDULED_EVENT_EXCEPTION_DELETE__OPT,
+)
+del (
+    GUILD_SCHEDULED_EVENT_EXCEPTION_DELETE__CAL_SC,
+    GUILD_SCHEDULED_EVENT_EXCEPTION_DELETE__CAL_MC,
+    GUILD_SCHEDULED_EVENT_EXCEPTION_DELETE__OPT,
+)
+
+
+# Embedded activity
 
 def EMBEDDED_ACTIVITY_UPDATE__CAL_SC(client, data):
     embedded_activity, changes = difference_handle_embedded_activity_update_event(data)

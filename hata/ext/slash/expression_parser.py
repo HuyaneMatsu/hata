@@ -2603,7 +2603,7 @@ class Token:
         The token's end index inside of the array.
     start : `int`
         The token's start index inside of the array.
-    value : `None`, `object`
+    value : `None | object`
         The evaluated value.
     sub_tokens : `None`, `list` of ``Token``
         Sub tokens of the tokens if applicable.
@@ -2626,7 +2626,7 @@ class Token:
             The token's end index inside of the array.
         sub_tokens : `None`, `list` of ``Token``
             Sub tokens of the tokens if applicable.
-        value : `None`, `object`
+        value : `None | object`
             The evaluated value.
         """
         self = object.__new__(cls)

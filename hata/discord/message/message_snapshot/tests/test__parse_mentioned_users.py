@@ -36,7 +36,7 @@ def test__parse_mentioned_users(input_data):
     
     Returns
     -------
-    output : `None | tuple<ClientUserBase>`
+    output : ``None | tuple<ClientUserBase>``
     """
     output = parse_mentioned_users(input_data)
     vampytest.assert_instance(output, tuple, nullable = True)

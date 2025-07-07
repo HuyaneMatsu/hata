@@ -524,7 +524,7 @@ class Connection(DiscordEntity):
         
         Returns
         -------
-        data : `dict` of (`str`, `str`) items
+        data : `dict<str, str>`
         """
         data = {}
         

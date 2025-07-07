@@ -3,16 +3,41 @@ import vampytest
 from ..fields import parse_value
 
 
-def test__parse_value():
+def _iter_options():
+    yield (
+        {},
+        0,
+    )
+    
+    yield (
+        {
+            'id': None,
+        },
+        0,
+    )
+    
+    yield (
+        {
+            'id': 1,
+        },
+        1,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_value(input_data):
     """
     Tests whether ``parse_value`` works as intended.
-    """
-    value = 1
     
-    for input_data, expected_output in (
-        ({}, 0),
-        ({'id': None}, 0),
-        ({'id': value}, value),
-    ):
-        output = parse_value(input_data)
-        vampytest.assert_eq(output, expected_output)
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    output : `int`
+    """
+    output = parse_value(input_data)
+    vampytest.assert_instance(output, int)
+    return output

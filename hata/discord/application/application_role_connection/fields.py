@@ -38,7 +38,7 @@ def parse_metadata_values(data):
     
     Returns
     -------
-    metadata_values : `None`, `dict` of (`str`, `str`) items
+    metadata_values : `None | dict<str, str>`
     """
     metadata_values = data.get('metadata', None)
     if (metadata_values is not None) and metadata_values:
@@ -51,7 +51,7 @@ def put_metadata_values(metadata_values, data, defaults):
     
     Parameters
     ----------
-    metadata_values : `None`, `dict` of (`str`, `str`) items
+    metadata_values : `None | dict<str, str>`
         Metadata values.
     data : `dict<str, object>`
         Json serializable dictionary.
@@ -77,12 +77,12 @@ def validate_metadata_values(metadata_values):
     
     Parameters
     ----------
-    metadata_values : `None`, `dict` of (`str`, `str`) items
+    metadata_values : `None | dict<str, str>`
         Metadata values.
     
     Returns
     -------
-    metadata_values : `None`, `dict` of (`str`, `str`) items
+    metadata_values : `None | dict<str, str>`
         Metadata values.
     
     TypeError

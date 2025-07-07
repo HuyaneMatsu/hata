@@ -16,7 +16,7 @@ def _assert_fields_set(entity_metadata):
     vampytest.assert_instance(entity_metadata.location, str, nullable = True)
         
 
-def test__ScheduledEventEntityMetadataLocation__new__0():
+def test__ScheduledEventEntityMetadataLocation__new__no_fields():
     """
     Tests whether ``ScheduledEventEntityMetadataLocation.__new__`` works as intended.
     
@@ -26,7 +26,7 @@ def test__ScheduledEventEntityMetadataLocation__new__0():
     _assert_fields_set(entity_metadata)
 
 
-def test__ScheduledEventEntityMetadataLocation__new__1():
+def test__ScheduledEventEntityMetadataLocation__new__all_fields():
     """
     Tests whether ``ScheduledEventEntityMetadataLocation.__new__`` works as intended.
     
@@ -40,7 +40,7 @@ def test__ScheduledEventEntityMetadataLocation__new__1():
     vampytest.assert_eq(entity_metadata.location, location)
 
 
-def test__ScheduledEventEntityMetadataLocation__from_keyword_parameters__0():
+def test__ScheduledEventEntityMetadataLocation__from_keyword_parameters__no_fields():
     """
     Tests whether ``ScheduledEventEntityMetadataLocation.from_keyword_parameters`` works as intended.
     
@@ -53,7 +53,7 @@ def test__ScheduledEventEntityMetadataLocation__from_keyword_parameters__0():
     vampytest.assert_eq(keyword_parameters, {})
 
 
-def test__ScheduledEventEntityMetadataLocation__from_keyword_parameters__1():
+def test__ScheduledEventEntityMetadataLocation__from_keyword_parameters__all_fields():
     """
     Tests whether ``ScheduledEventEntityMetadataLocation.from_keyword_parameters`` works as intended.
     

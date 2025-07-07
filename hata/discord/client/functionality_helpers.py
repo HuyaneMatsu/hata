@@ -97,7 +97,7 @@ class SingleUserChunker:
         
         Returns
         -------
-        users : `list` of ``ClientUserBase`` objects
+        users : ``list<ClientUserBase>``
             The received users. Can be an empty list.
         
         Raises

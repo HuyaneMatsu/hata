@@ -501,7 +501,7 @@ def parse_statuses(data):
     
     Returns
     -------
-    statuses : `None`, `dict` of (`str`, `str`) items
+    statuses : `None | dict<str, str>`
     """
     statuses = data.get('client_status', None)
     if (statuses is not None) and (not statuses):
@@ -516,7 +516,7 @@ def put_statuses(statuses, data, defaults):
     
     Parameters
     ----------
-    statuses : `None`, `dict` of (`str`, `str`) items
+    statuses : `None | dict<str, str>`
         user statuses by platform.
     
     data : `dict<str, object>`
@@ -542,12 +542,12 @@ def validate_statuses(statuses):
     
     Parameters
     ----------
-    statuses : `None`, `dict` of (`str`, `str`) items
+    statuses : `None | dict<str, str>`
         Statuses to validate.
     
     Returns
     -------
-    statuses : `None`, `dict` of (`str`, `str`) items
+    statuses : `None | dict<str, str>`
     
     Raises
     ------
@@ -559,7 +559,7 @@ def validate_statuses(statuses):
     
     if not isinstance(statuses, dict):
         raise TypeError(
-            f'`statuses` can be `None` or `dict` of (`str`, `str`) items, '
+            f'`statuses` can be `None | dict<str, str>`, '
             f'got {type(statuses).__name__}; {statuses!r}.'
         )
     

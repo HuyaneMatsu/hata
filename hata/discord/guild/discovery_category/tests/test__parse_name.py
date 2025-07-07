@@ -4,10 +4,31 @@ from ..fields import parse_name
 
 
 def _iter_options():
-    yield {}, ''
-    yield {'name': None}, ''
-    yield {'name': ''}, ''
-    yield {'name': 'a'}, 'a'
+    yield (
+        {},
+        '',
+    )
+    
+    yield (
+        {
+            'name': None,
+        },
+        '',
+    )
+    
+    yield (
+        {
+            'name': '',
+        },
+        '',
+    )
+    
+    yield (
+        {
+            'name': 'a',
+        },
+        'a',
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
@@ -24,4 +45,6 @@ def test__parse_name(input_data):
     -------
     name : `str`
     """
-    return parse_name(input_data)
+    output = parse_name(input_data)
+    vampytest.assert_instance(output, str)
+    return output

@@ -1583,7 +1583,7 @@ def test__Guild__get_users_like(guild, name):
     
     Returns
     -------
-    output : `list` of ``ClientUserBase``
+    output : ``list<ClientUserBase>``
     """
     return guild.get_users_like(name)
 

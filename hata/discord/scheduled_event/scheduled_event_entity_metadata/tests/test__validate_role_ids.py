@@ -5,34 +5,41 @@ from ....user import User
 from ..fields import validate_speaker_ids
 
 
-def test__validate_speaker_ids__0():
+def _iter_options__passing():
+    speaker_id_0 = 202303120075
+    speaker_id_1 = 202303120076
+    
+    yield None, None
+    yield [], None
+    yield [speaker_id_0, speaker_id_1], (speaker_id_0, speaker_id_1)
+    yield [speaker_id_1, speaker_id_0], (speaker_id_0, speaker_id_1)
+    yield [User.precreate(speaker_id_0), User.precreate(speaker_id_1)], (speaker_id_0, speaker_id_1)
+
+
+def _iter_options__type_error():
+    yield 12.6
+    yield [12.6]
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_speaker_ids(input_value):
     """
     Tests whether `validate_speaker_ids` works as intended.
     
-    Case: passing.
-    """
-    speaker_id_1 = 202303120075
-    speaker_id_2 = 202303120076
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
     
-    for input_value, expected_output in (
-        (None, None),
-        ([], None),
-        ([speaker_id_2, speaker_id_1], (speaker_id_1, speaker_id_2)),
-        ([User.precreate(speaker_id_1)], (speaker_id_1, )),
-    ):
-        output = validate_speaker_ids(input_value)
-        vampytest.assert_eq(output, expected_output)
-
-
-def test__validate_speaker_ids__1():
-    """
-    Tests whether `validate_speaker_ids` works as intended.
+    Returns
+    -------
+    output : `None | tuple<int>`
     
-    Case: `TypeError`.
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        12.6,
-        [12.6],
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_speaker_ids(input_value)
+    output = validate_speaker_ids(input_value)
+    vampytest.assert_instance(output, tuple, nullable = True)
+    return output

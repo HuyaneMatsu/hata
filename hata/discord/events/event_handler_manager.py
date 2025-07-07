@@ -836,6 +836,12 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         | timed_out_until   | `None | DateTime`             |
         +-------------------+-------------------------------+
     
+    guild_enhancement_entitlements_create(client : ``Client``, event : ``GuildEnhancementEntitlementsCreateEvent``):
+        Called when enhancement entitlements are created for a guild.
+    
+    guild_enhancement_entitlements_delete(client : ``Client``, event : ``GuildEnhancementEntitlementsDeleteEvent``):
+        Called when enhancement entitlements are deleted for a guild.
+    
     integration_create(client: ``Client``, guild: ``Guild``, integration: ``Integration``):
         Called when an integration is created inside of a guild. Includes cases when bots are added to the guild as
         well.
@@ -895,7 +901,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-----------------------------------+-----------------------------------------------------------------------+
         | flags                             | ``MessageFlag``                                                       |
         +-----------------------------------+-----------------------------------------------------------------------+
-        | mentioned_channels_cross_guild    | `None`, `tuple` of ``Channel``                                        |
+        | mentioned_channels_cross_guild    | ``None | tuple<Channel>``                                             |
         +-----------------------------------+-----------------------------------------------------------------------+
         | mentioned_everyone                | `bool`                                                                |
         +-----------------------------------+-----------------------------------------------------------------------+
@@ -907,7 +913,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-----------------------------------+-----------------------------------------------------------------------+
         | poll                              | ``PollChange``                                                        |
         +-----------------------------------+-----------------------------------------------------------------------+
-        | resolved                          | `None`, ``Resolved``                                                  |
+        | resolved                          | ``None | Resolved``                                                   |
         +-----------------------------------+-----------------------------------------------------------------------+
         
         A special case is if a message is (un)pinned or (un)suppressed, because then the `old_attributes` parameter is
@@ -964,29 +970,29 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         
         Every item in `old_attributes` is optional and they can be any of the following:
         
-        +---------------+-----------------------+
-        | Keys          | Values                |
-        +===============+=======================+
-        | color         | ``Color``             |
-        +---------------+-----------------------+
-        | icon          | ``Icon``              |
-        +---------------+-----------------------+
-        | flags         | ``RoleFlag``          |
-        +---------------+-----------------------+
-        | managed       | `bool`                |
-        +---------------+-----------------------+
-        | mentionable   | `bool`                |
-        +---------------+-----------------------+
-        | name          | `str`                 |
-        +---------------+-----------------------+
-        | permissions   | ``Permission``        |
-        +---------------+-----------------------+
-        | position      | `int`                 |
-        +---------------+-----------------------+
-        | separated     | `bool`                |
-        +---------------+-----------------------+
-        | unicode_emoji | `None`, ``Emoji``     |
-        +---------------+-----------------------+
+        +-----------------------+---------------------------+
+        | Keys                  | Values                    |
+        +=======================+===========================+
+        | color                 | ``Color``                 |
+        +-----------------------+---------------------------+
+        | color_configuration   | ``ColorConfiguration``    |
+        +-----------------------+---------------------------+
+        | flags                 | ``RoleFlag``              |
+        +-----------------------+---------------------------+
+        | icon                  | ``Icon``                  |
+        +-----------------------+---------------------------+
+        | mentionable           | `bool`                    |
+        +-----------------------+---------------------------+
+        | name                  | `str`                     |
+        +-----------------------+---------------------------+
+        | permissions           | ``Permission``            |
+        +-----------------------+---------------------------+
+        | position              | `int`                     |
+        +-----------------------+---------------------------+
+        | separated             | `bool`                    |
+        +-----------------------+---------------------------+
+        | unicode_emoji         | ``None | Emoji``          |
+        +-----------------------+---------------------------+
     
     scheduled_event_create(client: ``Client``, scheduled_event: ``ScheduledEvent``):
         Called when a scheduled event is created.
@@ -1023,7 +1029,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +---------------------------+-----------------------------------------------+
         | privacy_level             | ``PrivacyLevel``                              |
         +---------------------------+-----------------------------------------------+
-        | schedule                  | `None`, ``Schedule``                          |
+        | schedule                  | ``None | Schedule``                           |
         +---------------------------+-----------------------------------------------+
         | sku_ids                   | `None | tuple<int>`                           |
         +---------------------------+-----------------------------------------------+
@@ -1037,6 +1043,31 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     
     scheduled_event_user_unsubscribe(client: ``Client``, event: ``ScheduledEventUnsubscribeEvent``):
         Called when a user unsubscribes from a scheduled event.
+    
+    scheduled_event_occasion_overwrite_create(client: ``Client``, event: ``ScheduledEventOccasionOverwriteCreateEvent``):
+        Called when a singular occasion of a reoccurring scheduled event is overwritten.
+    
+    scheduled_event_occasion_overwrite_update(client: ``Client``, event: ``ScheduledEventOccasionOverwriteCreateEvent``,
+            old_attributes : `None | dict`):
+        Called when a singular occasion of a reoccurring scheduled event's overwrite is updated.
+        
+        If the scheduled event occasion overwrite is cached, `old_attributes` will be a dictionary including the
+        changed attributes in `attribute-name` - `old-value` relation.
+        
+        Every item in `old_attributes` is optional any can be any of the following:
+        
+        +---------------------------+-----------------------------------------------+
+        | Key                       | Value                                         |
+        +===========================+===============================================+
+        | cancelled                 | `bool`                                        |
+        +===========================+===============================================+
+        | end                       | `None | DateTime`                             |
+        +---------------------------+-----------------------------------------------+
+        | start                     | `None | DateTime`                             |
+        +---------------------------+-----------------------------------------------+
+    
+    scheduled_event_occasion_overwrite_delete(client: ``Client``, event: ``ScheduledEventOccasionOverwriteDeleteEvent``):
+        Called when a singular occasion of a reoccurring scheduled event is not overwritten anymore.
     
     shutdown(client : ``Client``):
         Called when ``Client.stop``, ``Client.disconnect`` is called indicating, that the client is logging off and
@@ -1240,7 +1271,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +---------------+-----------------------------------+
         | status        | ``Status``                        |
         +---------------+-----------------------------------+
-        | statuses      | `dict` of (`str`, `str`) items    |
+        | statuses      | `dict<str, str>`                  |
         +---------------+-----------------------------------+
     
     user_voice_join(client: ``Client``, voice_state: ``VoiceState``)
@@ -1724,7 +1755,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         
         Returns
         -------
-        event_handler : `None`, `object`
+        event_handler : `None | object`
             The matched event handler if any.
         """
         plugin = get_plugin_event_handler(self, name)

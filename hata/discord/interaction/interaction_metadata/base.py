@@ -257,7 +257,7 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        resolved : `None`, ``Resolved``
+        resolved : ``None | Resolved``
         """,
     )
     
@@ -514,7 +514,7 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        custom_id_value_relation : `dict` of (`str`, `str`) items
+        custom_id_value_relation : `dict<str, str>`
         """
         custom_id_value_relation = {}
         
@@ -565,7 +565,7 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        match : `None`, `object`
+        match : `None | object`
             The returned value by the ``matcher``
         value : `None`, `str`
             The matched `custom_id`'s value.
@@ -601,7 +601,7 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
         
         Yields
         -------
-        match : `None`, `object`
+        match : `None | object`
             The returned value by the ``matcher``
         value : `None`, `str`
             The matched `custom_id`'s value.

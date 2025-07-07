@@ -5,10 +5,35 @@ from ..flags import EmbedFlag
 
 
 def _iter_options():
-    yield EmbedFlag(0), False, {}
-    yield EmbedFlag(0), True, {'flags': 0}
-    yield EmbedFlag(1), False, {'flags': 1}
-    yield EmbedFlag(1), True, {'flags': 1}
+    yield (
+        EmbedFlag(0),
+        False,
+        {},
+    )
+    
+    yield (
+        EmbedFlag(0),
+        True,
+        {
+            'flags': 0,
+        },
+    )
+    
+    yield (
+        EmbedFlag(1),
+        False,
+        {
+            'flags': 1,
+        },
+    )
+    
+    yield (
+        EmbedFlag(1),
+        True,
+        {
+            'flags': 1,
+        },
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

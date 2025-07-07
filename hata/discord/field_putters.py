@@ -2428,7 +2428,7 @@ def nullable_functional_putter_factory(field_key, function, *, include = None):
         
         Parameters
         ----------
-        field_value : `None`, `object`
+        field_value : `None | object`
             Field value.
         data : `dict<str, object>`
             Json serializable dictionary.

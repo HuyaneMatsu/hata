@@ -125,7 +125,7 @@ class GuildActivityOverview(DiscordEntity):
     discovery_splash_type : ``IconType``
         The guild's discovery splash's type.
     
-    features : `None | tuple<GuildFeature>`
+    features :  ``None | tuple<GuildFeature>``
         The represented guild's public features.
     
     icon_hash : `int`

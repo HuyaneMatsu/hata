@@ -5,7 +5,7 @@ from ..stage import ScheduledEventEntityMetadataStage
 from .test__ScheduledEventEntityMetadataStage__constructor import _assert_fields_set
 
 
-def test__ScheduledEventEntityMetadataStage__from_data__0():
+def test__ScheduledEventEntityMetadataStage__from_data():
     """
     Tests whether ``ScheduledEventEntityMetadataStage.from_data`` works as intended.
     

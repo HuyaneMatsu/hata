@@ -33,8 +33,9 @@ def test__put_owner(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `(EntitlementOwnerType, int)`
+    input_value : ``(EntitlementOwnerType, int)``
         The value to serialise.
+    
     defaults : `bool`
         Whether default values should be included as well.
     

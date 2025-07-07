@@ -5,7 +5,7 @@ import vampytest
 from ..name_plate import NamePlate
 from ..preinstanced import Palette
 
-from .test__NamePlate__constructor import _check_is_all_fields_set
+from .test__NamePlate__constructor import _assert_fields_set
 
 
 def test__NamePlate__copy():
@@ -28,7 +28,7 @@ def test__NamePlate__copy():
     )
     copy = name_plate.copy()
     
-    _check_is_all_fields_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_not_is(name_plate, copy)
     vampytest.assert_eq(name_plate, copy)
 
@@ -55,7 +55,7 @@ def test__NamePlate__copy_with__no_fields():
     )
     copy = name_plate.copy_with()
     
-    _check_is_all_fields_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_not_is(name_plate, copy)
     vampytest.assert_eq(name_plate, copy)
 
@@ -93,7 +93,7 @@ def test__NamePlate__copy_with__all_fields():
         sku_id = new_sku_id,
     )
     
-    _check_is_all_fields_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_not_is(name_plate, copy)
 
     vampytest.assert_eq(copy.asset_path, new_asset_path)

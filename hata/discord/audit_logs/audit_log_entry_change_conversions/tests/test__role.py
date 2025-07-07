@@ -5,10 +5,10 @@ from ....color import Color
 from ....core import BUILTIN_EMOJIS
 from ....permission import Permission
 from ....permission.constants import PERMISSION_KEY
-from ....role import RoleFlag
+from ....role import RoleColorConfiguration, RoleFlag
 from ....role.role.fields import (
-    validate_color, validate_flags, validate_mentionable, validate_name, validate_permissions, validate_position,
-    validate_separated, validate_unicode_emoji
+    validate_color, validate_color_configuration, validate_flags, validate_mentionable, validate_name,
+    validate_permissions, validate_position, validate_separated, validate_unicode_emoji
 )
 from ....role.role.role import ROLE_ICON
 
@@ -21,8 +21,9 @@ from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConvers
 from ...conversion_helpers.converters import value_deserializer_name, value_serializer_name
 
 from ..role import (
-    COLOR_CONVERSION, FLAGS_CONVERSION, ICON_CONVERSION, MENTIONABLE_CONVERSION, NAME_CONVERSION,
-    PERMISSIONS_CONVERSION, POSITION_CONVERSION, ROLE_CONVERSIONS, SEPARATED_CONVERSION, UNICODE_EMOJI_CONVERSION
+    COLOR_CONVERSION, COLOR_CONFIGURATION_CONVERSION, FLAGS_CONVERSION, ICON_CONVERSION, MENTIONABLE_CONVERSION,
+    NAME_CONVERSION, PERMISSIONS_CONVERSION, POSITION_CONVERSION, ROLE_CONVERSIONS, SEPARATED_CONVERSION,
+    UNICODE_EMOJI_CONVERSION
 )
 
 
@@ -33,7 +34,10 @@ def test__ROLE_CONVERSIONS():
     _assert_conversion_group_fields_set(ROLE_CONVERSIONS)
     vampytest.assert_eq(
         {*ROLE_CONVERSIONS.iter_field_keys()},
-        {'color', 'flags', 'icon_hash', 'mentionable', 'name', PERMISSION_KEY, 'position', 'hoist', 'unicode_emoji'},
+        {
+            'color', 'colors', 'flags', 'icon_hash', 'mentionable', 'name', PERMISSION_KEY, 'position', 'hoist',
+            'unicode_emoji'
+        },
     )
 
 
@@ -97,6 +101,76 @@ def test__COLOR_CONVERSION__value_serializer(input_value):
     vampytest.assert_instance(output, int, accept_subtypes = False)
     return output
 
+
+# ---- color_configuration ----
+
+def test__COLOR_CONFIGURATION_CONVERSION__generic():
+    """
+    Tests whether ``COLOR_CONFIGURATION_CONVERSION`` works as intended.
+    """
+    _assert_conversion_fields_set(COLOR_CONFIGURATION_CONVERSION)
+    # vampytest.assert_is(COLOR_CONFIGURATION_CONVERSION.value_deserializer, )
+    # vampytest.assert_is(COLOR_CONFIGURATION_CONVERSION.value_serializer, )
+    vampytest.assert_is(COLOR_CONFIGURATION_CONVERSION.value_validator, validate_color_configuration)
+
+
+def _iter_options__color_configuration__value_deserializer():
+    color_configuration = RoleColorConfiguration(
+        color_primary = Color(222),
+        color_secondary = Color(233),
+        color_tertiary = Color(244),
+    )
+    
+    yield color_configuration.to_data(), color_configuration
+    yield None, RoleColorConfiguration.create_empty()
+
+
+@vampytest._(vampytest.call_from(_iter_options__color_configuration__value_deserializer()).returning_last())
+def test__COLOR_CONFIGURATION_CONVERSION__value_deserializer(input_value):
+    """
+    Tests whether `COLOR_CONFIGURATION_CONVERSION.value_deserializer` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Raw value.
+    
+    Returns
+    -------
+    output : ``RoleColorConfiguration``
+    """
+    output = COLOR_CONFIGURATION_CONVERSION.value_deserializer(input_value)
+    vampytest.assert_instance(output, RoleColorConfiguration)
+    return output
+
+
+def _iter_options__color_configuration__value_serializer():
+    color_configuration = RoleColorConfiguration(
+        color_primary = Color(222),
+        color_secondary = Color(233),
+        color_tertiary = Color(244),
+    )
+    
+    yield color_configuration, color_configuration.to_data(defaults = True)
+
+
+@vampytest._(vampytest.call_from(_iter_options__color_configuration__value_serializer()).returning_last())
+def test__COLOR_CONFIGURATION_CONVERSION__value_serializer(input_value):
+    """
+    Tests whether `COLOR_CONFIGURATION_CONVERSION.value_serializer` works as intended.
+    
+    Parameters
+    ----------
+    input_value : ``RoleColorConfiguration``
+        Processed value.
+    
+    Returns
+    -------
+    output : `dict<str, object>`
+    """
+    output = COLOR_CONFIGURATION_CONVERSION.value_serializer(input_value)
+    vampytest.assert_instance(output, dict)
+    return output
 
 # ---- flags ----
 

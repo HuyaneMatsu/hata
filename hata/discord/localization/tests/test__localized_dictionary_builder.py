@@ -79,7 +79,7 @@ def test__localized_dictionary_builder(dictionary, parameter_name):
     
     Returns
     -------
-    output : `None | dict<Locale, str>`
+    output : ``None | dict<Locale, str>``
     
     Raises
     ------

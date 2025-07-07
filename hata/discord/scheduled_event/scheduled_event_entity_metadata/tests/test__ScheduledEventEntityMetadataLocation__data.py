@@ -5,7 +5,7 @@ from ..location import ScheduledEventEntityMetadataLocation
 from .test__ScheduledEventEntityMetadataLocation__constructor import _assert_fields_set
 
 
-def test__ScheduledEventEntityMetadataLocation__from_data__0():
+def test__ScheduledEventEntityMetadataLocation__from_data():
     """
     Tests whether ``ScheduledEventEntityMetadataLocation.from_data`` works as intended.
     

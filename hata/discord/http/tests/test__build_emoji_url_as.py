@@ -42,6 +42,42 @@ def _iter_options():
         128,
         f'{CDN_ENDPOINT}/emojis/{emoji_id}.png?size=128',
     )
+    
+    emoji_id = 202506200030
+    yield (
+        emoji_id,
+        False,
+        'webp',
+        None,
+        f'{CDN_ENDPOINT}/emojis/{emoji_id}.webp',
+    )
+    
+    emoji_id = 202506200031
+    yield (
+        emoji_id,
+        True,
+        'webp',
+        None,
+        f'{CDN_ENDPOINT}/emojis/{emoji_id}.webp?animated=true',
+    )
+    
+    emoji_id = 202506200032
+    yield (
+        emoji_id,
+        True,
+        'webp',
+        128,
+        f'{CDN_ENDPOINT}/emojis/{emoji_id}.webp?size=128&animated=true',
+    )
+    
+    emoji_id = 202506200033
+    yield (
+        emoji_id,
+        False,
+        'avif',
+        None,
+        f'{CDN_ENDPOINT}/emojis/{emoji_id}.webp',
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

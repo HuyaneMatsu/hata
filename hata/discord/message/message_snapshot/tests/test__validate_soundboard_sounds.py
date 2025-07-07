@@ -36,7 +36,7 @@ def test__validate_soundboard_sounds(input_value):
     
     Returns
     -------
-    output : `None | tuple<SoundboardSound>`
+    output : ``None | tuple<SoundboardSound>``
     
     Raises
     ------

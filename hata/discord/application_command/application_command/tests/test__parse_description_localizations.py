@@ -6,14 +6,32 @@ from ..fields import parse_description_localizations
 
 
 def _iter_options():
-    yield {}, None
-    yield {'description_localizations': None}, None
-    yield {'description_localizations': {}}, None
-    yield(
-        {'description_localizations': {
-            Locale.dutch.value: 'aya',
-            Locale.greek.value: 'yya',
-        }},
+    yield (
+        {},
+        None,
+    )
+    
+    yield (
+        {
+            'description_localizations': None,
+        },
+        None,
+    )
+    
+    yield (
+        {
+            'description_localizations': {},
+        },
+        None,
+    )
+    
+    yield (
+        {
+            'description_localizations': {
+                Locale.dutch.value: 'aya',
+                Locale.greek.value: 'yya',
+            },
+        },
         {
             Locale.dutch: 'aya',
             Locale.greek: 'yya',
@@ -33,6 +51,6 @@ def test__parse_description_localizations(input_data):
     
     Returns
     -------
-    output : `None | dict<Locale, str>`
+    output : ``None | dict<Locale, str>``
     """
     return parse_description_localizations(input_data)

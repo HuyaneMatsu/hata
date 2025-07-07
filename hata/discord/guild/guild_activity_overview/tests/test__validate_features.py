@@ -57,7 +57,7 @@ def test__validate_features(input_value):
     
     Returns
     -------
-    output : `None | tuple<GuildFeature>`
+    output :  ``None | tuple<GuildFeature>``
     
     Raises
     ------
@@ -65,5 +65,10 @@ def test__validate_features(input_value):
     """
     output = validate_features(input_value)
     vampytest.assert_instance(output, tuple, nullable = True)
+    
+    
+    if (output is not None):
+        for element in output:
+            vampytest.assert_instance(element, GuildFeature)
+    
     return output
-

@@ -15,7 +15,7 @@ def _assert_fields_set(entity_metadata):
     vampytest.assert_instance(entity_metadata, ScheduledEventEntityMetadataBase)
 
 
-def test__ScheduledEventEntityMetadataBase__new__0():
+def test__ScheduledEventEntityMetadataBase__new__no_fields():
     """
     Tests whether ``ScheduledEventEntityMetadataBase.__new__`` works as intended.
     
@@ -25,7 +25,7 @@ def test__ScheduledEventEntityMetadataBase__new__0():
     _assert_fields_set(entity_metadata)
 
 
-def test__ScheduledEventEntityMetadataBase__from_keyword_parameters__0():
+def test__ScheduledEventEntityMetadataBase__from_keyword_parameters__no_fields():
     """
     Tests whether ``ScheduledEventEntityMetadataBase.from_keyword_parameters`` works as intended.
     

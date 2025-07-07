@@ -10,10 +10,35 @@ from ..fields import put_created_at
 def _iter_options():
     created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
-    yield None, False, {}
-    yield None, True, {'created_at': None}
-    yield created_at, False, {'created_at': datetime_to_millisecond_unix_time(created_at)}
-    yield created_at, True, {'created_at': datetime_to_millisecond_unix_time(created_at)}
+    yield (
+        None,
+        False,
+        {},
+    )
+    
+    yield (
+        None,
+        True,
+        {
+            'created_at': None,
+        },
+    )
+    
+    yield (
+        created_at,
+        False,
+        {
+            'created_at': datetime_to_millisecond_unix_time(created_at),
+        },
+    )
+    
+    yield (
+        created_at,
+        True,
+        {
+            'created_at': datetime_to_millisecond_unix_time(created_at),
+        },
+    )
     
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
@@ -25,6 +50,7 @@ def test__put_created_at(input_value, defaults):
     ----------
     input_value : `None | DateTime`
         The input value to serialize.
+    
     defaults : `bool`
         Whether values with their default value should be included in the output data.
     

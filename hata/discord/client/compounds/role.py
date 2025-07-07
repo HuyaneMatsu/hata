@@ -121,10 +121,10 @@ class ClientCompoundRoleEndpoints(Compound):
         guild : ``int | Guild``
             The guild where the role will be created.
         
-        role_template : `None`, ``Role`` = `None`, Optional
+        role_template : ``None | Role`` = `None`, Optional
             Role entity to use as a template.
         
-        reason : `None`, `str` = `None`, Optional (Keyword only)
+        reason : `None | str` = `None`, Optional (Keyword only)
             Shows up at the guild's audit logs.
         
         **keyword_parameters : Keyword parameters
@@ -132,10 +132,13 @@ class ClientCompoundRoleEndpoints(Compound):
         
         Other Parameters
         ----------------
-        color : ``Color``, `int`, Optional (Keyword only)
+        color : ``None | int | Color``, Optional (Keyword only)
             The role's color.
         
-        flags : ``RoleFlag``, `int`, Optional (Keyword only)
+        color_configuration : ``None | RoleColorConfiguration``, Optional (Keyword only)
+            The role's color's configuration.
+        
+        flags : ``None | int | RoleFlag``, Optional (Keyword only)
             The role's flags.
         
         icon : ``None | str | bytes-like | Icon``, Optional (Keyword only)
@@ -147,7 +150,7 @@ class ClientCompoundRoleEndpoints(Compound):
         name : `str`, Optional (Keyword only)
             The role's name.
         
-        permissions : `int`, ``Permission``, Optional (Keyword only)
+        permissions : ``None | int | Permission``, Optional (Keyword only)
             The permissions of the users having the role.
         
         position : `int`, Optional (Keyword only)
@@ -156,7 +159,7 @@ class ClientCompoundRoleEndpoints(Compound):
         separated : `bool`, Optional (Keyword only)
             Users show up in separated groups by their highest `separated` role.
         
-        unicode_emoji : `None`, ``Emoji``, Optional (Keyword only)
+        unicode_emoji : ``None | Emoji``, Optional (Keyword only)
             The role's icon as an unicode emoji.
         
         Raises
@@ -184,13 +187,13 @@ class ClientCompoundRoleEndpoints(Compound):
         
         Parameters
         ----------
-        role : ``Role``, `tuple` (`int`, `int`)
+        role : ``Role | (int, int)``
             The role to edit.
         
-        role_template : `None`, ``Role`` = `None`, Optional
+        role_template : ``None | Role`` = `None`, Optional
             Role entity to use as a template.
         
-        reason : `None`, `str` = `None`, Optional (Keyword only)
+        reason : `None | str` = `None`, Optional (Keyword only)
             Shows up at the guild's audit logs.
         
         **keyword_parameters : Keyword parameters
@@ -198,10 +201,13 @@ class ClientCompoundRoleEndpoints(Compound):
         
         Other Parameters
         ----------------
-        color : ``Color``, `int`, Optional (Keyword only)
+        color : ``None | int | Color``, Optional (Keyword only)
             The role's color.
         
-        flags : ``RoleFlag``, `int`, Optional (Keyword only)
+        color_configuration : ``None | RoleColorConfiguration``, Optional (Keyword only)
+            The role's color's configuration.
+        
+        flags : ``None | int | RoleFlag``, Optional (Keyword only)
             The role's flags.
         
         icon : ``None | str | bytes-like | Icon``, Optional (Keyword only)
@@ -213,7 +219,7 @@ class ClientCompoundRoleEndpoints(Compound):
         name : `str`, Optional (Keyword only)
             The role's name.
         
-        permissions : `int`, ``Permission``, Optional (Keyword only)
+        permissions : ``None | int | Permission``, Optional (Keyword only)
             The permissions of the users having the role.
         
         position : `int`, Optional (Keyword only)
@@ -222,7 +228,7 @@ class ClientCompoundRoleEndpoints(Compound):
         separated : `bool`, Optional (Keyword only)
             Users show up in separated groups by their highest `separated` role.
         
-        unicode_emoji : `None`, ``Emoji``, Optional (Keyword only)
+        unicode_emoji : ``None | Emoji``, Optional (Keyword only)
             The role's icon as an unicode emoji.
         
         Raises
@@ -250,10 +256,10 @@ class ClientCompoundRoleEndpoints(Compound):
         
         Parameters
         ----------
-        role : ``Role``, `tuple` (`int`, `int`)
+        role : ``Role | (int, int)``
             The role to delete
         
-        reason : `None`, `str` = `None`, Optional (Keyword only)
+        reason : `None | str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -277,17 +283,19 @@ class ClientCompoundRoleEndpoints(Compound):
         
         Parameters
         ----------
-        role : ``Role``, `tuple` of (`int`, `int`)
+        role : ``Role | (int, int)``
             The role to move.
+        
         position : `int`
             The position to move the given role.
-        reason : `None`, `str` = `None`, Optional (Keyword only)
+        
+        reason : `None | str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
         ------
         TypeError
-            If `role` was not given neither as ``Role`` nor as `tuple` of (`int`, `int`).
+            If `role` was not given as invalid type.
         ValueError
             - If default role would be moved.
             - If any role would be moved to position `0`.
@@ -462,7 +470,7 @@ class ClientCompoundRoleEndpoints(Compound):
         ----------
         roles : (`dict` like or `iterable`) of `tuple` (``Role`` or (`tuple` (`int`, `int`), `int`) items
             A `dict`, `list`, `set`, `tuple`, which contains role-position items.
-        reason : `None`, `str` = `None`, Optional (Keyword only)
+        reason : `None | str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises

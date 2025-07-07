@@ -11,16 +11,17 @@ from ...permission.permission import PERMISSION_NONE, Permission
 from ...precreate_helpers import process_precreate_parameters, raise_extra
 from ...utils import DATETIME_FORMAT_CODE
 
+from ..role_color_configuration import RoleColorConfiguration
 from ..role_manager_metadata import RoleManagerMetadataBase
 
 from .constants import ROLE_MANAGER_DEFAULT
 from .fields import (
-    parse_color, parse_flags, parse_id, parse_manager, parse_mentionable, parse_name, parse_permissions, parse_position,
-    parse_separated, parse_unicode_emoji, put_color, put_flags, put_id, put_manager,
-    put_mentionable, put_name, put_permissions, put_position, put_separated,
-    put_unicode_emoji, validate_color, validate_flags, validate_id, validate_manager, validate_manager_metadata,
-    validate_manager_type, validate_mentionable, validate_name, validate_permissions, validate_position,
-    validate_separated, validate_unicode_emoji, validate_guild_id
+    parse_color, parse_color_configuration, parse_flags, parse_id, parse_manager, parse_mentionable, parse_name,
+    parse_permissions, parse_position, parse_separated, parse_unicode_emoji, put_color, put_color_configuration,
+    put_flags, put_id, put_manager, put_mentionable, put_name, put_permissions, put_position, put_separated,
+    put_unicode_emoji, validate_color, validate_color_configuration, validate_flags, validate_id, validate_manager,
+    validate_manager_metadata, validate_manager_type, validate_mentionable, validate_name, validate_permissions,
+    validate_position, validate_separated, validate_unicode_emoji, validate_guild_id
 )
 from .flags import RoleFlag
 from .preinstanced import RoleManagerType
@@ -31,6 +32,7 @@ ROLE_ICON = IconSlot('icon', 'icon')
 
 PRECREATE_FIELDS = {
     'color': ('color', validate_color),
+    'color_configuration': ('color_configuration', validate_color_configuration),
     'flags': ('flags', validate_flags),
     'manager_metadata': ('manager_metadata', validate_manager_metadata),
     'manager_type': ('manager_type', validate_manager_type),
@@ -52,6 +54,9 @@ class Role(DiscordEntity, immortal = True):
     color : ``Color``
         The role's color. If the color equals to `Color(0)`, then it is ignored meanwhile calculating towards a
         user's display color.
+    
+    color_configuration : ``RoleColorConfiguration``
+        The role's color's configuration. Its `.color_primary` always equals to ``.color``.
     
     flags : ``RoleFlag``
         The role flags.
@@ -93,14 +98,14 @@ class Role(DiscordEntity, immortal = True):
     separated : `bool`
         Users show up in separated groups by their highest `separated` role.
     
-    unicode_emoji : `None`, ``Emoji``
+    unicode_emoji : ``None | Emoji``
         Unicode emoji icon of the role.
         
         Mutually exclusive with ``.icon_hash`` and ``.icon_type``.
     """
     __slots__ = (
-        'color', 'flags', 'guild_id', 'manager_metadata', 'manager_type', 'mentionable', 'name', 'permissions',
-        'position', 'separated', 'unicode_emoji'
+        'color', 'color_configuration', 'flags', 'guild_id', 'manager_metadata', 'manager_type', 'mentionable', 'name',
+        'permissions', 'position', 'separated', 'unicode_emoji'
     )
     
     icon = ROLE_ICON
@@ -110,6 +115,7 @@ class Role(DiscordEntity, immortal = True):
         cls,
         *,
         color = ...,
+        color_configuration = ...,
         flags = ...,
         icon = ...,
         manager = ...,
@@ -125,10 +131,13 @@ class Role(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        color : `int`, ``Color``, Optional (Keyword only)
+        color : ``None | int | Color`, Optional (Keyword only)
             The role's color.
         
-        flags : ``RoleFlag``, `int`, Optional (Keyword only)
+        color_configuration : ``None | RoleColorConfiguration``, Optional (Keyword only)
+            The role's color's configuration.
+        
+        flags : ``None | int | RoleFlag``, Optional (Keyword only)
             The role's flags.
         
         icon : ``None | str | bytes-like | Icon``, Optional (Keyword only)
@@ -136,7 +145,7 @@ class Role(DiscordEntity, immortal = True):
             
             > Mutually exclusive with the `unicode_emoji` parameter.
         
-        manager : `None`, `tuple` (``RoleManagerType``, ``RoleManagerMetadataBase``), Optional (Keyword only)
+        manager : ``None | (RoleManagerType, RoleManagerMetadataBase)``, Optional (Keyword only)
             The role's manager.
         
         mentionable : `bool`, Optional (Keyword only)
@@ -154,7 +163,7 @@ class Role(DiscordEntity, immortal = True):
         separated : `bool`, Optional (Keyword only)
             Users show up in separated groups by their highest `separated` role.
         
-        unicode_emoji : `None`, ``Emoji``, Optional (Keyword only)
+        unicode_emoji : ``None | Emoji``, Optional (Keyword only)
             The role's icon as an unicode emoji.
             
             > Mutually exclusive with the `icon` parameter.
@@ -176,6 +185,12 @@ class Role(DiscordEntity, immortal = True):
             color = Color()
         else:
             color = validate_color(color)
+        
+        # color_configuration
+        if color_configuration is ...:
+            color_configuration = RoleColorConfiguration.create_empty()
+        else:
+            color_configuration = validate_color_configuration(color_configuration)
         
         # flags
         if flags is ...:
@@ -241,6 +256,7 @@ class Role(DiscordEntity, immortal = True):
         
         self = object.__new__(cls)
         self.color = color
+        self.color_configuration = color_configuration
         self.flags = flags
         self.guild_id = 0
         self.icon = icon
@@ -266,8 +282,10 @@ class Role(DiscordEntity, immortal = True):
         ----------
         data : `dict<str, object>`
             Role data received from Discord.
+        
         guild_id : `int` = `0`, Optional
             The owner guild's identifier.
+        
         strong_cache : `bool` = `True`, Optional (Keyword only)
             Whether the instance should be put into its strong cache.
         
@@ -325,6 +343,9 @@ class Role(DiscordEntity, immortal = True):
         # color
         put_color(self.color, data, defaults)
         
+        # color_configuration
+        put_color_configuration(self.color_configuration, data, defaults)
+        
         # flags
         put_flags(self.flags, data, defaults)
         
@@ -372,6 +393,7 @@ class Role(DiscordEntity, immortal = True):
             Received role data.
         """
         self.color = parse_color(data)
+        self.color_configuration = parse_color_configuration(data)
         self.flags = parse_flags(data)
         self._set_icon(data)
         self.manager_type, self.manager_metadata = parse_manager(data)
@@ -403,10 +425,13 @@ class Role(DiscordEntity, immortal = True):
         
         Other Parameters
         ----------------
-        color : ``Color``, `int`, Optional (Keyword only)
+        color : ``None | int | Color``, Optional (Keyword only)
             The role's color.
         
-        flags : ``RoleFlag``, `int`, Optional (Keyword only)
+        color_configuration : ``None | RoleColorConfiguration``, Optional (Keyword only)
+            The role's color's configuration.
+        
+        flags : ``None | int | RoleFlag``, Optional (Keyword only)
             The role's flags.
         
         icon : ``None | str | Icon``, Optional (Keyword only)
@@ -414,7 +439,7 @@ class Role(DiscordEntity, immortal = True):
             
             > Mutually exclusive with the `unicode_emoji` parameter.
         
-        manager : `None`, `tuple` (``RoleManagerType``, ``RoleManagerMetadataBase``), Optional (Keyword only)
+        manager : ``None | (RoleManagerType, RoleManagerMetadataBase)``, Optional (Keyword only)
             The role's manager.
         
         manager_metadata : `None`, ``RoleManagerMetadataBase``, Optional (Keyword only)
@@ -438,7 +463,7 @@ class Role(DiscordEntity, immortal = True):
         position : `int`, Optional (Keyword only)
             The permissions of the users having the role.
         
-        unicode_emoji : `None`, ``Emoji``
+        unicode_emoji : ``None | Emoji``
             The role's icon as an unicode emoji.
             
             > Mutually exclusive with the `icon`, `icon_type` and `icon_hash` parameters.
@@ -535,6 +560,9 @@ class Role(DiscordEntity, immortal = True):
         # color
         self.color = parse_color(data)
         
+        # color_configuration
+        self.color_configuration = parse_color_configuration(data)
+        
         # flags
         self.flags = parse_flags(data)
         
@@ -622,29 +650,29 @@ class Role(DiscordEntity, immortal = True):
         Returned Data Structure
         -----------------------
         
-        +---------------+-----------------------+
-        | Keys          | Values                |
-        +===============+=======================+
-        | color         | ``Color``             |
-        +---------------+-----------------------+
-        | flags         | ``RoleFlag``          |
-        +---------------+-----------------------+
-        | icon          | ``Icon``              |
-        +---------------+-----------------------+
-        | managed       | `bool`                |
-        +---------------+-----------------------+
-        | mentionable   | `bool`                |
-        +---------------+-----------------------+
-        | name          | `str`                 |
-        +---------------+-----------------------+
-        | permissions   | ``Permission``        |
-        +---------------+-----------------------+
-        | position      | `int`                 |
-        +---------------+-----------------------+
-        | separated     | `bool`                |
-        +---------------+-----------------------+
-        | unicode_emoji | `None`, ``Emoji``     |
-        +---------------+-----------------------+
+        +-----------------------+---------------------------+
+        | Keys                  | Values                    |
+        +=======================+===========================+
+        | color                 | ``Color``                 |
+        +-----------------------+---------------------------+
+        | color_configuration   | ``ColorConfiguration``    |
+        +-----------------------+---------------------------+
+        | flags                 | ``RoleFlag``              |
+        +-----------------------+---------------------------+
+        | icon                  | ``Icon``                  |
+        +-----------------------+---------------------------+
+        | mentionable           | `bool`                    |
+        +-----------------------+---------------------------+
+        | name                  | `str`                     |
+        +-----------------------+---------------------------+
+        | permissions           | ``Permission``            |
+        +-----------------------+---------------------------+
+        | position              | `int`                     |
+        +-----------------------+---------------------------+
+        | separated             | `bool`                    |
+        +-----------------------+---------------------------+
+        | unicode_emoji         | ``None | Emoji``          |
+        +-----------------------+---------------------------+
         """
         old_attributes = {}
         
@@ -655,6 +683,12 @@ class Role(DiscordEntity, immortal = True):
         if self.color != color:
             old_attributes['color'] = self.color
             self.color = color
+        
+        # color_configuration
+        color_configuration = parse_color_configuration(data)
+        if self.color_configuration != color_configuration:
+            old_attributes['color_configuration'] = self.color_configuration
+            self.color_configuration = color_configuration
         
         # flags
         flags = parse_flags(data)
@@ -829,7 +863,7 @@ class Role(DiscordEntity, immortal = True):
         
         Returns
         -------
-        users : `list` of ``ClientUserBase``
+        users : ``list<ClientUserBase>``
         """
         users = []
         guild_id = self.guild_id
@@ -1036,6 +1070,7 @@ class Role(DiscordEntity, immortal = True):
         self.id = role_id
         
         self.color = Color()
+        self.color_configuration = RoleColorConfiguration.create_empty()
         self.flags = RoleFlag()
         self.guild_id = guild_id
         self.separated = False
@@ -1068,6 +1103,10 @@ class Role(DiscordEntity, immortal = True):
         """
         # color
         if self.color != other.color:
+            return False
+        
+        # color_configuration
+        if self.color_configuration != other.color_configuration:
             return False
         
         # flags
@@ -1133,6 +1172,9 @@ class Role(DiscordEntity, immortal = True):
         # color
         hash_value ^= self.color
         
+        # color_configuration
+        hash_value ^= hash(self.color_configuration)
+        
         # flags
         hash_value ^= self.flags << 16
         
@@ -1184,6 +1226,7 @@ class Role(DiscordEntity, immortal = True):
         """
         new = object.__new__(type(self))
         new.color = self.color
+        new.color_configuration = self.color_configuration.copy()
         new.flags = self.flags
         new.icon_hash = self.icon_hash
         new.icon_type = self.icon_type
@@ -1204,6 +1247,7 @@ class Role(DiscordEntity, immortal = True):
         self,
         *,
         color = ...,
+        color_configuration = ...,
         flags = ...,
         icon = ...,
         manager = ...,
@@ -1219,10 +1263,13 @@ class Role(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        color : ``Color``, `int`, Optional (Keyword only)
+        color : ``None | int | Color``, Optional (Keyword only)
             The role's color.
         
-        flags : ``RoleFlag``, `int`, Optional (Keyword only)
+        color_configuration : ``None | RoleColorConfiguration``, Optional (Keyword only)
+            The role's color's configuration.
+        
+        flags : ``None | int | RoleFlag``, Optional (Keyword only)
             The role's flags.
         
         icon : ``None | str | bytes-like | Icon``, Optional (Keyword only)
@@ -1230,7 +1277,7 @@ class Role(DiscordEntity, immortal = True):
             
             > Mutually exclusive with the `unicode_emoji` parameter.
         
-        manager : `None`, `tuple` (``RoleManagerType``, ``RoleManagerMetadataBase``), Optional (Keyword only)
+        manager : ``None | (RoleManagerType, RoleManagerMetadataBase)``, Optional (Keyword only)
             The role's manager.
         
         mentionable : `bool`, Optional (Keyword only)
@@ -1248,7 +1295,7 @@ class Role(DiscordEntity, immortal = True):
         separated : `bool`, Optional (Keyword only)
             Users show up in separated groups by their highest `separated` role.
         
-        unicode_emoji : `None`, ``Emoji``, Optional (Keyword only)
+        unicode_emoji : ``None | Emoji``, Optional (Keyword only)
             The role's icon as an unicode emoji.
             
             > Mutually exclusive with the `icon` parameter.
@@ -1281,6 +1328,12 @@ class Role(DiscordEntity, immortal = True):
             color = self.color
         else:
             color = validate_color(color)
+        
+        # color_configuration
+        if color_configuration is ...:
+            color_configuration = self.color_configuration.copy()
+        else:
+            color_configuration = validate_color_configuration(color_configuration)
         
         # flags
         if flags is ...:
@@ -1346,6 +1399,7 @@ class Role(DiscordEntity, immortal = True):
         
         new = object.__new__(type(self))
         new.color = color
+        new.color_configuration = color_configuration
         new.flags = flags
         new.guild_id = 0
         new.icon = icon

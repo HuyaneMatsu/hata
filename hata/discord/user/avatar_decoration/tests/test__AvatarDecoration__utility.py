@@ -6,7 +6,7 @@ from ....bases import Icon, IconType
 
 from ..avatar_decoration import AvatarDecoration
 
-from .test__AvatarDecoration__constructor import _check_is_all_fields_set
+from .test__AvatarDecoration__constructor import _assert_fields_set
 
 
 def test__AvatarDecoration__copy():
@@ -25,7 +25,7 @@ def test__AvatarDecoration__copy():
     )
     copy = avatar_decoration.copy()
     
-    _check_is_all_fields_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_not_is(avatar_decoration, copy)
     vampytest.assert_eq(avatar_decoration, copy)
 
@@ -48,7 +48,7 @@ def test__AvatarDecoration__copy_with__no_fields():
     )
     copy = avatar_decoration.copy_with()
     
-    _check_is_all_fields_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_not_is(avatar_decoration, copy)
     vampytest.assert_eq(avatar_decoration, copy)
 
@@ -78,7 +78,7 @@ def test__AvatarDecoration__copy_with__all_fields():
         sku_id = new_sku_id,
     )
     
-    _check_is_all_fields_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_not_is(avatar_decoration, copy)
 
     vampytest.assert_eq(copy.asset, new_asset)

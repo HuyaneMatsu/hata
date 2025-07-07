@@ -11,12 +11,16 @@ def _iter_options():
     )
     
     yield (
-        {'type': None},
+        {
+            'type': None,
+        },
         ApplicationCommandTargetType.none,
     )
     
     yield (
-        {'type': ApplicationCommandTargetType.user.value},
+        {
+            'type': ApplicationCommandTargetType.user.value,
+        },
         ApplicationCommandTargetType.user,
     )
 
@@ -29,7 +33,7 @@ def test__parse_target_type(input_data):
     Parameters
     ----------
     input_data : `dict<str, object>`
-        Data to parse the target type from.
+        Data to parse from.
     
     Returns
     -------

@@ -5,7 +5,7 @@ from ..scheduled_event_subscribe_event import ScheduledEventSubscribeEvent
 from .test__ScheduledEventSubscribeEvent__constructor import _assert_fields_set
 
 
-def test__ScheduledEventSubscribeEvent__from_data__0():
+def test__ScheduledEventSubscribeEvent__from_data():
     """
     Tests whether ``ScheduledEventSubscribeEvent.from_data`` works as intended.
     
@@ -29,7 +29,7 @@ def test__ScheduledEventSubscribeEvent__from_data__0():
     vampytest.assert_eq(event.user_id, user_id)
 
 
-def test__ScheduledEventSubscribeEvent__to_data__0():
+def test__ScheduledEventSubscribeEvent__to_data():
     """
     Tests whether ``ScheduledEventSubscribeEvent.to_data`` works as intended.
     

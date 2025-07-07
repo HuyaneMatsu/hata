@@ -35,7 +35,7 @@ def test__validate_mentioned_users(input_value):
     
     Returns
     -------
-    output : `None | tuple<ClientUserBase>`
+    output : ``None | tuple<ClientUserBase>``
     
     Raises
     ------

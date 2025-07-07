@@ -25,6 +25,7 @@ def test__EMOJI_CONVERSIONS():
         {'available', 'name', 'roles'},
     )
 
+
 # ---- available ----
 
 def test__AVAILABLE_CONVERSION__generic():
@@ -56,12 +57,9 @@ def test__AVAILABLE_CONVERSION__value_deserializer(input_value):
     -------
     output : `bool`
     """
-    return AVAILABLE_CONVERSION.value_deserializer(input_value)
-
-
-def _iter_options__available__value_serializer():
-    yield True, True
-    yield False, False
+    output = AVAILABLE_CONVERSION.value_deserializer(input_value)
+    vampytest.assert_instance(output, bool)
+    return output
 
 
 # ---- name ----

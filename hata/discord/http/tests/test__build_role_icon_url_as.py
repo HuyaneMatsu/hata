@@ -45,6 +45,26 @@ def _iter_options():
         None,
         f'{CDN_ENDPOINT}/role-icons/{role_id}/a_00000000000000000000000000000003.png',
     )
+    
+    role_id = 202506210018
+    yield (
+        role_id,
+        IconType.static,
+        4,
+        'webp',
+        None,
+        f'{CDN_ENDPOINT}/role-icons/{role_id}/00000000000000000000000000000004.webp',
+    )
+    
+    role_id = 202506210019
+    yield (
+        role_id,
+        IconType.animated,
+        4,
+        'webp',
+        None,
+        f'{CDN_ENDPOINT}/role-icons/{role_id}/a_00000000000000000000000000000004.webp?animated=true',
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

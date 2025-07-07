@@ -331,6 +331,12 @@ add_event_handler('poll_vote_delete', 2, 'MESSAGE_POLL_VOTE_REMOVE',)
 add_event_handler('subscription_create', 2, 'SUBSCRIPTION_CREATE',)
 add_event_handler('subscription_update', 3, 'SUBSCRIPTION_UPDATE',)
 add_event_handler('subscription_delete', 2, 'SUBSCRIPTION_DELETE',)
+add_event_handler('scheduled_event_occasion_overwrite_create', 2, 'GUILD_SCHEDULED_EVENT_EXCEPTION_CREATE',)
+add_event_handler('scheduled_event_occasion_overwrite_update', 3, 'GUILD_SCHEDULED_EVENT_EXCEPTION_CREATE',)
+add_event_handler('scheduled_event_occasion_overwrite_delete', 2, 'GUILD_SCHEDULED_EVENT_EXCEPTION_DELETE',)
+add_event_handler('guild_enhancement_entitlements_create', 2, 'GUILD_POWERUP_ENTITLEMENTS_CREATE',)
+add_event_handler('guild_enhancement_entitlements_delete', 2, 'GUILD_POWERUP_ENTITLEMENTS_DELETE',)
+add_event_handler('guild_boost_update', 3, 'GUILD_APPLIED_BOOSTS_UPDATE',)
 
 
 class ParserSettingOption:
@@ -378,7 +384,7 @@ class ParserSettingOption:
     
     def __repr__(self):
         """Returns the parser description's representation."""
-        return f'<{self.__class__.__name__} name = {self.name!r}, intent_shift = {self.intent_shift!r}>'
+        return f'<{type(self).__name__} name = {self.name!r}, intent_shift = {self.intent_shift!r}>'
 
 
 class ParserSetting:
@@ -555,7 +561,7 @@ def register_client(client):
         try:
             parser_default = PARSER_SETTINGS[parser_name]
         except KeyError:
-            warnings.warn(
+            warn(
                 f'No parser added for: {parser_name!r}.',
                 RuntimeWarning,
             )

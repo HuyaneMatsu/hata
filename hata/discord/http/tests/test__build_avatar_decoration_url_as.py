@@ -37,6 +37,22 @@ def _iter_options():
         None,
         f'{CDN_ENDPOINT}/avatar-decoration-presets/a_00000000000000000000000000000003.png',
     )
+    
+    yield (
+        IconType.static,
+        4,
+        'webp',
+        None,
+        f'{CDN_ENDPOINT}/avatar-decoration-presets/00000000000000000000000000000004.webp',
+    )
+    
+    yield (
+        IconType.animated,
+        4,
+        'webp',
+        None,
+        f'{CDN_ENDPOINT}/avatar-decoration-presets/a_00000000000000000000000000000004.webp?animated=true',
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

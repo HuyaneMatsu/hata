@@ -17,7 +17,7 @@ def _assert_fields_set(event):
     vampytest.assert_instance(event.user_id, int)
 
 
-def test__GuildJoinRequestDeleteEvent__new__0():
+def test__GuildJoinRequestDeleteEvent__new__no_fields():
     """
     Tests whether ``GuildJoinRequestDeleteEvent.__new__`` works as intended.
     
@@ -27,7 +27,7 @@ def test__GuildJoinRequestDeleteEvent__new__0():
     _assert_fields_set(event)
 
 
-def test__GuildJoinRequestDeleteEvent__new__1():
+def test__GuildJoinRequestDeleteEvent__new__all_fields():
     """
     Tests whether ``GuildJoinRequestDeleteEvent.__new__`` works as intended.
     

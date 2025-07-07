@@ -167,7 +167,7 @@ class ClientCompoundUserEndpoints(Compound):
         ----------
         user : ```ClientUserBase``, `int`
             The user who will get the role.
-        role : ``Role``, `tuple` (`int`, `int`)
+        role : ``Role | (int, int)``
             The role to add on the user.
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
@@ -198,7 +198,7 @@ class ClientCompoundUserEndpoints(Compound):
         ----------
         user : ```ClientUserBase``, `int`
             The user from who the role will be removed.
-        role : ``Role``, `tuple` (`int`, `int`)
+        role : ``Role | (int, int)``
             The role to remove from the user.
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
@@ -433,7 +433,7 @@ class ClientCompoundUserEndpoints(Compound):
         
         Returns
         -------
-        users : `list` of ``ClientUserBase``
+        users : ``list<ClientUserBase>``
         
         Raises
         ------

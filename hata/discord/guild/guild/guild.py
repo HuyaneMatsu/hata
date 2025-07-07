@@ -197,7 +197,7 @@ class Guild(DiscordEntity, immortal = True):
     
     Attributes
     ----------
-    _cache_boosters : `None`, `list` of ``ClientUserBase``
+    _cache_boosters : ``None | list<ClientUserBase>``
         Cached slot for the boosters of the guild.
     
     _cache_permission : `None`, `dict` of (`int`, ``Permission``) items
@@ -1175,7 +1175,7 @@ class Guild(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `str`) items
+        data : `dict<str, str>`
         """
         data = {}
         
@@ -4292,7 +4292,7 @@ class Guild(DiscordEntity, immortal = True):
         
         Returns
         -------
-        users : `list` of ``ClientUserBase``
+        users : ``list<ClientUserBase>``
         """
         name_length = len(name)
         if name_length > USER_ALL_NAME_LENGTH_MAX_WITH_DISCRIMINATOR:
@@ -4377,7 +4377,7 @@ class Guild(DiscordEntity, immortal = True):
         
         Returns
         -------
-        users : `list` of ``ClientUserBase``
+        users : ``list<ClientUserBase>``
         """
         name_length = len(name)
         

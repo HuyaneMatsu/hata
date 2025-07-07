@@ -59,7 +59,7 @@ def test__put_embeds(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `None | tuple<Embed>`
+    input_value : ``None | tuple<Embed>``
         Value to serialize.
     defaults : `bool`
         Whether values as their defaults should be included as well.

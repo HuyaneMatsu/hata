@@ -31,7 +31,7 @@ class NamePlate(metaclass = Slotted):
         The dominant color of the name plate.
     
     sku_id : `int`
-        The stock keeping unit the avatar decoration is part of.
+        The stock keeping unit the name plate is part of.
     """
     __slots__ = ('asset_path', 'expires_at', 'name', 'palette', 'sku_id',)
     
@@ -54,7 +54,7 @@ class NamePlate(metaclass = Slotted):
             The dominant color of the name plate.
         
         sku_id : `None | int`, Optional (Keyword only)
-            The stock keeping unit the avatar decoration is part of.
+            The stock keeping unit the name plate is part of.
         """
         # asset_path
         if asset_path is ...:
@@ -111,7 +111,7 @@ class NamePlate(metaclass = Slotted):
             repr_parts.append(format(expires_at, DATETIME_FORMAT_CODE))
         
         # name
-        repr_parts.append(' name = ')
+        repr_parts.append(', name = ')
         repr_parts.append(repr(self.name))
         
         # palette
@@ -189,7 +189,7 @@ class NamePlate(metaclass = Slotted):
         Parameters
         ----------
         data : `dict<str, object>`
-            Received avatar decoration data.
+            Received name plate data.
         
         Returns
         -------
@@ -272,7 +272,7 @@ class NamePlate(metaclass = Slotted):
             The dominant color of the name plate.
         
         sku_id : `None | int`, Optional (Keyword only)
-            The stock keeping unit the avatar decoration is part of.
+            The stock keeping unit the name plate is part of.
         
         Returns
         -------

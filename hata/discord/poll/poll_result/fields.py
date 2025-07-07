@@ -38,7 +38,7 @@ def validate_users(users):
     
     Returns
     -------
-    users : `None | set<ClientUserBase>`
+    users : ``None | set<ClientUserBase>``
     
     Raises
     ------

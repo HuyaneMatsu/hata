@@ -18,7 +18,7 @@ def _assert_fields_set(event):
     vampytest.assert_instance(event.user_id, int)
 
 
-def test__ScheduledEventUnsubscribeEvent__new__0():
+def test__ScheduledEventUnsubscribeEvent__new__no_fields():
     """
     Tests whether ``ScheduledEventUnsubscribeEvent.__new__`` works as intended.
     
@@ -28,11 +28,11 @@ def test__ScheduledEventUnsubscribeEvent__new__0():
     _assert_fields_set(event)
 
 
-def test__ScheduledEventUnsubscribeEvent__new__1():
+def test__ScheduledEventUnsubscribeEvent__new__all_fields():
     """
     Tests whether ``ScheduledEventUnsubscribeEvent.__new__`` works as intended.
     
-    Case: Fields given.
+    Case: All fields given.
     """
     guild_id = 202303120036
     scheduled_event_id = 202303120037

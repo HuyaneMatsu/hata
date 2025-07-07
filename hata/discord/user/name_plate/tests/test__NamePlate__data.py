@@ -7,7 +7,7 @@ from ....utils import datetime_to_unix_time
 from ..name_plate import NamePlate
 from ..preinstanced import Palette
 
-from .test__NamePlate__constructor import _check_is_all_fields_set
+from .test__NamePlate__constructor import _assert_fields_set
 
 
 def test__NamePlate__from_data():
@@ -29,7 +29,7 @@ def test__NamePlate__from_data():
     }
     
     name_plate = NamePlate.from_data(data)
-    _check_is_all_fields_set(name_plate)
+    _assert_fields_set(name_plate)
     
     vampytest.assert_eq(name_plate.asset_path, asset_path)
     vampytest.assert_eq(name_plate.expires_at, expires_at)

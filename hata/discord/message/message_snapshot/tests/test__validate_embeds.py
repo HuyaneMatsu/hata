@@ -33,7 +33,7 @@ def test__validate_embeds(input_value):
     
     Returns
     -------
-    output : `None | tuple<Embed>`
+    output : ``None | tuple<Embed>``
     
     Raises
     ------

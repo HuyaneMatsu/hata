@@ -4,10 +4,31 @@ from ..fields import parse_nsfw
 
 
 def _iter_options():
-    yield {}, False
-    yield {'nsfw': None}, False
-    yield {'nsfw': False}, False
-    yield {'nsfw': True}, True
+    yield (
+        {},
+        False,
+    )
+    
+    yield (
+        {
+            'nsfw': None,
+        },
+        False,
+    )
+    
+    yield (
+        {
+            'nsfw': False,
+        },
+        False,
+    )
+    
+    yield (
+        {
+            'nsfw': True,
+        },
+        True,
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

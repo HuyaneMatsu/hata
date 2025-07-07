@@ -47,4 +47,6 @@ def test__validate_user_id__passing(input_value):
     TypeError
     ValueError
     """
-    return validate_user_id(input_value)
+    output = validate_user_id(input_value)
+    vampytest.assert_instance(output, int)
+    return output

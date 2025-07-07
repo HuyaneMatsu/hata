@@ -34,7 +34,7 @@ def test__validate_features(input_value):
     
     Returns
     -------
-    output : `None | tuple<SKUFeature>`
+    output : ``None | tuple<SKUFeature>``
     
     Raises
     ------
@@ -42,4 +42,9 @@ def test__validate_features(input_value):
     """
     output = validate_features(input_value)
     vampytest.assert_instance(output, tuple, nullable = True)
+    
+    if (output is not None):
+        for element in output:
+            vampytest.assert_instance(element, SKUFeature)
+    
     return output

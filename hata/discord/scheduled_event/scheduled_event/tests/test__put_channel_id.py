@@ -21,6 +21,7 @@ def test__put_channel_id(input_value, defaults):
     ----------
     input_value : `int`
         The value to serialise.
+    
     defaults : `bool`
         Whether default values should be included as well.
     

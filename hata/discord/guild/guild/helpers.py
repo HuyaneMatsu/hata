@@ -72,7 +72,7 @@ def _role_match_sort_key(item):
     
     Parameters
     ----------
-    item : `tuple` (``Role``, `tuple` (`int`, `int`))
+    item : `tuple` (``Role | (int, int)``)
         The role and it's match rate.
     
     Returns

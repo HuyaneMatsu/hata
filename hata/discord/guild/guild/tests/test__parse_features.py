@@ -59,6 +59,14 @@ def test__parse_features(input_data):
     
     Returns
     -------
-    output : `None | tuple<GuildFeature>`
+    output :  ``None | tuple<GuildFeature>``
     """
-    return parse_features(input_data)
+    output = parse_features(input_data)
+    
+    vampytest.assert_instance(output, tuple, nullable = True)
+    
+    if (output is not None):
+        for element in output:
+            vampytest.assert_instance(element, GuildFeature)
+    
+    return output

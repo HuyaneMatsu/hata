@@ -501,7 +501,7 @@ class VoiceChannelEffect(EventBase):
         
         Returns
         -------
-        sound : `None | SoundboardSound`
+        sound : ``None | SoundboardSound``
         """
         sound_id = self.sound_id
         if sound_id:

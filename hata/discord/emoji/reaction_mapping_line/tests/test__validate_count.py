@@ -4,6 +4,7 @@ from ..fields import validate_count
 
 
 def _iter_options__passing():
+    yield None, 0
     yield 0, 0
     yield 1, 1
 
@@ -38,4 +39,6 @@ def test__validate_count(input_value):
     TypeError
     ValueError
     """
-    return validate_count(input_value)
+    output = validate_count(input_value)
+    vampytest.assert_instance(output, int)
+    return output

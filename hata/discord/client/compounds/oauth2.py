@@ -531,7 +531,7 @@ class ClientCompoundOauth2Endpoints(Compound):
             The vanity name of the platform the application represents.
         platform_user_name : `None`, `str`, Optional (Keyword only)
             The name of the user on the application's platform.
-        metadata_values : `None`, `dict` of (`str`, `str`) items, Optional (Keyword only)
+        metadata_values : `None | dict<str, str>`, Optional (Keyword only)
             Metadata key to attached value relation.
         
         Returns

@@ -17,7 +17,7 @@ def validate_translation_table(translation_table):
     
     Returns
     -------
-    translation_table : `None`, `dict` of (``Locale``, `dict` of (`str`, `str`) items) items
+    translation_table : ``None | dict<Locale, dict<str, str>>``
     
     Raises
     ------
@@ -52,7 +52,7 @@ def _validate_translation_table_from_file(file_name):
     
     Returns
     -------
-    translation_table : `None`, `dict` of (``Locale``, `dict` of (`str`, `str`) items) items
+    translation_table : ``None | dict<Locale, dict<str, str>>``
     
     Raises
     ------
@@ -98,7 +98,7 @@ def _validate_translation_table_from_dict(translation_table):
     
     Returns
     -------
-    validated_translation_table : `None`, `dict` of (``Locale``, (`None`, `dict` of (`str`, `str`) items)) items
+    validated_translation_table : ``None | dict<Locale, None | dict<str, str>>` items
     
     Raises
     ------
@@ -133,7 +133,7 @@ def _validate_translation_table_relations(relations):
     
     Returns
     -------
-    validated_relations : `None`, `dict` of (`str`, `str`) items
+    validated_relations : `None | dict<str, str>`
     
     Raises
     ------
@@ -162,7 +162,7 @@ def _validate_translation_table_relations_dict(relations):
     
     Returns
     -------
-    validated_relations : `None`, `dict` of (`str`, `str`) items
+    validated_relations : `None | dict<str, str>`
 
     Raises
     ------

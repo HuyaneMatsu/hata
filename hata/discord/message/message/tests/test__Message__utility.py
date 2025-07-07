@@ -1217,12 +1217,12 @@ def test__Message__soundboard_sound(input_value):
     
     Parameters
     ----------
-    input_value : `None | list<SoundboardSound>`
+    input_value : ``None | list<SoundboardSound>``
         Value to test with.
     
     Returns
     -------
-    output : `None | SoundboardSound`
+    output : ``None | SoundboardSound``
     """
     message = Message(soundboard_sounds = input_value)
     output = message.soundboard_sound
@@ -1246,7 +1246,7 @@ def test__Message__sticker(input_value):
     
     Parameters
     ----------
-    input_value : `None | list<Sticker>`
+    input_value :` `None | list<Sticker>``
         Value to test with.
     
     Returns
@@ -1520,7 +1520,7 @@ def test__Message__iter_soundboard_sounds(input_value):
     
     Parameters
     ----------
-    input_value : `None | list<SoundboardSound>`
+    input_value : ``None | list<SoundboardSound>``
         Value to test with.
     
     Returns
@@ -1547,12 +1547,12 @@ def test__Message__iter_stickers(input_value):
     
     Parameters
     ----------
-    input_value : `None | list<Sticker>`
+    input_value :` `None | list<Sticker>``
         Value to test with.
     
     Returns
     -------
-    output : `list<Sticker>`
+    output : ``list<Sticker>``
     """
     message = Message(stickers = input_value)
     return [*message.iter_stickers()]
@@ -2220,7 +2220,7 @@ def test__Message__has_soundboard_sounds(input_value):
     
     Parameters
     ----------
-    input_value : `None | list<Sticker>`
+    input_value :` `None | list<Sticker>``
         Value to test with.
     
     Returns
@@ -2250,7 +2250,7 @@ def test__Message__has_stickers(input_value):
     
     Parameters
     ----------
-    input_value : `None | list<Sticker>`
+    input_value :` `None | list<Sticker>``
         Value to test with.
     
     Returns

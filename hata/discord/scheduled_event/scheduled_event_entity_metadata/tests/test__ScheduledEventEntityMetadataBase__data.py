@@ -5,7 +5,7 @@ from ..base import ScheduledEventEntityMetadataBase
 from .test__ScheduledEventEntityMetadataBase__constructor import _assert_fields_set
 
 
-def test__ScheduledEventEntityMetadataBase__from_data__0():
+def test__ScheduledEventEntityMetadataBase__from_data():
     """
     Tests whether ``ScheduledEventEntityMetadataBase.from_data`` works as intended.
     

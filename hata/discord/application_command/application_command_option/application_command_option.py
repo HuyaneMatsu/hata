@@ -27,7 +27,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
     description : `None`, `str`
         The description of the application command option. It's length can be in range [1:100].
     
-    description_localizations : `None`, `dict` of (``Locale``, `str`) items
+    description_localizations : ``None | dict<Locale, str>``
         Localized descriptions of the option.
     
     metadata : ``ApplicationCommandOptionMetadataBase``
@@ -36,7 +36,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
     name : `str`
         The name of the application command option. It's length can be in range [1:32].
     
-    name_localizations : `None`, `dict` of (``Locale``, `str`) items
+    name_localizations : ``None | dict<Locale, str>``
         Localized names of the option.
     
     type : ``ApplicationCommandOptionType``
@@ -68,12 +68,12 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         option_type : `ApplicationCommandOptionType | int`
             The application command option's type.
         
-        description_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,
-                (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`), Optional (Keyword only)
+        description_localizations : ``None | dict<str | Locale, str> | (list | set | tuple<(str | Locale, str>)`` \
+                , Optional (Keyword only)
             Localized descriptions of the option.
         
-        name_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,
-                (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`), Optional (Keyword only)
+        name_localizations : ``None | dict<str | Locale, str> | (list | set | tuple<(str | Locale, str>)`` \
+                , Optional (Keyword only)
             Localized names of the option.
         
         **keyword_parameters : Keyword parameters
@@ -592,15 +592,15 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         description : `None`, `str`, Optional (Keyword only)
             The command's description. It's length can be in range [2:100].
         
-        description_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,
-                (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`), Optional (Keyword only)
+        description_localizations : ``None | dict<str | Locale, str> | (list | set | tuple<(str | Locale, str>)`` \
+                , Optional (Keyword only)
             Localized descriptions of the option.
             
         name : `str`, Optional (Keyword only)
             The name of the command. It's length can be in range [1:32].
         
-        name_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,
-                (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`), Optional (Keyword only)
+        name_localizations : ``None | dict<str | Locale, str> | (list | set | tuple<(str | Locale, str>)`` \
+                , Optional (Keyword only)
             Localized names of the option.
         
         option_type : `int`, ``ApplicationCommandOptionType``, Optional (Keyword only)

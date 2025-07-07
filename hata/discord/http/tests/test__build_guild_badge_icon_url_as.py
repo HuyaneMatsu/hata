@@ -45,6 +45,26 @@ def _iter_options():
         None,
         f'{CDN_ENDPOINT}/badge-icons/{guild_id}/a_00000000000000000000000000000003.png',
     )
+    
+    guild_id = 202506210006
+    yield (
+        guild_id,
+        IconType.static,
+        4,
+        'webp',
+        None,
+        f'{CDN_ENDPOINT}/badge-icons/{guild_id}/00000000000000000000000000000004.webp',
+    )
+    
+    guild_id = 202506210007
+    yield (
+        guild_id,
+        IconType.animated,
+        4,
+        'webp',
+        None,
+        f'{CDN_ENDPOINT}/badge-icons/{guild_id}/a_00000000000000000000000000000004.webp?animated=true',
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

@@ -1897,7 +1897,7 @@ def parse_annotation_fallback(parameter, annotation_value):
     ----------
     parameter : ``Parameter``
         The respective parameter's representation.
-    annotation_value : `None`, `object`
+    annotation_value : `None | object`
         The annotated value to interpret.
     
     Returns

@@ -815,9 +815,9 @@ class TopGGClient:
             Endpoint to do request towards.
         rate_limit_handler : ``RateLimitHandlerBase`
             Rate limit handle to handle rate limit as.
-        data : `None`, `object` = `None`, Optional
+        data : `None | object` = `None`, Optional
             Json serializable data.
-        query : `None`, `object` = `None`, Optional
+        query : `None | object` = `None`, Optional
             Query parameters.
         
         Raises

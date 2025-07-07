@@ -7,6 +7,7 @@ from ....user import ClientUserBase, User
 
 from ...schedule import Schedule
 from ...scheduled_event_entity_metadata import ScheduledEventEntityMetadataBase
+from ...scheduled_event_occasion_overwrite import ScheduledEventOccasionOverwrite
 
 from ..preinstanced import PrivacyLevel, ScheduledEventEntityType, ScheduledEventStatus
 from ..scheduled_event import ScheduledEvent
@@ -22,6 +23,7 @@ def _assert_fields_set(scheduled_event):
         The scheduled event to check out.
     """
     vampytest.assert_instance(scheduled_event, ScheduledEvent)
+    vampytest.assert_instance(scheduled_event.occasion_overwrites, tuple, nullable = True)
     vampytest.assert_instance(scheduled_event.channel_id, int)
     vampytest.assert_instance(scheduled_event.creator, ClientUserBase)
     vampytest.assert_instance(scheduled_event.description, str, nullable = True)
@@ -132,6 +134,14 @@ def test__ScheduledEvent__precreate__all_fields():
     """
     scheduled_event_id = 202303160003
     
+    occasion_overwrites = [
+        ScheduledEventOccasionOverwrite(
+            timestamp = DateTime(2016, 5, 14, 13, 0, 0, tzinfo = TimeZone.utc),
+        ),
+        ScheduledEventOccasionOverwrite(
+            timestamp = DateTime(2016, 5, 16, 13, 10, 0, tzinfo = TimeZone.utc),
+        ),
+    ]
     channel_id = 202303160004
     description = 'koishi'
     end = DateTime(2016, 3, 10, tzinfo = TimeZone.utc)
@@ -152,6 +162,7 @@ def test__ScheduledEvent__precreate__all_fields():
     
     scheduled_event = ScheduledEvent.precreate(
         scheduled_event_id,
+        occasion_overwrites = occasion_overwrites,
         channel_id = channel_id,
         description = description,
         end = end,
@@ -173,6 +184,7 @@ def test__ScheduledEvent__precreate__all_fields():
     
     vampytest.assert_eq(scheduled_event.id, scheduled_event_id)
     
+    vampytest.assert_eq(scheduled_event.occasion_overwrites, tuple(occasion_overwrites))
     vampytest.assert_eq(scheduled_event.channel_id, channel_id)
     vampytest.assert_eq(scheduled_event.description, description)
     vampytest.assert_eq(scheduled_event.end, end)

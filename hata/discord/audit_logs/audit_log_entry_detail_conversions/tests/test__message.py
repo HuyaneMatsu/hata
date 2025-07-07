@@ -67,7 +67,9 @@ def test__COUNT_CONVERSION__value_deserializer(input_value):
     -------
     output : `int`
     """
-    return COUNT_CONVERSION.value_deserializer(input_value)
+    output = COUNT_CONVERSION.value_deserializer(input_value)
+    vampytest.assert_instance(output, int)
+    return output
 
 
 def _iter_options__count__value_validator__passing():
@@ -105,7 +107,9 @@ def test__COUNT_CONVERSION__value_validator(input_value):
     TypeError
     ValueError
     """
-    return COUNT_CONVERSION.value_validator(input_value)
+    output = COUNT_CONVERSION.value_validator(input_value)
+    vampytest.assert_instance(output, int)
+    return output
 
 
 # ---- id ----

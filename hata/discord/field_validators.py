@@ -141,7 +141,7 @@ def entity_id_validator_factory(field_name, entity_type = None, *, include = Non
                 if processed_entity_id is None:
                     raise TypeError(
                         f'`{field_name}` can be `int`, `{entity_type.__name__}`, `int`, got '
-                        f'{entity_id.__class__.__name__}; {entity_id!r}.'
+                        f'{type(entity_id).__name__}; {entity_id!r}.'
                     )
             
             return processed_entity_id
@@ -183,7 +183,7 @@ def _entity_id_array_processor_factory(field_name, entity_type, include, keep_or
                 
                 if (getattr(entity_id_array, '__iter__', None) is None):
                     raise TypeError(
-                        f'`{field_name}` can be `None`, `iterable` of `int`, '
+                        f'`{field_name}` can be `None | iterable<int>`, '
                         f'got {type(entity_id_array).__name__}; {entity_id_array!r}.'
                     )
                 
@@ -249,7 +249,7 @@ def _entity_id_array_processor_factory(field_name, entity_type, include, keep_or
                 
                 if (getattr(entity_id_array, '__iter__', None) is None):
                     raise TypeError(
-                        f'`{field_name}` can be `None`, `iterable` of `int`, '
+                        f'`{field_name}` can be `None | iterable<int>`, '
                         f'got {type(entity_id_array).__name__}; {entity_id_array!r}.'
                     )
                 
@@ -1369,7 +1369,7 @@ def nullable_sorted_int_array_conditional_validator_factory(field_name, conditio
         
         if getattr(int_array, '__iter__', None) is None:
             raise TypeError(
-                f'`{field_name}` can be `None`, `iterable` of `int`, got '
+                f'`{field_name}` can be `None | iterable<int>`, got '
                 f'{type(int_array).__name__}; {int_array!r}.'
             )
         
@@ -1993,7 +1993,7 @@ def entity_validator_factory(field_name, entity_type, *, include = None):
     return validator
 
 
-def nullable_object_array_validator_factory(field_name, object_type, *, include = None):
+def nullable_object_array_validator_factory(field_name, object_type, *, include = None, ordered = False):
     """
     Returns a nullable object array validator.
     
@@ -2012,7 +2012,75 @@ def nullable_object_array_validator_factory(field_name, object_type, *, include 
     -------
     validator : `FunctionType`
     """
-    def validator(object_array):
+    if ordered:
+        def validator(object_array):
+            nonlocal field_name
+            nonlocal object_type
+            
+            if object_array is None:
+                return None
+            
+            if (getattr(object_array, '__iter__', None) is None):
+                raise TypeError(
+                    f'`{field_name}` can be `None`, `iterable` of `{object_type.__name__}`, got '
+                    f'{type(object_array).__name__}; {object_array!r}.'
+                )
+                
+            object_array_processed = None
+            
+            for object in object_array:
+                if not isinstance(object, object_type):
+                    raise TypeError(
+                        f'`{field_name}` can contain `{object_type.__name__}` elements, got '
+                        f'{type(object).__name__}; {object!r}; object_array = {object_array!r}.'
+                    )
+                
+                if (object_array_processed is None):
+                    object_array_processed = []
+                
+                object_array_processed.append(object)
+            
+            if (object_array_processed is not None):
+                object_array_processed.sort()
+                object_array_processed = tuple(object_array_processed)
+            
+            return object_array_processed
+    
+    else:
+        def validator(object_array):
+            nonlocal field_name
+            nonlocal object_type
+            
+            if object_array is None:
+                return None
+            
+            if (getattr(object_array, '__iter__', None) is None):
+                raise TypeError(
+                    f'`{field_name}` can be `None`, `iterable` of `{object_type.__name__}`, got '
+                    f'{type(object_array).__name__}; {object_array!r}.'
+                )
+                
+            object_array_processed = None
+            
+            for object in object_array:
+                if not isinstance(object, object_type):
+                    raise TypeError(
+                        f'`{field_name}` can contain `{object_type.__name__}` elements, got '
+                        f'{type(object).__name__}; {object!r}; object_array = {object_array!r}.'
+                    )
+                
+                if (object_array_processed is None):
+                    object_array_processed = []
+                
+                object_array_processed.append(object)
+            
+            if (object_array_processed is not None):
+                object_array_processed = tuple(object_array_processed)
+            
+            return object_array_processed
+    
+    set_docs(
+        validator,
         """
         Validates the given nullable object array field.
         
@@ -2030,37 +2098,7 @@ def nullable_object_array_validator_factory(field_name, object_type, *, include 
         TypeError
             - If `object_array` is not `None`, `iterable` of `object_type`.
         """
-        nonlocal field_name
-        nonlocal object_type
-        
-        if object_array is None:
-            return None
-        
-        if (getattr(object_array, '__iter__', None) is None):
-            raise TypeError(
-                f'`{field_name}` can be `None`, `iterable` of `{object_type.__name__}`, got '
-                f'{object_array.__class__.__name__}; {object_array!r}.'
-            )
-            
-        object_array_processed = None
-        
-        for object in object_array:
-            if not isinstance(object, object_type):
-                raise TypeError(
-                    f'`{field_name}` can contain `{object_type.__name__}` elements, got '
-                    f'{type(object).__name__}; {object!r}; object_array = {object_array!r}.'
-                )
-            
-            if (object_array_processed is None):
-                object_array_processed = []
-            
-            object_array_processed.append(object)
-        
-        if (object_array_processed is not None):
-            object_array_processed = tuple(object_array_processed)
-        
-        return object_array_processed
-    
+    )
     
     if (include is not None):
         @include_with_callback(include)

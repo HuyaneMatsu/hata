@@ -21,6 +21,7 @@ def test__put_guild_id(input_value, defaults):
     ----------
     input_value : `int`
         Value to serialize.
+    
     defaults : `bool`
         Whether default values should be included as well.
     

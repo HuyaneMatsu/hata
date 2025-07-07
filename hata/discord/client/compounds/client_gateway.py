@@ -410,7 +410,7 @@ class ClientCompoundClientGateway(Compound):
         
         Returns
         -------
-        users : `list` of ``ClientUserBase``
+        users : ``list<ClientUserBase>``
         
         Raises
         ------

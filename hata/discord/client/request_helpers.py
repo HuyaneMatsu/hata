@@ -608,7 +608,7 @@ def get_role_role_guild_id_and_id(role):
     
     Parameters
     ----------
-    role : ``Role``, `tuple` (`int`, `int`)
+    role : ``Role | (int, int)``
         The role, or a `guild-id`, `role-id` pair.
     
     Returns
@@ -650,7 +650,7 @@ def get_role_guild_id_and_id(role):
     
     Parameters
     ----------
-    role : ``Role``, `tuple` (`int`, `int`)
+    role : ``Role | (int, int)``
         The role, or a `guild-id`, `role-id` pair.
     
     Returns

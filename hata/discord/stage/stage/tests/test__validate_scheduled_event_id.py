@@ -5,47 +5,48 @@ from ....scheduled_event import ScheduledEvent
 from ..fields import validate_scheduled_event_id
 
 
-@vampytest.skip_if(not hasattr(ScheduledEvent, 'precreate'))
-def test__validate_scheduled_event_id__0():
-    """
-    Tests whether `validate_scheduled_event_id` works as intended.
-    
-    Case: passing.
-    """
+def _iter_options__passing():
     scheduled_event_id = 202303110011
     
-    for input_value, expected_output in (
-        (None, 0),
-        (scheduled_event_id, scheduled_event_id),
-        (ScheduledEvent.precreate(scheduled_event_id), scheduled_event_id),
-        (str(scheduled_event_id), scheduled_event_id)
-    ):
-        output = validate_scheduled_event_id(input_value)
-        vampytest.assert_eq(output, expected_output)
+    yield None, 0
+    yield 0, 0
+    yield scheduled_event_id, scheduled_event_id
+    yield ScheduledEvent.precreate(scheduled_event_id), scheduled_event_id
+    yield str(scheduled_event_id), scheduled_event_id
 
 
-def test__validate_scheduled_event_id__1():
+def _iter_options__type_error():
+    yield 12.6
+
+
+def _iter_options__value_error():
+    yield '-1'
+    yield '1111111111111111111111'
+    yield -1
+    yield 1111111111111111111111
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+@vampytest._(vampytest.call_from(_iter_options__value_error()).raising(ValueError))
+def test__validate_scheduled_event_id(input_value):
     """
     Tests whether `validate_scheduled_event_id` works as intended.
     
-    Case: `ValueError`.
-    """
-    for input_value in (
-        '-1',
-        -1,
-    ):
-        with vampytest.assert_raises(AssertionError, ValueError):
-            validate_scheduled_event_id(input_value)
-
-
-def test__validate_scheduled_event_id__2():
-    """
-    Tests whether `validate_scheduled_event_id` works as intended.
+    Parameters
+    ----------
+    input_value : `object`
+        Input value to validate.
     
-    Case: `TypeError`.
+    Returns
+    -------
+    output : `int`
+    
+    Raises
+    ------
+    TypeError
+    ValueError
     """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_scheduled_event_id(input_value)
+    output = validate_scheduled_event_id(input_value)
+    vampytest.assert_instance(output, int)
+    return output

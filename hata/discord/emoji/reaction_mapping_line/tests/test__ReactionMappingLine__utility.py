@@ -112,7 +112,7 @@ def test__ReactionMappingLine__merge_with(keyword_parameters_0, keyword_paramete
     
     Returns
     -------
-    output : `(int, None | set<ClientUserBase>)`
+    output : ``(int, None | set<ClientUserBase>)``
     """
     reaction_mapping_line_0 = ReactionMappingLine(**keyword_parameters_0)
     reaction_mapping_line_1 = ReactionMappingLine(**keyword_parameters_1)
@@ -268,12 +268,12 @@ def test__ReactionMappingLine__fill_some_reactions(keyword_parameters, user):
     ----------
     keyword_parameters : `dict<str, object>`
         Keyword parameters to create an instance.
-    users : `list` of ``ClientUserBase``
+    users : ``list<ClientUserBase>``
         Voters to fill.
     
     Returns
     -------
-    output : `(int, None | set<ClientUserBase>)`
+    output : ``(int, None | set<ClientUserBase>)``
     """
     reaction_mapping_line = ReactionMappingLine(**keyword_parameters)
     reaction_mapping_line._fill_some_reactions(user)
@@ -301,12 +301,12 @@ def test__ReactionMappingLine__fill_all_reactions(keyword_parameters, user):
     ----------
     keyword_parameters : `dict<str, object>`
         Keyword parameters to create an instance.
-    users : `list` of ``ClientUserBase``
+    users : ``list<ClientUserBase>``
         Voters to fill.
     
     Returns
     -------
-    output : `(int, None | set<ClientUserBase>)`
+    output : ``(int, None | set<ClientUserBase>)``
     """
     reaction_mapping_line = ReactionMappingLine(**keyword_parameters)
     reaction_mapping_line._fill_all_reactions(user)

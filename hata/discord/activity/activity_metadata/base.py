@@ -312,7 +312,7 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        created_at : `None`, `Datetime`
+        created_at : `None`, `DateTime`
         """
     )
     

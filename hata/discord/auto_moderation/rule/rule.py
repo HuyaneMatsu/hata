@@ -1120,7 +1120,7 @@ class AutoModerationRule(DiscordEntity, immortal = True):
         
         Returns
         -------
-        excluded_channels : `None`, `tuple` of ``Channel``
+        excluded_channels : ``None | tuple<Channel>``
         """
         excluded_channel_ids = self.excluded_channel_ids
         if (excluded_channel_ids is None):

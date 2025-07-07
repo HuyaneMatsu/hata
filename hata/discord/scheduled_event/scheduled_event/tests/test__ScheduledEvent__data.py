@@ -6,9 +6,10 @@ from ....bases import Icon, IconType
 from ....client import Client
 from ....guild import Guild
 from ....user import User
-from ....utils import datetime_to_timestamp
+from ....utils import datetime_to_id, datetime_to_timestamp
 
 from ...schedule import Schedule
+from ...scheduled_event_occasion_overwrite import ScheduledEventOccasionOverwrite
 
 from ..preinstanced import PrivacyLevel, ScheduledEventEntityType, ScheduledEventStatus
 from ..scheduled_event import ScheduledEvent
@@ -24,6 +25,14 @@ def test__ScheduledEvent__from_data__default():
     """
     scheduled_event_id = 202303160011
     
+    occasion_overwrites = [
+        ScheduledEventOccasionOverwrite(
+            timestamp = DateTime(2016, 5, 14, 13, 0, 0, tzinfo = TimeZone.utc),
+        ),
+        ScheduledEventOccasionOverwrite(
+            timestamp = DateTime(2016, 5, 16, 13, 10, 0, tzinfo = TimeZone.utc),
+        ),
+    ]
     channel_id = 202303160012
     description = 'koishi'
     end = DateTime(2016, 3, 10, tzinfo = TimeZone.utc)
@@ -44,6 +53,12 @@ def test__ScheduledEvent__from_data__default():
     
     data = {
         'id': str(scheduled_event_id),
+        'guild_scheduled_event_exceptions': [
+            {
+                "event_id": str(scheduled_event_id),
+                **occasion_overwrite.to_data(defaults = True, include_internals = True),
+            } for occasion_overwrite in occasion_overwrites
+        ],
         'channel_id': str(channel_id),
         'description': description,
         'scheduled_end_time': datetime_to_timestamp(end),
@@ -67,6 +82,7 @@ def test__ScheduledEvent__from_data__default():
     
     vampytest.assert_eq(scheduled_event.id, scheduled_event_id)
     
+    vampytest.assert_eq(scheduled_event.occasion_overwrites, tuple(occasion_overwrites))
     vampytest.assert_eq(scheduled_event.channel_id, channel_id)
     vampytest.assert_eq(scheduled_event.description, description)
     vampytest.assert_eq(scheduled_event.end, end)
@@ -154,6 +170,14 @@ def test__ScheduledEvent__to_data():
     """
     scheduled_event_id = 202303160021
     
+    occasion_overwrites = [
+        ScheduledEventOccasionOverwrite(
+            timestamp = DateTime(2016, 5, 14, 13, 0, 0, tzinfo = TimeZone.utc),
+        ),
+        ScheduledEventOccasionOverwrite(
+            timestamp = DateTime(2016, 5, 16, 13, 10, 0, tzinfo = TimeZone.utc),
+        ),
+    ]
     channel_id = 202303160022
     description = 'koishi'
     end = DateTime(2016, 3, 10, tzinfo = TimeZone.utc)
@@ -175,6 +199,7 @@ def test__ScheduledEvent__to_data():
     
     scheduled_event = ScheduledEvent.precreate(
         scheduled_event_id,
+        occasion_overwrites = occasion_overwrites,
         channel_id = channel_id,
         description = description,
         end = end,
@@ -195,6 +220,12 @@ def test__ScheduledEvent__to_data():
     
     expected_output = {
         'id': str(scheduled_event_id),
+        'guild_scheduled_event_exceptions': [
+            {
+                "event_id": str(scheduled_event_id),
+                **occasion_overwrite.to_data(defaults = True, include_internals = True),
+            } for occasion_overwrite in occasion_overwrites
+        ],
         'channel_id': str(channel_id),
         'description': description,
         'scheduled_end_time': datetime_to_timestamp(end),
@@ -223,6 +254,8 @@ def test__ScheduledEvent__set_attributes():
     """
     Tests whether ``ScheduledEvent._set_attributes`` works as intended.
     """
+    scheduled_event_id = 202506210032
+    
     channel_id = 202303160028
     description = 'koishi'
     end = DateTime(2016, 3, 10, tzinfo = TimeZone.utc)
@@ -235,6 +268,14 @@ def test__ScheduledEvent__set_attributes():
     status = ScheduledEventStatus.active
     location = 'hell'
     
+    occasion_overwrites = [
+        ScheduledEventOccasionOverwrite(
+            timestamp = DateTime(2016, 5, 14, 13, 0, 0, tzinfo = TimeZone.utc),
+        ),
+        ScheduledEventOccasionOverwrite(
+            timestamp = DateTime(2016, 5, 16, 13, 10, 0, tzinfo = TimeZone.utc),
+        ),
+    ]
     creator = User.precreate(202303160029, name = 'Orin')
     entity_id = 202303160030
     guild_id = 202303160031
@@ -242,6 +283,12 @@ def test__ScheduledEvent__set_attributes():
     user_count = 66
     
     data = {
+        'guild_scheduled_event_exceptions': [
+            {
+                "event_id": str(scheduled_event_id),
+                **occasion_overwrite.to_data(defaults = True, include_internals = True),
+            } for occasion_overwrite in occasion_overwrites
+        ],
         'channel_id': str(channel_id),
         'description': description,
         'scheduled_end_time': datetime_to_timestamp(end),
@@ -263,6 +310,7 @@ def test__ScheduledEvent__set_attributes():
     scheduled_event = ScheduledEvent()
     scheduled_event._set_attributes(data)
     
+    vampytest.assert_eq(scheduled_event.occasion_overwrites, tuple(occasion_overwrites))
     vampytest.assert_eq(scheduled_event.channel_id, channel_id)
     vampytest.assert_eq(scheduled_event.description, description)
     vampytest.assert_eq(scheduled_event.end, end)

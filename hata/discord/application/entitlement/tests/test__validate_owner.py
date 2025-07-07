@@ -30,7 +30,7 @@ def test__validate_owner__passing(input_value):
     
     Returns
     -------
-    output : `(EntitlementOwnerType, int)`
+    output : ``(EntitlementOwnerType, int)``
     """
     return validate_owner(input_value)
 

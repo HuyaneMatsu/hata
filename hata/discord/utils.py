@@ -1,14 +1,14 @@
 ﻿__all__ = (
-    'CHANNEL_MENTION_RP', 'DATETIME_FORMAT_CODE', 'DISCORD_EPOCH', 'EMOJI_NAME_RP', 'EMOJI_RP', 'Gift', 'ID_RP',
-    'IS_MENTION_RP', 'REACTION_RP', 'ROLE_MENTION_RP', 'Relationship', 'TIMESTAMP_STYLES', 'USER_MENTION_RP', 'Unknown',
-    'cchunkify', 'chunkify', 'datetime_to_id', 'datetime_to_timestamp', 'datetime_to_unix_time', 'elapsed_time',
-    'escape_markdown', 'filter_content', 'format_datetime', 'format_id', 'format_loop_time', 'format_unix_time',
-    'id_difference_to_seconds', 'id_difference_to_timedelta', 'id_to_datetime', 'id_to_unix_time', 'is_id',
-    'is_invite_code', 'is_mention', 'is_role_mention', 'is_url', 'is_user_mention', 'mention_channel_by_id',
-    'mention_role_by_id', 'mention_user_by_id', 'mention_user_nick_by_id', 'now_as_id', 'parse_message_reference',
-    'parse_rdelta', 'parse_signed_url', 'parse_tdelta', 'random_id', 'sanitize_content', 'sanitize_mentions',
-    'seconds_to_id_difference', 'seconds_to_elapsed_time', 'timedelta_to_id_difference', 'unix_time_to_datetime',
-    'unix_time_to_id'
+    'CHANNEL_MENTION_RP', 'DATETIME_FORMAT_CODE', 'DISCORD_EPOCH', 'EMAIL_MENTION_RP', 'EMOJI_NAME_RP', 'EMOJI_RP',
+    'Gift', 'ID_RP', 'IS_MENTION_RP', 'REACTION_RP', 'ROLE_MENTION_RP', 'Relationship', 'TIMESTAMP_STYLES',
+    'USER_MENTION_RP', 'Unknown', 'cchunkify', 'chunkify', 'datetime_to_id', 'datetime_to_timestamp',
+    'datetime_to_unix_time', 'elapsed_time', 'escape_markdown', 'filter_content', 'format_datetime', 'format_id',
+    'format_loop_time', 'format_unix_time', 'id_difference_to_seconds', 'id_difference_to_timedelta', 'id_to_datetime',
+    'id_to_unix_time', 'is_id', 'is_invite_code', 'is_mention', 'is_role_mention', 'is_url', 'is_user_mention',
+    'mention_channel_by_id', 'mention_role_by_id', 'mention_user_by_id', 'mention_user_nick_by_id', 'now_as_id',
+    'parse_message_reference', 'parse_rdelta', 'parse_signed_url', 'parse_tdelta', 'random_id', 'sanitize_content',
+    'sanitize_mentions', 'seconds_to_id_difference', 'seconds_to_elapsed_time', 'timedelta_to_id_difference',
+    'unix_time_to_datetime', 'unix_time_to_id'
 )
 
 import reprlib, sys
@@ -84,6 +84,8 @@ def get_image_media_type(data):
         media_type = 'image/jpeg'
     elif data.startswith(b'\x47\x49\x46\x38\x37\x61') or data.startswith(b'\x47\x49\x46\x38\x39\x61'):
         media_type = 'image/gif'
+    elif data.startswith(b'\x00\x00\x00\x20\x66\x74\x79\x70\x61\x76\x69\x66'):
+        media_type = 'image/avif'
     elif data.startswith(b'{') and data.endswith(b'}'):
         media_type = 'application/json'
     else:
@@ -96,6 +98,7 @@ MEDIA_TYPE_TO_EXTENSION = {
     'image/png': 'png',
     'image/jpeg': 'jpg',
     'image/gif': 'gif',
+    'image/avif': 'avif',
     'application/json': 'json',
 }
 
@@ -124,6 +127,8 @@ def image_to_base64(data):
         media_type = 'image/jpeg'
     elif data.startswith(b'\x47\x49\x46\x38\x37\x61') or data.startswith(b'\x47\x49\x46\x38\x39\x61'):
         media_type = 'image/gif'
+    elif data.startswith(b'\x00\x00\x00\x20\x66\x74\x79\x70\x61\x76\x69\x66'):
+        media_type = 'image/avif'
     else:
         raise ValueError(f'Unsupported image type given, got {reprlib.repr(data)}.')
     
@@ -592,6 +597,20 @@ USER_MENTION_RP = re_compile('<@!?(\\d{7,21})>')
 CHANNEL_MENTION_RP = re_compile('<#(\\d{7,21})>')
 ROLE_MENTION_RP = re_compile('<@&(\\d{7,21})>')
 APPLICATION_COMMAND_MENTION_RP = re_compile('</([a-zA-Z0-9_\\-]{3,32}):(\\d{7,21})>')
+EMAIL_MENTION_RP = re_compile(
+    '<'
+    '(?:(mailto)(?:\\:))?'
+    '([-a-z\u00a1-\uffff0-9._~%!$&\'\\(\\)*+,;=:]+)'
+    '@'
+    '('
+        '(?:(?:(?:xn--)|[a-z\u00a1-\uffff\U00010000-\U0010ffff0-9]-?)*[a-z\u00a1-\uffff\U00010000-\U0010ffff0-9]+)'
+        '(?:\\.(?:(?:xn--)|[a-z\u00a1-\uffff\U00010000-\U0010ffff0-9]-?)*[a-z\u00a1-\uffff\U00010000-\U0010ffff0-9]+)*'
+        '(?:\\.(?:(?:xn--[a-z\u00a1-\uffff\U00010000-\U0010ffff0-9]{2,})|[a-z\u00a1-\uffff\U00010000-\U0010ffff]{2,}))'
+        '(?:\\?\\S*)?'
+    ')'
+    '>'
+)
+TELEPHONE_NUMBER_MENTION_RP = re_compile('<(?:(mailto)(?:\\:))?\\+(\\d+)>')
 
 EMOJI_RP = re_compile('<(a)?:([a-zA-Z0-9_]{2,32})(?:~[1-9])?:(\\d{7,21})>')
 REACTION_RP = re_compile('([a-zA-Z0-9_]{2,32}):(\\d{7,21})')
@@ -969,7 +988,7 @@ def cchunkify(lines, lang = '', limit = 2000):
             chunk_length += ln
             break
     
-    if len(chunk)>1:
+    if len(chunk) > 1:
         chunk.append('```')
         result.append('\n'.join(chunk))
     
@@ -1507,13 +1526,20 @@ def parse_message_reference(text):
     return guild_id, channel_id, message_id
 
 
+EVERYONE_MENTION_RP = re_compile('@(?:everyone|here)')
+EVERY_MENTION_TRANSLATION_TABLE = {
+    '@everyone':'@\u200beveryone',
+    '@here':'@\u200bhere',
+}
+
+
 def sanitise_mention_escaper(transformations, match):
     """
     used inside of ``sanitize_mentions`` to escape mentions.
     
     Parameters
     ----------
-    transformations : `dict` of (`str`, `str`) items
+    transformations : `dict<str, str>`
         Escape table.
     match : `re.Match`
         The matched mention to escape.
@@ -1544,10 +1570,7 @@ def sanitize_mentions(content, guild = None):
     if (content is None) or (not content):
         return content
     
-    transformations = {
-        '@everyone':'@\u200beveryone',
-        '@here':'@\u200bhere',
-    }
+    transformations = {}
     
     for entity_id in USER_MENTION_RP.findall(content):
         entity_id = int(entity_id)
@@ -1580,7 +1603,19 @@ def sanitize_mentions(content, guild = None):
         
         transformations[f'<@&{entity_id}>'] = sanitized_mention
     
-    return re_compile('|'.join(transformations)).sub(partial_func(sanitise_mention_escaper, transformations), content)
+    for prefix, user_name, domain_with_fragment in EMAIL_MENTION_RP.findall(content):
+        middle = f'{prefix}{":" if prefix else ""}{user_name}@{domain_with_fragment}'
+        transformations[f'<{middle}>'] = middle
+    
+    for prefix, phone_number in TELEPHONE_NUMBER_MENTION_RP.findall(content):
+        middle = phone_number
+        if prefix:
+            middle = f'{prefix}:{middle}'
+        
+        transformations[f'<{middle}>'] = middle
+    
+    content = re_compile('|'.join(transformations)).sub(partial_func(sanitise_mention_escaper, transformations), content)
+    return EVERYONE_MENTION_RP.sub(partial_func(sanitise_mention_escaper, EVERY_MENTION_TRANSLATION_TABLE), content)
 
 
 def sanitize_content(content, guild = None):
@@ -1655,8 +1690,8 @@ URL_RP = re_compile(
     # protocol identifier
     '(?:(?:https?|ftp)://)'
     # user:pass authentication
-    '(?:[-a-z\u00a1-\uffff0-9._~%!$&\'()*+,;=:]+'
-    '(?::[-a-z0-9._~%!$&\'()*+,;=:]*)?@)?'
+    '(?:[-a-z\u00a1-\uffff0-9._~%!$&\'\\(\\)*+,;=:]+'
+    '(?::[-a-z0-9._~%!$&\'\\(\\)*+,;=:]*)?@)?'
     '(?:'
     '(?:'
     # IP address exclusion

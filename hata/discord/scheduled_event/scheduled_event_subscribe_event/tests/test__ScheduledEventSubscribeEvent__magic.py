@@ -37,10 +37,7 @@ def test__ScheduledEventSubscribeEvent__hash():
     vampytest.assert_instance(hash(event), int)
 
 
-def test__ScheduledEventSubscribeEvent__eq():
-    """
-    Tests whether ``ScheduledEventSubscribeEvent.__repr__`` works as intended.
-    """
+def _iter_options__eq():
     guild_id = 202303120015
     scheduled_event_id = 202303120016
     user_id = 202303120017
@@ -51,18 +48,63 @@ def test__ScheduledEventSubscribeEvent__eq():
         'user_id': user_id,
     }
     
-    event = ScheduledEventSubscribeEvent(**keyword_parameters)
+    yield (
+        keyword_parameters,
+        keyword_parameters,
+        True,
+    )
     
-    vampytest.assert_eq(event, event)
-    vampytest.assert_ne(event, object())
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'guild_id': 0,
+        },
+        False,
+    )
     
-    for event_name, event_value in (
-        ('guild_id', 0),
-        ('scheduled_event_id', 0),
-        ('user_id', 0),
-    ):
-        event_altered = ScheduledEventSubscribeEvent(**{**keyword_parameters, event_name: event_value})
-        vampytest.assert_ne(event, event_altered)
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'scheduled_event_id': 0,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'user_id': 0,
+        },
+        False,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__eq()).returning_last())
+def test__ScheduledEventSubscribeEvent__eq(keyword_parameters_0, keyword_parameters_1):
+    """
+    Tests whether ``ScheduledEventSubscribeEvent.__eq__`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters_0 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    keyword_parameters_1 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    event_0 = ScheduledEventSubscribeEvent(**keyword_parameters_0)
+    event_1 = ScheduledEventSubscribeEvent(**keyword_parameters_1)
+    
+    output = event_0 == event_1
+    vampytest.assert_instance(output, bool)
+    return output
 
 
 def test__ScheduledEventSubscribeEvent__unpack():

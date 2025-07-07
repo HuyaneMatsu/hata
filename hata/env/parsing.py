@@ -1143,7 +1143,7 @@ def add_item(variables, item):
     
     Parameters
     ----------
-    variables : `dict` of (`str`, `str`) items
+    variables : `dict<str, str>`
         The parsed variables.
     item : `None`, `tuple` (`str`, `None` | `str`)
         The item to add.

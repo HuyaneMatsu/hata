@@ -50,7 +50,7 @@ class Attachment(DiscordEntity):
     clip_created_at : `None | DateTime`
         When the clip was created. Applicable if the attachment is a clip.
     
-    clip_users : `None | tuple<ClientUserBase>`
+    clip_users : ``None | tuple<ClientUserBase>``
         The users in the clip. Applicable if the attachment is a clip.
     
     content_type : `None | str`

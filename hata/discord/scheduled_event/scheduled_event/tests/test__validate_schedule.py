@@ -29,7 +29,7 @@ def test__validate_schedule(input_value):
     
     Returns
     -------
-    output : `None | Schedule`
+    output : ``None | Schedule``
     
     Raises
     ------

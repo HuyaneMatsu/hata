@@ -10,7 +10,7 @@ from ...avatar_decoration import AvatarDecoration
 from ..flags import GuildProfileFlag
 from ..guild_profile import GuildProfile
 
-from .test__GuildProfile__constructor import _check_is_all_fields_set
+from .test__GuildProfile__constructor import _assert_fields_set
 
 
 def test__GuildProfile__from_data():
@@ -42,7 +42,7 @@ def test__GuildProfile__from_data():
     }
     
     guild_profile = GuildProfile.from_data(data)
-    _check_is_all_fields_set(guild_profile)
+    _assert_fields_set(guild_profile)
     
     vampytest.assert_eq(guild_profile.avatar, avatar)
     vampytest.assert_eq(guild_profile.avatar_decoration, avatar_decoration)

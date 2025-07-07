@@ -7,6 +7,9 @@ from .guild_activity_overview import *
 from .guild_activity_overview_activity import *
 from .guild_activity_overview_tag import *
 from .guild_badge import *
+from .guild_boost import *
+from .guild_enhancement_entitlements_create_event import *
+from .guild_enhancement_entitlements_delete_event import *
 from .guild_incidents import *
 from .guild_inventory_settings import *
 from .guild_join_request import *
@@ -33,6 +36,9 @@ __all__ = (
     *guild_activity_overview_activity.__all__,
     *guild_activity_overview_tag.__all__,
     *guild_badge.__all__,
+    *guild_boost.__all__,
+    *guild_enhancement_entitlements_create_event.__all__,
+    *guild_enhancement_entitlements_delete_event.__all__,
     *guild_incidents.__all__,
     *guild_inventory_settings.__all__,
     *guild_join_request.__all__,

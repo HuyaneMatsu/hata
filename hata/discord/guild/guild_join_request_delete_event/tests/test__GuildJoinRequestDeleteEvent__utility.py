@@ -1,6 +1,6 @@
 import vampytest
 
-from ....user import ClientUserBase
+from ....user import ClientUserBase, User, ZEROUSER
 
 from ...guild import Guild
 
@@ -28,7 +28,7 @@ def test__GuildJoinRequestDeleteEvent__copy():
 
 
 
-def test__GuildJoinRequestDeleteEvent__copy_with__0():
+def test__GuildJoinRequestDeleteEvent__copy_with__no_fields():
     """
     Tests whether ``GuildJoinRequestDeleteEvent.copy_with`` works as intended.
     
@@ -49,7 +49,7 @@ def test__GuildJoinRequestDeleteEvent__copy_with__0():
 
 
 
-def test__GuildJoinRequestDeleteEvent__copy_with__1():
+def test__GuildJoinRequestDeleteEvent__copy_with__all_fields():
     """
     Tests whether ``GuildJoinRequestDeleteEvent.copy_with`` works as intended.
     
@@ -76,39 +76,63 @@ def test__GuildJoinRequestDeleteEvent__copy_with__1():
     vampytest.assert_eq(copy.user_id, new_user_id)
 
 
-def test__GuildJoinRequestDeleteEvent__guild():
-    """
-    Tests whether ``GuildJoinRequestDeleteEvent.guild`` works as intended.
-    
-    Case: no fields given.
-    """
+def _iter_options__guild():
     guild_id_0 = 202305160035
     guild_id_1 = 202305160036
     
-    for input_value, expected_output in (
-        (0, None),
-        (guild_id_0, None),
-        (guild_id_1, Guild.precreate(guild_id_1)),
-    ):
-        event = GuildJoinRequestDeleteEvent(
-            guild_id = input_value,
-        )
-        
-        vampytest.assert_is(event.guild, expected_output)
+    yield 0, None
+    yield guild_id_0, None
+    yield guild_id_1, Guild.precreate(guild_id_1)
 
 
-def test__GuildJoinRequestDeleteEvent__user():
+@vampytest._(vampytest.call_from(_iter_options__guild()).returning_last())
+def test__GuildJoinRequestDeleteEvent__guild(guild_id):
+    """
+    Tests whether ``GuildJoinRequestDeleteEvent.guild`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Guild identifier to create the event with.
+    
+    Returns
+    -------
+    guild : ``None | Guild``
+    """
+    event = GuildJoinRequestDeleteEvent(
+        guild_id = guild_id,
+    )
+    
+    output = event.guild
+    vampytest.assert_instance(output, Guild, nullable = True)
+    return output
+
+
+def _iter_options__user():
+    user_id_0 = 202305160037
+    
+    yield 0, ZEROUSER
+    yield user_id_0, User.precreate(user_id_0)
+
+
+@vampytest._(vampytest.call_from(_iter_options__user()).returning_last())
+def test__GuildJoinRequestDeleteEvent__user(user_id):
     """
     Tests whether ``GuildJoinRequestDeleteEvent.user`` works as intended.
     
-    Case: no fields given.
-    """
-    user_id = 202305160037
+    Parameters
+    ----------
+    user_id : `int`
+        User identifier to create the event with.
     
+    Returns
+    -------
+    user : ``ClientUserBase``
+    """
     event = GuildJoinRequestDeleteEvent(
         user_id = user_id,
     )
     
     output = event.user
     vampytest.assert_instance(output, ClientUserBase)
-    vampytest.assert_eq(output.id, user_id)
+    return output

@@ -474,7 +474,7 @@ class UserMenuRunner(PaginationBase):
     _factory : ``UserMenuFactory``
         The factory of the menu containing it's details.
     
-    _instance : `None`, `object`
+    _instance : `None | object`
         The respective ``UserMenuFactory``'s class instanced.
     """
     __slots__ = ('_factory', '_instance',)
@@ -812,7 +812,7 @@ class UserPagination:
         
         Returns
         -------
-        page : `None`, `object`
+        page : `None | object`
             The page to kick-off the pagination with.
         """
         pages = self.pages

@@ -155,12 +155,12 @@ def test__role_match_sort_key(input_items):
     
     Parameters
     ----------
-    input_items : `list` of `tuple` (``Role``, `tuple` (`int`, `int`))
+    input_items : `list` of `tuple` (``Role | (int, int)``)
         Input items to sort.
     
     Returns
     -------
-    sorted_items : `list` of `tuple` (``Role``, `tuple` (`int`, `int`))
+    sorted_items : `list` of `tuple` (``Role | (int, int)``)
     """
     return sorted(input_items, key = _role_match_sort_key)
 

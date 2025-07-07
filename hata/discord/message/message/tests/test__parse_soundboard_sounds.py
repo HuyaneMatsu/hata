@@ -73,7 +73,7 @@ def test__parse_soundboard_sounds(input_data):
     
     Returns
     -------
-    output : `None | tuple<SoundboardSound>`
+    output : ``None | tuple<SoundboardSound>``
     """
     output = parse_soundboard_sounds(input_data)
     

@@ -43,7 +43,7 @@ def with_translation(source_value, localized_dictionary, translation_table, repl
     ----------
     source_value : `None`, `str`
         The value to get translations for.
-    localized_dictionary : `None`, `dict` of ((`str`, ``Locale``), `str`) items
+    localized_dictionary : ``None | dict<str, str> | dict<Locale, str>``
         Localized dictionary to apply the translations to.
     translation_table : `dict` of ((``Locale``, `str`), (`None`, `dict` (`str`, (`None`, `str`)) items)) items
         Translation table to pull localizations from.
@@ -52,7 +52,7 @@ def with_translation(source_value, localized_dictionary, translation_table, repl
     
     Returns
     -------
-    localized_dictionary : `None`, `dict` of ((`str`, ``Locale``), `str`) items
+    localized_dictionary : ``None | dict<str, str> | dict<Locale, str>``
         New localized dictionary.
     """
     if (source_value is not None):

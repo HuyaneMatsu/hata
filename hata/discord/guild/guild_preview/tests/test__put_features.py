@@ -55,8 +55,9 @@ def test__put_features(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `None | tuple<GuildFeature>`
+    input_value :  ``None | tuple<GuildFeature>``
         The value to serialise.
+    
     defaults : `bool`
         Whether values with their default value should be included in the output as well.
     

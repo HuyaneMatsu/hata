@@ -23,7 +23,7 @@ class InteractionMetadataMessageComponent(InteractionMetadataBase):
     custom_id : `None`, `str`
         Component or form interaction's custom identifier.
     
-    resolved : `None`, ``Resolved``
+    resolved : ``None | Resolved``
         Contains the received entities.
     
     values : `None | tuple<str>`
@@ -50,7 +50,7 @@ class InteractionMetadataMessageComponent(InteractionMetadataBase):
         custom_id : `None`, `str`, Optional (Keyword only)
             Component or form interaction's custom identifier.
         
-        resolved : `None`, ``Resolved``, Optional (Keyword only)
+        resolved : ``None | Resolved``, Optional (Keyword only)
             Contains the received entities.
         
         values : `None | tuple<str>`, Optional (Keyword only)
@@ -144,7 +144,7 @@ class InteractionMetadataMessageComponent(InteractionMetadataBase):
         custom_id : `None`, `str`, Optional (Keyword only)
             Component or form interaction's custom identifier.
         
-        resolved : `None`, ``Resolved``, Optional (Keyword only)
+        resolved : ``None | Resolved``, Optional (Keyword only)
             Contains the received entities.
         
         values : `None | tuple<str>`, Optional (Keyword only)

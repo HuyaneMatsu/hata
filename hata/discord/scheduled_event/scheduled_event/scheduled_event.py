@@ -1,5 +1,6 @@
 __all__ = ('ScheduledEvent', )
 
+
 from ...bases import DiscordEntity, ICON_TYPE_NONE, IconSlot
 from ...channel import ChannelType, create_partial_channel_from_id
 from ...core import GUILDS, SCHEDULED_EVENTS
@@ -17,7 +18,8 @@ from .fields import (
     put_name, put_privacy_level, put_schedule, put_sku_ids, put_start, put_status,
     put_user_count, validate_channel_id, validate_creator, validate_description, validate_end, validate_entity_id,
     validate_entity_type, validate_guild_id, validate_id, validate_name, validate_privacy_level, validate_schedule,
-    validate_sku_ids, validate_start, validate_status, validate_user_count
+    validate_sku_ids, validate_start, validate_status, validate_user_count, parse_occasion_overwrites, validate_occasion_overwrites,
+    put_occasion_overwrites
 )
 from .helpers import guess_scheduled_event_entity_type_from_keyword_parameters
 from .preinstanced import PrivacyLevel, ScheduledEventEntityType, ScheduledEventStatus
@@ -37,6 +39,7 @@ PRECREATE_FIELDS = {
     'guild_id': ('guild_id', validate_guild_id),
     'image': ('image', SCHEDULED_EVENT_IMAGE.validate_icon),
     'name': ('name', validate_name),
+    'occasion_overwrites': ('occasion_overwrites', validate_occasion_overwrites),
     'privacy_level': ('privacy_level', validate_privacy_level),
     'schedule': ('schedule', validate_schedule),
     'start': ('start', validate_start),
@@ -52,38 +55,58 @@ class ScheduledEvent(DiscordEntity):
     ----------
     channel_id : `int`
         The event's stage's channel identifier.
+    
     creator : ``ClientUserBase``
         The event's creator.
-    description : `None`, `str`
+    
+    description : `None | str`
         Description of the event.
+    
     end : `None | DateTime`
         The scheduled end time of the event.
+    
     entity_id : `int`
         The event's entity's identifier.
+    
     entity_metadata : ``ScheduledEventEntityMetadataBase``
         Metadata about the target entity.
+    
     entity_type : ``ScheduledEventEntityType``
         To which type of entity the event is bound to.
+    
     guild_id : `int`
         The respective event's identifier.
+    
     id : `int`
         The scheduled event's identifier number.
+    
     image_type : ``IconType``
         The event's image's type.
+    
     image_hash : `int`
         The event's image hash.
+    
     name : `str`
         The event's name.
+    
+    occasion_overwrites : ``None | tuple<ScheduledEventOccasionOverwrite>``
+        Overwritten fields for specific occasions.
+    
     privacy_level : ``PrivacyLevel``
         The privacy level of the event.
-    schedule : `None | Schedule`
+    
+    schedule : ``None | Schedule``
         How the scheduled event should re-occur.
+    
     start : `None | DateTime`
         The scheduled start time of the event.
+    
     sku_ids : `None | tuple<int>`
         Stock keeping unit identifiers used at the event.
+    
     status : ``ScheduledEventStatus``
         The status of the event.
+    
     user_count : `int`
         Users subscribed to the event.
     
@@ -93,7 +116,8 @@ class ScheduledEvent(DiscordEntity):
     """
     __slots__ = (
         '__weakref__', 'channel_id', 'creator', 'description', 'end', 'entity_id', 'entity_metadata', 'entity_type',
-        'guild_id', 'name', 'privacy_level', 'schedule', 'sku_ids', 'start', 'status', 'user_count'
+        'guild_id', 'name', 'occasion_overwrites', 'privacy_level', 'schedule', 'sku_ids', 'start', 'status',
+        'user_count'
     )
     
     image = SCHEDULED_EVENT_IMAGE
@@ -118,34 +142,45 @@ class ScheduledEvent(DiscordEntity):
         
         Parameters
         ----------
-        channel_id : `int`, ``Channel``, Optional (Keyword only)
+        channel_id : ``None | int | Channel``, Optional (Keyword only)
             The event's stage's channel or its identifier.
-        description : `None`, `str`, Optional (Keyword only)
+        
+        description : `None | str`, Optional (Keyword only)
             Description of the event.
+        
         end : `None | DateTime`, Optional (Keyword only)
             The scheduled end time of the event.
-        entity_type : ``ScheduledEventEntityType``, `int`, Optional (Keyword only)
+        
+        entity_type : ``None | int | ScheduledEventEntityType``, Optional (Keyword only)
             To which type of entity the event is bound to.
+        
         image : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The schedule event's image.
+        
         name : `str`
             The event's name.
-        privacy_level : ``PrivacyLevel``, `int`, Optional (Keyword only)
+        
+        privacy_level : ``None | int | PrivacyLevel``, Optional (Keyword only)
             The privacy level of the event.
-        schedule : `None | Schedule`, Optional (Keyword only)
+        
+        schedule : ``None | Schedule``, Optional (Keyword only)
             How the scheduled event should re-occur.
+        
         start : `None | DateTime`, Optional (Keyword only)
             The scheduled start time of the event.
+        
         status : ``ScheduledEventStatus``, Optional (Keyword only)
             The status of the event.
+        
         **keyword_parameters : Keyword parameters
             Additional keyword parameters passed to the entity metadata.
         
         Other Parameters
         ----------------
-        location : `None`, `str`, Optional (Keyword only)
+        location : `None | str`, Optional (Keyword only)
             The place where the event will take place.
-        speaker_ids : `None`, `iterable` of (`int`, `ClientUserBase`), Optional (Keyword only)
+        
+        speaker_ids : ``None | iterable<int> | iterable<ClientUserBase>``, Optional (Keyword only)
             The speakers' identifier of the stage channel.
         
         Raises
@@ -237,6 +272,7 @@ class ScheduledEvent(DiscordEntity):
         self.id = 0
         self.image = image
         self.name = name
+        self.occasion_overwrites = None
         self.privacy_level = privacy_level
         self.schedule = schedule
         self.start = start
@@ -257,6 +293,7 @@ class ScheduledEvent(DiscordEntity):
         ----------
         data : `dict<str, object>`
             Guild scheduled event data.
+        
         strong_cache : `bool` = `True`, Optional (Keyword only)
             Whether the instance should be put into its strong cache.
         
@@ -414,6 +451,7 @@ class ScheduledEvent(DiscordEntity):
         ----------
         defaults : `bool` = `False`, Optional (Keyword only)
             Whether fields with their default value should be included as well.
+        
         include_internals : `bool` = `False`, Optional (Keyword only)
             Whether internal fields should be included as well.
         
@@ -440,6 +478,7 @@ class ScheduledEvent(DiscordEntity):
             put_entity_id(self.entity_id, data, defaults)
             put_guild_id(self.guild_id, data, defaults)
             put_id(self.id, data, defaults)
+            put_occasion_overwrites(self.occasion_overwrites, data, defaults, scheduled_event_id = self.id)
             put_sku_ids(self.sku_ids, data, defaults)
             put_user_count(self.user_count, data, defaults)
         
@@ -457,6 +496,7 @@ class ScheduledEvent(DiscordEntity):
         """
         self.creator = parse_creator(data)
         self.guild_id = parse_guild_id(data)
+        self.occasion_overwrites = parse_occasion_overwrites(data)
         self.user_count = parse_user_count(data)
         
         self._update_attributes(data)
@@ -510,7 +550,7 @@ class ScheduledEvent(DiscordEntity):
             +===========================+===============================================+
             | channel_id                | `int`                                         |
             +---------------------------+-----------------------------------------------+
-            | description               | `None`, `str`                                 |
+            | description               | `None | str`                                 |
             +---------------------------+-----------------------------------------------+
             | end                       | `None | DateTime`                             |
             +---------------------------+-----------------------------------------------+
@@ -526,7 +566,7 @@ class ScheduledEvent(DiscordEntity):
             +---------------------------+-----------------------------------------------+
             | privacy_level             | ``PrivacyLevel``                              |
             +---------------------------+-----------------------------------------------+
-            | schedule                  | `None`, ``Schedule``                          |
+            | schedule                  | ``None | Schedule``                           |
             +---------------------------+-----------------------------------------------+
             | sku_ids                   | `None | tuple<int>`                           |
             +---------------------------+-----------------------------------------------+
@@ -832,6 +872,7 @@ class ScheduledEvent(DiscordEntity):
         self.image_hash = 0
         self.image_type = ICON_TYPE_NONE
         self.name = ''
+        self.occasion_overwrites = None
         self.privacy_level = PrivacyLevel.guild_only
         self.schedule = None
         self.start = None
@@ -852,49 +893,69 @@ class ScheduledEvent(DiscordEntity):
         ----------
         scheduled_event_id : `int`
             The scheduled event's identifier.
-        entity_type : ``ScheduledEventEntityType``, `int`, Optional (Keyword only)
+        
+        entity_type : ``None | int | ScheduledEventEntityType``, Optional (Keyword only)
             To which type of entity the event is bound to.
+        
         **keyword_parameters : keyword parameters
             Additional predefined attributes for the scheduled event.
         
         Other Parameters
         ----------------
-        channel_id : `int`, ``Channel``, Optional (Keyword only)
+        channel_id : ``None | int | Channel``, Optional (Keyword only)
             Alternative for `channel`.
-        channel_id : `int`, ``Channel``, Optional (Keyword only)
+        
+        channel_id : ``None | int | Channel``, Optional (Keyword only)
             The event's stage's channel or its identifier.
+        
         creator : ``ClientUserBase``, Optional (Keyword only)
             The event's creator.
-        description : `None`, `str`, Optional (Keyword only)
+        
+        description : `None | str`, Optional (Keyword only)
             Description of the event.
+        
         end : `None | DateTime`, Optional (Keyword only)
             The scheduled end time of the event.
+        
         entity_id : `int`, Optional (Keyword only)
             The event's entity's identifier.
-        entity_type : ``ScheduledEventEntityType``, `int`, Optional (Keyword only)
-            To which type of entity the event is bound to.
-        guild : `int`, ``Guild``, Optional (Keyword only)
+        
+        guild : ``None | int | Guild``, Optional (Keyword only)
             Alternative for `guild_id`.
-        guild_id : `int`, ``Guild``, Optional (Keyword only)
+        
+        guild_id : ``None | int | Guild``, Optional (Keyword only)
             The scheduled event's guild or its identifier.
+        
         image : ``None | str | Icon``, Optional (Keyword only)
             The schedule event's image.
-        location : `None`, `str`, Optional (Keyword only)
+        
+        location : `None | str`, Optional (Keyword only)
             The place where the event will take place.
+        
         name : `str`
             The event's name.
-        privacy_level : ``PrivacyLevel``, `int`, Optional (Keyword only)
+        
+        occasion_overwrites : ``None | iterable<ScheduledEventOccasionOverwrite>``, Optional (Keyword only
+            Overwritten fields for specific occasions.
+        
+        privacy_level : ``None | int | PrivacyLevel``, Optional (Keyword only)
             The privacy level of the event.
-        schedule : `None | Schedule`, Optional (Keyword only)
+        
+        schedule : ``None | Schedule``, Optional (Keyword only)
             How the scheduled event should re-occur.
-        sku_ids : `None`, `iterable` of `int`, Optional (Keyword only)
+        
+        sku_ids : ``None | iterable<int> | iterable<SKU>``, Optional (Keyword only)
             Stock keeping unit identifiers used at the event.
-        speaker_ids : `None`, `iterable` of (`int`, `ClientUserBase`), Optional (Keyword only)
+        
+        speaker_ids : ``None | iterable<int> | iterable<ClientUserBase>``, Optional (Keyword only)
             The speakers' identifier of the stage channel.
+        
         start : `None | DateTime`, Optional (Keyword only)
             The scheduled start time of the event.
+        
         status : ``ScheduledEventStatus``, Optional (Keyword only)
             The status of the event.
+        
         user_count : `int`, Optional (Keyword only)
             Users subscribed to the event.
         
@@ -978,6 +1039,7 @@ class ScheduledEvent(DiscordEntity):
         new.id = 0
         new.image = self.image
         new.name = self.name
+        new.occasion_overwrites = None
         new.privacy_level = self.privacy_level
         
         schedule = self.schedule
@@ -1011,34 +1073,45 @@ class ScheduledEvent(DiscordEntity):
         
         Parameters
         ----------
-        channel_id : `int`, ``Channel``, Optional (Keyword only)
+        channel_id : ``None | int | Channel``, Optional (Keyword only)
             The event's stage's channel or its identifier.
-        description : `None`, `str`, Optional (Keyword only)
+        
+        description : `None | str`, Optional (Keyword only)
             Description of the event.
+        
         end : `None | DateTime`, Optional (Keyword only)
             The scheduled end time of the event.
-        entity_type : ``ScheduledEventEntityType``, `int`, Optional (Keyword only)
+        
+        entity_type : ``None | int | ScheduledEventEntityType``, Optional (Keyword only)
             To which type of entity the event is bound to.
+        
         image : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The schedule event's image.
+        
         name : `str`
             The event's name.
-        privacy_level : ``PrivacyLevel``, `int`, Optional (Keyword only)
+        
+        privacy_level : ``None | int | PrivacyLevel``, Optional (Keyword only)
             The privacy level of the event.
-        schedule : `None | Schedule`, Optional (Keyword only)
+        
+        schedule : ``None | Schedule``, Optional (Keyword only)
             How the scheduled event should re-occur.
+        
         start : `None | DateTime`, Optional (Keyword only)
             The scheduled start time of the event.
+        
         status : ``ScheduledEventStatus``, Optional (Keyword only)
             The status of the event.
+        
         **keyword_parameters : Keyword parameters
             Additional keyword parameters passed to the entity metadata.
         
         Other Parameters
         ----------------
-        location : `None`, `str`, Optional (Keyword only)
+        location : `None | str`, Optional (Keyword only)
             The place where the event will take place.
-        speaker_ids : `None`, `iterable` of (`int`, `ClientUserBase`), Optional (Keyword only)
+        
+        speaker_ids : ``None | iterable<int> | iterable<ClientUserBase>``, Optional (Keyword only)
             The speakers' identifier of the stage channel.
         
         Returns
@@ -1142,6 +1215,7 @@ class ScheduledEvent(DiscordEntity):
         new.id = 0
         new.image = image
         new.name = name
+        new.occasion_overwrites = None
         new.privacy_level = privacy_level
         new.schedule = schedule
         new.start = start
@@ -1305,3 +1379,17 @@ class ScheduledEvent(DiscordEntity):
         """
         return build_scheduled_event_image_url_as(self.id, self.image_type, self.image_hash, ext, size)
     
+    
+    def iter_occasion_overwrites(self):
+        """
+        Iterates over the occasion_overwrites of the scheduled event.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        occasion_overwrite : ``ScheduledEventOccasionOverwrite``
+        """
+        occasion_overwrites = self.occasion_overwrites
+        if (occasion_overwrites is not None):
+            yield from occasion_overwrites

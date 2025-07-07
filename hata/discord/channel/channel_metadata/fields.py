@@ -734,7 +734,7 @@ def parse_users(data):
     
     Returns
     -------
-    users : `list` of ``ClientUserBase``
+    users : ``list<ClientUserBase>``
     """
     users = []
     
@@ -758,7 +758,7 @@ def put_users(users, data, defaults):
     
     Parameters
     ----------
-    users : `list` of ``ClientUserBase``
+    users : ``list<ClientUserBase>``
         The users in the channel.
     data : `dict<str, object>`
         Json serializable dictionary.
@@ -785,7 +785,7 @@ def validate_users(users):
     
     Returns
     -------
-    users : `list` of ``ClientUserBase``
+    users : ``list<ClientUserBase>``
     
     Raises
     ------

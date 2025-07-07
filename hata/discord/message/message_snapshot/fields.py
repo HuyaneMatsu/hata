@@ -29,7 +29,7 @@ def parse_attachments(data):
     
     Returns
     -------
-    attachments : `None | tuple<Attachment>`
+    attachments : ``None | tuple<Attachment>``
     """
     message_data = data.get('message', None)
     if message_data is None:
@@ -44,7 +44,7 @@ def put_attachments(attachments, data, defaults):
     
     Parameters
     ----------
-    attachments : `None | tuple<Attachment>`
+    attachments : ``None | tuple<Attachment>``
         The attachments to serialize.
     data : `dict<str, object>`
         Reaction event data.
@@ -310,7 +310,7 @@ def parse_embeds(data):
     
     Returns
     -------
-    embeds : `None | tuple<Embed>`
+    embeds : ``None | tuple<Embed>``
     """
     message_data = data.get('message', None)
     if message_data is None:
@@ -325,7 +325,7 @@ def put_embeds(embeds, data, defaults):
     
     Parameters
     ----------
-    embeds : `None | tuple<Embed>`
+    embeds : ``None | tuple<Embed>``
         The embeds to serialize.
     data : `dict<str, object>`
         Reaction event data.
@@ -417,7 +417,7 @@ def parse_mentioned_users(data, guild_id = 0):
     
     Returns
     -------
-    message_mentioned_users : `None | tuple<ClientUserBase>`
+    message_mentioned_users : ``None | tuple<ClientUserBase>``
     """
     message_data = data.get('message', None)
     if message_data is None:
@@ -432,7 +432,7 @@ def put_mentioned_users(mentioned_users, data, defaults, *, guild_id = 0):
     
     Parameters
     ----------
-    mentioned_users : `None | tuple<ClientUserBase>`
+    mentioned_users : ``None | tuple<ClientUserBase>``
         The mentioned users to serialize.
     data : `dict<str, object>`
         Reaction event data.
@@ -540,7 +540,7 @@ def parse_soundboard_sounds(data):
     
     Returns
     -------
-    soundboard_sounds : `None | tuple<SoundboardSound>`
+    soundboard_sounds : ``None | tuple<SoundboardSound>``
     """
     message_data = data.get('message', None)
     if message_data is None:
@@ -555,7 +555,7 @@ def put_soundboard_sounds(soundboard_sounds, data, defaults):
     
     Parameters
     ----------
-    soundboard_sounds : `None | tuple<SoundboardSound>`
+    soundboard_sounds : ``None | tuple<SoundboardSound>``
         The soundboard_sounds to serialize.
     
     data : `dict<str, object>`

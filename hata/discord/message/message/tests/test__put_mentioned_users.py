@@ -94,7 +94,7 @@ def test__put_mentioned_users(input_value, defaults, guild_id):
     
     Parameters
     ----------
-    input_value : `None | tuple<ClientUserBase>`
+    input_value : ``None | tuple<ClientUserBase>``
         Value to serialize.
     defaults : `bool`
         Whether to serialize default values as well.

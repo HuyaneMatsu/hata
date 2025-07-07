@@ -1,5 +1,7 @@
 __all__ = ()
 
+from datetime import datetime as DateTime
+
 from ...channel import Channel
 from ...field_parsers import (
     default_entity_parser_factory, entity_id_array_parser_factory, entity_id_parser_factory,
@@ -10,20 +12,93 @@ from ...field_putters import (
     default_entity_putter_factory, entity_id_optional_putter_factory, entity_id_putter_factory,
     force_string_putter_factory, int_putter_factory,  nullable_date_time_optional_putter_factory,
     optional_entity_id_array_optional_putter_factory, nullable_string_optional_putter_factory,
-    preinstanced_optional_putter_factory, preinstanced_putter_factory, nullable_entity_putter_factory
+    preinstanced_optional_putter_factory, preinstanced_putter_factory
 )
 from ...field_validators import (
     default_entity_validator_factory, entity_id_array_validator_factory, entity_id_validator_factory,
     force_string_validator_factory, int_conditional_validator_factory, nullable_date_time_validator_factory,
-    nullable_string_validator_factory, preinstanced_validator_factory, nullable_entity_validator_factory
+    nullable_string_validator_factory, preinstanced_validator_factory, nullable_entity_validator_factory,
+    nullable_object_array_validator_factory
 )
 from ...user import ClientUserBase, User, ZEROUSER
+from ...utils import datetime_to_id, id_to_datetime
 
 from ..schedule import Schedule
+from ..scheduled_event_occasion_overwrite import ScheduledEventOccasionOverwrite
 from ..scheduled_event_entity_metadata import ScheduledEventEntityMetadataBase, ScheduledEventEntityMetadataLocation
 
 from .constants import DESCRIPTION_LENGTH_MAX, DESCRIPTION_LENGTH_MIN, NAME_LENGTH_MAX, NAME_LENGTH_MIN
 from .preinstanced import PrivacyLevel, ScheduledEventEntityType, ScheduledEventStatus
+
+
+# occasion_overwrites
+
+
+def parse_occasion_overwrites(data):
+    """
+    Parses occasion_overwrites out from the given data.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    occasion_overwrites : `None | tuple<DateTime>`
+    """
+    occasion_overwrite_datas = data.get('guild_scheduled_event_exceptions', None)
+    if (occasion_overwrite_datas is not None) and occasion_overwrite_datas:
+        return tuple(sorted(
+            ScheduledEventOccasionOverwrite.from_data(occasion_overwrite_data) for occasion_overwrite_data in occasion_overwrite_datas
+        ))
+
+
+def put_occasion_overwrites(occasion_overwrites, data, defaults, *, scheduled_event_id = 0):
+    """
+    Serialises the occasion_overwrites into the given data.
+    
+    Parameters
+    ----------
+    occasion_overwrites : `None | tuple<DateTime>`
+        The cancelled occurrences.
+    
+    data : `dict<str, object>`
+        Json serializable dictionary.
+    
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    scheduled_event_id : `int` = `0`, Optional (Keyword only)
+        The owner scheduled event's identifier.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    if defaults or (occasion_overwrites is not None):
+        occasion_overwrite_datas = []
+        
+        if (occasion_overwrites is not None):
+            if scheduled_event_id:
+                scheduled_event_id_serialized = str(scheduled_event_id)
+            else:
+                scheduled_event_id_serialized = None
+            
+            for occasion_overwrite in occasion_overwrites:
+                occasion_overwrite_data = occasion_overwrite.to_data(defaults = defaults, include_internals = True)
+                occasion_overwrite_data['event_id'] = scheduled_event_id_serialized
+                
+                occasion_overwrite_datas.append(occasion_overwrite_data)
+        
+        data['guild_scheduled_event_exceptions'] = occasion_overwrite_datas
+    
+    return data
+
+
+validate_occasion_overwrites = nullable_object_array_validator_factory(
+    'occasion_overwrites', ScheduledEventOccasionOverwrite, ordered = True
+)
 
 
 # channel_id
@@ -98,8 +173,10 @@ def put_entity_metadata(entity_metadata, data, defaults):
     ----------
     entity_metadata : ``ScheduledEventEntityMetadataBase``
         Scheduled event entity metadata.
+    
     data : `dict<str, object>`
         Json serializable dictionary.
+    
     defaults : `bool`
         Whether default values should be included as well.
     
@@ -159,7 +236,7 @@ def put_schedule(schedule, data, defaults, *, start = None):
     
     Parameters
     ----------
-    schedule : `None | Schedule`
+    schedule : ``None | Schedule``
         The schedule to serialize.
     data : `dict<str, object>`
         Json serializable dictionary.

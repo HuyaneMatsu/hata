@@ -38,7 +38,7 @@ def test__validate_users(input_value):
     
     Returns
     -------
-    output : `None | set<ClientUserBase>`
+    output : ``None | set<ClientUserBase>``
     
     Raises
     ------

@@ -34,6 +34,14 @@ def test__parse_features(input_data):
     
     Returns
     -------
-    output : `None | tuple<SKUFeature>`
+    output : ``None | tuple<SKUFeature>``
     """
-    return parse_features(input_data)
+    output = parse_features(input_data)
+    
+    vampytest.assert_instance(output, tuple, nullable = True)
+    
+    if (output is not None):
+        for element in output:
+            vampytest.assert_instance(element, SKUFeature)
+    
+    return output

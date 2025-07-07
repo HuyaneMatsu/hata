@@ -72,7 +72,7 @@ def test__put_soundboard_sounds(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `None | tuple<SoundboardSound>`
+    input_value : ``None | tuple<SoundboardSound>``
         Value to serialize.
     
     defaults : `bool`

@@ -622,7 +622,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         applied_tags : `None`, `(list | tuple)<int | ForumTag>`, `int`, `ForumTag`, Optional (Keyword only)
             Alternative for `applied_tag_ids`.
         
-        attachments : `None`, `object`, Optional (Keyword only)
+        attachments : `None | object`, Optional (Keyword only)
             Attachments to send.
         
         avatar_url : `None`, `str` = `None`, Optional (Keyword only)
@@ -640,10 +640,10 @@ class ClientCompoundWebhookEndpoints(Compound):
         embeds : `None`, `list<Embed>`, Optional
             The new embedded content of the message.
         
-        file : `None`, `object`, Optional (Keyword only)
+        file : `None | object`, Optional (Keyword only)
             Alternative for `attachments`.
         
-        files : `None`, `object`, Optional (Keyword only)
+        files : `None | object`, Optional (Keyword only)
             Alternative for `attachments`.
         
         flags : `int`, ``MessageFlag`, Optional
@@ -813,7 +813,7 @@ class ClientCompoundWebhookEndpoints(Compound):
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
             for details.
         
-        attachments : `None`, `object`, Optional (Keyword only)
+        attachments : `None | object`, Optional (Keyword only)
             Attachments to send.
         
         components : `None`, ``Component``, `(tuple | list)<Component, (tuple | list)<Component>>`
@@ -832,10 +832,10 @@ class ClientCompoundWebhookEndpoints(Compound):
             
             By passing it as `None`, you can remove the old.
         
-        file : `None`, `object`, Optional (Keyword only)
+        file : `None | object`, Optional (Keyword only)
             Alternative for `attachments`.
         
-        files : `None`, `object`, Optional (Keyword only)
+        files : `None | object`, Optional (Keyword only)
             Alternative for `attachments`.
         
         flags : `int`, ``MessageFlag`, Optional

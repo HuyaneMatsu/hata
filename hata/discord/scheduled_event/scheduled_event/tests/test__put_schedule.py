@@ -64,7 +64,7 @@ def test__put_schedule(input_value, defaults, start):
     
     Parameters
     ----------
-    input_value : `None | Schedule`
+    input_value : ``None | Schedule``
         Value to serialize.
     defaults : `bool`
         Whether values as their defaults should be included.

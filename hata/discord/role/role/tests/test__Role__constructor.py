@@ -6,6 +6,7 @@ from ....core import BUILTIN_EMOJIS
 from ....emoji import Emoji
 from ....permission import Permission
 
+from ...role_color_configuration import RoleColorConfiguration
 from ...role_manager_metadata import RoleManagerMetadataBase, RoleManagerMetadataBooster
 
 from ..flags import RoleFlag
@@ -24,6 +25,7 @@ def _assert_fields_set(role):
     """
     vampytest.assert_instance(role, Role)
     vampytest.assert_instance(role.color, Color)
+    vampytest.assert_instance(role.color_configuration, RoleColorConfiguration)
     vampytest.assert_instance(role.flags, RoleFlag)
     vampytest.assert_instance(role.icon, Icon)
     vampytest.assert_instance(role.guild_id, int)
@@ -38,7 +40,7 @@ def _assert_fields_set(role):
     vampytest.assert_instance(role.unicode_emoji, Emoji, nullable = True)
 
 
-def test__Role__new__0():
+def test__Role__new__no_fields_given():
     """
     Tests whether ``Role.__new__`` works as intended.
     
@@ -48,13 +50,18 @@ def test__Role__new__0():
     _assert_fields_set(role)
 
 
-def test__Role__new__1():
+def test__Role__new_all_fields_given():
     """
     Tests whether ``Role.__new__`` works as intended.
     
-    Case: Stuffed fill as all things should be.
+    Case: All fields given.
     """
     color = Color(123)
+    color_configuration = RoleColorConfiguration(
+        color_primary = Color(222),
+        color_secondary = Color(233),
+        color_tertiary = Color(244),
+    )
     flags = RoleFlag(12)
     icon = Icon(IconType.static, 2)
     manager_metadata = RoleManagerMetadataBooster()
@@ -68,6 +75,7 @@ def test__Role__new__1():
     
     role = Role(
         color = color,
+        color_configuration = color_configuration,
         flags = flags,
         icon = icon,
         manager = (manager_type, manager_metadata),
@@ -81,6 +89,7 @@ def test__Role__new__1():
     _assert_fields_set(role)
     
     vampytest.assert_eq(role.color, color)
+    vampytest.assert_eq(role.color_configuration, color_configuration)
     vampytest.assert_eq(role.flags, flags)
     vampytest.assert_eq(role.icon, icon)
     vampytest.assert_eq(role.manager_metadata, manager_metadata)
@@ -93,7 +102,7 @@ def test__Role__new__1():
     vampytest.assert_is(role.unicode_emoji, unicode_emoji)
 
 
-def test__Role__new__2():
+def test__Role__new__unicode_emoji():
     """
     Tests whether ``Role.__new__`` works as intended.
     
@@ -107,7 +116,7 @@ def test__Role__new__2():
     vampytest.assert_is(role.unicode_emoji, unicode_emoji)
 
 
-def test__Role__new__3():
+def test__Role__new__icon_and_unicode_emoji():
     """
     Tests whether ``Role.__new__`` works as intended.
     
@@ -139,7 +148,7 @@ def test__Role__create_empty():
     vampytest.assert_eq(role.guild_id, guild_id)
 
 
-def test__Role__precreate__0():
+def test__Role__precreate__no_fields():
     """
     Tests whether ``Role.precreate`` works as intended.
     
@@ -153,7 +162,7 @@ def test__Role__precreate__0():
     vampytest.assert_eq(role.id, role_id)
 
 
-def test__Role__precreate__1():
+def test__Role__precreate__all_fields():
     """
     Tests whether ``Role.precreate`` works as intended.
     
@@ -163,6 +172,11 @@ def test__Role__precreate__1():
     guild_id = 202211040034
     
     color = Color(123)
+    color_configuration = RoleColorConfiguration(
+        color_primary = Color(222),
+        color_secondary = Color(233),
+        color_tertiary = Color(244),
+    )
     flags = RoleFlag(12)
     icon = Icon(IconType.static, 2)
     manager_metadata = RoleManagerMetadataBooster()
@@ -178,6 +192,7 @@ def test__Role__precreate__1():
         role_id,
         guild_id = guild_id,
         color = color,
+        color_configuration = color_configuration,
         flags = flags,
         icon = icon,
         manager = (manager_type, manager_metadata),
@@ -195,6 +210,7 @@ def test__Role__precreate__1():
     vampytest.assert_eq(role.guild_id, guild_id)
     
     vampytest.assert_eq(role.color, color)
+    vampytest.assert_eq(role.color_configuration, color_configuration)
     vampytest.assert_eq(role.flags, flags)
     vampytest.assert_eq(role.icon, icon)
     vampytest.assert_eq(role.manager_metadata, manager_metadata)
@@ -207,7 +223,7 @@ def test__Role__precreate__1():
     vampytest.assert_is(role.unicode_emoji, unicode_emoji)
 
 
-def test__Role__precreate__2():
+def test__Role__precreate__unicode_emoji():
     """
     Tests whether ``Role.precreate`` works as intended.
     
@@ -230,7 +246,7 @@ def test__Role__precreate__2():
 
 
 
-def test__Role__precreate__3():
+def test__Role__precreate__icon_and_unicode_emoji():
     """
     Tests whether ``Role.precreate`` works as intended.
     
@@ -249,7 +265,7 @@ def test__Role__precreate__3():
         )
 
 
-def test__Role__precreate__4():
+def test__Role__precreate__cache():
     """
     Tests whether ``Role.precreate`` works as intended.
     

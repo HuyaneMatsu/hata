@@ -61,7 +61,7 @@ class PluginError(Exception):
         plugin_tree_iterators : `None`, `list` of ``PluginTreeIterator`` = `None`, Optional (Keyword only)
             Plugin tree iterators used in the executed actions.
         
-        value : `None`, `object` = `None`, Optional (Keyword only)
+        value : `None | object` = `None`, Optional (Keyword only)
             If finding a plugin failed this value might be set with additional information.
         """
         if message is None:

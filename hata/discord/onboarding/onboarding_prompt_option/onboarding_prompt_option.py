@@ -539,7 +539,7 @@ class OnboardingPromptOption(DiscordEntity):
         
         Returns
         -------
-        channels : `None`, `tuple` of ``Channel``
+        channels : ``None | tuple<Channel>``
         """
         channel_ids = self.channel_ids
         if channel_ids is None:

@@ -471,11 +471,11 @@ class DescriptorObjectBinder(ObjectBinderBase):
         The field's name.
     type : `type`
         The binded class.
-    fdel : `None`, `object`
+    fdel : `None | object`
         Deleter function if applicable.
-    fget : `None`, `object`
+    fget : `None | object`
         Getter function if applicable.
-    fset : `None`, `object`
+    fset : `None | object`
         Setter function if applicable.
     
     Class Attributes
@@ -641,11 +641,11 @@ class DescriptorObjectWeakBinder(DescriptorObjectBinder):
         The field's name.
     type : `type`
         The binded class.
-    fdel : `None`, `object`
+    fdel : `None | object`
         Deleter function if applicable.
-    fget : `None`, `object`
+    fget : `None | object`
         Getter function if applicable.
-    fset : `None`, `object`
+    fset : `None | object`
         Setter function if applicable.
     
     cache : `None`, ``OrderedDict``

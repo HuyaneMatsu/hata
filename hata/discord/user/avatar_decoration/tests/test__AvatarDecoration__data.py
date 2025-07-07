@@ -7,7 +7,7 @@ from ....utils import datetime_to_unix_time
 
 from ..avatar_decoration import AvatarDecoration
 
-from .test__AvatarDecoration__constructor import _check_is_all_fields_set
+from .test__AvatarDecoration__constructor import _assert_fields_set
 
 
 def test__AvatarDecoration__from_data():
@@ -25,7 +25,7 @@ def test__AvatarDecoration__from_data():
     }
     
     avatar_decoration = AvatarDecoration.from_data(data)
-    _check_is_all_fields_set(avatar_decoration)
+    _assert_fields_set(avatar_decoration)
     
     vampytest.assert_eq(avatar_decoration.asset, asset)
     vampytest.assert_eq(avatar_decoration.expires_at, expires_at)

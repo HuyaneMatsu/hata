@@ -55,6 +55,26 @@ def _iter_options():
         None,
         f'{CDN_ENDPOINT}/banners/{user_id}/a_00000000000000000000000000000003.gif',
     )
+    
+    user_id = 202506210026
+    yield (
+        user_id,
+        IconType.static,
+        4,
+        'webp',
+        None,
+        f'{CDN_ENDPOINT}/banners/{user_id}/00000000000000000000000000000004.webp',
+    )
+    
+    user_id = 202506210027
+    yield (
+        user_id,
+        IconType.animated,
+        4,
+        'webp',
+        None,
+        f'{CDN_ENDPOINT}/banners/{user_id}/a_00000000000000000000000000000004.webp?animated=true',
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

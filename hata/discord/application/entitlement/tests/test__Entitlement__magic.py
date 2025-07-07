@@ -2,8 +2,11 @@ from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
+from ...sku import SKU
+
 from ..entitlement import Entitlement
-from ..preinstanced import EntitlementType
+from ..fields import GiftCodeFlag
+from ..preinstanced import EntitlementSourceType, EntitlementType
 
 
 def test__Entitlement__repr():
@@ -18,11 +21,20 @@ def test__Entitlement__repr():
     deleted = True
     ends_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     entitlement_type = EntitlementType.user_gift
+    gift_code_flags = GiftCodeFlag(12)
     guild_id = 202310040038
+    promotion_id = 202507020005
+    source_type = EntitlementSourceType.user_gift
     sku_id = 202310040039
     starts_at = DateTime(2015, 5, 14, tzinfo = TimeZone.utc)
     subscription_id = 202310040040
     user_id = 202310040041
+    
+    sku = SKU.precreate(
+        sku_id,
+        application_id = application_id,
+        name = 'yuuka',
+    )
     
     entitlement = Entitlement.precreate(
         entitlement_id,
@@ -31,7 +43,11 @@ def test__Entitlement__repr():
         deleted = deleted,
         ends_at = ends_at,
         entitlement_type = entitlement_type,
+        gift_code_flags = gift_code_flags,
         guild_id = guild_id,
+        promotion_id = promotion_id,
+        source_type = source_type,
+        sku = sku,
         sku_id = sku_id,
         starts_at = starts_at,
         subscription_id = subscription_id,
@@ -53,11 +69,20 @@ def test__Entitlement__hash():
     deleted = True
     ends_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     entitlement_type = EntitlementType.user_gift
+    gift_code_flags = GiftCodeFlag(12)
     guild_id = 202310040044
+    promotion_id = 202507020006
+    source_type = EntitlementSourceType.user_gift
     sku_id = 202310040045
     starts_at = DateTime(2015, 5, 14, tzinfo = TimeZone.utc)
     subscription_id = 202310040046
     user_id = 202310040047
+    
+    sku = SKU.precreate(
+        sku_id,
+        application_id = application_id,
+        name = 'yuuka',
+    )
     
     keyword_parameters = {
         'guild_id': guild_id,
@@ -73,6 +98,10 @@ def test__Entitlement__hash():
         deleted = deleted,
         ends_at = ends_at,
         entitlement_type = entitlement_type,
+        gift_code_flags = gift_code_flags,
+        promotion_id = promotion_id,
+        sku = sku,
+        source_type = source_type,
         starts_at = starts_at,
         subscription_id = subscription_id,
         **keyword_parameters,

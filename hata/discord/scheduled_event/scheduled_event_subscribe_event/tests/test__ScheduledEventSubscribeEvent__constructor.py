@@ -18,7 +18,7 @@ def _assert_fields_set(event):
     vampytest.assert_instance(event.user_id, int)
 
 
-def test__ScheduledEventSubscribeEvent__new__0():
+def test__ScheduledEventSubscribeEvent__new__no_fields():
     """
     Tests whether ``ScheduledEventSubscribeEvent.__new__`` works as intended.
     
@@ -28,7 +28,7 @@ def test__ScheduledEventSubscribeEvent__new__0():
     _assert_fields_set(event)
 
 
-def test__ScheduledEventSubscribeEvent__new__1():
+def test__ScheduledEventSubscribeEvent__new__all_fields():
     """
     Tests whether ``ScheduledEventSubscribeEvent.__new__`` works as intended.
     

@@ -39,7 +39,7 @@ class DiscordApiClient(RichAttributeErrorBaseType):
         The used http client.
     global_rate_limit_expires_at : `float`
         The time when global rate limit will expire in monotonic time.
-    handlers : `WeakMap<RateLimitHandler>`
+    handlers : ``WeakMap<RateLimitHandler>``
         Rate limit handlers of the Discord requests.
     headers : ``IgnoreCaseMultiValueDictionary``
         Headers used by every every Discord request.
@@ -97,10 +97,10 @@ class DiscordApiClient(RichAttributeErrorBaseType):
         url : `str`
             The url to request.
         
-        data : `None`, `object` = `None`, Optional
+        data : `None | object` = `None`, Optional
             Payload to request with.
         
-        query : `None`, `object` = `None`, Optional
+        query : `None | object` = `None`, Optional
             Query string parameters.
         
         headers : `None`, ``IgnoreCaseMultiValueDictionary`` = `None`, Optional
@@ -1919,6 +1919,37 @@ class DiscordApiClient(RichAttributeErrorBaseType):
             METHOD_GET,
             f'{API_ENDPOINT}/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/users',
             query = query,
+        )
+    
+    
+    async def scheduled_event_occasion_overwrite_create(self, guild_id, scheduled_event_id, data, reason):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.scheduled_event_occasion_overwrite_create, guild_id),
+            METHOD_POST,
+            f'{API_ENDPOINT}/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/exceptions',
+            data,
+            reason = reason,
+        )
+    
+    
+    async def scheduled_event_occasion_overwrite_delete(self, guild_id, scheduled_event_id, timestamp_as_id, reason):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.scheduled_event_occasion_overwrite_delete, guild_id),
+            METHOD_DELETE,
+            f'{API_ENDPOINT}/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/exceptions/{timestamp_as_id}',
+            reason = reason,
+        )
+    
+    
+    async def scheduled_event_occasion_overwrite_edit(
+        self, guild_id, scheduled_event_id, timestamp_as_id, data, reason
+    ):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.scheduled_event_occasion_overwrite_edit, guild_id),
+            METHOD_PATCH,
+            f'{API_ENDPOINT}/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/exceptions/{timestamp_as_id}',
+            data,
+            reason = reason,
         )
     
     

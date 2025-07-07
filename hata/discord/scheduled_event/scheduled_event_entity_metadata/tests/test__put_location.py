@@ -17,8 +17,9 @@ def test__put_location(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `None`, `str`
+    input_value : `None | str`
         Value to serialize.
+    
     defaults : `bool`
         Whether values of their default value should be included as well.
     

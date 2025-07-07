@@ -3,6 +3,8 @@ import vampytest
 from ....guild import Guild
 from ....user import ClientUserBase
 
+from ...scheduled_event import ScheduledEvent
+
 from ..scheduled_event_unsubscribe_event import ScheduledEventUnsubscribeEvent
 
 from .test__ScheduledEventUnsubscribeEvent__constructor import _assert_fields_set
@@ -29,7 +31,7 @@ def test__ScheduledEventUnsubscribeEvent__copy():
 
 
 
-def test__ScheduledEventUnsubscribeEvent__copy_with__0():
+def test__ScheduledEventUnsubscribeEvent__copy_with__no_fields():
     """
     Tests whether ``ScheduledEventUnsubscribeEvent.copy_with`` works as intended.
     
@@ -52,7 +54,7 @@ def test__ScheduledEventUnsubscribeEvent__copy_with__0():
 
 
 
-def test__ScheduledEventUnsubscribeEvent__copy_with__1():
+def test__ScheduledEventUnsubscribeEvent__copy_with__all_fields():
     """
     Tests whether ``ScheduledEventUnsubscribeEvent.copy_with`` works as intended.
     
@@ -84,32 +86,41 @@ def test__ScheduledEventUnsubscribeEvent__copy_with__1():
     vampytest.assert_eq(copy.user_id, new_user_id)
 
 
-def test__ScheduledEventUnsubscribeEvent__guild():
-    """
-    Tests whether ``ScheduledEventUnsubscribeEvent.guild`` works as intended.
-    
-    Case: no fields given.
-    """
+def _iter_options__guild():
     guild_id_0 = 202303120069
     guild_id_1 = 202303120070
     
-    for input_value, expected_output in (
-        (0, None),
-        (guild_id_0, None),
-        (guild_id_1, Guild.precreate(guild_id_1)),
-    ):
-        event = ScheduledEventUnsubscribeEvent(
-            guild_id = input_value,
-        )
-        
-        vampytest.assert_is(event.guild, expected_output)
+    yield 0, None
+    yield guild_id_0, None
+    yield guild_id_1, Guild.precreate(guild_id_1)
+
+
+@vampytest._(vampytest.call_from(_iter_options__guild()).returning_last())
+def test__ScheduledEventUnsubscribeEvent__guild(guild_id):
+    """
+    Tests whether ``ScheduledEventUnsubscribeEvent.guild`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Guild identifier to create event with.
+    
+    Returns
+    -------
+    guild : ``None | Guild``
+    """
+    event = ScheduledEventUnsubscribeEvent(
+        guild_id = guild_id,
+    )
+    
+    output = event.guild
+    vampytest.assert_instance(output, Guild, nullable = True)
+    return output
 
 
 def test__ScheduledEventUnsubscribeEvent__user():
     """
     Tests whether ``ScheduledEventUnsubscribeEvent.user`` works as intended.
-    
-    Case: no fields given.
     """
     user_id = 202303120071
     
@@ -120,3 +131,35 @@ def test__ScheduledEventUnsubscribeEvent__user():
     output = event.user
     vampytest.assert_instance(output, ClientUserBase)
     vampytest.assert_eq(output.id, user_id)
+
+
+def _iter_options__scheduled_event():
+    scheduled_event_id_0 = 202506220002
+    scheduled_event_id_1 = 202506220003
+    
+    yield 0, None
+    yield scheduled_event_id_0, None
+    yield scheduled_event_id_1, ScheduledEvent.precreate(scheduled_event_id_1)
+    
+
+@vampytest._(vampytest.call_from(_iter_options__scheduled_event()).returning_last())
+def test__ScheduledEventUnsubscribeEvent__scheduled_event(scheduled_event_id):
+    """
+    Tests whether ``ScheduledEventUnsubscribeEvent.scheduled_event`` works as intended.
+    
+    Parameters
+    ----------
+    scheduled_event_id : `int`
+        ScheduledEvent identifier to create event with.
+    
+    Returns
+    -------
+    scheduled_event : ``None | ScheduledEvent``
+    """
+    event = ScheduledEventUnsubscribeEvent(
+        scheduled_event_id = scheduled_event_id,
+    )
+    
+    output = event.scheduled_event
+    vampytest.assert_instance(output, ScheduledEvent, nullable = True)
+    return output

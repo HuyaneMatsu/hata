@@ -1,6 +1,6 @@
 import vampytest
 
-from ....user import User
+from ....user import ClientUserBase, User
 
 from ..poll_result import PollResult
 
@@ -121,7 +121,7 @@ def test__PollResult__merge_with(keyword_parameters_0, keyword_parameters_1):
     
     Returns
     -------
-    output : `(int, None | set<ClientUserBase>)`
+    output : ``(int, None | set<ClientUserBase>)``
     """
     poll_result_0 = PollResult(**keyword_parameters_0)
     poll_result_1 = PollResult(**keyword_parameters_1)
@@ -277,12 +277,12 @@ def test__PollResult__fill_some_votes(keyword_parameters, user):
     ----------
     keyword_parameters : `dict<str, object>`
         Keyword parameters to create an instance.
-    users : `list` of ``ClientUserBase``
+    users : ``list<ClientUserBase>``
         Voters to fill.
     
     Returns
     -------
-    output : `(int, None | set<ClientUserBase>)`
+    output : ``(int, None | set<ClientUserBase>)``
     """
     poll_result = PollResult(**keyword_parameters)
     poll_result._fill_some_votes(user)
@@ -310,13 +310,45 @@ def test__PollResult__fill_all_votes(keyword_parameters, user):
     ----------
     keyword_parameters : `dict<str, object>`
         Keyword parameters to create an instance.
-    users : `list` of ``ClientUserBase``
+    
+    users : ``list<ClientUserBase>``
         Voters to fill.
     
     Returns
     -------
-    output : `(int, None | set<ClientUserBase>)`
+    output : ``(int, None | set<ClientUserBase>)``
     """
     poll_result = PollResult(**keyword_parameters)
     poll_result._fill_all_votes(user)
     return poll_result.count, poll_result.users
+
+
+def _iter_options__iter_users():
+    user_0 = User.precreate(202506200000)
+    user_1 = User.precreate(202506200001)
+    
+    yield None, set()
+    yield [user_0, user_1], {user_0, user_1}
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_users()).returning_last())
+def test__PollResult__iter_users(users):
+    """
+    Tests whether ``PollResult._iter_users`` works as intended.
+    
+    Parameters
+    ----------
+    users : ``None |`list<ClientUserBase>``
+        Voters to fill.
+    
+    Returns
+    -------
+    output : ``set<ClientUserBase>``
+    """
+    poll_result = PollResult(users = users)
+    output = {*poll_result.iter_users()}
+    
+    for element in output:
+        vampytest.assert_instance(element, ClientUserBase)
+    
+    return output

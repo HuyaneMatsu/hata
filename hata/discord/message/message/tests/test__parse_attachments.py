@@ -73,7 +73,7 @@ def test__parse_attachments(input_data):
     
     Returns
     -------
-    output : `None | tuple<Attachment>`
+    output : ``None | tuple<Attachment>``
     """
     output = parse_attachments(input_data)
     vampytest.assert_instance(output, tuple, nullable = True)

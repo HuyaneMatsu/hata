@@ -12,6 +12,7 @@ def _iter_options():
             'features': [],
         },
     )
+    
     yield (
         None,
         True,
@@ -19,6 +20,7 @@ def _iter_options():
             'features': [],
         },
     )
+    
     yield (
         (
             GuildFeature.animated_banner,
@@ -32,6 +34,7 @@ def _iter_options():
             ],
         },
     )
+    
     yield (
         (
             GuildFeature.animated_banner,
@@ -54,8 +57,9 @@ def test__put_features(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `None | tuple<GuildFeature>`
+    input_value :  ``None | tuple<GuildFeature>``
         The value to serialise.
+    
     defaults : `bool`
         Whether values with their default value should be included in the output as well.
     

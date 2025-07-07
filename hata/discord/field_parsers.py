@@ -1068,7 +1068,7 @@ def functional_parser_factory(field_key, function, *, include = None):
         
         Returns
         -------
-        field_value : `None`, `object`
+        field_value : `None | object`
         """
         nonlocal field_key
         nonlocal function
@@ -1118,7 +1118,7 @@ def nullable_functional_parser_factory(field_key, function, *, include = None):
         
         Returns
         -------
-        field_value : `None`, `object`
+        field_value : `None | object`
         """
         nonlocal field_key
         nonlocal function

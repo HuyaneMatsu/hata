@@ -80,6 +80,9 @@ INTENT_SHIFT_EVENTS = {
         'EMBEDDED_ACTIVITY_UPDATE_V2',
         'CHANNEL_TOPIC_UPDATE',
         'VOICE_CHANNEL_STATUS_UPDATE',
+        'GUILD_POWERUP_ENTITLEMENTS_CREATE',
+        'GUILD_POWERUP_ENTITLEMENTS_DELETE',
+        'GUILD_APPLIED_BOOSTS_UPDATE',
     ),
     INTENT_SHIFT_GUILD_USERS: (
         'GUILD_MEMBER_ADD',
@@ -161,6 +164,8 @@ INTENT_SHIFT_EVENTS = {
         'GUILD_SCHEDULED_EVENT_DELETE',
         'GUILD_SCHEDULED_EVENT_USER_ADD',
         'GUILD_SCHEDULED_EVENT_USER_REMOVE',
+        'GUILD_SCHEDULED_EVENT_EXCEPTION_CREATE',
+        'GUILD_SCHEDULED_EVENT_EXCEPTION_DELETE',
     ),
     INTENT_SHIFT_AUTO_MODERATION_CONFIGURATION: (
         'AUTO_MODERATION_RULE_CREATE',
@@ -276,7 +281,10 @@ class IntentFlag(FlagBase):
     |                                               |       |                               | EMBEDDED_ACTIVITY_UPDATE,                   |
     |                                               |       |                               | EMBEDDED_ACTIVITY_UPDATE_V2,                |
     |                                               |       |                               | CHANNEL_TOPIC_UPDATE,                       |
-    |                                               |       |                               | VOICE_CHANNEL_STATUS_UPDATE                 |
+    |                                               |       |                               | VOICE_CHANNEL_STATUS_UPDATE,                |
+    |                                               |       |                               | GUILD_POWERUP_ENTITLEMENTS_CREATE,          |
+    |                                               |       |                               | GUILD_POWERUP_ENTITLEMENTS_DELETE,          |
+    |                                               |       |                               | GUILD_APPLIED_BOOSTS_UPDATE                 |
     +-----------------------------------------------+-------+-------------------------------+---------------------------------------------+
     | INTENT_SHIFT_GUILD_USERS                      | 1     | guild_users                   | GUILD_MEMBER_ADD,                           |
     |                                               |       |                               | GUILD_MEMBER_UPDATE,                        |
@@ -343,7 +351,9 @@ class IntentFlag(FlagBase):
     |                                               |       |                               | GUILD_SCHEDULED_EVENT_UPDATE,               |
     |                                               |       |                               | GUILD_SCHEDULED_EVENT_DELETE,               |
     |                                               |       |                               | GUILD_SCHEDULED_EVENT_USER_ADD,             |
-    |                                               |       |                               | GUILD_SCHEDULED_EVENT_USER_REMOVE           |
+    |                                               |       |                               | GUILD_SCHEDULED_EVENT_USER_REMOVE,          |
+    |                                               |       |                               | GUILD_SCHEDULED_EVENT_EXCEPTION_CREATE,     |
+    |                                               |       |                               | GUILD_SCHEDULED_EVENT_EXCEPTION_DELETE      |
     +-----------------------------------------------+-------+-------------------------------+---------------------------------------------+
     | INTENT_SHIFT_AUTO_MODERATION_CONFIGURATION    | 20    | auto_moderation_configuration | AUTO_MODERATION_RULE_CREATE                 |
     |                                               |       |                               | AUTO_MODERATION_RULE_DELETE                 |

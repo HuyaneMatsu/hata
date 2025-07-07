@@ -290,7 +290,7 @@ class Team(DiscordEntity, immortal = True):
     
     def __repr__(self):
         """Returns the team's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         repr_parts.append(' id = ')
         repr_parts.append(repr(self.id))
@@ -436,7 +436,7 @@ class Team(DiscordEntity, immortal = True):
         
         Returns
         -------
-        users : `list` of ``ClientUserBase``
+        users : ``list<ClientUserBase>``
         """
         target_state = TeamMembershipState.invited
         return [team_member.user for team_member in self.iter_members() if team_member.state is target_state]
@@ -449,7 +449,7 @@ class Team(DiscordEntity, immortal = True):
         
         Returns
         -------
-        users : `list` of ``ClientUserBase``
+        users : ``list<ClientUserBase>``
         """
         target_state = TeamMembershipState.accepted
         return [team_member.user for team_member in self.iter_members() if team_member.state is target_state]

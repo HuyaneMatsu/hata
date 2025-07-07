@@ -1,4 +1,3 @@
-
 import vampytest
 
 from ....color import Color

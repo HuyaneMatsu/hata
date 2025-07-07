@@ -21,7 +21,7 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
     ----------
     name : `str`
         The choice's name. It's length can be in range [1:100].
-    name_localizations : `None`, `dict` of (``Locale``, `str`) items
+    name_localizations : ``None | dict<Locale, str>``
         Localized names of the choice.
     value : `str`, `int`, `float`
         The choice's value.
@@ -42,8 +42,8 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
             
             Defaults to `name` parameter if not given.
         
-        name_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,
-                (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`), Optional (Keyword only)
+        name_localizations : ``None | dict<str | Locale, str> | (list | set | tuple<(str | Locale, str>)`` \
+                , Optional (Keyword only)
             Localized names of the choice.
         
         Raises
@@ -229,8 +229,8 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
         name : `str`, `Enum`, Optional (Keyword only)
             The choice's name. It's length can be in range [1:100].
         
-        name_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,
-                (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`), Optional (Keyword only)
+        name_localizations : ``None | dict<str | Locale, str> | (list | set | tuple<(str | Locale, str>)`` \
+                , Optional (Keyword only)
             Localized names of the choice.
         
         value : `None`, `str`, `int`, `float`, `Enum`, Optional (Keyword only)

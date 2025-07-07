@@ -19,7 +19,7 @@ class ApplicationRoleConnection(RichAttributeErrorBaseType):
         The vanity name of the platform the application represents.
     platform_user_name : `None`, `str`
         The name of the user on the application's platform.
-    metadata_values : `None`, `dict` of (`str`, `str`) items
+    metadata_values : `None | dict<str, str>`
         Metadata key to attached value relation.
     """
     __slots__ = ('platform_name', 'platform_user_name', 'metadata_values')
@@ -34,7 +34,7 @@ class ApplicationRoleConnection(RichAttributeErrorBaseType):
             The vanity name of the platform the application represents.
         platform_user_name : `None`, `str`, Optional (Keyword only)
             The name of the user on the application's platform.
-        metadata_values : `None`, `dict` of (`str`, `str`) items, Optional (Keyword only)
+        metadata_values : `None | dict<str, str>`, Optional (Keyword only)
             Metadata key to attached value relation.
         
         Raises
@@ -212,7 +212,7 @@ class ApplicationRoleConnection(RichAttributeErrorBaseType):
             The vanity name of the platform the application represents.
         platform_user_name : `None`, `str`, Optional (Keyword only)
             The name of the user on the application's platform.
-        metadata_values : `None`, `dict` of (`str`, `str`) items, Optional (Keyword only)
+        metadata_values : `None | dict<str, str>`, Optional (Keyword only)
             Metadata key to attached value relation.
         
         Returns
@@ -265,7 +265,7 @@ class ApplicationRoleConnection(RichAttributeErrorBaseType):
         
         Returns
         -------
-        translated_value : `None`, `object`
+        translated_value : `None | object`
         """
         metadata_values = self.metadata_values
         if (metadata_values is None):

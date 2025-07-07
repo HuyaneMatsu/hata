@@ -38,7 +38,7 @@ def test__validate_clip_users(input_value):
     
     Returns
     -------
-    output : `None | tuple<ClientUserBase>`
+    output : ``None | tuple<ClientUserBase>``
     
     Raises
     ------

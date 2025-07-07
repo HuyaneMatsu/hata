@@ -348,7 +348,7 @@ class ApplicationCommandParameterConfigurerWrapper(CommandWrapper):
             Name to use instead of the parameter's.
         autocomplete : `None`, `CoroutineFunction` = `None`, Optional (Keyword only)
             Auto complete function for the parameter.
-        channel_types : `None`, `iterable` of `int` = `None`, Optional (Keyword only)
+        channel_types : `None | iterable<int>` = `None`, Optional (Keyword only)
             The accepted channel types.
         max_length : `None | int` = `None`, Optional (Keyword only)
             The maximum input length allowed for this option.

@@ -13,7 +13,7 @@ class ReactionMappingLine(RichAttributeErrorBaseType):
     ----------
     count : `int`
         The total number of users who reacted.
-    users : `None | set<ClientUserBase>`
+    users : ``None | set<ClientUserBase>``
         The known reactors.
     """
     __slots__ = ('count', 'users')
@@ -274,7 +274,7 @@ class ReactionMappingLine(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        some_users : `list` of ``ClientUserBase``
+        some_users : ``list<ClientUserBase>``
             The users who reacted.
         """
         users = self.users
@@ -296,7 +296,7 @@ class ReactionMappingLine(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        all_users : `list` of ``ClientUserBase``
+        all_users : ``list<ClientUserBase>``
             The users who reacted.
         """
         users = self.users
@@ -386,7 +386,7 @@ class ReactionMappingLine(RichAttributeErrorBaseType):
         
         Returns
         -------
-        users : `list` of ``ClientUserBase``
+        users : ``list<ClientUserBase>``
         """
         users = self.users
         if users is None:

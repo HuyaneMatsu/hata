@@ -27,7 +27,7 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
     options : `None`, `tuple` of ``InteractionOption``
         Application command option representations. Like sub-command or parameter.
     
-    resolved : `None`, ``Resolved``
+    resolved : ``None | Resolved``
         Contains the received entities.
     
     target_id : `int`
@@ -63,7 +63,7 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
         options : `None`, `tuple` of ``InteractionOption``, Optional (Keyword only)
             Application command option representations. Like sub-command or parameter.
         
-        resolved : `None`, ``Resolved``, Optional (Keyword only)
+        resolved : ``None | Resolved``, Optional (Keyword only)
             Contains the received entities.
         
         target_id : `int`, Optional (Keyword only)
@@ -159,7 +159,7 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
         options : `None`, `tuple` of ``InteractionOption``, Optional (Keyword only)
             Application command option representations. Like sub-command or parameter.
         
-        resolved : `None`, ``Resolved``, Optional (Keyword only)
+        resolved : ``None | Resolved``, Optional (Keyword only)
             Contains the received entities.
         
         target_id : `int`, Optional (Keyword only)

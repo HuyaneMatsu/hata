@@ -82,7 +82,7 @@ def test__put_attachments(input_value, defaults, include_internals):
     
     Parameters
     ----------
-    input_value : `None | tuple<Attachment>`
+    input_value : ``None | tuple<Attachment>``
         Value to serialize.
     defaults : `bool`
         Whether values as their defaults should be included as well.

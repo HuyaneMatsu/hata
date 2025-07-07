@@ -56,7 +56,7 @@ def test__put_clip_users(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `None | tuple<ClientUserBase>`
+    input_value : ``None | tuple<ClientUserBase>``
         Value to serialise.
     
     defaults : `bool`

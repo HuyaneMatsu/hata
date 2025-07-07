@@ -12,7 +12,7 @@ from ...avatar_decoration import AvatarDecoration
 from ..flags import GuildProfileFlag
 from ..guild_profile import GuildProfile
 
-from .test__GuildProfile__constructor import _check_is_all_fields_set
+from .test__GuildProfile__constructor import _assert_fields_set
 
 
 def test__GuildProfile__copy():
@@ -45,7 +45,7 @@ def test__GuildProfile__copy():
     )
     copy = guild_profile.copy()
     
-    _check_is_all_fields_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_not_is(guild_profile, copy)
     vampytest.assert_eq(guild_profile, copy)
 
@@ -82,7 +82,7 @@ def test__GuildProfile__copy_with__no_fields():
     )
     copy = guild_profile.copy_with()
     
-    _check_is_all_fields_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_not_is(guild_profile, copy)
     vampytest.assert_eq(guild_profile, copy)
 
@@ -141,7 +141,7 @@ def test__GuildProfile__copy_with__all_fields():
         timed_out_until = new_timed_out_until,
     )
     
-    _check_is_all_fields_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_not_is(guild_profile, copy)
 
     vampytest.assert_eq(copy.avatar, new_avatar)

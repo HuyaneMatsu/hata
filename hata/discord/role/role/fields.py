@@ -6,8 +6,9 @@ from ...field_parsers import (
     nullable_functional_parser_factory
 )
 from ...field_putters import (
-    bool_optional_putter_factory, entity_id_putter_factory, flag_optional_putter_factory, force_string_putter_factory,
-    int_putter_factory, nullable_functional_optional_putter_factory, string_flag_putter_factory
+    bool_optional_putter_factory, entity_id_putter_factory, entity_putter_factory, flag_optional_putter_factory,
+    force_string_putter_factory, int_putter_factory, nullable_functional_optional_putter_factory,
+    string_flag_putter_factory
 )
 from ...field_validators import (
     bool_validator_factory, default_entity_validator_factory, entity_id_validator_factory, flag_validator_factory,
@@ -17,6 +18,7 @@ from ...field_validators import (
 from ...permission import Permission
 from ...permission.constants import PERMISSION_KEY
 
+from ..role_color_configuration import RoleColorConfiguration
 from ..role_manager_metadata import RoleManagerMetadataBase
 from ..role_manager_metadata.constants import (
     APPLICATION_ROLE_CONNECTION_KEY, BOOSTER_KEY, BOT_ID_KEY, INTEGRATION_ID_KEY, SUBSCRIPTION_LISTING_ID_KEY
@@ -32,11 +34,43 @@ parse_color = flag_parser_factory('color', Color)
 put_color = flag_optional_putter_factory('color', Color())
 validate_color = flag_validator_factory('color', Color)
 
+
+# color_configuration
+
+def parse_color_configuration(data):
+    """
+    Parses color configuration out from the given data.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    color_configuration : ``ColorConfiguration``
+    """
+    role_color_configuration_data = data.get('colors', None)
+    if (role_color_configuration_data is not None):
+        return RoleColorConfiguration.from_data(role_color_configuration_data)
+    
+    return RoleColorConfiguration.create_from_color_primary(parse_color(data))
+
+
+put_color_configuration = entity_putter_factory('colors', RoleColorConfiguration)
+validate_color_configuration = default_entity_validator_factory(
+    'color_configuration',
+    RoleColorConfiguration,
+    default_factory = lambda : RoleColorConfiguration.create_empty(),
+)
+
+
 # flags
 
 parse_flags = flag_parser_factory('flags', RoleFlag)
 put_flags = flag_optional_putter_factory('flags', RoleFlag())
 validate_flags = flag_validator_factory('flags', RoleFlag)
+
 
 # guild_id
 

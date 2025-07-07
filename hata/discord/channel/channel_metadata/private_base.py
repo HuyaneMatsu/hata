@@ -13,7 +13,7 @@ class ChannelMetadataPrivateBase(ChannelMetadataBase):
     
     Attributes
     ----------
-    users : `list` of ``ClientUserBase``
+    users : ``list<ClientUserBase>``
         The users in the channel.
     
     Class Attributes

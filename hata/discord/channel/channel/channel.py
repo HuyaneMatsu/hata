@@ -659,7 +659,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Returns
         -------
-        users : `list` of ``ClientUserBase``
+        users : ``list<ClientUserBase>``
         """
         name_length = len(name)
         if name_length > USER_ALL_NAME_LENGTH_MAX_WITH_DISCRIMINATOR:
@@ -739,7 +739,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Returns
         -------
-        users : `list` of ``ClientUserBase``
+        users : ``list<ClientUserBase>``
         """
         return self.metadata._get_users(self)
     
@@ -1936,7 +1936,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Returns
         -------
-        users : `list` of ``ClientUserBase``
+        users : ``list<ClientUserBase>``
         """
         return [*self.iter_voice_users()]
     
@@ -1972,7 +1972,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Returns
         -------
-        users : `list` of ``ClientUserBase``
+        users : ``list<ClientUserBase>``
         """
         return [*self.iter_audience()]
     
@@ -2008,7 +2008,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Returns
         -------
-        users : `list` of ``ClientUserBase``
+        users : ``list<ClientUserBase>``
         """
         return [*self.iter_speakers()]
     
@@ -2046,7 +2046,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Returns
         -------
-        users : `list` of ``ClientUserBase``
+        users : ``list<ClientUserBase>``
         """
         return [*self.iter_moderators()]
     

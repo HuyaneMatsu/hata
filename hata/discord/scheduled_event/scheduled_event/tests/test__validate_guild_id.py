@@ -47,4 +47,6 @@ def test__validate_guild_id(input_value):
     TypeError
     ValueError
     """
-    return validate_guild_id(input_value)
+    output = validate_guild_id(input_value)
+    vampytest.assert_instance(output, int)
+    return output

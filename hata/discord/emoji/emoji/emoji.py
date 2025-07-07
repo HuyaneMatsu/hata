@@ -1111,7 +1111,7 @@ class Emoji(DiscordEntity, immortal = True):
         Parameters
         ----------
         ext : `None | str`
-            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`, `'avif'`.
             If emoji is animated, it can be `'gif'` as well.
         
         size : `None | int`

@@ -316,12 +316,12 @@ def test__MessageSnapshot__soundboard_sound(soundboard_sounds):
     
     Parameters
     ----------
-    soundboard_sounds : `None | list<SoundboardSound>`
+    soundboard_sounds : ``None | list<SoundboardSound>``
         Stickers to test with.
     
     Returns
     -------
-    soundboard_sound : `None | SoundboardSound`
+    soundboard_sound : ``None | SoundboardSound``
     """
     message_snapshot = MessageSnapshot(
         soundboard_sounds = soundboard_sounds,
@@ -348,7 +348,7 @@ def test__MessageSnapshot__sticker(stickers):
     
     Parameters
     ----------
-    stickers : `None | list<Sticker>`
+    stickers :` `None | list<Sticker>``
         Stickers to test with.
     
     Returns
@@ -636,7 +636,7 @@ def test__MessageSnapshot__iter_soundboard_sounds(soundboard_sounds):
     
     Parameters
     ----------
-    soundboard_sounds : `None | list<SoundboardSound>`
+    soundboard_sounds : ``None | list<SoundboardSound>``
         Stickers to test with.
     
     Returns
@@ -666,12 +666,12 @@ def test__MessageSnapshot__iter_stickers(stickers):
     
     Parameters
     ----------
-    stickers : `None | list<Sticker>`
+    stickers :` `None | list<Sticker>``
         Stickers to test with.
     
     Returns
     -------
-    output : `list<Sticker>`
+    output : ``list<Sticker>``
     """
     message_snapshot = MessageSnapshot(
         stickers = stickers,

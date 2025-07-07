@@ -19,7 +19,7 @@ class DiscoveryCategory(PreinstancedBase, value_type = int):
     name : `str`
         The default name of the discovery category.
     
-    name_localizations : `None | dict<Locale, str>`
+    name_localizations : ``None | dict<Locale, str>``
         The category's name in other languages.
     
     primary : `bool`

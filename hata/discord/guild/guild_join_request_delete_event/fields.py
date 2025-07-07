@@ -7,11 +7,13 @@ from ...user import ClientUserBase
 
 from ..guild import Guild
 
+
 # guild_id
 
 parse_guild_id = entity_id_parser_factory('guild_id')
 put_guild_id = entity_id_putter_factory('guild_id')
 validate_guild_id = entity_id_validator_factory('guild_id', Guild)
+
 
 # user_id
 

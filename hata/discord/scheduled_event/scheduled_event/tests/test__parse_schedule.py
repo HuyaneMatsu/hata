@@ -42,7 +42,7 @@ def test__parse_schedule(input_data):
     
     Returns
     -------
-    output : `None | Schedule`
+    output : ``None | Schedule``
     """
     output = parse_schedule(input_data)
     vampytest.assert_instance(output, Schedule, nullable = True)

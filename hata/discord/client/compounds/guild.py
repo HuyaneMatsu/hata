@@ -75,7 +75,7 @@ class ClientCompoundGuildEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild | int``
+        guild : ``int | Guild``
             The id of the guild, what's preview will be requested
         
         Returns
@@ -105,7 +105,7 @@ class ClientCompoundGuildEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild | int``
+        guild : ``int | Guild``
             The guild from where the user will be removed.
         user : ``ClientUserBase``, `int`
             The user to delete from the guild.
@@ -138,7 +138,7 @@ class ClientCompoundGuildEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild | int``
+        guild : ``int | Guild``
             The guild what's welcome screen will be requested.
         
         Returns
@@ -148,7 +148,7 @@ class ClientCompoundGuildEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `guild` is not ``Guild | int``.
+            - If `guild` is not ``int | Guild``.
         ConnectionError
             No internet connection.
         DiscordException
@@ -168,7 +168,7 @@ class ClientCompoundGuildEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild | int``
+        guild : ``int | Guild``
             The guild, what's welcome screen will be edited.
         
         welcome_screen_template : `None`, ``WelcomeScreen``` = `None`, Optional
@@ -195,7 +195,7 @@ class ClientCompoundGuildEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `guild` is not ``Guild | int``.
+            - If `guild` is not ``int | Guild``.
             - If a parameter's type is incorrect.
         ValueError
             - If a parameter's value is incorrect.
@@ -219,7 +219,7 @@ class ClientCompoundGuildEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild | int``
+        guild : ``int | Guild``
             The guild, what's verification screen will be requested.
 
         Returns
@@ -229,7 +229,7 @@ class ClientCompoundGuildEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `guild` was not ``Guild | int``.
+            - If `guild` was not ``int | Guild``.
         ConnectionError
             No internet connection.
         DiscordException
@@ -253,7 +253,7 @@ class ClientCompoundGuildEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild | int``
+        guild : ``int | Guild``
             The guild what's verification screen will be edited.
         
         verification_screen_template : `None`, ``VerificationScreen``` = `None`, Optional
@@ -284,7 +284,7 @@ class ClientCompoundGuildEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `guild` was not ``Guild | int``.
+            - If `guild` was not ``int | Guild``.
             - If a parameter's type is incorrect.
         ValueError
             - If a parameter's value is incorrect.
@@ -311,7 +311,7 @@ class ClientCompoundGuildEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild | int``
+        guild : ``int | Guild``
             The guild what's onboarding screen will be requested.
         
         Returns
@@ -321,7 +321,7 @@ class ClientCompoundGuildEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `guild` is not ``Guild | int``.
+            - If `guild` is not ``int | Guild``.
         ConnectionError
             No internet connection.
         DiscordException
@@ -341,7 +341,7 @@ class ClientCompoundGuildEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild | int``
+        guild : ``int | Guild``
             The guild to edit its onboarding screen.
         
         onboarding_screen_template : `None`, ``OnboardingScreen`` = `None`, Optional
@@ -374,7 +374,7 @@ class ClientCompoundGuildEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `guild` is not ``Guild | int``.
+            - If `guild` is not ``int | Guild``.
         ConnectionError
             No internet connection.
         DiscordException
@@ -403,7 +403,7 @@ class ClientCompoundGuildEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild | int``
+        guild : ``int | Guild``
             The guild to request.
         
         Returns
@@ -442,7 +442,7 @@ class ClientCompoundGuildEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild | int``
+        guild : ``int | Guild``
             The guild to sync.
 
         Returns
@@ -542,7 +542,7 @@ class ClientCompoundGuildEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild | int``
+        guild : ``int | Guild``
             The guild to delete.
         
         Raises
@@ -641,7 +641,7 @@ class ClientCompoundGuildEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild | int``
+        guild : ``int | Guild``
             Where the pruning will be executed.
         days : `int`
             The amount of days since at least the users need to inactive. Can be in range [1:30].
@@ -740,7 +740,7 @@ class ClientCompoundGuildEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild | int``.
+        guild : ``int | Guild``.
             Where the counting of prunable users will be done.
         days : `int`
             The amount of days since at least the users need to inactive. Can be in range [1:30].
@@ -815,7 +815,7 @@ class ClientCompoundGuildEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild | int``
+        guild : ``int | Guild``
             The guild to edit.
         
         guild_template : ``None | Guild`` = `None`, Optional
@@ -934,7 +934,7 @@ class ClientCompoundGuildEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild | int``
+        guild : ``int | Guild``
             The guild or the guild's id, what's widget will be requested.
         
         Returns
@@ -945,7 +945,7 @@ class ClientCompoundGuildEndpoints(Compound):
         Raises
         ------
         TypeError
-            If `guild` was not passed neither as ``Guild | int``.
+            If `guild` was not passed neither as ``int | Guild``.
         ConnectionError
             No internet connection.
         DiscordException
@@ -965,12 +965,12 @@ class ClientCompoundGuildEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild | int``
+        guild : ``int | Guild``
             The guild what's users will be requested.
         
         Returns
         -------
-        users : `list` of ``ClientUserBase`` objects
+        users : ``list<ClientUserBase>``
         
         Raises
         ------
@@ -1053,7 +1053,7 @@ class ClientCompoundGuildEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild | int``
+        guild : ``int | Guild``
             The guild, what's regions will be requested.
         
         Returns
@@ -1132,7 +1132,7 @@ class ClientCompoundGuildEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild | int``
+        guild : ``int | Guild``
             The guild, what's audit logs will be requested.
         limit : `int` = `100`, Optional
             The amount of audit logs to request. Can be between 1 and 100. Defaults to 100.
@@ -1224,7 +1224,7 @@ class ClientCompoundGuildEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild | int``
+        guild : ``int | Guild``
             The guild, what's audit logs will be requested.
         entry_type : `None`, ``AuditLogEntryType``, `int` = `None`, Optional (Keyword only)
             Whether the audit logs should be filtered only on the given event.
@@ -1253,7 +1253,7 @@ class ClientCompoundGuildEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild | int``
+        guild : ``int | Guild``
             The guild to edit the incidents of.
         
         incidents_template : `None`, ``GuildIncidents`` = `None`, Optional
@@ -1321,7 +1321,7 @@ class ClientCompoundGuildEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild | int``
+        guild : ``int | Guild``
             The guild to edit the inventory settings of.
         
         inventory_settings_template : `None`, ``GuildInventorySettings`` = `None`, Optional

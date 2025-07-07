@@ -4,6 +4,7 @@ from .channel import *
 from .channel_permission_overwrite import *
 from .guild import *
 from .message import *
+from .scheduled_event_occasion_overwrite import *
 from .stage import *
 from .user import *
 
@@ -15,6 +16,7 @@ __all__ = (
     *channel_permission_overwrite.__all__,
     *guild.__all__,
     *message.__all__,
+    *scheduled_event_occasion_overwrite.__all__,
     *stage.__all__,
     *user.__all__,
 )

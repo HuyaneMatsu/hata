@@ -6,29 +6,46 @@ from ..fields import put_description_localizations
 
 
 def _iter_options():
-    yield None, False, {}
-    yield None, True, {'description_localizations': None}
+    yield (
+        None,
+        False,
+        {},
+    )
+    
+    yield (
+        None,
+        True,
+        {
+            'description_localizations': None,
+        },
+    )
+    
     yield (
         {
             Locale.dutch: 'aya',
             Locale.greek: 'yya',
         },
         False,
-        {'description_localizations': {
-            Locale.dutch.value: 'aya',
-            Locale.greek.value: 'yya',
-        }},
+        {
+            'description_localizations': {
+                Locale.dutch.value: 'aya',
+                Locale.greek.value: 'yya',
+            },
+        },
     )
+    
     yield (
         {
             Locale.dutch: 'aya',
             Locale.greek: 'yya',
         },
         True,
-        {'description_localizations': {
-            Locale.dutch.value: 'aya',
-            Locale.greek.value: 'yya',
-        }},
+        {
+            'description_localizations': {
+                Locale.dutch.value: 'aya',
+                Locale.greek.value: 'yya',
+            },
+        },
     )
 
 
@@ -39,13 +56,14 @@ def test__put_description_localizations(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `None | dict<Locale, str>`
-        Value to serialise.
+    input_value : ``None | dict<Locale | str>``
+        Value to serialize.
+    
     defaults : `bool`
-        Whether values of their default value should be included as well.
+        Whether values as their defaults should be included as well.
     
     Returns
     -------
     output : `dict<str, object>`
     """
-    return put_description_localizations(input_value, {}, defaults)
+    return put_description_localizations(input_value, {}, defaults)        

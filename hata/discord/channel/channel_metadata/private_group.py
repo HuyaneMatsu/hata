@@ -32,7 +32,7 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass = Slotte
         The channel's display name. Can be empty string if the channel has no name.
     owner_id : `int`
         The group channel's owner's id.
-    users : `list` of ``ClientUserBase``
+    users : ``list<ClientUserBase>``
         The users in the channel.
     
     Class Attributes

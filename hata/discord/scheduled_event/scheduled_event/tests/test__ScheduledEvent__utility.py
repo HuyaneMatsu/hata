@@ -7,9 +7,9 @@ from ....channel import Channel
 from ....client import Client
 from ....guild import Guild
 from ....user import User
-from ....utils import is_url
 
 from ...schedule import Schedule
+from ...scheduled_event_occasion_overwrite import ScheduledEventOccasionOverwrite
 
 from ..preinstanced import PrivacyLevel, ScheduledEventEntityType, ScheduledEventStatus
 from ..scheduled_event import ScheduledEvent
@@ -538,3 +538,46 @@ def test__ScheduledEvent__image_url_as(scheduled_event_id, icon, keyword_paramet
     output = scheduled_event.image_url_as(**keyword_parameters)
     vampytest.assert_instance(output, str, nullable = True)
     return (output is not None)
+
+
+def _iter_options__iter_occasion_overwrites():
+    occasion_overwrite_0 = ScheduledEventOccasionOverwrite(
+        timestamp = DateTime(2016, 5, 14, 13, 0, 0, tzinfo = TimeZone.utc),
+    )
+    
+    occasion_overwrite_1 = ScheduledEventOccasionOverwrite(
+        timestamp = DateTime(2016, 5, 16, 13, 10, 0, tzinfo = TimeZone.utc),
+    )
+    
+    yield 202506210035, None, []
+    yield 202506210036, [occasion_overwrite_0, occasion_overwrite_1], [occasion_overwrite_0, occasion_overwrite_1]
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_occasion_overwrites()).returning_last())
+def test__ScheduledEvent__iter_occasion_overwrites(scheduled_event_id, occasion_overwrites):
+    """
+    Tests whether ``ScheduledEvent.iter_occasion_overwrites`` works as intended.
+    
+    Parameters
+    ----------
+    scheduled_event_id : `int`
+        Identifier to create scheduled event with.
+    
+    occasion_overwrites : ``None | list<ScheduledEventOccasionOverwrite>``
+        Cancellations to create scheduled event with.
+    
+    Returns
+    -------
+    output : ``list<ScheduledEventOccasionOverwrite>``
+    """
+    scheduled_event = ScheduledEvent.precreate(
+        scheduled_event_id,
+        occasion_overwrites = occasion_overwrites,
+    )
+    
+    output = [*scheduled_event.iter_occasion_overwrites()]
+    
+    for element in output:
+        vampytest.assert_instance(element, ScheduledEventOccasionOverwrite)
+    
+    return output

@@ -2128,7 +2128,7 @@ class ContentParserParameter(RichAttributeErrorBaseType):
     
     Parameters
     ----------
-    default : `None`, `object`
+    default : `None | object`
         The default object to return if the parser fails.
     description : `None`, `str`
         The description of the parameter if any.
@@ -2483,7 +2483,7 @@ class ContentParserParameter(RichAttributeErrorBaseType):
         
         Returns
         -------
-        parsed : `None`, `object`
+        parsed : `None | object`
             The parsed object if any.
         """
         detail = self.detail
@@ -3300,7 +3300,7 @@ def get_first_non_none_parsed_value(parsed_values):
 
     Returns
     -------
-    value : `None`, `object`
+    value : `None | object`
         The parsed value if any.
     """
     if (parsed_values is not None):
@@ -3322,7 +3322,7 @@ def get_all_non_none_parsed_value(parsed_values):
 
     Returns
     -------
-    values : `None`, `object`
+    values : `None | object`
         The parsed value if any.
     """
     values = []

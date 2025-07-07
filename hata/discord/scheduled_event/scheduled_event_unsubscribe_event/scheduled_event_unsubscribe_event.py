@@ -10,7 +10,7 @@ class ScheduledEventUnsubscribeEvent(ScheduledEventSubscribeEvent):
     Attributes
     ----------
     guild_id : `int`
-        The guild's identifier where the event will be.
+        The guild's identifier where the event is for.
     scheduled_event_id : `int`
         The scheduled event's identifier.
     user_id : `int`

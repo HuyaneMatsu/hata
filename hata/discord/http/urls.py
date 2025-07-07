@@ -104,7 +104,7 @@ def _validate_extension(icon_type, ext):
     return ext
 
 
-def _build_end(size):
+def _build_end(size, add_animated_query_parameter):
     """
     Validates the given icon size.
     
@@ -112,6 +112,9 @@ def _build_end(size):
     ----------
     size : `None | int`
         The received size.
+    
+    add_animated_query_parameter : `bool`
+        Whether `animated=true` query parameter should be added.
     
     Returns
     -------
@@ -133,6 +136,12 @@ def _build_end(size):
         raise ValueError(
             f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.'
         )
+    
+    if add_animated_query_parameter:
+        if end:
+            end += '&animated=true'
+        else:
+            end = '?animated=true'
     
     return end
 
@@ -189,12 +198,7 @@ def build_activity_asset_image_large_url_as(application_id, image_large, ext, si
     if (not application_id) or (image_large is None) or (not image_large.isdigit()):
         return None
     
-    if size is None:
-        end = ''
-    elif size in VALID_ICON_SIZES:
-        end = f'?size={size}'
-    else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
+    end = _build_end(size, False)
 
     if ext is None:
         ext = 'png'
@@ -256,12 +260,7 @@ def build_activity_asset_image_small_url_as(application_id, image_small, ext, si
     if (not application_id) or (image_small is None) or (not image_small.isdigit()):
         return None
     
-    if size is None:
-        end = ''
-    elif size in VALID_ICON_SIZES:
-        end = f'?size={size}'
-    else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
+    end = _build_end(size, False)
 
     if ext is None:
         ext = 'png'
@@ -334,7 +333,7 @@ def build_application_cover_url_as(application_id, icon_type, icon_hash, ext, si
     
     prefix = icon_type.prefix
     ext = _validate_extension(icon_type, ext)
-    end = _build_end(size)
+    end = _build_end(size, prefix == 'a_' and ext == 'webp')
     
     return f'{CDN_ENDPOINT}/app-assets/{application_id}/store/{prefix}{icon_hash:0>32x}.{ext}{end}'
 
@@ -402,7 +401,7 @@ def build_application_icon_url_as(application_id, icon_type, icon_hash, ext, siz
     
     prefix = icon_type.prefix
     ext = _validate_extension(icon_type, ext)
-    end = _build_end(size)
+    end = _build_end(size, prefix == 'a_' and ext == 'webp')
     
     return f'{CDN_ENDPOINT}/app-icons/{application_id}/{prefix}{icon_hash:0>32x}.{ext}{end}'
 
@@ -464,7 +463,7 @@ def build_avatar_decoration_url_as(icon_type, icon_hash, ext, size):
     
     prefix = icon_type.prefix
     ext = _validate_extension(icon_type, ext)
-    end = _build_end(size)
+    end = _build_end(size, prefix == 'a_' and ext == 'webp')
     
     return f'{CDN_ENDPOINT}/avatar-decoration-presets/{prefix}{icon_hash:0>32x}.{ext}{end}'
 
@@ -532,7 +531,7 @@ def build_channel_group_icon_url_as(channel_id, icon_type, icon_hash, ext, size)
     
     prefix = icon_type.prefix
     ext = _validate_extension(icon_type, ext)
-    end = _build_end(size)
+    end = _build_end(size, prefix == 'a_' and ext == 'webp')
     
     return f'{CDN_ENDPOINT}/channel-icons/{channel_id}/{prefix}{icon_hash:0>32x}.{ext}{end}'
 
@@ -593,7 +592,7 @@ def build_emoji_url_as(emoji_id, animated, ext, size):
         Whether the emoji is animated.
     
     ext : `None | str`
-        The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+        The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`, `'avif'`.
         If emoji is animated, it can be `'gif'` as well.
     
     size : `None | int`
@@ -616,19 +615,28 @@ def build_emoji_url_as(emoji_id, animated, ext, size):
             ext = 'gif'
         else:
             ext = 'png'
+        
+        add_animated_query_parameter = False
     else:
+        if ext == 'avif':
+            ext = 'webp'
+        
         if animated:
             if ext not in VALID_ICON_FORMATS_EXTENDED:
                 raise ValueError(
                     f'Extension must be one of {VALID_ICON_FORMATS_EXTENDED}, got {ext!r}.'
                 )
+            
+            add_animated_query_parameter = ext == 'webp'
         else:
             if ext not in VALID_ICON_FORMATS:
                 raise ValueError(
                     f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.'
                 )
+            
+            add_animated_query_parameter = False
     
-    end = _build_end(size)
+    end = _build_end(size, add_animated_query_parameter)
     
     return f'{CDN_ENDPOINT}/emojis/{emoji_id}.{ext}{end}'
 
@@ -691,7 +699,7 @@ def build_guild_badge_icon_url_as(guild_id, icon_type, icon_hash, ext, size):
     
     prefix = icon_type.prefix
     ext = _validate_extension(icon_type, ext)
-    end = _build_end(size)
+    end = _build_end(size, prefix == 'a_' and ext == 'webp')
     
     return f'{CDN_ENDPOINT}/badge-icons/{guild_id}/{prefix}{icon_hash:0>32x}.{ext}{end}'
 
@@ -759,7 +767,7 @@ def build_guild_banner_url_as(guild_id, icon_type, icon_hash, ext, size):
     
     prefix = icon_type.prefix
     ext = _validate_extension(icon_type, ext)
-    end = _build_end(size)
+    end = _build_end(size, prefix == 'a_' and ext == 'webp')
     
     return f'{CDN_ENDPOINT}/banners/{guild_id}/{prefix}{icon_hash:0>32x}.{ext}{end}'
 
@@ -827,7 +835,7 @@ def build_guild_discovery_splash_url_as(guild_id, icon_type, icon_hash, ext, siz
     
     prefix = icon_type.prefix
     ext = _validate_extension(icon_type, ext)
-    end = _build_end(size)
+    end = _build_end(size, prefix == 'a_' and ext == 'webp')
     
     return f'{CDN_ENDPOINT}/discovery-splashes/{guild_id}/{prefix}{icon_hash:0>32x}.{ext}{end}'
 
@@ -895,7 +903,7 @@ def build_guild_home_splash_url_as(guild_id, icon_type, icon_hash, ext, size):
     
     prefix = icon_type.prefix
     ext = _validate_extension(icon_type, ext)
-    end = _build_end(size)
+    end = _build_end(size, prefix == 'a_' and ext == 'webp')
     
     return f'{CDN_ENDPOINT}/home-headers/{guild_id}/{prefix}{icon_hash:0>32x}.{ext}{end}'
 
@@ -963,7 +971,7 @@ def build_guild_icon_url_as(guild_id, icon_type, icon_hash, ext, size):
     
     prefix = icon_type.prefix
     ext = _validate_extension(icon_type, ext)
-    end = _build_end(size)
+    end = _build_end(size, prefix == 'a_' and ext == 'webp')
     
     return f'{CDN_ENDPOINT}/icons/{guild_id}/{prefix}{icon_hash:0>32x}.{ext}{end}'
 
@@ -1077,7 +1085,7 @@ def build_guild_invite_splash_url_as(guild_id, icon_type, icon_hash, ext, size):
     
     prefix = icon_type.prefix
     ext = _validate_extension(icon_type, ext)
-    end = _build_end(size)
+    end = _build_end(size, prefix == 'a_' and ext == 'webp')
     
     return f'{CDN_ENDPOINT}/splashes/{guild_id}/{prefix}{icon_hash:0>32x}.{ext}{end}'
 
@@ -1221,7 +1229,7 @@ def build_role_icon_url_as(role_id, icon_type, icon_hash, ext, size):
     
     prefix = icon_type.prefix
     ext = _validate_extension(icon_type, ext)
-    end = _build_end(size)
+    end = _build_end(size, prefix == 'a_' and ext == 'webp')
     
     return f'{CDN_ENDPOINT}/role-icons/{role_id}/{prefix}{icon_hash:0>32x}.{ext}{end}'
 
@@ -1289,7 +1297,7 @@ def build_scheduled_event_image_url_as(scheduled_event_id, icon_type, icon_hash,
     
     prefix = icon_type.prefix
     ext = _validate_extension(icon_type, ext)
-    end = _build_end(size)
+    end = _build_end(size, prefix == 'a_' and ext == 'webp')
     
     return f'{CDN_ENDPOINT}/guild-events/{scheduled_event_id}/{prefix}{icon_hash:0>32x}.{ext}{end}'
 
@@ -1373,7 +1381,7 @@ def build_sticker_pack_banner_url_as(sticker_pack_banner_id, ext, size):
     if not sticker_pack_banner_id:
         return
     
-    end = _build_end(size)
+    end = _build_end(size, False)
     
     if ext is None:
         ext = 'png'
@@ -1532,7 +1540,7 @@ def build_team_icon_url_as(team_id, icon_type, icon_hash, ext, size):
     
     prefix = icon_type.prefix
     ext = _validate_extension(icon_type, ext)
-    end = _build_end(size)
+    end = _build_end(size, prefix == 'a_' and ext == 'webp')
     
     return f'{CDN_ENDPOINT}/team-icons/{team_id}/{prefix}{icon_hash:0>32x}.{ext}{end}'
 
@@ -1601,7 +1609,7 @@ def build_user_avatar_url_as(user_id, icon_type, icon_hash, ext, size):
     
     prefix = icon_type.prefix
     ext = _validate_extension(icon_type, ext)
-    end = _build_end(size)
+    end = _build_end(size, prefix == 'a_' and ext == 'webp')
     
     return f'{CDN_ENDPOINT}/avatars/{user_id}/{prefix}{icon_hash:0>32x}.{ext}{end}'
 
@@ -1675,7 +1683,7 @@ def build_user_avatar_url_for_as(user_id, guild_id, icon_type, icon_hash, ext, s
 
     prefix = icon_type.prefix
     ext = _validate_extension(icon_type, ext)
-    end = _build_end(size)
+    end = _build_end(size, prefix == 'a_' and ext == 'webp')
     
     return (
         f'{CDN_ENDPOINT}/guilds/{guild_id}/users/{user_id}/avatars/{prefix}{icon_hash:0>32x}.{ext}{end}'
@@ -1746,7 +1754,7 @@ def build_user_banner_url_as(user_id, icon_type, icon_hash, ext, size):
     
     prefix = icon_type.prefix
     ext = _validate_extension(icon_type, ext)
-    end = _build_end(size)
+    end = _build_end(size, prefix == 'a_' and ext == 'webp')
     
     return f'{CDN_ENDPOINT}/banners/{user_id}/{prefix}{icon_hash:0>32x}.{ext}{end}'
 
@@ -1820,7 +1828,7 @@ def build_user_banner_url_for_as(user_id, guild_id, icon_type, icon_hash, ext, s
 
     prefix = icon_type.prefix
     ext = _validate_extension(icon_type, ext)
-    end = _build_end(size)
+    end = _build_end(size, prefix == 'a_' and ext == 'webp')
     
     return (
         f'{CDN_ENDPOINT}/guilds/{guild_id}/users/{user_id}/banners/{prefix}{icon_hash:0>32x}.{ext}{end}'

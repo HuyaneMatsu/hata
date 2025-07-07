@@ -763,7 +763,7 @@ class AuditLogEntry(DiscordEntity):
         
         Returns
         -------
-        change : `None`, `object`
+        change : `None | object`
         """
         details = self.details
         if (details is not None):

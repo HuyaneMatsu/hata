@@ -10,7 +10,7 @@ from ..flags import GuildProfileFlag
 from ..guild_profile import GuildProfile
 
 
-def _check_is_all_fields_set(guild_profile):
+def _assert_fields_set(guild_profile):
     """
     Asserts whether all fields of the given guild profile are set.
     
@@ -38,7 +38,7 @@ def test__GuildProfile__new__no_fields():
     Case: No fields.
     """
     guild_profile = GuildProfile()
-    _check_is_all_fields_set(guild_profile)
+    _assert_fields_set(guild_profile)
 
 
 
@@ -72,7 +72,7 @@ def test__GuildProfile__new__all_fields():
         role_ids = role_ids,
         timed_out_until = timed_out_until,
     )
-    _check_is_all_fields_set(guild_profile)
+    _assert_fields_set(guild_profile)
     
     vampytest.assert_eq(guild_profile.avatar, avatar)
     vampytest.assert_eq(guild_profile.avatar_decoration, avatar_decoration)
@@ -91,4 +91,4 @@ def test__GuildProfile__create_empty():
     Tests whether ``GuildProfile._create_empty`` works as intended.
     """
     guild_profile = GuildProfile._create_empty()
-    _check_is_all_fields_set(guild_profile)
+    _assert_fields_set(guild_profile)

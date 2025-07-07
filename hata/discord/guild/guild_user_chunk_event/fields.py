@@ -148,7 +148,7 @@ def put_users(users, data, defaults, *, guild_id = 0):
     
     Parameters
     ----------
-    users : `list` of ``ClientUserBase``
+    users : ``list<ClientUserBase>``
         Resolved users.
     data : `dict<str, object>`
         Interaction resolved data.
@@ -191,7 +191,7 @@ def validate_users(users):
     
     Returns
     -------
-    users : `list` of ``ClientUserBase``
+    users : ``list<ClientUserBase>``
     
     Raises
     ------

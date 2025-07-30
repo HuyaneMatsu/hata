@@ -1,3 +1,17 @@
+## 1.3.82 *\[2025-07-30\]*
+
+### Bug fixes
+
+- Fix `libnacl` incorrectly raising `OsError` instead of `ImportError`.
+
+#### ext.slash
+
+- Fix `expression_parser` does not check for negative inputs for `sqrt`.
+- Fix `expression_parser` does not check for infinite inputs for `floor`.
+- Fix `expression_parser` does not check for infinite inputs for `round`.
+- Fix `expression_parser` does not check for infinite inputs for `ceil`.
+- Fix `default_slasher_exception_handler` not rendering the original error if an exception occurred in it.
+
 ## 1.3.81 *\[2025-07-07\]*
 
 ### Improvements

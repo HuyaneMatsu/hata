@@ -8,17 +8,10 @@ from ..packets.constants import MAX_UINT_32
 from ..packets.utils import create_rtp_data_lite, create_rtp_header_lite
 
 from .base import EncryptionAdapterBase
-
-try:
-    from libnacl import (
-        crypto_aead_xchacha20poly1305_ietf_KEYBYTES, crypto_aead_xchacha20poly1305_ietf_NPUBBYTES,
-        crypto_aead_xchacha20poly1305_ietf_decrypt, crypto_aead_xchacha20poly1305_ietf_encrypt
-    )
-except ImportError:
-    crypto_aead_xchacha20poly1305_ietf_KEYBYTES = 0
-    crypto_aead_xchacha20poly1305_ietf_NPUBBYTES = 0
-    crypto_aead_xchacha20poly1305_ietf_encrypt = lambda cipher_data, additional_authentication_data, nonce, key: b''
-    crypto_aead_xchacha20poly1305_ietf_decrypt = lambda plain_data, additional_authentication_data, nonce, key: b''
+from .nacl import (
+    crypto_aead_xchacha20poly1305_ietf_KEYBYTES, crypto_aead_xchacha20poly1305_ietf_NPUBBYTES,
+    crypto_aead_xchacha20poly1305_ietf_decrypt, crypto_aead_xchacha20poly1305_ietf_encrypt
+)
 
 
 class EncryptionAdapter__aead_xchacha20_poly1305_rtpsize(EncryptionAdapterBase):

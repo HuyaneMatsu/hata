@@ -16,7 +16,7 @@ def _create_parameter(name, *, annotation = ..., default = ...):
     Parameters
     ----------
     name : `str`
-        The name of teh parameter.
+        The name of the parameter.
     
     annotation : `object`, Optional (Keyword only)
         Annotation of the parameter.

@@ -5,14 +5,7 @@ from scarletio import copy_docs
 from ..packets.utils import create_rtp_data_lite, create_rtp_header_lite
 
 from .base import EncryptionAdapterBase
-
-try:
-    from libnacl import crypto_secretbox, crypto_secretbox_KEYBYTES, crypto_secretbox_NONCEBYTES, crypto_secretbox_open
-except ImportError:
-    crypto_secretbox_KEYBYTES = 0
-    crypto_secretbox_NONCEBYTES = 0
-    crypto_secretbox = lambda plain_data, nonce, key: b''
-    crypto_secretbox_open = lambda cipher_data, nonce, key: b''
+from .nacl import crypto_secretbox, crypto_secretbox_KEYBYTES, crypto_secretbox_NONCEBYTES, crypto_secretbox_open
 
 
 class EncryptionAdapter__xsalsa20_poly1305(EncryptionAdapterBase):

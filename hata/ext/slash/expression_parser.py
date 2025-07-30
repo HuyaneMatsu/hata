@@ -1,6 +1,7 @@
 __all__ = ('EvaluationError', 'evaluate_text', )
 
 import math
+from math import inf
 
 from scarletio import RichAttributeErrorBaseType, copy_docs
 
@@ -549,7 +550,8 @@ def check_factorial_validity(token, value):
     ----------
     token : ``Token``
         The parent token.
-    value : `int`, `float`
+    
+    value : `int | float`
         The value to use factorial on.
     
     Raises
@@ -568,7 +570,7 @@ def check_factorial_validity(token, value):
             f'Factorial only accepts integral values: factorial({value!r})',
         )
     
-    if value < 0:
+    if value < 0.0:
         raise EvaluationError(
             token.array,
             [
@@ -583,7 +585,116 @@ def check_factorial_validity(token, value):
             [
                 HighlightGroup(token.start, token.end, True),
             ],
-            f'Factorial over {LIMIT_INTEGER_BIT_LENGTH} is disallowed: factorial({value!r})',
+            f'Factorial over {LIMIT_FACTORIAL_MAX} is disallowed: factorial({value!r})',
+        )
+
+
+
+def check_sqrt_validity(token, value):
+    """
+    Checks whether the sqrt call is in limit.
+    
+    Parameters
+    ----------
+    token : ``Token``
+        The parent token.
+    
+    value : `int | float`
+        The value to use sqrt on.
+    
+    Raises
+    ------
+    EvaluationError
+        - Square root not defined for negative values.
+    """
+    if value < 0.0:
+        raise EvaluationError(
+            token.array,
+            [
+                HighlightGroup(token.start, token.end, True),
+            ],
+            f'Square root is not defined for negative values: sqrt({value!r})',
+        )
+
+
+def check_floor_validity(token, value):
+    """
+    Checks whether the floor call is in limit.
+    
+    Parameters
+    ----------
+    token : ``Token``
+        The parent token.
+    
+    value : `int | float`
+        The value to use sqrt on.
+    
+    Raises
+    ------
+    EvaluationError
+        - Floor rounding is not defined for infinite values.
+    """
+    if isinstance(value, float) and abs(value) == inf:
+        raise EvaluationError(
+            token.array,
+            [
+                HighlightGroup(token.start, token.end, True),
+            ],
+            f'Floor rounding is not defined for infinite values: floor({value!r})',
+        )
+
+
+def check_ceil_validity(token, value):
+    """
+    Checks whether the ceil call is in limit.
+    
+    Parameters
+    ----------
+    token : ``Token``
+        The parent token.
+    
+    value : `int | float`
+        The value to use sqrt on.
+    
+    Raises
+    ------
+    EvaluationError
+        - Ceil rounding is not defined for infinite values.
+    """
+    if isinstance(value, float) and abs(value) == inf:
+        raise EvaluationError(
+            token.array,
+            [
+                HighlightGroup(token.start, token.end, True),
+            ],
+            f'Ceil rounding is not defined for infinite values: ceil({value!r})',
+        )
+
+
+def check_round_validity(token, value):
+    """
+    Checks whether the round call is in limit.
+    
+    Parameters
+    ----------
+    token : ``Token``
+        The parent token.
+    
+    value : `int | float`
+        The value to use sqrt on.
+    
+    Raises
+    ------
+    EvaluationError
+        - Rounding is not defined for infinite values.
+    """
+    if isinstance(value, float) and abs(value) == inf:
+        raise EvaluationError(
+            token.array,
+            [
+                HighlightGroup(token.start, token.end, True),
+            ],
+            f'Rounding is not defined for infinite values: round({value!r})',
         )
 
 
@@ -602,7 +713,7 @@ STATIC_FUNCTION_TABLE = {
     b'asinh': (math.asinh, None),
     b'atan': (math.atan, None),
     b'atanh': (math.atanh, None),
-    b'ceil': (math.ceil, None),
+    b'ceil': (math.ceil, check_ceil_validity),
     b'cos': (math.cos, None),
     b'cosh': (math.cosh, None),
     b'degrees': (math.degrees, None),
@@ -612,17 +723,17 @@ STATIC_FUNCTION_TABLE = {
     b'expm1': (math.expm1, None),
     b'fabs': (math.fabs, None),
     b'factorial': (math.factorial, check_factorial_validity),
-    b'floor': (math.floor, None),
+    b'floor': (math.floor, check_floor_validity),
     b'log': (math.log, None),
     b'log10': (math.log10, None),
     b'log1p': (math.log1p, None),
     b'log2': (math.log2, None),
     b'modf': (math.modf, None),
     b'radians': (math.radians, None),
-    b'round': (round, None),
+    b'round': (round, check_round_validity),
     b'sin': (math.sin, None),
     b'sinh': (math.sinh, None),
-    b'sqrt': (math.sqrt, None),
+    b'sqrt': (math.sqrt, check_sqrt_validity),
     b'tan': (math.tan, None),
 }
 
@@ -2332,6 +2443,8 @@ class EvaluationError(SlasherCommandError):
     """
     __slots__ = ('_pretty_repr', 'array', 'highlight_groups', 'message')
     
+    __init__ = object.__init__
+    
     def __new__(cls, array, highlight_groups, message):
         """
         Creates a new ``EvaluationError`` from the given parameters.
@@ -2641,7 +2754,7 @@ class Token:
     
     def __repr__(self):
         """Returns the token's representation."""
-        repr_parts = ['<', self.__class__.__name__, ' ']
+        repr_parts = ['<', type(self).__name__, ' ']
         
         repr_parts.append('start = ')
         repr_parts.append(repr(self.start))
@@ -3279,7 +3392,7 @@ def evaluate_text(text):
     
     Returns
     -------
-    value : `int`, `float`
+    value : `int | float`
         The evaluation's result.
     
     Raises

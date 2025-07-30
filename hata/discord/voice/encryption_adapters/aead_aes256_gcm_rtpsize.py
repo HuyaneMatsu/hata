@@ -8,17 +8,10 @@ from ..packets.constants import MAX_UINT_32
 from ..packets.utils import create_rtp_data_lite, create_rtp_header_lite
 
 from .base import EncryptionAdapterBase
-
-try:
-    from libnacl import (
-        crypto_aead_aes256gcm_KEYBYTES, crypto_aead_aes256gcm_NPUBBYTES, crypto_aead_aes256gcm_decrypt,
-        crypto_aead_aes256gcm_encrypt
-    )
-except ImportError:
-    crypto_aead_aes256gcm_KEYBYTES = 0
-    crypto_aead_aes256gcm_NPUBBYTES = 0
-    crypto_aead_aes256gcm_encrypt = lambda cipher_data, additional_authentication_data, nonce, key: b''
-    crypto_aead_aes256gcm_decrypt = lambda plain_data, additional_authentication_data, nonce, key: b''
+from .nacl import (
+    crypto_aead_aes256gcm_KEYBYTES, crypto_aead_aes256gcm_NPUBBYTES, crypto_aead_aes256gcm_decrypt,
+    crypto_aead_aes256gcm_encrypt
+)
 
 
 class EncryptionAdapter__aead_aes256_gcm_rtpsize(EncryptionAdapterBase):

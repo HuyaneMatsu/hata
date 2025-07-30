@@ -26,15 +26,6 @@ from .helpers_http_client import TestHTTPClient
 from .helpers_web_socket_client import TestWebSocketClient
 
 
-try:
-    import nacl.secret
-except ImportError:
-    SecretBox = None
-else:
-    SecretBox = nacl.secret.SecretBox
-    del nacl
-
-
 def _assert_fields_set(gateway):
     """
     Asserts whether the given gateway has all of its fields set.
@@ -1084,12 +1075,6 @@ async def test__DiscordGatewayVoice__handle_operation_session_description__with_
         },
     }
     
-    def mock_SecretBox(value):
-        nonlocal secret_key
-        vampytest.assert_eq(value, secret_key)
-        return SecretBox(value)
-    
-    
     try:
         voice_client = VoiceClient(client, 202401200017, 202401200018)
         
@@ -1097,12 +1082,7 @@ async def test__DiscordGatewayVoice__handle_operation_session_description__with_
         gateway = DiscordGatewayVoice(voice_client)
         gateway.web_socket = web_socket
         
-        mocked = vampytest.mock_globals(
-            type(gateway)._handle_operation_session_description,
-            SecretBox = mock_SecretBox,
-        )
-        
-        output = await mocked(gateway, message)
+        output = await gateway._handle_operation_session_description(message)
         
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)

@@ -346,88 +346,86 @@ async def default_slasher_exception_handler(client, interaction_event, command, 
     handled : `bool`
         Whether the error handler handled the exception.
     """
-    if isinstance(exception, SlasherCommandError):
-        forward = exception.pretty_repr
+    render = True
+    
+    try:
+        if isinstance(exception, SlasherCommandError):
+            forward = exception.pretty_repr
+            render = False
+            create_new_message = False
+        
+        elif isinstance(exception, DiscordException) and (exception.status == 500):
+            forward = None
+            create_new_message = False
+        
+        elif (interaction_event.type is InteractionType.application_command) and interaction_event.is_unanswered():
+            forward = client.slasher._random_error_message_getter()
+            create_new_message = False
+        
+        elif (interaction_event.type is InteractionType.message_component) and interaction_event.is_unanswered():
+            forward = client.slasher._random_error_message_getter()
+            create_new_message = True
+            
+            try:
+                await client.interaction_component_acknowledge(interaction_event)
+            except GeneratorExit:
+                raise
+            
+            except ConnectionError:
+                pass
+            
+            except DiscordException as err:
+                if not (
+                    (err.status == 500) or
+                    (err.code == ERROR_CODES.unknown_interaction)
+                ):
+                    raise
+        
+        else:
+            forward = None
+            create_new_message = False
+        
+        if (forward is not None):
+            # Process what to forward
+            if isinstance(forward, tuple):
+                forward = InteractionResponse(*forward)
+            else:
+                forward = InteractionResponse(forward)
+            
+            # Get forward function
+            if create_new_message:
+                function = type(client).interaction_followup_message_create
+            else:
+                function = type(client).interaction_response_message_create
+            
+            try:
+                await function(
+                    client,
+                    interaction_event,
+                    forward,
+                    show_for_invoking_user_only = True,
+                )
+            except GeneratorExit:
+                raise
+            
+            except ConnectionError:
+                pass
+            
+            except DiscordException as err:
+                if not (
+                    (err.status == 500) or
+                    (err.code == ERROR_CODES.unknown_interaction)
+                ):
+                    raise
+    
+    except GeneratorExit:
+        # Disable `await` in finally.
         render = False
-        create_new_message = False
+        raise
     
-    elif isinstance(exception, DiscordException) and (exception.status == 500):
-        forward = None
-        render = True
-        create_new_message = False
-    
-    elif (interaction_event.type is InteractionType.application_command) and interaction_event.is_unanswered():
-        forward = client.slasher._random_error_message_getter()
-        render = True
-        create_new_message = False
-    
-    elif (interaction_event.type is InteractionType.message_component) and interaction_event.is_unanswered():
-        forward = client.slasher._random_error_message_getter()
-        render = True
-        create_new_message = True
-        
-        try:
-            await client.interaction_component_acknowledge(interaction_event)
-        except BaseException as err:
-            if isinstance(err, ConnectionError):
-                forward = None
-            
-            elif (
-                isinstance(err, DiscordException) and
-                (
-                    (err.status == 500) or
-                    (err.code == ERROR_CODES.unknown_interaction)
-                )
-            ):
-                forward = None
-            
-            else:
-                raise
-    
-    else:
-        forward = None
-        render = True
-        create_new_message = False
-    
-    
-    if (forward is not None):
-        # Process what to forward
-        if isinstance(forward, tuple):
-            forward = InteractionResponse(*forward)
-        else:
-            forward = InteractionResponse(forward)
-        
-        # Get forward function
-        if create_new_message:
-            function = type(client).interaction_followup_message_create
-        else:
-            function = type(client).interaction_response_message_create
-        
-        try:
-            await function(
-                client,
-                interaction_event,
-                forward,
-                show_for_invoking_user_only = True,
-            )
-        except BaseException as err:
-            if isinstance(err, ConnectionError):
-                pass
-            
-            elif (
-                isinstance(err, DiscordException) and
-                (
-                    (err.status == 500) or
-                    (err.code == ERROR_CODES.unknown_interaction)
-                )
-            ):
-                pass
-            
-            else:
-                raise
-    
-    if render:
-        await _render_application_command_exception(client, command, exception)
+    finally:
+        if render:
+            await _render_application_command_exception(client, command, exception)
     
     return True
 

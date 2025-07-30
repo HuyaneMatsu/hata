@@ -70,7 +70,7 @@ class SKU(DiscordEntity):
         The name of the stock keeping unit.
     
     name_localizations : ``None | dict<Locale, str>``
-        The localized names of teh stock keeping unit.
+        The localized names of the stock keeping unit.
     
     premium : `bool`
         Whether the stock keeping unit is a premium one.

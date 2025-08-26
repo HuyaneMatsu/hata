@@ -15,13 +15,15 @@ from ...http.urls import (
 from ...localization.utils import LOCALE_DEFAULT
 from ...utils import DATETIME_FORMAT_CODE
 
+from ..status_by_platform import Status, SessionPlatformType
+
 from .fields import (
     parse_name, put_avatar_decoration, put_banner_color, put_bot, put_discriminator, put_display_name, put_flags,
     put_id, put_name, put_name_plate, put_primary_guild_badge, validate_name
 )
 from .flags import UserFlag
 from .helpers import _try_get_guild_id
-from .preinstanced import DefaultAvatar, PremiumType, Status
+from .preinstanced import DefaultAvatar, PremiumType
 
 
 ZEROUSER = include('ZEROUSER')
@@ -601,8 +603,8 @@ class UserBase(DiscordEntity, immortal = True):
         if (self.status is not other.status):
             return False
         
-        # statuses
-        if (self.statuses != other.statuses):
+        # status_by_platform
+        if (self.status_by_platform != other.status_by_platform):
             return False
         
         return True
@@ -839,14 +841,14 @@ class UserBase(DiscordEntity, immortal = True):
     )
     
     
-    statuses = PlaceHolder(
+    status_by_platform = PlaceHolder(
         None,
         """
-        Returns the user's statuses for each platform.
+        Returns the user's status by their platform.
         
         Returns
         -------
-        statuses : `None | dict<str, str>`
+        status_by_platform : ``None | StatusByPlatform``
         """
     )
     
@@ -858,7 +860,7 @@ class UserBase(DiscordEntity, immortal = True):
         
         Returns
         -------
-        activities : `None`, `tuple` of ``Activity``
+        activities : ``None | tuple<Activity>``
         """
     )
     
@@ -1005,9 +1007,9 @@ class UserBase(DiscordEntity, immortal = True):
         
         Returns
         -------
-        platform : `str`
+        platform : ``SessionPlatformType``
         """
-        return ''
+        return SessionPlatformType.none
     
     
     def get_status_by_platform(self, platform):
@@ -1016,7 +1018,7 @@ class UserBase(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        platform : `str`
+        platform : ``None | str | SessionPlatformType``
             The platform to get the status for.
         
         Returns
@@ -1358,15 +1360,15 @@ class UserBase(DiscordEntity, immortal = True):
         Returned Data Structure
         -----------------------
         
-        +---------------+-------------------------------------------+
-        | Keys          | Values                                    |
-        +===============+===========================================+
-        | activities    | ``ActivityChange``                        |
-        +---------------+-------------------------------------------+
-        | status        | ``Status``                                |
-        +---------------+-------------------------------------------+
-        | statuses      | `None | dict<str, str>`    |
-        +---------------+-------------------------------------------+
+        +-----------------------+-------------------------------------------+
+        | Keys                  | Values                                    |
+        +=======================+===========================================+
+        | activities            | ``ActivityChange``                        |
+        +-----------------------+-------------------------------------------+
+        | status                | ``Status``                                |
+        +-----------------------+-------------------------------------------+
+        | status_by_platform    | ``None | StatusByPlatform``               |
+        +-----------------------+-------------------------------------------+
         """
         return {}
     
@@ -1537,6 +1539,22 @@ class UserBase(DiscordEntity, immortal = True):
             stacklevel = 2,
         )
         return self.primary_guild_badge
+    
+    
+    @property
+    def statuses(self):
+        """
+        Deprecated and will be removed in 2025 November. Use ``.status_by_platform`` instead.
+        """
+        warn(
+            (
+                f'`{type(self).__name__}.clan` is deprecated and will be removed in 2026 February. '
+                f'Please use `.status_by_platform` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        return self.status_by_platform.to_data()
     
     
     @property

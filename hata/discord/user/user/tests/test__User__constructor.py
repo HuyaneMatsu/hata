@@ -9,10 +9,10 @@ from ....guild import GuildBadge
 
 from ...avatar_decoration import AvatarDecoration
 from ...name_plate import NamePlate
+from ...status_by_platform import Status, StatusByPlatform
 
 from ..flags import UserFlag
 from ..user import User
-from ..preinstanced import Status
 
 
 def _assert_fields_set(user):
@@ -43,7 +43,7 @@ def _assert_fields_set(user):
     if CACHE_PRESENCE:
         vampytest.assert_instance(user.activities, list, nullable = True)
         vampytest.assert_instance(user.status, Status)
-        vampytest.assert_instance(user.statuses, dict, nullable = True)
+        vampytest.assert_instance(user.status_by_platform, StatusByPlatform, nullable = True)
 
 
 def test__User__precreate__no_fields():
@@ -82,13 +82,15 @@ def test__User__precreate__all_fields():
     )
     primary_guild_badge = GuildBadge(guild_id = 202405180054, tag = 'meow')
     status = Status.online
-    statuses = {'mobile': Status.online.value}
+    status_by_platform = StatusByPlatform(
+        mobile = Status.online,
+    )
     
     if CACHE_PRESENCE:
         presence_keyword_parameters = {
             'activities': activities,
             'status': status,
-            'statuses': statuses,
+            'status_by_platform': status_by_platform,
         }
     else:
         presence_keyword_parameters = {}
@@ -126,7 +128,7 @@ def test__User__precreate__all_fields():
     if CACHE_PRESENCE:
         vampytest.assert_eq(user.activities, activities)
         vampytest.assert_is(user.status, status)
-        vampytest.assert_eq(user.statuses, statuses)
+        vampytest.assert_eq(user.status_by_platform, status_by_platform)
 
 
 def test__User__precreate__caching():

@@ -15,8 +15,8 @@ HATA_API_VERSION : `int` = `10`
 
 HATA_CACHE_PRESENCE : `bool` = `True`
     Whether hata should enable presence related attributes and dispatch users presence related events. By disabling it,
-    ``User.status``, ``User.statuses``, ``User.platform``, ``User.activities``, ``User.activity`` will be disabled. And
-    each will be replaced by a dummy property.
+    ``User.status``, ``User.status_by_platform``, ``User.platform``, ``User.activities``, ``User.activity``
+    will be disabled. And each will be replaced by a dummy property.
     
     If `HATA_CACHE_USERS` is defined as `False`, `HATA_CACHE_PRESENCE` will be set as `False` as well.
 

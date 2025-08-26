@@ -234,7 +234,7 @@ def get_setup_functions(extensions, keyword_parameters):
     
     Parameters
     ----------
-    extensions : `None`, `set` of `str`
+    extensions : `None | set<str>`
         The extension(s)'s name to setup on a client.
     keyword_parameters : `dict<str, object>`
         Additional parameters to pass to extensions.

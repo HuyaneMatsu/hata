@@ -197,7 +197,7 @@ class ThreadProfile(RichAttributeErrorBaseType):
         
         Returns
         -------
-        new : `instance<type<self>>
+        new : `instance<type<self>>`
         """
         new = object.__new__(type(self))
         new.flags = self.flags

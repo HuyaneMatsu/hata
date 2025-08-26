@@ -28,7 +28,7 @@ class PluginAutoReloaderManager(RichAttributeErrorBaseType):
         Directory path - watcher identifier pairs.
     _inotify : `None`, `inotify_simple.Inotify`
         Inotify instance used by the auto reloader.
-    _plugin_root_paths : `set` of `str`
+    _plugin_root_paths : `set<str>`
         Paths to plugin roots.
     _reload_callback_handle : `None`, ``TimerHandle``
         Handle that delays reload.

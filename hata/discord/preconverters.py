@@ -191,7 +191,7 @@ def preconvert_iterable_of_str(value, name, iterable_lower_limit, iterable_upper
     
     Returns
     -------
-    converted_value : `set` of `str`
+    converted_value : `set<str>`
     
     Raises
     ------

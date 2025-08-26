@@ -19,7 +19,7 @@ class PluginExtractor(RichAttributeErrorBaseType):
         Extracted plugin trees from the input.
     input_plugins : `None`, `set` of ``Plugin``
         Extracted plugins from the input.
-    input_strings : `None`, `set` of `str`
+    input_strings : `None | set<str>`
         Extracted plugins from the input.
     name : `str`
         The extracted value(s) name.

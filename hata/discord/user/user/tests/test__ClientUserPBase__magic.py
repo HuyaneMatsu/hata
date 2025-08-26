@@ -7,10 +7,10 @@ from ....guild import GuildBadge
 
 from ...avatar_decoration import AvatarDecoration
 from ...name_plate import NamePlate
+from ...status_by_platform import Status, StatusByPlatform
 
 from ..flags import UserFlag
 from ..client_user_presence_base import ClientUserPBase
-from ..preinstanced import Status
 
 
 def test__ClientUserPBase__repr():
@@ -35,7 +35,9 @@ def test__ClientUserPBase__repr():
     )
     primary_guild_badge = GuildBadge(guild_id = 202405180046, tag = 'miau')
     status = Status.online
-    statuses = {'mobile': Status.online.value}
+    status_by_platform = StatusByPlatform(
+        mobile = Status.online,
+    )
     
     user = ClientUserPBase._create_empty(user_id)
     vampytest.assert_instance(repr(user), str)
@@ -54,7 +56,7 @@ def test__ClientUserPBase__repr():
         name_plate = name_plate,
         primary_guild_badge = primary_guild_badge,
         status = status,
-        statuses = statuses,
+        status_by_platform = status_by_platform,
     )
     vampytest.assert_instance(repr(user), str)
 
@@ -81,7 +83,9 @@ def test__ClientUserPBase__hash():
     )
     primary_guild_badge = GuildBadge(guild_id = 202405180047, tag = 'miau')
     status = Status.online
-    statuses = {'mobile': Status.online.value}
+    status_by_platform = StatusByPlatform(
+        mobile = Status.online,
+    )
     
     user = ClientUserPBase._create_empty(user_id)
     vampytest.assert_instance(hash(user), int)
@@ -100,7 +104,7 @@ def test__ClientUserPBase__hash():
         name_plate = name_plate,
         primary_guild_badge = primary_guild_badge,
         status = status,
-        statuses = statuses,
+        status_by_platform = status_by_platform,
     )
     vampytest.assert_instance(hash(user), int)
 
@@ -141,7 +145,9 @@ def _iter_options__eq():
     )
     primary_guild_badge = GuildBadge(guild_id = 202405180009, tag = 'miau')
     status = Status.online
-    statuses = {'mobile': Status.online.value}
+    status_by_platform = StatusByPlatform(
+        mobile = Status.online,
+    )
     
     keyword_parameters = {
         'activities': activities,
@@ -157,7 +163,7 @@ def _iter_options__eq():
         'name_plate': name_plate,
         'primary_guild_badge': primary_guild_badge,
         'status': status,
-        'statuses': statuses,
+        'status_by_platform': status_by_platform,
     }
     
     yield (
@@ -287,7 +293,7 @@ def _iter_options__eq():
         keyword_parameters,
         {
             **keyword_parameters,
-            'statuses': None,
+            'status_by_platform': None,
         },
         False,
     )
@@ -340,7 +346,9 @@ def test__ClientUserPBase__format():
     )
     primary_guild_badge = GuildBadge(guild_id = 202405180049, tag = 'miau')
     status = Status.online
-    statuses = {'mobile': Status.online.value}
+    status_by_platform = StatusByPlatform(
+        mobile = Status.online,
+    )
     
     user = ClientUserPBase(
         activities = activities,
@@ -356,7 +364,7 @@ def test__ClientUserPBase__format():
         name_plate = name_plate,
         primary_guild_badge = primary_guild_badge,
         status = status,
-        statuses = statuses,
+        status_by_platform = status_by_platform,
     )
     
     vampytest.assert_instance(format(user, ''), str)

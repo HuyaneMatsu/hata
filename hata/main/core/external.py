@@ -42,7 +42,7 @@ def _save_external_command_routes(command_routes):
     
     Parameters
     ----------
-    command_routes : `set` of `str`
+    command_routes : `set<str>`
     """
     content = '\n'.join(sorted(command_routes))
     

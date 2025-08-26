@@ -195,7 +195,7 @@ class AvatarDecoration(metaclass = Slotted):
         
         Returns
         -------
-        new : `instance<type<self>>
+        new : `instance<type<self>>`
         """
         new = object.__new__(type(self))
         new.asset_hash = self.asset_hash

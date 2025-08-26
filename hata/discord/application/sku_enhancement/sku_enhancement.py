@@ -205,7 +205,7 @@ class SKUEnhancement(RichAttributeErrorBaseType):
         
         Returns
         -------
-        new : `instance<type<self>>
+        new : `instance<type<self>>`
         """
         new = object.__new__(type(self))
         new.boost_cost = self.boost_cost

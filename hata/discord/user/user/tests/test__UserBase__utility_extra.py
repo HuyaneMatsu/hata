@@ -11,9 +11,10 @@ from ....role import Role
 
 from ...avatar_decoration import AvatarDecoration
 from ...name_plate import NamePlate
+from ...status_by_platform import SessionPlatformType, Status, StatusByPlatform
 
 from ..flags import UserFlag
-from ..preinstanced import DefaultAvatar, PremiumType, Status
+from ..preinstanced import DefaultAvatar, PremiumType
 from ..user_base import UserBase
 
 
@@ -41,7 +42,7 @@ def test__UserBase__placeholders():
     vampytest.assert_instance(user.premium_type, PremiumType)
     vampytest.assert_instance(user.primary_guild_badge, GuildBadge, nullable = True)
     vampytest.assert_instance(user.status, Status)
-    vampytest.assert_instance(user.statuses, dict, nullable = True)
+    vampytest.assert_instance(user.status_by_platform, StatusByPlatform, nullable = True)
     vampytest.assert_instance(user.thread_profiles, dict, nullable = True)
 
 
@@ -107,8 +108,8 @@ def test__UserBase__platform():
     """
     user = UserBase()
     output = user.platform
-    vampytest.assert_instance(output, str)
-    vampytest.assert_eq(output, '')
+    vampytest.assert_instance(output, SessionPlatformType)
+    vampytest.assert_is(output, SessionPlatformType.none)
 
 
 def test__UserBase__color_at():
@@ -395,7 +396,7 @@ def test__UserBase__get_status_by_platform():
     """
     user = UserBase()
     
-    output = user.get_status_by_platform('')
+    output = user.get_status_by_platform(SessionPlatformType.desktop)
     
     vampytest.assert_instance(output, Status)
     vampytest.assert_is(output, Status.offline)

@@ -20,13 +20,14 @@ from ...localization.utils import LOCALE_DEFAULT
 
 from ..avatar_decoration import AvatarDecoration
 from ..name_plate import NamePlate
+from ..status_by_platform import Status, StatusByPlatform
 
 from .constants import (
     DISCRIMINATOR_VALUE_MAX, DISCRIMINATOR_VALUE_MIN, DISPLAY_NAME_LENGTH_MAX, NAME_LENGTH_MAX, NAME_LENGTH_MIN,
     WEBHOOK_NAME_LENGTH_MAX, WEBHOOK_NAME_LENGTH_MIN
 )
 from .flags import UserFlag
-from .preinstanced import PremiumType, Status
+from .preinstanced import PremiumType
 
 
 # activities
@@ -488,36 +489,38 @@ parse_status = preinstanced_parser_factory('status', Status, Status.offline)
 put_status = preinstanced_putter_factory('status')
 validate_status = preinstanced_validator_factory('status', Status)
 
-# statuses
+# status_by_platform
 
-def parse_statuses(data):
+def parse_status_by_platform(data):
     """
-    Parses out a user statuses from the given data.
+    Parses out a user's status by platform from the given data.
     
     Parameters
     ----------
     data : `dict<str, object>`
-        User presence data.
+        Data to parse from.
     
     Returns
     -------
-    statuses : `None | dict<str, str>`
+    status_by_platform : ``None | StatusByPlatform``
     """
-    statuses = data.get('client_status', None)
-    if (statuses is not None) and (not statuses):
-        statuses = None
+    status_by_platform_data = data.get('client_status', None)
+    if (status_by_platform_data is None) or (not status_by_platform_data):
+        status_by_platform = None
+    else:
+        status_by_platform = StatusByPlatform.from_data(status_by_platform_data)
     
-    return statuses
+    return status_by_platform
 
 
-def put_statuses(statuses, data, defaults):
+def put_status_by_platform(status_by_platform, data, defaults):
     """
-    Puts the given statuses value into the given data.
+    Puts the given status by platform value into the given data.
     
     Parameters
     ----------
-    statuses : `None | dict<str, str>`
-        user statuses by platform.
+    status_by_platform : ``None | StatusByPlatform``
+        Value to serialize.
     
     data : `dict<str, object>`
         Json serializable dictionary.
@@ -529,55 +532,13 @@ def put_statuses(statuses, data, defaults):
     -------
     data : `dict<str, object>`
     """
-    if (statuses is None):
-        statuses = {}
+    if (status_by_platform is None):
+        status_by_platform_data = {}
+    else:
+        status_by_platform_data = status_by_platform.to_data(defaults = defaults)
     
-    data['client_status'] = statuses
+    data['client_status'] = status_by_platform_data
     return data
 
 
-def validate_statuses(statuses):
-    """
-    validates the given `statuses` value.
-    
-    Parameters
-    ----------
-    statuses : `None | dict<str, str>`
-        Statuses to validate.
-    
-    Returns
-    -------
-    statuses : `None | dict<str, str>`
-    
-    Raises
-    ------
-    TypeError
-        - If `statuses`'s type is incorrect.
-    """
-    if statuses is None:
-        return None
-    
-    if not isinstance(statuses, dict):
-        raise TypeError(
-            f'`statuses` can be `None | dict<str, str>`, '
-            f'got {type(statuses).__name__}; {statuses!r}.'
-        )
-    
-    statuses_validated = None
-    
-    for key, value in statuses.items():
-        if not isinstance(key, str):
-            raise TypeError(
-                f'`statuses` keys can be `str`, got {key.__class__.__name__}; {key!r}; statuses = {statuses!r}.'
-            )
-        if not isinstance(value, str):
-            raise TypeError(
-                f'`statuses` values can be `str`, got {value.__class__.__name__}; {value!r}; statuses = {statuses!r}.'
-            )
-        
-        if statuses_validated is None:
-            statuses_validated = {}
-            
-        statuses_validated[key] = value
-    
-    return statuses_validated
+validate_status_by_platform = nullable_entity_validator_factory('status_by_platform', StatusByPlatform)

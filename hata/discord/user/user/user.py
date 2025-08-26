@@ -1,5 +1,7 @@
 __all__ = ('User',)
 
+from warnings import warn
+
 from scarletio import copy_docs
 
 from ....env import CACHE_PRESENCE, CACHE_USER
@@ -8,18 +10,48 @@ from ...core import GUILDS, USERS
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 
 from ..guild_profile import GuildProfile
+from ..status_by_platform import Status, StatusByPlatform
 
 from .client_user_base import ClientUserBase
 from .client_user_presence_base import ClientUserPBase
 from .fields import (
     parse_bot, parse_id, validate_activities, validate_avatar_decoration, validate_banner_color, validate_bot,
     validate_discriminator, validate_display_name, validate_flags, validate_id, validate_name, validate_name_plate,
-    validate_primary_guild_badge, validate_status, validate_statuses
+    validate_primary_guild_badge, validate_status, validate_status_by_platform
 )
 from .flags import UserFlag
 from .orin_user_base import USER_BANNER
-from .preinstanced import Status
 from .user_base import USER_AVATAR
+
+
+def _validate_statuses_deprecated(input_value):
+    warn(
+        (
+            f'`statuses` is deprecated and will be removed in 2026 february. '
+            f'Please use `status_by_platform` instead.'
+        ),
+        FutureWarning,
+        stacklevel = 3,
+    )
+    
+    if (input_value is None):
+        return None
+    
+    if isinstance(input_value, dict):
+        if not input_value:
+            return None
+        
+        unexpected_keys = {*input_value.keys()} - {'desktop', 'embedded', 'mobile', 'web'}
+        if unexpected_keys:
+            raise ValueError(
+                f'`statuses contains unexpected keys: {", ".join([repr(key) for key in unexpected_keys])}'
+            )
+        
+        return StatusByPlatform.from_data(input_value)
+    
+    raise TypeError(
+        f'`statuses` can be `None | dict<str, str>`, got {type(input_value).__name__}; {input_value!r}.'
+    )
 
 
 PRECREATE_FIELDS = {
@@ -46,7 +78,8 @@ else:
         **PRECREATE_FIELDS,
         'activities': ('activities', validate_activities),
         'status': ('status', validate_status),
-        'statuses': ('statuses', validate_statuses),
+        'status_by_platform': ('status_by_platform', validate_status_by_platform),
+        'statuses': ('status_by_platform', _validate_statuses_deprecated),
     }
 
 
@@ -112,12 +145,12 @@ class User(USER_BASE_TYPE):
         
         > Only available if presence caching is enabled.
     
-    statuses : `None | dict<str, str>`
-        The user's statuses for each platform.
+    status_by_platform : ``None | StatusByPlatform`
+        The user's status for each platform.
         
         > Only available if presence caching is enabled.
     
-    thread_profiles : `None`, `dict` (``Channel``, ``ThreadProfile``) items
+    thread_profiles : ``None | dict<int, ThreadProfile>``
         A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
         Defaults to `None`.
     
@@ -141,7 +174,7 @@ class User(USER_BASE_TYPE):
                 self.guild_profiles = {}
                 self.thread_profiles = None
                 self.status = Status.offline
-                self.statuses = None
+                self.status_by_platform = None
                 self.activities = None
                 
                 USERS[user_id] = self
@@ -302,8 +335,8 @@ class User(USER_BASE_TYPE):
         
             > Only available if presence caching is enabled.
         
-        statuses : `None | dict<str, str>`, Optional (Keyword only)
-            The user's statuses for each platform.
+        status_by_platform : ``None | StatusByPlatform`, Optional (Keyword only)
+            The user's status for each platform.
         
             > Only available if presence caching is enabled.
         

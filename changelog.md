@@ -1,3 +1,21 @@
+## 1.3.83 *\[2025-08-26\]*
+
+### Improvements
+
+- Add missing default for `Status`.
+- Add `SessionPlatformType`.
+- Add `StatusByPlatform`.
+- Add `UserBase.status_by_platform`, replacing `.statuses`.
+
+#### ext.slash
+
+- `default_slasher_exception_handler` now expects `ERROR_CODES.unknown_webhook` as a possible error code that can be
+    ignored.
+
+### Renames, Deprecations & Removals
+
+- Deprecate `UserBase.statuses`, use `.status_by_platform` instead.
+
 ## 1.3.82 *\[2025-07-30\]*
 
 ### Bug fixes

@@ -68,7 +68,7 @@ class ClientUserBase(OrinUserBase):
     primary_guild_badge : `None | GuildBadge`
         The user's primary guild's badge.
     
-    thread_profiles : `None`, `dict` (``Channel``, ``ThreadProfile``) items
+    thread_profiles : ``None | dict<int, ThreadProfile>``
         A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
         Defaults to `None`.
     """

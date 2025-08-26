@@ -1,17 +1,63 @@
 import vampytest
 
-from ..fields import put_statuses
+from ...status_by_platform import Status, StatusByPlatform
+
+from ..fields import put_status_by_platform
 
 
-def test__put_statuses():
+def _iter_options():
+    yield (
+        None,
+        False,
+        {
+            'client_status': {},
+        },
+    )
+    
+    yield (
+        None,
+        True,
+        {
+            'client_status': {},
+        },
+    )
+    
+    status_by_platform = StatusByPlatform(
+        mobile = Status.online,
+    )
+    
+    yield (
+        status_by_platform,
+        False,
+        {
+            'client_status': status_by_platform.to_data(defaults = False),
+        },
+    )
+    
+    yield (
+        status_by_platform,
+        True,
+        {
+            'client_status': status_by_platform.to_data(defaults = True),
+        },
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__put_status_by_platform(input_value, defaults):
     """
-    Tests whether ``put_statuses`` works as intended.
+    Tests whether ``put_status_by_platform`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : ``None | StatusByPlatform``
+        Value to serialize.
+    
+    defaults : `bool`
+        Whether values as their default should be included as well.
+    
+    Returns
+    -------
+    output : `dict<str, object>`
     """
-    for input_value, defaults, expected_output in (
-        (None, False, {'client_status': {}}),
-        (None, True, {'client_status': {}}),
-        ({'mobile': 'online'}, False, {'client_status': {'mobile': 'online'}}),
-        ({'mobile': 'online'}, True, {'client_status': {'mobile': 'online'}}),
-    ):
-        data = put_statuses(input_value, {}, defaults)
-        vampytest.assert_eq(data, expected_output)
+    return put_status_by_platform(input_value, {}, defaults)

@@ -229,6 +229,7 @@ setup(
         'hata.discord.user.avatar_decoration',
         'hata.discord.user.guild_profile',
         'hata.discord.user.name_plate',
+        'hata.discord.user.status_by_platform',
         'hata.discord.user.thread_profile',
         'hata.discord.user.user',
         'hata.discord.user.voice_state',

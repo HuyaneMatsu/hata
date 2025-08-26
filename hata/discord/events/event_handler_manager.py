@@ -1264,15 +1264,15 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         `attribute-name` - `old-value` relation. An exception from this is `activities`, because that is a
         ``ActivityChange`` containing all the changes of the user's activities.
         
-        +---------------+-----------------------------------+
-        | Keys          | Values                            |
-        +===============+===================================+
-        | activities    | ``ActivityChange``                |
-        +---------------+-----------------------------------+
-        | status        | ``Status``                        |
-        +---------------+-----------------------------------+
-        | statuses      | `dict<str, str>`                  |
-        +---------------+-----------------------------------+
+        +-----------------------+-----------------------------------+
+        | Keys                  | Values                            |
+        +=======================+===================================+
+        | activities            | ``ActivityChange``                |
+        +-----------------------+-----------------------------------+
+        | status                | ``Status``                        |
+        +-----------------------+-----------------------------------+
+        | status_by_platform    | ``None | StatusByPlatform``       |
+        +-----------------------+-----------------------------------+
     
     user_voice_join(client: ``Client``, voice_state: ``VoiceState``)
         Called when a user joins a voice channel.

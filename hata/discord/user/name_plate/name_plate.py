@@ -234,7 +234,7 @@ class NamePlate(metaclass = Slotted):
         
         Returns
         -------
-        new : `instance<type<self>>
+        new : `instance<type<self>>`
         """
         new = object.__new__(type(self))
         new.asset_path = self.asset_path

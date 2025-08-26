@@ -8,13 +8,13 @@ from ...activity import Activity, ActivityType
 
 from ..activity_change import ActivityChange
 from ..activity_update import ActivityUpdate
+from ..status_by_platform import Status, SessionPlatformType
 
 from .client_user_base import ClientUserBase
 from .fields import (
-    parse_activities, parse_status, parse_statuses, validate_activities, validate_status, validate_statuses
+    parse_activities, parse_status, parse_status_by_platform, validate_activities, validate_status, validate_status_by_platform
 )
 from .flags import UserFlag
-from .preinstanced import Status
 
 
 ACTIVITY_TYPE_CUSTOM = ActivityType.custom
@@ -79,14 +79,14 @@ class ClientUserPBase(ClientUserBase):
     status : `Status`
         The user's display status.
     
-    statuses : `None | dict<str, str>`
-        The user's statuses for each platform.
+    status_by_platform : ``None | StatusByPlatform``
+        The user's status for each platform.
     
-    thread_profiles : `None`, `dict` (``Channel``, ``ThreadProfile``) items
+    thread_profiles : ``None | dict<int, ThreadProfile>``
         A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
         Defaults to `None`.
     """
-    __slots__ = ('activities', 'status', 'statuses')
+    __slots__ = ('activities', 'status', 'status_by_platform')
     
     def __new__(
         cls,
@@ -104,7 +104,7 @@ class ClientUserPBase(ClientUserBase):
         name_plate = ...,
         primary_guild_badge = ...,
         status = ...,
-        statuses = ...,
+        status_by_platform = ...,
     ):
         """
         Creates a new partial user with the given fields.
@@ -150,8 +150,8 @@ class ClientUserPBase(ClientUserBase):
         status : `Status`, `str`, Optional (Keyword only)
             The user's display status.
         
-        statuses : `None | dict<str, str>`, Optional (Keyword only)
-            The user's statuses for each platform.
+        status_by_platform : ``None | StatusByPlatform``, Optional (Keyword only)
+            The user's status for each platform.
         
         Returns
         -------
@@ -176,11 +176,11 @@ class ClientUserPBase(ClientUserBase):
         else:
             status = validate_status(status)
         
-        # statuses
-        if statuses is ...:
-            statuses = None
+        # status_by_platform
+        if status_by_platform is ...:
+            status_by_platform = None
         else:
-            statuses = validate_statuses(statuses)
+            status_by_platform = validate_status_by_platform(status_by_platform)
         
         self = ClientUserBase.__new__(
             cls,
@@ -199,7 +199,7 @@ class ClientUserPBase(ClientUserBase):
         
         self.activities = activities
         self.status = status
-        self.statuses = statuses
+        self.status_by_platform = status_by_platform
         return self
         
     
@@ -217,11 +217,11 @@ class ClientUserPBase(ClientUserBase):
         # status
         self.status = client.status
         
-        # statuses
-        statuses = client.statuses
-        if (statuses is not None):
-            statuses = statuses.copy()
-        self.statuses = statuses
+        # status_by_platform
+        status_by_platform = client.status_by_platform
+        if (status_by_platform is not None):
+            status_by_platform = status_by_platform.copy()
+        self.status_by_platform = status_by_platform
         
         return self
     
@@ -231,7 +231,7 @@ class ClientUserPBase(ClientUserBase):
         ClientUserBase._set_default_attributes(self)
         
         self.status = Status.offline
-        self.statuses = None
+        self.status_by_platform = None
         self.activities = None
     
     
@@ -239,17 +239,17 @@ class ClientUserPBase(ClientUserBase):
     def _update_presence(self, data):
         self.activities = parse_activities(data)
         self.status = parse_status(data)
-        self.statuses = parse_statuses(data)
+        self.status_by_platform = parse_status_by_platform(data)
     
     
     @copy_docs(ClientUserBase._difference_update_presence)
     def _difference_update_presence(self, data):
         old_attributes = {}
         
-        statuses = parse_statuses(data)
-        if self.statuses != statuses:
-            old_attributes['statuses'] = self.statuses
-            self.statuses = statuses
+        status_by_platform = parse_status_by_platform(data)
+        if self.status_by_platform != status_by_platform:
+            old_attributes['status_by_platform'] = self.status_by_platform
+            self.status_by_platform = status_by_platform
             
         status = parse_status(data)
         if self.status is not status:
@@ -355,11 +355,11 @@ class ClientUserPBase(ClientUserBase):
         # status
         new.status = self.status
         
-        # statuses
-        statuses = self.statuses
-        if (statuses is not None):
-            statuses = statuses.copy()
-        new.statuses = statuses
+        # status_by_platform
+        status_by_platform = self.status_by_platform
+        if (status_by_platform is not None):
+            status_by_platform = status_by_platform.copy()
+        new.status_by_platform = status_by_platform
         
         return new
     
@@ -380,7 +380,7 @@ class ClientUserPBase(ClientUserBase):
         name_plate = ...,
         primary_guild_badge = ...,
         status = ...,
-        statuses = ...,
+        status_by_platform = ...,
     ):
         """
         Copies the user with the given fields.
@@ -426,8 +426,8 @@ class ClientUserPBase(ClientUserBase):
         status : `Status`, `str`, Optional (Keyword only)
             The user's display status.
         
-        statuses : `None | dict<str, str>`, Optional (Keyword only)
-            The user's statuses for each platform.
+        status_by_platform : ``None | StatusByPlatform``, Optional (Keyword only)
+            The user's status for each platform.
         
         Returns
         -------
@@ -454,13 +454,13 @@ class ClientUserPBase(ClientUserBase):
         else:
             status = validate_status(status)
         
-        # statuses
-        if statuses is ...:
-            statuses = self.statuses
-            if (statuses is not None):
-                statuses = statuses.copy()
+        # status_by_platform
+        if status_by_platform is ...:
+            status_by_platform = self.status_by_platform
+            if (status_by_platform is not None):
+                status_by_platform = status_by_platform.copy()
         else:
-            statuses = validate_statuses(statuses)
+            status_by_platform = validate_status_by_platform(status_by_platform)
         
         new = ClientUserBase.copy_with(
             self,
@@ -479,7 +479,7 @@ class ClientUserPBase(ClientUserBase):
         
         new.activities = activities
         new.status = status
-        new.statuses = statuses
+        new.status_by_platform = status_by_platform
         return new
     
     
@@ -498,10 +498,10 @@ class ClientUserPBase(ClientUserBase):
         # status
         hash_value ^= hash(self.status)
         
-        # statuses
-        statuses = self.statuses
-        if (statuses is not None):
-            hash_value ^= hash(tuple(statuses.items()))
+        # status_by_platform
+        status_by_platform = self.status_by_platform
+        if (status_by_platform is not None):
+            hash_value ^= hash(status_by_platform)
         
         return hash_value
     
@@ -541,25 +541,20 @@ class ClientUserPBase(ClientUserBase):
     @property
     @copy_docs(ClientUserBase.platform)
     def platform(self):
-        statuses = self.statuses
-        if (statuses is not None):
-            actual_status_value = self.status.value
-            for platform, status_value in statuses.items():
-                if actual_status_value == status_value:
+        status_by_platform = self.status_by_platform
+        if (status_by_platform is not None):
+            actual_status = self.status
+            for platform, status in status_by_platform.iter_status_by_platform():
+                if actual_status is status:
                     return platform
         
-        return ''
+        return SessionPlatformType.none
     
     
     @copy_docs(ClientUserBase.get_status_by_platform)
     def get_status_by_platform(self, platform):
-        statuses = self.statuses
-        if (statuses is not None):
-            try:
-                status_value = statuses[platform]
-            except KeyError:
-                pass
-            else:
-                return Status(status_value)
+        status_by_platform = self.status_by_platform
+        if (status_by_platform is not None):
+            return status_by_platform[platform]
         
         return Status.offline

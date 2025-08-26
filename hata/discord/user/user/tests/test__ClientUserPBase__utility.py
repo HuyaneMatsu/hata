@@ -7,10 +7,10 @@ from ....guild import GuildBadge
 
 from ...avatar_decoration import AvatarDecoration
 from ...name_plate import NamePlate
+from ...status_by_platform import Status, StatusByPlatform
 
 from ..flags import UserFlag
 from ..client_user_presence_base import ClientUserPBase
-from ..preinstanced import Status
 
 from .test__ClientUserPBase__constructor import _assert_fields_set
 
@@ -35,7 +35,9 @@ def test__ClientUserPBase__copy():
     )
     primary_guild_badge = GuildBadge(guild_id = 202405180050, tag = 'miau')
     status = Status.online
-    statuses = {'mobile': Status.online.value}
+    status_by_platform = StatusByPlatform(
+        mobile = Status.online,
+    )
     
     user = ClientUserPBase(
         activities = activities,
@@ -51,7 +53,7 @@ def test__ClientUserPBase__copy():
         name_plate = name_plate,
         primary_guild_badge = primary_guild_badge,
         status = status,
-        statuses = statuses,
+        status_by_platform = status_by_platform,
     )
     
     copy = user.copy()
@@ -83,7 +85,9 @@ def test__ClientUserPBase__copy_with__no_fields():
     )
     primary_guild_badge = GuildBadge(guild_id = 202405180051, tag = 'miau')
     status = Status.online
-    statuses = {'mobile': Status.online.value}
+    status_by_platform = StatusByPlatform(
+        mobile = Status.online,
+    )
     
     user = ClientUserPBase(
         activities = activities,
@@ -99,7 +103,7 @@ def test__ClientUserPBase__copy_with__no_fields():
         name_plate = name_plate,
         primary_guild_badge = primary_guild_badge,
         status = status,
-        statuses = statuses,
+        status_by_platform = status_by_platform,
     )
     
     copy = user.copy_with()
@@ -131,7 +135,9 @@ def test__ClientUserPBase__copy_with__all_fields():
     )
     old_primary_guild_badge = GuildBadge(guild_id = 202405180052, tag = 'miau')
     old_status = Status.online
-    old_statuses = {'mobile': Status.online.value}
+    old_status_by_platform = StatusByPlatform(
+        mobile = Status.online,
+    )
     
     new_activities = [Activity('okuu dance', activity_type = ActivityType.playing)]
     new_avatar = Icon(IconType.animated, 23)
@@ -149,7 +155,9 @@ def test__ClientUserPBase__copy_with__all_fields():
     )
     new_primary_guild_badge = GuildBadge(guild_id = 202405180053, tag = 'meow')
     new_status = Status.idle
-    new_statuses = {'desktop': Status.online.value}
+    new_status_by_platform = StatusByPlatform(
+        desktop = Status.online,
+    )
     
     user = ClientUserPBase(
         activities = old_activities,
@@ -165,7 +173,7 @@ def test__ClientUserPBase__copy_with__all_fields():
         name_plate = old_name_plate,
         primary_guild_badge = old_primary_guild_badge,
         status = old_status,
-        statuses = old_statuses,
+        status_by_platform = old_status_by_platform,
     )
     
     copy = user.copy_with(
@@ -182,7 +190,7 @@ def test__ClientUserPBase__copy_with__all_fields():
         name_plate = new_name_plate,
         primary_guild_badge = new_primary_guild_badge,
         status = new_status,
-        statuses = new_statuses,
+        status_by_platform = new_status_by_platform,
     )
     _assert_fields_set(copy)
     vampytest.assert_is_not(user, copy)
@@ -199,4 +207,4 @@ def test__ClientUserPBase__copy_with__all_fields():
     vampytest.assert_eq(copy.name_plate, new_name_plate)
     vampytest.assert_eq(copy.primary_guild_badge, new_primary_guild_badge)
     vampytest.assert_eq(copy.status, new_status)
-    vampytest.assert_eq(copy.statuses, new_statuses)
+    vampytest.assert_eq(copy.status_by_platform, new_status_by_platform)

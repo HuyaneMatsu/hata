@@ -377,7 +377,12 @@ async def default_slasher_exception_handler(client, interaction_event, command, 
             except DiscordException as err:
                 if not (
                     (err.status == 500) or
-                    (err.code == ERROR_CODES.unknown_interaction)
+                    (
+                        err.code in (
+                            ERROR_CODES.unknown_interaction,
+                            ERROR_CODES.unknown_webhook,
+                        )
+                    )
                 ):
                     raise
         
@@ -414,7 +419,12 @@ async def default_slasher_exception_handler(client, interaction_event, command, 
             except DiscordException as err:
                 if not (
                     (err.status == 500) or
-                    (err.code == ERROR_CODES.unknown_interaction)
+                    (
+                        err.code in (
+                            ERROR_CODES.unknown_interaction,
+                            ERROR_CODES.unknown_webhook,
+                        )
+                    )
                 ):
                     raise
     

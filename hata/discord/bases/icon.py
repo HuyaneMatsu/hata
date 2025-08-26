@@ -31,7 +31,7 @@ class IconDetailsBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        allowed_postfixes : `None`, `frozenset` of `str`
+        allowed_postfixes : `None | frozenset<str>`
         """
     )
     
@@ -129,7 +129,7 @@ class IconDetailsPreinstanced(IconDetailsBase):
     
     Attributes
     ----------
-    allowed_postfixes : `None`, `frozenset` of `str`
+    allowed_postfixes : `None | frozenset<str>`
         The allowed postfixes.
     alternatives : `None`, `dict` of (`str`, ``IconType`) items
         Alternative icon types related to this one.
@@ -146,7 +146,7 @@ class IconDetailsPreinstanced(IconDetailsBase):
         
         Parameters
         ----------
-        allowed_postfixes : `None`, `frozenset` of `str`
+        allowed_postfixes : `None | frozenset<str>`
             The allowed postfixes.
         default_postfix : `str`
             Default postfix used when building an url with the icon.

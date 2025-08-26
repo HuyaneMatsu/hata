@@ -112,7 +112,7 @@ class DiscordException(Exception):
             Deserialized `json` response data if applicable.
         sent_data : `object`
             Sent data.
-        debug_options : `None`, `set` of `str`
+        debug_options : `None | set<str>`
             Debug options of the http client.
         """
         self = Exception.__new__(cls, response, received_data, sent_data, debug_options)

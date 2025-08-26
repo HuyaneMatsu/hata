@@ -88,7 +88,7 @@ def parse_tags(data):
     
     Returns
     -------
-    tags : `None`, `frozenset` of `str`
+    tags : `None | frozenset<str>`
     """
     raw_tags = data.get('tags', None)
     if (raw_tags is None) or (not raw_tags):
@@ -105,7 +105,7 @@ def put_tags(tags, data, defaults):
     
     Parameters
     ----------
-    tags : `None`, `frozenset` of `str`
+    tags : `None | frozenset<str>`
         Sticker tags.
     data : `dict<str, object>`
         Json serializable dictionary.
@@ -135,7 +135,7 @@ def validate_tags(tags):
     
     Returns
     -------
-    tags : `None`, `frozenset` of `str`
+    tags : `None | frozenset<str>`
     
     Raises
     ------

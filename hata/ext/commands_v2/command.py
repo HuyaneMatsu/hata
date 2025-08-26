@@ -110,7 +110,7 @@ def _validate_aliases(aliases):
     
     Returns
     -------
-    aliases : `None`, `set` of `str`
+    aliases : `None | set<str>`
         The validated aliases.
     
     Raises

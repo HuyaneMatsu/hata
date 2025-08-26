@@ -519,7 +519,7 @@ class Oauth2User(OrinUserBase):
         
         Returns
         -------
-        scopes : `set` of `str`
+        scopes : `set<str>`
         """
         return self.access.scopes
     

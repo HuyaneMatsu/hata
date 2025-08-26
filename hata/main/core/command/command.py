@@ -19,7 +19,7 @@ class Command(RichAttributeErrorBaseType):
         Command category of the command.
     _self_reference : `None`, ``WeakReferer``
         Reference to itself.
-    aliases : `None`, `set` of `str`
+    aliases : `None | set<str>`
         Alternative names for the command.
     available : `bool`
         Whether the command is available.

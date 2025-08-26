@@ -431,14 +431,14 @@ def _add_plugin_name_to_plugin_root_names(plugin_root_names, plugin_name):
     
     Parameters
     ----------
-    plugin_root_names : `None`, `set` of `str`
+    plugin_root_names : `None | set<str>`
         Plugin root names.
     plugin_name : `str`
         The plugin's name.
     
     Returns
     ----------
-    plugin_root_names : `set` of `str`
+    plugin_root_names : `set<str>`
     """
     if plugin_root_names is None:
         plugin_root_names = {plugin_name}
@@ -466,7 +466,7 @@ def _is_plugin_name_in_plugin_root_names(plugin_root_names, plugin_name):
     
     Parameters
     ----------
-    plugin_root_names : `None`, `set` of `str`
+    plugin_root_names : `None | set<str>`
         Plugin root names.
     plugin_name : `str`
         The plugin's name.

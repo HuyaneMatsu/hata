@@ -497,7 +497,7 @@ class GuildProfile(metaclass = Slotted):
         
         Returns
         -------
-        new : `instance<type<self>>
+        new : `instance<type<self>>`
         """
         new = object.__new__(type(self))
         

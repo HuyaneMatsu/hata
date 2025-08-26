@@ -10,11 +10,11 @@ from ...avatar_decoration import AvatarDecoration
 from ...name_plate import NamePlate
 
 from ...guild_profile import GuildProfile
+from ...status_by_platform import Status, StatusByPlatform
 from ...thread_profile import ThreadProfile
 
 from ..flags import UserFlag
 from ..client_user_presence_base import ClientUserPBase
-from ..preinstanced import Status
 
 
 def _assert_fields_set(user):
@@ -43,7 +43,7 @@ def _assert_fields_set(user):
     vampytest.assert_instance(user.primary_guild_badge, GuildBadge, nullable = True)
     vampytest.assert_instance(user.thread_profiles, dict, nullable = True)
     vampytest.assert_instance(user.status, Status)
-    vampytest.assert_instance(user.statuses, dict, nullable = True)
+    vampytest.assert_instance(user.status_by_platform, StatusByPlatform, nullable = True)
 
 
 def test__ClientUserPBase__new__no_fields():
@@ -78,7 +78,9 @@ def test__ClientUserPBase__new__all_fields():
     )
     primary_guild_badge = GuildBadge(guild_id = 202405180043, tag = 'miau')
     status = Status.online
-    statuses = {'mobile': Status.online.value}
+    status_by_platform = StatusByPlatform(
+        mobile = Status.online,
+    )
     
     user = ClientUserPBase(
         activities = activities,
@@ -94,7 +96,7 @@ def test__ClientUserPBase__new__all_fields():
         name_plate = name_plate,
         primary_guild_badge = primary_guild_badge,
         status = status,
-        statuses = statuses,
+        status_by_platform = status_by_platform,
     )
     _assert_fields_set(user)
     
@@ -111,7 +113,7 @@ def test__ClientUserPBase__new__all_fields():
     vampytest.assert_eq(user.name_plate, name_plate)
     vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
     vampytest.assert_is(user.status, status)
-    vampytest.assert_eq(user.statuses, statuses)
+    vampytest.assert_eq(user.status_by_platform, status_by_platform)
 
 
 def test__ClientUserPBase__create_empty():
@@ -152,7 +154,9 @@ def test_ClientUserPBase___from_client__0():
     
     activities = [Activity('orin dance', activity_type = ActivityType.playing)]
     status = Status.online
-    statuses = {'mobile': Status.online.value}
+    status_by_platform = StatusByPlatform(
+        mobile = Status.online,
+    )
     
     client = Client(
         token = 'token_20230207_0000',
@@ -172,7 +176,7 @@ def test_ClientUserPBase___from_client__0():
 
     client.activities = activities
     client.status = status
-    client.statuses = statuses
+    client.status_by_platform = status_by_platform
     
     try:
         client.guild_profiles = guild_profiles
@@ -202,7 +206,7 @@ def test_ClientUserPBase___from_client__0():
         
         vampytest.assert_eq(user.activities, activities)
         vampytest.assert_is(user.status, status)
-        vampytest.assert_eq(user.statuses, statuses)
+        vampytest.assert_eq(user.status_by_platform, status_by_platform)
         
     finally:
         client._delete()
@@ -236,7 +240,9 @@ def test_ClientUserPBase___from_client__1():
 
     activities = [Activity('orin dance', activity_type = ActivityType.playing)]
     status = Status.online
-    statuses = {'mobile': Status.online.value}
+    status_by_platform = StatusByPlatform(
+        mobile = Status.online,
+    )
     
     client = Client(
         token = 'token_20230207_0001',
@@ -256,7 +262,7 @@ def test_ClientUserPBase___from_client__1():
     
     client.activities = activities
     client.status = status
-    client.statuses = statuses
+    client.status_by_platform = status_by_platform
     
     try:
         client.guild_profiles = guild_profiles
@@ -283,7 +289,7 @@ def test_ClientUserPBase___from_client__1():
         
         vampytest.assert_eq(user.activities, activities)
         vampytest.assert_is(user.status, status)
-        vampytest.assert_eq(user.statuses, statuses)
+        vampytest.assert_eq(user.status_by_platform, status_by_platform)
         
     finally:
         client._delete()

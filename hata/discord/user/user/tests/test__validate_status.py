@@ -1,31 +1,34 @@
 import vampytest
 
+from ...status_by_platform import Status
+
 from ..fields import validate_status
-from ..preinstanced import Status
 
 
-def test__validate_status__0():
+def _iter_options():
+    yield None, Status.offline
+    yield Status.online.value, Status.online
+    yield Status.online, Status.online
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__validate_status(input_value):
     """
     Validates whether ``validate_status`` works as intended.
     
-    Case: passing.
-    """
-    for input_value, expected_output in (
-        (Status.online, Status.online),
-        (Status.online.value, Status.online)
-    ):
-        output = validate_status(input_value)
-        vampytest.assert_is(output, expected_output)
-
-
-def test__validate_status__1():
-    """
-    Validates whether ``validate_status`` works as intended.
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
     
-    Case: `TypeError`.
+    Returns
+    -------
+    output : ``Status``
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_status(input_value)
+    output = validate_status(input_value)
+    vampytest.assert_instance(output, Status)
+    return output

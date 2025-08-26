@@ -2,8 +2,9 @@ import vampytest
 
 from ....activity import Activity, ActivityType
 
+from ...status_by_platform import SessionPlatformType, Status, StatusByPlatform
+
 from ..client_user_presence_base import ClientUserPBase
-from ..preinstanced import Status
 
 
 def test__ClientUserPBase__activity__0():
@@ -114,29 +115,29 @@ def test__ClientUserPBase__custom_activity__2():
     vampytest.assert_is(output, None)
 
 
-def test__ClientUserPBase__platform__0():
+def test__ClientUserPBase__platform__has_status():
     """
     Tests whether ``ClientUserPBase.platform`` works as intended.
     
     Case: Has status.
     """
     status = Status.idle
-    statuses = {
-        'desktop': Status.dnd.value,
-        'mobile': Status.idle.value,
-    }
+    status_by_platform = StatusByPlatform(
+        desktop = Status.dnd,
+        mobile = Status.idle,
+    )
     
     user = ClientUserPBase(
         status = status,
-        statuses = statuses,
+        status_by_platform = status_by_platform,
     )
     
     output = user.platform
-    vampytest.assert_instance(output, str)
-    vampytest.assert_eq(output, 'mobile')
+    vampytest.assert_instance(output, SessionPlatformType)
+    vampytest.assert_is(output, SessionPlatformType.mobile)
 
 
-def test__ClientUserPBase__platform__1():
+def test__ClientUserPBase__platform__no_status():
     """
     Tests whether ``ClientUserPBase.platform`` works as intended.
     
@@ -145,12 +146,11 @@ def test__ClientUserPBase__platform__1():
     user = ClientUserPBase()
     
     output = user.platform
-    vampytest.assert_instance(output, str)
-    vampytest.assert_eq(output, '')
+    vampytest.assert_instance(output, SessionPlatformType)
+    vampytest.assert_is(output, SessionPlatformType.none)
 
 
-
-def test__ClientUserPBase__get_status_by_platform__0():
+def test__ClientUserPBase__get_status_by_platform_no_status():
     """
     Tests whether ``ClientUserPBase.get_status_by_platform`` works as intended.
     
@@ -158,28 +158,28 @@ def test__ClientUserPBase__get_status_by_platform__0():
     """
     user = ClientUserPBase()
     
-    output = user.get_status_by_platform('')
+    output = user.get_status_by_platform(SessionPlatformType.none)
     
     vampytest.assert_instance(output, Status)
     vampytest.assert_is(output, Status.offline)
 
 
-def test__ClientUserPBase__get_status_by_platform__1():
+def test__ClientUserPBase__get_status_by_platform__other_platform():
     """
     Tests whether ``ClientUserPBase.get_status_by_platform`` works as intended.
     
     Case: Other platform.
     """
-    statuses = {
-        'desktop': Status.dnd.value,
-        'mobile': Status.idle.value,
-    }
-    
-    user = ClientUserPBase(
-        statuses = statuses,
+    status_by_platform = StatusByPlatform(
+        desktop = Status.dnd,
+        mobile = Status.idle,
     )
     
-    output = user.get_status_by_platform('web')
+    user = ClientUserPBase(
+        status_by_platform = status_by_platform,
+    )
+    
+    output = user.get_status_by_platform(SessionPlatformType.web)
     
     vampytest.assert_instance(output, Status)
     vampytest.assert_is(output, Status.offline)
@@ -193,16 +193,16 @@ def test__ClientUserPBase__get_status_by_platform__2():
     """
     desktop_status = Status.dnd
     
-    statuses = {
-        'desktop': desktop_status.value,
-        'mobile': Status.idle.value,
-    }
-    
-    user = ClientUserPBase(
-        statuses = statuses,
+    status_by_platform = StatusByPlatform(
+        desktop = desktop_status,
+        mobile = Status.idle,
     )
     
-    output = user.get_status_by_platform('desktop')
+    user = ClientUserPBase(
+        status_by_platform = status_by_platform,
+    )
+    
+    output = user.get_status_by_platform(SessionPlatformType.desktop)
     
     vampytest.assert_instance(output, Status)
     vampytest.assert_is(output, desktop_status)

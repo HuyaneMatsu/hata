@@ -138,7 +138,7 @@ def validate_extensions(extensions):
     
     Returns
     -------
-    extensions : `None`, `set` of `str`
+    extensions : `None | set<str>`
     
     Raises
     ------
@@ -200,7 +200,7 @@ def validate_http_debug_options(http_debug_options):
     
     Returns
     -------
-    http_debug_options : `None`, `set` of `str`
+    http_debug_options : `None | set<str>`
     
     Raises
     ------

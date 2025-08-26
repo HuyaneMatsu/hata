@@ -14,7 +14,7 @@ from ...gateway.client_base import DiscordGatewayClientBase
 from ...guild import GuildBadge
 from ...http import DiscordApiClient
 from ...localization import Locale
-from ...user import AvatarDecoration, NamePlate, PremiumType, Status, UserFlag
+from ...user import AvatarDecoration, NamePlate, PremiumType, Status, StatusByPlatform, UserFlag
 
 from ..client import Client
 from ..ready_state import ReadyState
@@ -73,7 +73,7 @@ def _assert_fields_set(client):
     vampytest.assert_instance(client.secret, str)
     vampytest.assert_instance(client.shard_count, int)
     vampytest.assert_instance(client.status, Status)
-    vampytest.assert_instance(client.statuses, dict, nullable = True)
+    vampytest.assert_instance(client.status_by_platform, StatusByPlatform, nullable = True)
     vampytest.assert_instance(client.thread_profiles, dict, nullable = True)
     vampytest.assert_instance(client.token, str)
     vampytest.assert_instance(client.voice_clients, dict)

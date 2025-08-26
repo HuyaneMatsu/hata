@@ -4,9 +4,9 @@ from ....activity import Activity, ActivityType
 
 from ...activity_change import ActivityChange
 from ...activity_update import ActivityUpdate
+from ...status_by_platform import Status, StatusByPlatform
 
 from ..client_user_presence_base import ClientUserPBase
-from ..preinstanced import Status
 
 
 def test__ClientUserPBase__from_data():
@@ -28,21 +28,23 @@ def test__ClientUserPBase__update_presence():
         Activity('okuu dance', activity_id = 202302080001, activity_type = ActivityType.playing),
     ]
     status = Status.online
-    statuses = {'mobile': Status.online.value}
+    status_by_platform = StatusByPlatform(
+        mobile = Status.online,
+    )
     
     user = ClientUserPBase()
     
     data = {
         'activities': [activity.to_data(defaults = True, include_internals = True) for activity in activities],
         'status': status.value,
-        'client_status': statuses.copy(),
+        'client_status': status_by_platform.to_data(),
     }
     
     user._update_presence(data)
     
     vampytest.assert_eq(user.activities, activities)
     vampytest.assert_is(user.status, status)
-    vampytest.assert_eq(user.statuses, statuses)
+    vampytest.assert_eq(user.status_by_platform, status_by_platform)
     
 
 
@@ -55,25 +57,29 @@ def test__ClientUserPBase__difference_update_presence():
         Activity('okuu dance', activity_id = 202302080003, activity_type = ActivityType.playing),
     ]
     old_status = Status.online
-    old_statuses = {'mobile': Status.online.value}
+    old_status_by_platform = StatusByPlatform(
+        mobile = Status.online,
+    )
     
     new_activities = [
         Activity('okuu lay', activity_id = 202302080003, activity_type = ActivityType.playing),
         Activity('satori dance', activity_id = 202302080004, activity_type = ActivityType.playing),
     ]
     new_status = Status.idle
-    new_statuses = {'desktop': Status.online.value}
+    new_status_by_platform = StatusByPlatform(
+        desktop = Status.online,
+    )
     
     user = ClientUserPBase(
         activities = old_activities,
         status = old_status,
-        statuses = old_statuses.copy(),
+        status_by_platform = old_status_by_platform.copy(),
     )
     
     data = {
         'activities': [activity.to_data(defaults = True, include_internals = True) for activity in new_activities],
         'status': new_status.value,
-        'client_status': new_statuses.copy(),
+        'client_status': new_status_by_platform.to_data(),
     }
     
     expected_output = {
@@ -88,7 +94,7 @@ def test__ClientUserPBase__difference_update_presence():
             ],
         ),
         'status': old_status,
-        'statuses': old_statuses,
+        'status_by_platform': old_status_by_platform,
     }
     
     output = user._difference_update_presence(data)
@@ -97,5 +103,5 @@ def test__ClientUserPBase__difference_update_presence():
     
     vampytest.assert_eq(user.activities, new_activities)
     vampytest.assert_is(user.status, new_status)
-    vampytest.assert_eq(user.statuses, new_statuses)
+    vampytest.assert_eq(user.status_by_platform, new_status_by_platform)
     

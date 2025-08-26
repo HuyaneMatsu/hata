@@ -158,7 +158,7 @@ class Client(
     guilds : `set` of ``Guild``
         The guilds, where the client is in.
     
-    http : ``HttpClient``
+    http : ``HTTPClient``
         The http session of the client.
     
     id : `int`
@@ -214,10 +214,10 @@ class Client(
     status : `Status`
         The client's display status.
     
-    statuses : `None | dict<str, str>`
-        The client's statuses for each platform.
+    status_by_platform : ``None | StatusByPlatform``
+        The client's status for each platform.
     
-    thread_profiles : `None`, `dict` (``Channel``, ``ThreadProfile``) items
+    thread_profiles : ``None | dict<int, ThreadProfile>``
         A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
         Defaults to `None`.
     
@@ -672,7 +672,7 @@ class Client(
         self.secret = secret
         self.shard_count = shard_count
         self.status = Status.offline
-        self.statuses = None
+        self.status_by_platform = None
         self.thread_profiles = None
         self.token = token
         self.voice_clients = {}
@@ -893,7 +893,7 @@ class Client(
         self.guild_profiles.clear()
         self.thread_profiles = None
         self.status = Status.offline
-        self.statuses = None
+        self.status_by_platform = None
         self._activity = ACTIVITY_UNKNOWN
         self.activities = None
         self.ready_state = None

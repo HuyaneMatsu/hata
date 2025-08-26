@@ -223,7 +223,7 @@ def get_attribute_section_mentioned_names(section_content):
     
     Returns
     -------
-    names : `set` of `str`
+    names : `set<str>`
         The parsed names from the respective section.
     """
     names = set()
@@ -814,7 +814,7 @@ class AttributeSection:
         ----------
         title : `str`
             The title of the represented section.
-        mentioned_names : `set` of `str`
+        mentioned_names : `set<str>`
             Mentioned attribute names at the attribute section.
         object_ : ``TypeUnit``
             The owner type-unit.

@@ -53,7 +53,7 @@ class Closer(PaginationBase):
     client : ``Client`` of ``Embed`` (or any compatible)
         The client who executes the ``Closer``.
     
-    message : `None`, ``Message``
+    message : ``None | Message``
         The message on what the ``Closer`` is executed.
     
     check : `None`, `callable`
@@ -105,7 +105,7 @@ class Closer(PaginationBase):
             The displayed content.
         timeout : `float` = `240.0`, Optional (Keyword Only)
             The timeout of the ``Closer`` in seconds.
-        message : `None`, ``Message`` = `None`, Optional (Keyword Only)
+        message : ``None | Message`` = `None`, Optional (Keyword Only)
             The message on what the ``Closer`` will be executed. If not given a new message will be created.
         check : `None`, `callable` = `None`, Optional (Keyword Only)
             A callable what decides whether the ``Closer`` should process a received reaction event.

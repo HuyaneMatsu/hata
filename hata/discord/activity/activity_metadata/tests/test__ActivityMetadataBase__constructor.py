@@ -15,7 +15,7 @@ def _assert_fields_set(activity_metadata):
     vampytest.assert_instance(activity_metadata, ActivityMetadataBase)
 
 
-def test__ActivityMetadataBase__new__0():
+def test__ActivityMetadataBase__new__no_fields():
     """
     Tests whether ``ActivityMetadataBase.__new__`` works as intended.
     
@@ -29,7 +29,7 @@ def test__ActivityMetadataBase__new__0():
     vampytest.assert_is(activity_metadata.state, None)
 
 
-def test__ActivityMetadataBase__from_keyword_parameters__0():
+def test__ActivityMetadataBase__from_keyword_parameters__no_fields():
     """
     Tests whether ``ActivityMetadataBase.from_keyword_parameters`` works as intended.
     """
@@ -41,11 +41,13 @@ def test__ActivityMetadataBase__from_keyword_parameters__0():
     vampytest.assert_is(activity_metadata.state, None)
     
 
-def test__ActivityMetadataBase__from_keyword_parameters__1():
+def test__ActivityMetadataBase__from_keyword_parameters__all_fields():
     """
     Tests whether ``ActivityMetadataBase.from_keyword_parameters`` wont touch the`keyword_parameters` parameter.
     """
-    keyword_parameters = {'name': 'ara'}
+    keyword_parameters = {
+        'name': 'ara',
+    }
     keyword_parameters_copy = keyword_parameters.copy()
     
     activity_metadata = ActivityMetadataBase.from_keyword_parameters(keyword_parameters)
@@ -54,11 +56,13 @@ def test__ActivityMetadataBase__from_keyword_parameters__1():
     vampytest.assert_eq(keyword_parameters, keyword_parameters_copy)
 
 
-def test__ActivityMetadataBase__from_keyword_parameters__2():
+def test__ActivityMetadataBase__from_keyword_parameters__empty_name():
     """
     Tests whether ``ActivityMetadataBase.from_keyword_parameters`` will yeet empty name.
     """
-    keyword_parameters = {'name': ''}
+    keyword_parameters = {
+        'name': ''
+    }
     
     activity_metadata = ActivityMetadataBase.from_keyword_parameters(keyword_parameters)
     _assert_fields_set(activity_metadata)

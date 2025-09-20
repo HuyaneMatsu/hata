@@ -232,7 +232,7 @@ from hata import (
 from hata.ext.slash import InteractionResponse
 
 
-NITORI_IMAGE_URL = 'https://en.touhouwiki.net/images/7/70/Th185Nitori.png'
+NITORI_IMAGE_URL = 'https://cdn.discordapp.com/attachments/604644832459227142/1418334260116455544/nitori-0000.png'
 NITORI_CV = '*mechanical arm blue print*'
 NITORI_COLOR = Color.from_rgb(0, 0, 255)
 

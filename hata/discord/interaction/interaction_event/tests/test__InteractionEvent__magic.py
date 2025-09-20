@@ -4,11 +4,10 @@ from ....application import ApplicationIntegrationType, Entitlement
 from ....channel import Channel
 from ....guild import create_partial_guild_from_id
 from ....localization import Locale
+from ....message import Attachment, Message
 from ....permission import Permission
-from ....message import Message
+from ....resolved import Resolved
 from ....user import User
-
-from ...interaction_metadata import InteractionMetadataApplicationCommand, InteractionMetadataBase
 
 from ..interaction_event import InteractionEvent
 from ..preinstanced import InteractionType
@@ -18,6 +17,7 @@ def test__InteractionEvent__repr():
     """
     Tests whether ``InteractionEvent.__repr__`` works as intended.
     """
+    application_command_name = '3L'
     application_id = 202211070025
     application_permissions = Permission(123)
     attachment_size_limit = 10 << 20
@@ -28,9 +28,9 @@ def test__InteractionEvent__repr():
     channel = Channel.precreate(202211070026)
     entitlements = [Entitlement.precreate(202310050018), Entitlement.precreate(202310050019)]
     guild = create_partial_guild_from_id(202211070027)
-    interaction = InteractionMetadataApplicationCommand(name = '3L')
     interaction_type = InteractionType.application_command
     message = Message.precreate(202211070028, content = 'Rise')
+    resolved = Resolved(attachments = [Attachment.precreate(202509100004)])
     token = 'Fall'
     user = User.precreate(202211070029, name = 'masuta spark')
     user_locale = Locale.thai
@@ -39,6 +39,7 @@ def test__InteractionEvent__repr():
     
     interaction_event = InteractionEvent.precreate(
         interaction_id,
+        application_command_name = application_command_name,
         application_id = application_id,
         application_permissions = application_permissions,
         attachment_size_limit = attachment_size_limit,
@@ -46,10 +47,10 @@ def test__InteractionEvent__repr():
         channel = channel,
         entitlements = entitlements,
         guild = guild,
-        interaction = interaction,
         interaction_type = interaction_type,
         user_locale = user_locale,
         message = message,
+        resolved = resolved,
         token = token,
         user = user,
         user_permissions = user_permissions
@@ -62,6 +63,7 @@ def test__InteractionEvent__hash():
     """
     Tests whether ``InteractionEvent.__hash__`` works as intended.
     """
+    application_command_name = '3L'
     application_id = 202211070031
     application_permissions = Permission(123)
     attachment_size_limit = 10 << 20
@@ -72,9 +74,9 @@ def test__InteractionEvent__hash():
     channel = Channel.precreate(202211070032)
     entitlements = [Entitlement.precreate(202310050021), Entitlement.precreate(202310050022)]
     guild = create_partial_guild_from_id(202211070033)
-    interaction = InteractionMetadataApplicationCommand(name = '3L')
     interaction_type = InteractionType.application_command
     message = Message.precreate(202211070034, content = 'Rise')
+    resolved = Resolved(attachments = [Attachment.precreate(202509100005)])
     token = 'Fall'
     user = User.precreate(202211070009, name = 'masuta spark')
     user_locale = Locale.thai
@@ -83,6 +85,7 @@ def test__InteractionEvent__hash():
     
     interaction_event = InteractionEvent.precreate(
         interaction_id,
+        application_command_name = application_command_name,
         application_id = application_id,
         application_permissions = application_permissions,
         attachment_size_limit = attachment_size_limit,
@@ -90,9 +93,9 @@ def test__InteractionEvent__hash():
         channel = channel,
         entitlements = entitlements,
         guild = guild,
-        interaction = interaction,
         interaction_type = interaction_type,
         message = message,
+        resolved = resolved,
         token = token,
         user = user,
         user_locale = user_locale,
@@ -103,6 +106,7 @@ def test__InteractionEvent__hash():
 
 
 def _iter_options__eq():
+    application_command_name = '3L'
     application_id = 202211070036
     application_permissions = Permission(123)
     attachment_size_limit = 10 << 20
@@ -113,15 +117,16 @@ def _iter_options__eq():
     channel = Channel.precreate(202211070037)
     entitlements = [Entitlement.precreate(202310050023), Entitlement.precreate(202310050024)]
     guild = create_partial_guild_from_id(202211070038)
-    interaction = InteractionMetadataApplicationCommand(name = '3L')
     interaction_type = InteractionType.application_command
     message = Message.precreate(202211070039, content = 'Rise')
+    resolved = Resolved(attachments = [Attachment.precreate(202509100006)])
     token = 'Fall'
     user = User.precreate(202211070040, name = 'masuta spark')
     user_locale = Locale.thai
     user_permissions = Permission(234)
     
     keyword_parameters = {
+        'application_command_name': application_command_name,
         'application_id': application_id,
         'application_permissions': application_permissions,
         'attachment_size_limit': attachment_size_limit,
@@ -129,10 +134,10 @@ def _iter_options__eq():
         'channel': channel,
         'entitlements': entitlements,
         'guild': guild,
-        'interaction': interaction,
         'interaction_type': interaction_type,
         'user_locale': user_locale,
         'message': message,
+        'resolved': resolved,
         'token': token,
         'user': user,
         'user_permissions': user_permissions,
@@ -217,7 +222,7 @@ def _iter_options__eq():
         keyword_parameters,
         {
             **keyword_parameters,
-            'interaction': InteractionMetadataApplicationCommand(name = 'important'),
+            'application_command_name': 'nanahira',
         },
         False,
     )
@@ -226,8 +231,7 @@ def _iter_options__eq():
         keyword_parameters,
         {
             **keyword_parameters,
-            'interaction_type': InteractionType.ping,
-            'interaction': InteractionMetadataBase(),
+            'interaction_type': InteractionType.application_command_autocomplete,
         },
         False,
     )
@@ -246,6 +250,15 @@ def _iter_options__eq():
         {
             **keyword_parameters,
             'message': Message.precreate(202211070045, content = 'Rise'),
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'resolved': None,
         },
         False,
     )

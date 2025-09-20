@@ -10,7 +10,9 @@ def _iter_options():
         ApplicationCommandTargetType.none,
         False,
         {
-            'type': ApplicationCommandTargetType.none.value,
+            'data': {
+                'type': ApplicationCommandTargetType.none.value,
+            },
         },
     )
 
@@ -18,7 +20,9 @@ def _iter_options():
         ApplicationCommandTargetType.none,
         True,
         {
-            'type': ApplicationCommandTargetType.none.value,
+            'data': {
+                'type': ApplicationCommandTargetType.none.value,
+            },
         },
     )
     
@@ -26,7 +30,9 @@ def _iter_options():
         ApplicationCommandTargetType.user,
         False,
         {
-            'type': ApplicationCommandTargetType.user.value,
+            'data': {
+                'type': ApplicationCommandTargetType.user.value,
+            },
         },
     )
 
@@ -34,7 +40,9 @@ def _iter_options():
         ApplicationCommandTargetType.user,
         True,
         {
-            'type': ApplicationCommandTargetType.user.value,
+            'data': {
+                'type': ApplicationCommandTargetType.user.value,
+            },
         },
     )
 

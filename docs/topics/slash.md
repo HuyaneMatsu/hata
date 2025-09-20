@@ -1213,26 +1213,26 @@ For `number` and `float` parameter types, you can define the minimal and the max
 from hata.ext.slash import P
 
 MOST_POPULAR_TOUHOU_CHARACTERS = [
-    'Konpaku Youmu',
+    'Komeiji Koishi',
     'Kirisame Marisa',
     'Hakurei Reimu',
-    'Komeiji Koishi',
     'Scarlet Flandre',
     'Izayoi Sakuya',
     'Scarlet Remilia',
-    'Fujiwara no Mokou',
+    'Konpaku Youmu',
     'Komeiji Satori',
-    'Saigyouji Yuyuko',
-    'Shameimaru Aya',
-    'Margatroid Alice',
-    'Kochiya Sanae',
-    'Reisen Udongein Inaba',
-    'Hinanawi Tenshi',
-    'Yakumo Yukari',
-    'Hata no Kokoro',
+    'Fujiwara no Mokou',
     'Chiruno',
+    'Shameimaru Aya',
+    'Saigyouji Yuyuko',
+    'Kochiya Sanae',
+    'Margatroid Alice',
+    'Reisen Udongein Inaba',
+    'Yakumo Yukari',
+    'Hong Meiling',
     'Patchouli Knowledge',
-    'Tatara Kogasa',
+    'Rumia',
+    'Hata no Kokoro',
 ]
 
 @Nitori.interactions(guild = TEST_GUILD)

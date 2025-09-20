@@ -19,11 +19,14 @@ class CommandBaseCustomId(CommandInterface, CommandBase):
     _exception_handlers : `None | list<CoroutineFunction>`
         Exception handlers added with ``.error`` to the interaction handler.
     
-    _parameter_converters : `tuple<ParameterConverterBase>`
-        Parsers to parse command parameters.
+    _keyword_parameter_converters : `tuple<ParameterConverterBase>`
+        Parameter converters for keyword parameters.
     
     _parent_reference : `None | WeakReferer<SelfReferenceInterface>`
         The parent slasher of the component command.
+    
+    _positional_parameter_converters : `tuple<ParameterConverterBase>`
+        Parsers to parse positional command parameters.
     
     _regex_custom_ids : `None | tuple<RegexMatcher>`.
         Regex matchers to match custom-ids.
@@ -40,7 +43,8 @@ class CommandBaseCustomId(CommandInterface, CommandBase):
         Modifies values returned and yielded to command coroutine processor.
     """
     __slots__ = (
-        '_command_function', '_parameter_converters', '_regex_custom_ids', '_string_custom_ids', 'response_modifier',
+        '_command_function', '_keyword_parameter_converters', '_positional_parameter_converters', '_regex_custom_ids',
+        '_string_custom_ids', 'response_modifier',
     )
     
     def __new__(cls, function, name = None, *, custom_id = ..., **keyword_parameters):
@@ -150,7 +154,10 @@ class CommandBaseCustomId(CommandInterface, CommandBase):
             command_function_hash_value = object.__hash__(command_function)
         hash_value ^= command_function_hash_value
         
-        # _parameter_converters
+        # _keyword_parameter_converters
+        # Internal field
+        
+        # _positional_parameter_converters
         # Internal field
         
         # _regex_custom_ids
@@ -180,7 +187,10 @@ class CommandBaseCustomId(CommandInterface, CommandBase):
         if self._command_function != other._command_function:
             return False
         
-        # _parameter_converters
+        # _keyword_parameter_converters
+        # Internal field
+        
+        # _positional_parameter_converters
         # Internal field
         
         # _regex_custom_ids
@@ -231,8 +241,11 @@ class CommandBaseCustomId(CommandInterface, CommandBase):
         # _command_function
         new._command_function = self._command_function
         
-        # _parameter_converters
-        new._parameter_converters = self._parameter_converters
+        # _keyword_parameter_converters
+        new._keyword_parameter_converters = self._keyword_parameter_converters
+        
+        # _positional_parameter_converters
+        new._positional_parameter_converters = self._positional_parameter_converters
         
         # _regex_custom_ids
         new._regex_custom_ids = self._regex_custom_ids

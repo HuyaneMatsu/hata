@@ -3,13 +3,28 @@ import vampytest
 from ..fields import put_image_small
 
 
-def test__put_image_small():
+def _iter_options():
+    yield None, False, {}
+    yield None, True, {'small_image': ''}
+    yield 'a', False, {'small_image': 'a'}
+    yield 'a', True, {'small_image': 'a'}
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__put_image_small(input_value, defaults):
     """
-    Tests whether ``put_image_small`` is working as intended.
+    Tests whether ``put_image_small`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | str`
+        Value to serialize.
+    
+    defaults : `bool`
+        Whether values of their default value should be included as well.
+    
+    Returns
+    -------
+    output : `dict<str, object>`
     """
-    for input_value, defaults, expected_output in (
-        (None, False, {}),
-        ('a', False, {'small_image': 'a'}),
-    ):
-        data = put_image_small(input_value, {}, defaults)
-        vampytest.assert_eq(data, expected_output)
+    return put_image_small(input_value, {}, defaults)

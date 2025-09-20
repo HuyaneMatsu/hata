@@ -61,7 +61,15 @@ def validate_components(components):
             )
         
         if not flags & COMPONENT_TYPE_LAYOUT_FLAG_TOP_LEVEL:
-            component = Component(ComponentType.row, components = [component])
+            label = component.label
+            if (label is not None):
+                component.label = None
+            
+            component = Component(
+                ComponentType.label,
+                component = component,
+                label = label,
+            )
         
         if (components_processed is None):
             components_processed = []

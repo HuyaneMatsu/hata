@@ -69,7 +69,7 @@ def create_partial_emoji_from_data(data):
     
     Returns
     -------
-    emoji : `None`, ``Emoji``
+    emoji : ``None | Emoji``
     """
     return _create_partial_emoji_from_fields(
         data.get('name', None), data.get('id', None), data.get('animated', False),
@@ -88,7 +88,7 @@ def create_partial_emoji_from_inline_data(data):
     
     Returns
     -------
-    emoji : `None`, ``Emoji``
+    emoji : ``None | Emoji``
     """
     return _create_partial_emoji_from_fields(
         data.get('emoji_name', None), data.get('emoji_id', None), data.get('emoji_animated', False)
@@ -110,7 +110,7 @@ def _create_partial_emoji_from_fields(emoji_name, emoji_id, emoji_animated):
     
     Returns
     -------
-    emoji : `None`, ``Emoji``
+    emoji : ``None | Emoji``
     """
     if emoji_name is None:
         return None
@@ -189,7 +189,7 @@ def put_partial_emoji_inline_data_into(emoji, data):
     
     Parameters
     ----------
-    emoji : `None`, ``Emoji``
+    emoji : ``None | Emoji``
         The emoji to serialize.
     data : `dict<str, object>`
         The data to put the emoji fields into.
@@ -229,7 +229,7 @@ def create_emoji_from_exclusive_inline_data(data):
     
     Returns
     -------
-    emoji : `None`, ``Emoji``
+    emoji : ``None | Emoji``
     """
     emoji_name = data.get('emoji_name', None)
     emoji_id = data.get('emoji_id', None)
@@ -255,7 +255,7 @@ def put_exclusive_emoji_inline_data_into(emoji, data):
     
     Parameters
     ----------
-    emoji : `None`, ``Emoji``
+    emoji : ``None | Emoji``
         The emoji to serialize.
     data : `dict<str, object>`
         The data to put the emoji fields into.
@@ -292,7 +292,7 @@ def create_emoji_from_exclusive_data(data):
     
     Returns
     -------
-    emoji : `None`, ``Emoji``
+    emoji : ``None | Emoji``
     """
     emoji_name = data.get('name', None)
     emoji_id = data.get('id', None)
@@ -318,7 +318,7 @@ def put_exclusive_emoji_data_into(emoji, data):
     
     Parameters
     ----------
-    emoji : `None`, ``Emoji``
+    emoji : ``None | Emoji``
         The emoji to serialize.
     data : `dict<str, object>`
         The data to put the emoji fields into.

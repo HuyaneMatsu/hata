@@ -5,148 +5,470 @@ from ...application_command.application_command.constants import (
     NAME_LENGTH_MAX as APPLICATION_COMMAND_NAME_LENGTH_MAX, NAME_LENGTH_MIN as APPLICATION_COMMAND_NAME_LENGTH_MIN
 )
 from ...bases import DiscordEntity
-from ...component import ComponentType
-from ...component.shared_constants import CUSTOM_ID_LENGTH_MAX
-from ...field_parsers import (
-    entity_id_parser_factory, force_string_parser_factory, nullable_array_parser_factory,
-    nullable_object_array_parser_factory, nullable_string_parser_factory, preinstanced_parser_factory
-)
-from ...field_putters import (
-    entity_id_optional_putter_factory, entity_id_putter_factory, force_string_putter_factory,
-    nullable_object_array_optional_putter_factory, nullable_string_array_optional_putter_factory,
-    preinstanced_putter_factory, url_optional_putter_factory
-)
+from ...component import InteractionComponent
+from ...component.shared_fields import validate_custom_id
 from ...field_validators import (
     entity_id_validator_factory, force_string_validator_factory, nullable_entity_validator_factory,
-    nullable_object_array_validator_factory, nullable_string_array_validator_factory, nullable_string_validator_factory,
-    preinstanced_validator_factory
+    nullable_object_array_validator_factory, preinstanced_validator_factory
 )
 
-from ..interaction_component import InteractionComponent
 from ..interaction_option import InteractionOption
-from ..resolved import Resolved
 
-# component_type
 
-parse_component_type = preinstanced_parser_factory('component_type', ComponentType, ComponentType.none)
-put_component_type = preinstanced_putter_factory('component_type')
-validate_component_type = preinstanced_validator_factory('component_type', ComponentType)
+# component
 
-# components
-
-parse_components = nullable_object_array_parser_factory('components', InteractionComponent)
-put_components = nullable_object_array_optional_putter_factory('components')
-validate_components = nullable_object_array_validator_factory('components', InteractionComponent)
-
-# custom_id
-
-parse_custom_id = nullable_string_parser_factory('custom_id')
-put_custom_id = url_optional_putter_factory('custom_id')
-validate_custom_id = nullable_string_validator_factory('custom_id', 0, CUSTOM_ID_LENGTH_MAX)
-
-# id
-
-parse_id = entity_id_parser_factory('id')
-put_id = entity_id_putter_factory('id')
-validate_id = entity_id_validator_factory('id', ApplicationCommand)
-
-# name
-
-parse_name = force_string_parser_factory('name')
-put_name = force_string_putter_factory('name')
-validate_name = force_string_validator_factory(
-    'name', APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_NAME_LENGTH_MAX
-)
-
-# options
-
-parse_options = nullable_object_array_parser_factory('options', InteractionOption)
-put_options = nullable_object_array_optional_putter_factory('options')
-validate_options = nullable_object_array_validator_factory('options', InteractionOption)
-
-# resolved
-
-def parse_resolved(data, guild_id = 0):
+def parse_component(data):
     """
-    Parsers out a resolved object from the given data.
+    Parses an inline component from the given data.
     
     Parameters
     ----------
     data : `dict<str, object>`
-        Interaction metadata data.
-    
-    guild_id : `int` = `0`, Optional
-        The respective guild's identifier.
+        Data to parse from.
     
     Returns
     -------
-    resolved : ``None | Resolved``
+    component : ``None | InteractionComponent``
     """
-    resolved_data = data.get('resolved', None)
-    if (resolved_data is not None) and resolved_data:
-        return Resolved.from_data(resolved_data, guild_id)
+    nested_data = data.get('data', None)
+    if (nested_data is not None) and nested_data:
+        return InteractionComponent.from_data(nested_data)
 
 
-def put_resolved(resolved, data, defaults, *, guild_id = 0):
+def put_component(component, data, defaults):
     """
-    Puts the given `resolved` into the given interaction metadata data.
+    Serializes the given inline component.
     
     Parameters
     ----------
-    resolved  : ``None | Resolved``
-        The instance to serialise.
-        
+    component : ``None | InteractionComponent``
+        Interaction component.
+    
     data : `dict<str, object>`
-        Interaction metadata data.
+        Json serializable dictionary.
     
     defaults : `bool`
-        Whether default field values should be included as well.
-    
-    guild_id : `int` = `None`, Optional (Keyword only)
-        The respective guild's identifier to use for handing user guild profiles.
+        Whether default values should be included as well.
     
     Returns
     -------
     data : `dict<str, object>`
     """
-    # Cpython devs: "We do not need goto in python".
-    # Also them: *uSeS gOtO TwIcE iN EveRy C fUnCTiOn*.
-    while True:
-        if (resolved is None):
-            if not defaults:
-                break
-            
-            resolved_data = {}
+    if (component is not None):
+        nested_data = data.get('data', None)
         
+        component_data = component.to_data(defaults = defaults)
+        
+        if nested_data is None:
+            data['data'] = component_data
         else:
-            resolved_data = resolved.to_data(defaults = defaults, guild_id = guild_id)
-        
-        data['resolved'] = resolved_data
-        break
+            nested_data.update(component_data)
     
     return data
 
 
-validate_resolved = nullable_entity_validator_factory('resolved', Resolved)
+validate_component = nullable_entity_validator_factory('component', InteractionComponent)
+
+
+# components
+
+def parse_components(data):
+    """
+    Parses the components out from the given data.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    components : ``None | tuple<InteractionComponent>``
+    """
+    nested_data = data.get('data', None)
+    if (nested_data is not None):
+        object_data_array = nested_data.get('components', None)
+        if (object_data_array is not None) and object_data_array:
+            return (*(InteractionComponent.from_data(object_data) for object_data in object_data_array),)
+
+
+def put_components(components, data, defaults):
+    """
+    Serializes the given inline components.
+    
+    Parameters
+    ----------
+    components : ``None | tuple<InteractionComponent>``
+        Interaction components.
+    
+    data : `dict<str, object>`
+        Json serializable dictionary.
+    
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    if defaults or (components is not None):
+        nested_data = data.get('data', None)
+        if nested_data is None:
+            data['data'] = nested_data = {}
+        
+        if components is None:
+            entity_data_array = []
+        else:
+            entity_data_array = [entity.to_data(defaults = defaults) for entity in components]
+        
+        nested_data['components'] = entity_data_array
+    
+    return data
+
+
+validate_components = nullable_object_array_validator_factory('components', InteractionComponent)
+
+
+# custom_id
+
+
+def parse_custom_id(data):
+    """
+    Parses out the custom identifier from the given data.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    custom_id : `int`
+    """
+    nested_data = data.get('data', None)
+    if (nested_data is not None):
+        custom_id = nested_data.get('custom_id', None)
+        if (custom_id is not None):
+            return custom_id
+    
+    return ''
+
+
+def put_custom_id(custom_id, data, defaults):
+    """
+    Serializes the given custom identifier.
+    
+    Parameters
+    ----------
+    custom_id : `int`
+        Custom identifier.
+    
+    data : `dict<str, object>`
+        Json serializable dictionary.
+    
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    if custom_id or (custom_id is not None):
+        nested_data = data.get('data', None)
+        if (nested_data is None):
+            data['data'] = nested_data = {}
+        
+        nested_data['custom_id'] = custom_id
+
+    return data
+
+
+# id
+
+def parse_application_command_id(data):
+    """
+    Parses out the application command identifier from the given data.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    application_command_id : `int`
+    """
+    nested_data = data.get('data', None)
+    if (nested_data is not None):
+        entity_id = nested_data.get('id', None)
+        if (entity_id is not None):
+            return int(entity_id)
+    
+    return 0
+
+
+def put_application_command_id(application_command_id, data, defaults):
+    """
+    Serializes the given application command id.
+
+    Parameters
+    ----------
+    application_command_id : `int`
+        Application command identifier.
+    
+    data : `dict<str, object>`
+        Json serializable dictionary.
+    
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    nested_data = data.get('data', None)
+    if (nested_data is None):
+        data['data'] = nested_data = {}
+    
+    if application_command_id:
+        raw_application_command_id = str(application_command_id)
+    else:
+        raw_application_command_id = None
+    
+    nested_data['id'] = raw_application_command_id
+
+    return data
+
+
+validate_application_command_id = entity_id_validator_factory('id', ApplicationCommand)
+
+# name
+
+def parse_application_command_name(data):
+    """
+    Parses out the application command name from the given data.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    application_command_name : `int`
+    """
+    nested_data = data.get('data', None)
+    if (nested_data is not None):
+        application_command_name = nested_data.get('name', None)
+        if (application_command_name is not None):
+            return application_command_name
+    
+    return ''
+
+
+def put_application_command_name(application_command_name, data, defaults):
+    """
+    Serializes the given application command name.
+    
+    Parameters
+    ----------
+    application_command_name : `int`
+        Application command name.
+    
+    data : `dict<str, object>`
+        Json serializable dictionary.
+    
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    nested_data = data.get('data', None)
+    if (nested_data is None):
+        data['data'] = nested_data = {}
+    
+    nested_data['name'] = application_command_name
+
+    return data
+
+
+validate_application_command_name = force_string_validator_factory(
+    'name', APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_NAME_LENGTH_MAX
+)
+
+
+# options
+
+
+def parse_options(data):
+    """
+    Parses the options out from the given data.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    options : ``None | tuple<InteractionOption>``
+    """
+    nested_data = data.get('data', None)
+    if (nested_data is not None):
+        object_data_array = nested_data.get('options', None)
+        if (object_data_array is not None) and object_data_array:
+            return (*(InteractionOption.from_data(object_data) for object_data in object_data_array),)
+
+
+def put_options(options, data, defaults):
+    """
+    Serializes the given inline options.
+    
+    Parameters
+    ----------
+    options : ``None | tuple<InteractionOption>``
+        Interaction options.
+    
+    data : `dict<str, object>`
+        Json serializable dictionary.
+    
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    if defaults or (options is not None):
+        nested_data = data.get('data', None)
+        if nested_data is None:
+            data['data'] = nested_data = {}
+        
+        if options is None:
+            entity_data_array = []
+        else:
+            entity_data_array = [entity.to_data(defaults = defaults) for entity in options]
+        
+        nested_data['options'] = entity_data_array
+    
+    return data
+
+
+validate_options = nullable_object_array_validator_factory('options', InteractionOption)
 
 
 # target_id
 
-parse_target_id = entity_id_parser_factory('target_id')
-put_target_id = entity_id_optional_putter_factory('target_id')
+def parse_target_id(data):
+    """
+    Parses out the target identifier from the given data.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    target_id : `int`
+    """
+    nested_data = data.get('data', None)
+    if (nested_data is not None):
+        entity_id = nested_data.get('target_id', None)
+        if (entity_id is not None):
+            return int(entity_id)
+    
+    return 0
+
+
+def put_target_id(target_id, data, defaults):
+    """
+    Serializes the given target id.
+    
+    Parameters
+    ----------
+    target_id : `int`
+        Application command identifier.
+    
+    data : `dict<str, object>`
+        Json serializable dictionary.
+    
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    if target_id or defaults:
+        nested_data = data.get('data', None)
+        if (nested_data is None):
+            data['data'] = nested_data = {}
+        
+        if target_id:
+            raw_target_id = str(target_id)
+        else:
+            raw_target_id = None
+        
+        nested_data['target_id'] = raw_target_id
+
+    return data
+
+
 validate_target_id = entity_id_validator_factory('target_id', DiscordEntity)
 
 
 # target_type
 
-parse_target_type = preinstanced_parser_factory(
-    'type', ApplicationCommandTargetType, ApplicationCommandTargetType.none
-)
-put_target_type = preinstanced_putter_factory('type')
+def parse_target_type(data):
+    """
+    Parses out the target type from the given data.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    target_type : ``ApplicationCommandTargetType``
+    """
+    nested_data = data.get('data', None)
+    if (nested_data is not None):
+        target_type_value = nested_data.get('type', None)
+        if (target_type_value is not None):
+            return ApplicationCommandTargetType(target_type_value)
+    
+    return ApplicationCommandTargetType.none
+
+
+def put_target_type(target_type, data, defaults):
+    """
+    Serializes the given target type.
+    
+    Parameters
+    ----------
+    target_type : ``ApplicationCommandTargetType``
+        Application command target type.
+    
+    data : `dict<str, object>`
+        Json serializable dictionary.
+    
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    nested_data = data.get('data', None)
+    if (nested_data is None):
+        data['data'] = nested_data = {}
+    
+    nested_data['type'] = target_type.value
+
+    return data
+
 validate_target_type = preinstanced_validator_factory('target_type', ApplicationCommandTargetType)
-
-# values
-
-parse_values = nullable_array_parser_factory('values')
-put_values = nullable_string_array_optional_putter_factory('values')
-validate_values = nullable_string_array_validator_factory('values')

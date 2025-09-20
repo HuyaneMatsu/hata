@@ -41,14 +41,15 @@ def test__InteractionForm__new__all_fields():
     Case: all fields given.
     """
     title = 'important'
-    components = [Component(ComponentType.text_input, label = 'chata')]
+    components = [Component(ComponentType.text_input, placeholder = 'chata')]
     custom_id = 'lie'
-    
-    rows = tuple(Component(ComponentType.row, components = [component]) for component in components)
     
     interaction_form = InteractionForm(title, components, custom_id)
     _check_are_fields_set(interaction_form)
     
     vampytest.assert_eq(interaction_form.title, title)
-    vampytest.assert_eq(interaction_form.components, rows)
+    vampytest.assert_eq(
+        interaction_form.components,
+        (*(Component(ComponentType.label, component = component) for component in components),),
+    )
     vampytest.assert_eq(interaction_form.custom_id, custom_id)

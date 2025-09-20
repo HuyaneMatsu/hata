@@ -29,7 +29,7 @@ def test__validate_message(input_value):
     
     Returns
     -------
-    output : `None`, ``Message``
+    output : ``None | Message``
     
     Raises
     ------

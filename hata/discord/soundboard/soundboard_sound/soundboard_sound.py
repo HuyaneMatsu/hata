@@ -37,7 +37,7 @@ class SoundboardSound(DiscordEntity, immortal = True):
         Cache field used by the ``.user`` property.
     available : `bool`
         Whether the sound is available.
-    emoji : `None`, ``Emoji``
+    emoji : ``None | Emoji``
         Emoji assigned to the sound.
     guild_id : `int`
         The guild's identifier to which the sound is added to. At the case of builtin sounds this is `0`.
@@ -58,7 +58,7 @@ class SoundboardSound(DiscordEntity, immortal = True):
         ----------
         available : `bool`, Optional (Keyword only)
             Whether the sound is available.
-        emoji : `None`, ``Emoji``, Optional (Keyword only)
+        emoji : ``None | Emoji``, Optional (Keyword only)
             Emoji assigned to the sound.
         name : `str`, Optional (Keyword only)
             The name of the sound.
@@ -298,7 +298,7 @@ class SoundboardSound(DiscordEntity, immortal = True):
         +===========+===================+
         | available | `bool`            |
         +-----------+-------------------+
-        | emoji     | `None`, ``Emoji`` |
+        | emoji     | ``None | Emoji``  |
         +-----------+-------------------+
         | name      | `str`             |
         +-----------+-------------------+
@@ -491,7 +491,7 @@ class SoundboardSound(DiscordEntity, immortal = True):
         ----------------
         available : `bool`, Optional (Keyword only)
             Whether the sound is available.
-        emoji : `None`, ``Emoji``, Optional (Keyword only)
+        emoji : ``None | Emoji``, Optional (Keyword only)
             Emoji assigned to the sound.
         guild : `int`, `None`, ``Guild``, Optional (Keyword only)
             Alternative of `guild_id`.
@@ -568,7 +568,7 @@ class SoundboardSound(DiscordEntity, immortal = True):
         ----------
         available : `bool`, Optional (Keyword only)
             Whether the sound is available.
-        emoji : `None`, ``Emoji``, Optional (Keyword only)
+        emoji : ``None | Emoji``, Optional (Keyword only)
             Emoji assigned to the sound.
         name : `str`, Optional (Keyword only)
             The name of the sound.

@@ -32,7 +32,7 @@ class ChannelOutputStream:
         The data queue.
     _last_chunk : `None`, `str`
         The last send raw chunk.
-    _last_message : `None`, ``Message``
+    _last_message : ``None | Message``
         The last sent message.
     _sanitize : `bool`
         Whether the output stream should be sanitized.

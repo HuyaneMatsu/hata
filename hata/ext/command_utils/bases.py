@@ -62,7 +62,7 @@ class PaginationBase:
     client : ``Client`` of ``Embed`` (or any compatible)
         The client who executes the ``Pagination``.
     
-    message : `None`, ``Message``
+    message : ``None | Message``
         The message on what the ``Pagination`` is executed.
     """
     __slots__ = ('_canceller', '_task_flag', '_timeouter', 'channel', 'client', 'message')

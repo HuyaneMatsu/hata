@@ -36,7 +36,7 @@ def default_check(user, event):
     if (event.user is user):
         return True
     
-    if event.user_permissions.manage_messages and (event.interaction.custom_id == CUSTOM_ID_CANCEL):
+    if event.user_permissions.manage_messages and (event.custom_id == CUSTOM_ID_CANCEL):
         return True
     
     return False

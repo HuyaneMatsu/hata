@@ -8,8 +8,8 @@ from ....core import BUILTIN_EMOJIS
 from ....embed import EmbedAuthor, Embed, EmbedField, EmbedFooter, EmbedProvider, EmbedType
 from ....emoji import Reaction, ReactionMapping, ReactionMappingLine, ReactionType
 from ....guild import Guild
-from ....interaction import Resolved
 from ....poll import Poll, PollAnswer, PollQuestion, PollResult
+from ....resolved import Resolved
 from ....role import Role
 from ....soundboard import SoundboardSound
 from ....sticker import Sticker

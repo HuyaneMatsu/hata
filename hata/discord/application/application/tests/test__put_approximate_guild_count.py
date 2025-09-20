@@ -19,6 +19,7 @@ def test__put_approximate_guild_count(input_value, defaults):
     ----------
     input_value : `int`
         The value to serialise.
+    
     defaults : `bool`
         Whether values with their default value should be included in the output as well.
     

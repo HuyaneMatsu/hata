@@ -175,3 +175,37 @@ def test__MessageType__poll_result(message):
     output = MessageType.poll_result.converter(message)
     vampytest.assert_instance(output, str, nullable = True)
     return output
+
+
+def _iter_options__emoji_added_notification():
+    emoji_0 = Emoji.precreate(1410560101093347422, animated = True, name = 'MomijiAwoo')
+    user_0 = User.precreate(202508300000, name = 'Koishi')
+    
+    yield Message(), None
+    
+    yield (
+        Message(
+            author = user_0,
+            content = emoji_0.as_emoji
+        ),
+        f'{user_0.name_at(0)} added a new emoji, {emoji_0.as_emoji} :{emoji_0.name}:',
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__emoji_added_notification()).returning_last())
+def test__MessageType__emoji_added_notification(message):
+    """
+    Tests whether ``MessageType.emoji_added_notification`` conversion not fails.
+    
+    Parameters
+    ----------
+    message : ``Message``
+        Message to test with.
+    
+    Returns
+    -------
+    output : `None | str`
+    """
+    output = MessageType.emoji_added_notification.converter(message)
+    vampytest.assert_instance(output, str, nullable = True)
+    return output

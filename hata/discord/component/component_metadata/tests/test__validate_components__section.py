@@ -114,6 +114,14 @@ def _iter_options__value_error():
         content = 'Orin',
     )
     
+    component_label = Component(
+        ComponentType.label,
+        component = Component(
+            ComponentType.text_input,
+            placeholder = 'Orin',
+        ),
+    )
+    
     yield [
         component_none,
     ]
@@ -164,6 +172,10 @@ def _iter_options__value_error():
     
     yield [
         component_section,
+    ]
+    
+    yield [
+        component_label,
     ]
     
     # double nesting | cannot nest row into row

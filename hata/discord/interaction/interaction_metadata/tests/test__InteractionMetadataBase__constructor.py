@@ -15,13 +15,23 @@ def _assert_fields_set(interaction_metadata):
     vampytest.assert_instance(interaction_metadata, InteractionMetadataBase)
 
 
-def test__InteractionMetadataBase__new__0():
+def test__InteractionMetadataBase__new__no_fields():
     """
     Tests whether ``InteractionMetadataBase.__new__`` works as intended.
     
     Case: No fields given.
     """
     interaction_metadata = InteractionMetadataBase()
+    _assert_fields_set(interaction_metadata)
+
+
+def test__InteractionMetadataBase__from_keyword_parameters__no_fields():
+    """
+    Tests whether ``InteractionMetadataBase.from_keyword_parameters`` works as intended.
+    
+    Case: No fields given.
+    """
+    interaction_metadata = InteractionMetadataBase.from_keyword_parameters({})
     _assert_fields_set(interaction_metadata)
 
 

@@ -1741,7 +1741,7 @@ def nullable_entity_array_optional_putter_factory(
     return putter
 
 
-def nullable_object_array_optional_putter_factory(field_key, entity_type = None):
+def nullable_object_array_optional_putter_factory(field_key, entity_type = None, *, can_include_internals = ...):
     """
     Returns a nullable object array putter.
     
@@ -1753,11 +1753,17 @@ def nullable_object_array_optional_putter_factory(field_key, entity_type = None)
     entity_type : `None | type` = `None`, Optional
         Entity type to be serialised.
     
+    can_include_internals : `bool`, Optional (Keyword only)
+        Whether the `field_type.to_data` implements the `include_internals` parameter.
+    
     Returns
     -------
     putter : `FunctionType`
     """
-    if (entity_type is not None) and _has_entity_include_internals_parameter(entity_type):
+    if (
+        ((can_include_internals is not ...) and can_include_internals) or
+        ((entity_type is not None) and _has_entity_include_internals_parameter(entity_type))
+    ):
         def putter(entity_array, data, defaults, *, include_internals = False):
             """
             Puts the given entity array into the given `data` json serializable object.

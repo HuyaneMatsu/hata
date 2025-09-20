@@ -27,16 +27,22 @@ class SystemChannelFlag(FlagBaseReversed):
     +---------------------------------------+-------------------+
     | role_subscription_purchase_replies    | 5                 |
     +---------------------------------------+-------------------+
+    | ???                                   | 6                 |
+    +---------------------------------------+-------------------+
+    | ???                                   | 7                 |
+    +---------------------------------------+-------------------+
+    | emoji_added_notification              | 8                 |
+    +---------------------------------------+-------------------+
     
     There are also predefined ``SystemChannelFlag``-s:
     
     +-----------------------+---------------------------+
     | Type attribute name   | value                     |
     +=======================+===========================+
-    | NONE                  | ActivityFlag(0b111111)    |
+    | NONE                  | ActivityFlag(0b100111111) |
     +-----------------------+---------------------------+
-    | ALL                   | ActivityFlag(0b000000)    |
-    +-----------------------+----------------------------+
+    | ALL                   | ActivityFlag(0b000000000) |
+    +-----------------------+---------------------------+
     """
     welcome = F(0)
     boost = F(1)
@@ -44,6 +50,9 @@ class SystemChannelFlag(FlagBaseReversed):
     join_sticker_replies = F(3)
     role_subscription_purchase = F(4)
     role_subscription_purchase_replies = F(5)
+    # 6 ???
+    # 7 ???
+    emoji_added_notification = F(8)
     
     @property
     def none(self):
@@ -72,5 +81,5 @@ class SystemChannelFlag(FlagBaseReversed):
     ALL = NotImplemented
 
 
-SystemChannelFlag.NONE = SystemChannelFlag(0b111111)
-SystemChannelFlag.ALL = SystemChannelFlag(0b000000)
+SystemChannelFlag.NONE = SystemChannelFlag(0b100111111)
+SystemChannelFlag.ALL = SystemChannelFlag(0b000000000)

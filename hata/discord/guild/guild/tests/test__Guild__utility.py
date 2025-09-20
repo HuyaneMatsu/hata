@@ -1006,7 +1006,7 @@ def test__Guild__get_emoji(guild, name):
     
     Returns
     -------
-    output : `None`, ``Emoji``
+    output : ``None | Emoji``
     """
     return guild.get_emoji(name)
 
@@ -1038,7 +1038,7 @@ def test__Guild__get_emoji_like(guild, name):
     
     Returns
     -------
-    output : `None`, ``Emoji``
+    output : ``None | Emoji``
     """
     return guild.get_emoji_like(name)
 

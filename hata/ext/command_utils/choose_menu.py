@@ -60,7 +60,7 @@ class ChooseMenu(PaginationBase):
     
     client : ``Client``
         The client who executes the ``ChooseMenu``.
-    message : `None`, ``Message``
+    message : ``None | Message``
         The message on what the ``ChooseMenu`` is executed.
     
     check : `None`, `callable`
@@ -222,7 +222,7 @@ class ChooseMenu(PaginationBase):
             about the respective page. Defaults to an empty ``Embed``.
         timeout : `float` = `240.0`, Optional (Keyword only)
             The timeout of the ``ChooseMenu`` in seconds.
-        message : `None`, ``Message`` = `None`, Optional (Keyword only)
+        message : ``None | Message`` = `None`, Optional (Keyword only)
             The message on what the ``ChooseMenu`` will be executed. If not given a new message will be created.
         prefix : `None`, `str` = `None`, Optional (Keyword only)
             A prefix displayed before each option.

@@ -8,10 +8,9 @@ from ......discord.application_command import (
 )
 from ......discord.client import Client
 from ......discord.client.compounds.tests.helpers import TestDiscordApiClient
-from ......discord.interaction import (
-    InteractionEvent, InteractionMetadataApplicationCommand, InteractionType, Resolved
-)
+from ......discord.interaction import InteractionEvent, InteractionType
 from ......discord.permission import Permission
+from ......discord.resolved import Resolved
 from ......discord.user import ClientUserBase, User
 
 from ....response_modifier import ResponseModifier
@@ -488,10 +487,8 @@ async def test__ContextCommand__invoke():
     interaction_event = InteractionEvent.precreate(
         interaction_event_id,
         interaction_type = InteractionType.application_command,
-        interaction = InteractionMetadataApplicationCommand(
-            target_id = user_id,
-            resolved = Resolved(users = {user_id: user}),
-        ),
+        target_id = user_id,
+        resolved = Resolved(users = [user]),
     )
     
     try:

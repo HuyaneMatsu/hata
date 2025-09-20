@@ -243,7 +243,6 @@ class ComponentMetadataSection(ComponentMetadataBase):
             thumbnail = validate_thumbnail(thumbnail)
         
         # Construct
-        
         new = object.__new__(type(self))
         new.components = components
         new.thumbnail = thumbnail
@@ -264,4 +263,7 @@ class ComponentMetadataSection(ComponentMetadataBase):
         if (components is not None):
             for component in components:
                 yield from component.iter_contents()
-
+        
+        thumbnail = self.thumbnail
+        if (thumbnail is not None):
+            yield from thumbnail.iter_contents()

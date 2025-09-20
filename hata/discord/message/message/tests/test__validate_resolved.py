@@ -1,6 +1,6 @@
 import vampytest
 
-from ....interaction import Resolved
+from ....resolved import Resolved
 
 from ...attachment import Attachment
 

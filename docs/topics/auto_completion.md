@@ -57,7 +57,7 @@ The main disadvantage of implementing such a system is that the user might break
 parameters. For example, in the discord client, the user can select type before he selects category of food.
 You have to handle these cases yourself (in below code example these are appropriately handled).
 
-In the below example we use the `event.interaction.get_value_of(*option_names)` method which returns the parameter
+In the below example we use the `event.get_value_of(*option_names)` method which returns the parameter
 values for the given **option stack**. This means that if you're dealing with sub-commands you will need to mention
 the sub-command name before the parameter.
 
@@ -99,7 +99,7 @@ async def shop(
 
 @shop.autocomplete('type_')
 async def autocomplete_product_type(event, value):
-    product = event.interaction.get_value_of('product')
+    product = event.get_value_of('product')
     if product is None:
         return
     
@@ -121,7 +121,7 @@ A common case is when you have multiple similar parameters.
 
 > If doing multiple filterings then having a `get_one_like` and `get_multiple_like` functions might be handy.
 
-In the below example we use the `event.interaction.get_non_focused_values()` method which returns a dictionary of
+In the below example we use the `event.get_non_focused_values()` method which returns a dictionary of
 `parameter-name` - `value` pairs. Using it can be great help when you want to get **all** the parameters which the user
 already filled out (so you can do something with them, in this case exclude them).
 This also includes parameters filled out with *null* value (so values can be `None`).
@@ -178,7 +178,7 @@ async def pick_cake(
 async def exclusive_autocomplete_cake_name(event, actual_cake_name):
     excluded_cake_names = set()
     
-    for cake_name in event.interaction.get_non_focused_values().values():
+    for cake_name in event.get_non_focused_values().values():
         if cake_name is not None:
             cake_name = get_cake_name_like(cake_name)
             if cake_name is not None:

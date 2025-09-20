@@ -458,7 +458,7 @@ class SlashCommand(
     
     @copy_docs(CommandBaseApplicationCommand.invoke)
     async def invoke(self, client, interaction_event):
-        options = interaction_event.interaction.options
+        options = interaction_event.options
         
         command = self._command
         if (command is not None):

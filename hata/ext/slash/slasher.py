@@ -1261,7 +1261,8 @@ class Slasher(
             
             return
         
-        custom_id = interaction_event.interaction.custom_id
+        
+        custom_id = interaction_event.custom_id
         try:
             component_command = self._string_custom_id_to_component_command[custom_id]
         except KeyError:
@@ -1293,7 +1294,7 @@ class Slasher(
         interaction_event : ``InteractionEvent``
             The received interaction event.
         """
-        auto_complete_option = interaction_event.interaction
+        auto_complete_option = interaction_event.metadata
         if auto_complete_option.options is None:
             return
         
@@ -1326,7 +1327,7 @@ class Slasher(
         interaction_event : ``InteractionEvent``
             The received interaction event.
         """
-        custom_id = interaction_event.interaction.custom_id
+        custom_id = interaction_event.custom_id
         try:
             form_submit_command = self._string_custom_id_to_form_submit_command[custom_id]
         except KeyError:
@@ -1691,9 +1692,9 @@ class Slasher(
         interaction_event : ``InteractionEvent``
             The invoked interaction.
         """
-        interaction_id = interaction_event.interaction.id
+        application_command_id = interaction_event.application_command_id
         try:
-            command = self.command_id_to_command[interaction_id]
+            command = self.command_id_to_command[application_command_id]
         except KeyError:
             pass
         else:
@@ -1707,7 +1708,7 @@ class Slasher(
                 return None
             
             try:
-                command = self.command_id_to_command[interaction_id]
+                command = self.command_id_to_command[application_command_id]
             except KeyError:
                 pass
             else:
@@ -1717,7 +1718,7 @@ class Slasher(
             return None
         
         try:
-            command = self.command_id_to_command[interaction_id]
+            command = self.command_id_to_command[application_command_id]
         except KeyError:
             pass
         else:

@@ -25,7 +25,7 @@ class ActivityUpdate(RichAttributeErrorBaseType):
         +-------------------+-----------------------------------+
         | Keys              | Values                            |
         +===================+===================================+
-        | assets            | `None`, ``ActivityAssets``        |
+        | assets            | ``None | ActivityAssets``         |
         +-------------------+-----------------------------------+
         | buttons           | `None | tuple<str>`               |
         +-------------------+-----------------------------------+
@@ -33,7 +33,7 @@ class ActivityUpdate(RichAttributeErrorBaseType):
         +-------------------+-----------------------------------+
         | details           | `None`, `str`                     |
         +-------------------+-----------------------------------+
-        | emoji             | `None`, ``Emoji``                 |
+        | emoji             | ``None | Emoji``                  |
         +-------------------+-----------------------------------+
         | flags             | ``ActivityFlag``                  |
         +-------------------+-----------------------------------+
@@ -43,9 +43,9 @@ class ActivityUpdate(RichAttributeErrorBaseType):
         +-------------------+-----------------------------------+
         | metadata          | ``ActivityMetadataBase``          |
         +-------------------+-----------------------------------+
-        | party             | `None`, ``ActivityParty``         |
+        | party             | ``None | ActivityParty``          |
         +-------------------+-----------------------------------+
-        | secrets           | `None`, ``ActivitySecrets``       |
+        | secrets           | ``None | ActivitySecrets``        |
         +-------------------+-----------------------------------+
         | session_id        | `None`, `str`                     |
         +-------------------+-----------------------------------+
@@ -53,7 +53,7 @@ class ActivityUpdate(RichAttributeErrorBaseType):
         +-------------------+-----------------------------------+
         | sync_id           | `None`, `str`                     |
         +-------------------+-----------------------------------+
-        | timestamps        | `None`, `ActivityTimestamps``     |
+        | timestamps        | ``None | ActivityTimestamps``     |
         +-------------------+-----------------------------------+
         | url               | `None`, `str`                     |
         +-------------------+-----------------------------------+

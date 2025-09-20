@@ -1,10 +1,13 @@
 __all__ = ('InteractionMetadataApplicationCommandAutocomplete',)
 
+from warnings import warn
+
 from scarletio import copy_docs
 
 from .base import InteractionMetadataBase
 from .fields import (
-    parse_id, parse_name, parse_options, put_id, put_name, put_options, validate_id, validate_name,
+    parse_application_command_id, parse_application_command_name, parse_options, put_application_command_id,
+    put_application_command_name, put_options, validate_application_command_id, validate_application_command_name,
     validate_options
 )
 
@@ -15,21 +18,22 @@ class InteractionMetadataApplicationCommandAutocomplete(InteractionMetadataBase)
     
     Parameters
     ----------
-    id : `int`
+    application_command_id : `int`
         The represented application command's identifier number.
     
-    name : `str`
-        The represented application command's name.
+    application_command_name : `str`
+        The represented application command's application_command_name.
     
-    options : `None | tuple<InteractionOption>`
+    options : ``None | tuple<InteractionOption>``
         Application command option representations. Like sub-command or parameter.
     """
-    __slots__ = ('id', 'name', 'options')
+    __slots__ = ('application_command_id', 'application_command_name', 'options')
     
     def __new__(
         cls,
         *,
         application_command_id = ...,
+        application_command_name = ...,
         name = ...,
         options = ...,
     ):
@@ -38,13 +42,13 @@ class InteractionMetadataApplicationCommandAutocomplete(InteractionMetadataBase)
         
         Parameters
         ----------
-        application_command_id : `int`, Optional (Keyword only)
+        application_command_id : ``None | int | ApplicationCommand``, Optional (Keyword only)
             The represented application command's identifier number.
         
-        name : `str`, Optional (Keyword only)
-            The represented application command's name.
+        application_command_name : `None | str`, Optional (Keyword only)
+            The represented application command's application_command_name.
         
-        options : `None`, `tuple` of ``InteractionOption``, Optional (Keyword only)
+        options : ``None | iterable<InteractionOption>``, Optional (Keyword only)
             Application command option representations. Like sub-command or parameter.
         
         Raises
@@ -54,17 +58,29 @@ class InteractionMetadataApplicationCommandAutocomplete(InteractionMetadataBase)
         ValueError
             - If a parameter's value is incorrect.
         """
+        # Deprecations
+        if (name is not ...):
+            warn(
+                (
+                    f'`{cls.__name__}.__new__`\'s `name` parameter is deprecated and is scheduled '
+                    f'for removal at 2026 February. Please use the `application_command_name` parameter instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            application_command_name = name
+        
         # application_command_id
         if application_command_id is ...:
             application_command_id = 0
         else:
-            application_command_id = validate_id(application_command_id)
+            application_command_id = validate_application_command_id(application_command_id)
         
-        # name
-        if name is ...:
-            name = ''
+        # application_command_name
+        if application_command_name is ...:
+            application_command_name = ''
         else:
-            name = validate_name(name)
+            application_command_name = validate_application_command_name(application_command_name)
         
         # options
         if options is ...:
@@ -74,18 +90,28 @@ class InteractionMetadataApplicationCommandAutocomplete(InteractionMetadataBase)
         
         # Construct
         self = object.__new__(cls)
-        self.id = application_command_id
-        self.name = name
+        self.application_command_id = application_command_id
+        self.application_command_name = application_command_name
         self.options = options
         return self
+    
+    
+    @classmethod
+    @copy_docs(InteractionMetadataBase.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            application_command_id = keyword_parameters.pop('application_command_id', ...),
+            application_command_name = keyword_parameters.pop('application_command_name', ...),
+            options = keyword_parameters.pop('options', ...),
+        )
     
     
     @classmethod
     @copy_docs(InteractionMetadataBase._create_empty)
     def _create_empty(cls):
         self = object.__new__(cls)
-        self.id = 0
-        self.name = ''
+        self.application_command_id = 0
+        self.application_command_name = ''
         self.options = None
         return self
     
@@ -93,8 +119,8 @@ class InteractionMetadataApplicationCommandAutocomplete(InteractionMetadataBase)
     @copy_docs(InteractionMetadataBase.copy)
     def copy(self):
         new = object.__new__(type(self))
-        new.id = self.id
-        new.name = self.name
+        new.application_command_id = self.application_command_id
+        new.application_command_name = self.application_command_name
         
         options = self.options
         if (options is not None):
@@ -108,6 +134,7 @@ class InteractionMetadataApplicationCommandAutocomplete(InteractionMetadataBase)
         self,
         *,
         application_command_id = ...,
+        application_command_name = ...,
         name = ...,
         options = ...,
     ):
@@ -116,13 +143,13 @@ class InteractionMetadataApplicationCommandAutocomplete(InteractionMetadataBase)
         
         Parameters
         ----------
-        application_command_id : `int`, Optional (Keyword only)
+        application_command_id : ``None | int | ApplicationCommand``, Optional (Keyword only)
             The represented application command's identifier number.
         
-        name : `str`, Optional (Keyword only)
-            The represented application command's name.
+        application_command_name : `None | str`, Optional (Keyword only)
+            The represented application command's application_command_name.
         
-        options : `None`, `tuple` of ``InteractionOption``, Optional (Keyword only)
+        options : ``None | iterable<InteractionOption>``, Optional (Keyword only)
             Application command option representations. Like sub-command or parameter.
         
         Returns
@@ -136,17 +163,29 @@ class InteractionMetadataApplicationCommandAutocomplete(InteractionMetadataBase)
         ValueError
             - If a parameter's value is incorrect.
         """
+        # Deprecations
+        if (name is not ...):
+            warn(
+                (
+                    f'`{type(self).__name__}.copy_with`\'s `name` parameter is deprecated and is scheduled '
+                    f'for removal at 2026 February. Please use the `application_command_name` parameter instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            application_command_name = name
+        
         # application_command_id
         if application_command_id is ...:
-            application_command_id = self.id
+            application_command_id = self.application_command_id
         else:
-            application_command_id = validate_id(application_command_id)
+            application_command_id = validate_application_command_id(application_command_id)
         
-        # name
-        if name is ...:
-            name = self.name
+        # application_command_name
+        if application_command_name is ...:
+            application_command_name = self.application_command_name
         else:
-            name = validate_name(name)
+            application_command_name = validate_application_command_name(application_command_name)
         
         # options
         if options is ...:
@@ -158,18 +197,27 @@ class InteractionMetadataApplicationCommandAutocomplete(InteractionMetadataBase)
         
         # Construct
         new = object.__new__(type(self))
-        new.id = application_command_id
-        new.name = name
+        new.application_command_id = application_command_id
+        new.application_command_name = application_command_name
         new.options = options
         return new
+    
+    
+    @copy_docs(InteractionMetadataBase.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            application_command_id = keyword_parameters.pop('application_command_id', ...),
+            application_command_name = keyword_parameters.pop('application_command_name', ...),
+            options = keyword_parameters.pop('options', ...),
+        )
     
     
     @classmethod
     @copy_docs(InteractionMetadataBase.from_data)
     def from_data(cls, data, guild_id = 0):
         self = object.__new__(cls)
-        self.id = parse_id(data)
-        self.name = parse_name(data)
+        self.application_command_id = parse_application_command_id(data)
+        self.application_command_name = parse_application_command_name(data)
         self.options = parse_options(data)
         return self
     
@@ -177,8 +225,8 @@ class InteractionMetadataApplicationCommandAutocomplete(InteractionMetadataBase)
     @copy_docs(InteractionMetadataBase.to_data)
     def to_data(self, *, defaults = False, guild_id = 0):
         data = {}
-        put_id(self.id, data, defaults)
-        put_name(self.name, data, defaults)
+        put_application_command_id(self.application_command_id, data, defaults)
+        put_application_command_name(self.application_command_name, data, defaults)
         put_options(self.options, data, defaults)
         return data
     
@@ -186,12 +234,12 @@ class InteractionMetadataApplicationCommandAutocomplete(InteractionMetadataBase)
     @copy_docs(InteractionMetadataBase._put_attribute_representations_into)
     def _put_attribute_representations_into(self, repr_parts):
         # id
-        repr_parts.append(' id = ')
-        repr_parts.append(repr(self.id))
+        repr_parts.append(' application_command_id = ')
+        repr_parts.append(repr(self.application_command_id))
         
-        # name
-        repr_parts.append(', name = ')
-        repr_parts.append(repr(self.name))
+        # application_command_name
+        repr_parts.append(', application_command_name = ')
+        repr_parts.append(repr(self.application_command_name))
         
         # options
         options = self.options
@@ -207,10 +255,10 @@ class InteractionMetadataApplicationCommandAutocomplete(InteractionMetadataBase)
         hash_value = 0
         
         # id
-        hash_value ^= self.id
+        hash_value ^= self.application_command_id
         
-        # name
-        hash_value ^= hash(self.name)
+        # application_command_name
+        hash_value ^= hash(self.application_command_name)
         
         # options
         options = self.options
@@ -226,11 +274,11 @@ class InteractionMetadataApplicationCommandAutocomplete(InteractionMetadataBase)
     @copy_docs(InteractionMetadataBase._is_equal_same_type)
     def _is_equal_same_type(self, other):
         # id
-        if self.id != other.id:
+        if self.application_command_id != other.application_command_id:
             return False
         
-        # name
-        if self.name != other.name:
+        # application_command_name
+        if self.application_command_name != other.application_command_name:
             return False
         
         # options

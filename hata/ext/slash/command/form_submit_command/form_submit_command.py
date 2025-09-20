@@ -32,19 +32,19 @@ class FormSubmitCommand(CommandBaseCustomId):
         Parameter converters for keyword parameters.
     
     _multi_parameter_converter : `None | ParameterConverterBase`
-        Parameter converter for positional parameter.
+        Parameter converter for starred positional parameter.
     
     _parent_reference : `None | WeakReferer<SelfReferenceInterface>`
         The parent slasher of the component command.
     
-    _parameter_converters : `tuple<ParameterConverterBase>`
-        Parsers to parse command parameters.
-    
-    _string_custom_ids : `None | tuple<str>`
-        The custom id-s to wait for.
+    _positional_parameter_converters : `tuple<ParameterConverterBase>`
+        Parsers to parse positional command parameters.
     
     _regex_custom_ids : `None | tuple<RegexMatcher>`.
         Regex matchers to match custom-ids.
+    
+    _string_custom_ids : `None | tuple<str>`
+        The custom id-s to wait for.
     
     name : `str`
         The component commands name.
@@ -54,7 +54,7 @@ class FormSubmitCommand(CommandBaseCustomId):
     response_modifier : `None | ResponseModifier`
         Modifies values returned and yielded to command coroutine processor.
     """
-    __slots__ = ('_keyword_parameter_converters', '_multi_parameter_converter')
+    __slots__ = ('_multi_parameter_converter',)
     
     
     def __new__(cls, function, name = None, *, custom_id = ..., target = ..., **keyword_parameters):
@@ -122,20 +122,24 @@ class FormSubmitCommand(CommandBaseCustomId):
         
         # post validate
         name = check_name(command_function, name)
-        command_function, parameter_converters, multi_parameter_converter, keyword_parameter_converters = \
-            get_form_submit_command_parameter_converters(command_function)
+        (
+            command_function,
+            parameter_converters,
+            multi_parameter_converter,
+            keyword_parameter_converters,
+        ) =  get_form_submit_command_parameter_converters(command_function)
         string_custom_ids, regex_custom_ids = split_and_check_satisfaction(custom_id, parameter_converters)
         
         # Construct
         self = object.__new__(cls)
         self._command_function = command_function
-        self._parameter_converters = parameter_converters
+        self._exception_handlers = None
         self._keyword_parameter_converters = keyword_parameter_converters
         self._multi_parameter_converter = multi_parameter_converter
-        self._string_custom_ids = string_custom_ids
-        self._regex_custom_ids = regex_custom_ids
         self._parent_reference = None
-        self._exception_handlers = None
+        self._positional_parameter_converters = parameter_converters
+        self._regex_custom_ids = regex_custom_ids
+        self._string_custom_ids = string_custom_ids
         self.name = name
         self.response_modifier = response_modifier
         
@@ -151,7 +155,7 @@ class FormSubmitCommand(CommandBaseCustomId):
         # Positional parameters
         positional_parameters = []
         
-        for parameter_converter in self._parameter_converters:
+        for parameter_converter in self._positional_parameter_converters:
             try:
                 parameter = await parameter_converter(client, interaction_event, regex_match)
             except GeneratorExit:
@@ -164,38 +168,42 @@ class FormSubmitCommand(CommandBaseCustomId):
                 positional_parameters.append(parameter)
                 continue
             
-            await handle_command_exception(
-                self,
-                client,
-                interaction_event,
-                exception,
-            )
-            return
-        
-        parameter_converter = self._multi_parameter_converter
-        if (parameter_converter is not None):
             try:
-                parameters = await parameter_converter(client, interaction_event, regex_match)
-            except GeneratorExit:
-                raise
-            
-            except BaseException as err:
-                exception = err
-            
-            else:
-                if (parameters is not None):
-                    positional_parameters.extend(parameters)
-                
-                exception = None
-            
-            # Call it here to not include the received exception as context
-            if (exception is not None):
                 await handle_command_exception(
                     self,
                     client,
                     interaction_event,
                     exception,
                 )
+            finally:
+                exception = None
+            return
+        
+        parameter_converter = self._multi_parameter_converter
+        if (parameter_converter is not None):
+            while True:
+                try:
+                    parameters = await parameter_converter(client, interaction_event, regex_match)
+                except GeneratorExit:
+                    raise
+                
+                except BaseException as err:
+                    exception = err
+                
+                else:
+                    if (parameters is not None):
+                        positional_parameters.extend(parameters)
+                    break
+                
+                try:
+                    await handle_command_exception(
+                        self,
+                        client,
+                        interaction_event,
+                        exception,
+                    )
+                finally:
+                    exception = None
                 return
         
         # Keyword parameters
@@ -214,12 +222,15 @@ class FormSubmitCommand(CommandBaseCustomId):
                 keyword_parameters[parameter_converter.parameter_name] = parameter
                 continue
             
-            await handle_command_exception(
-                self,
-                client,
-                interaction_event,
-                exception,
-            )
+            try:
+                await handle_command_exception(
+                    self,
+                    client,
+                    interaction_event,
+                    exception,
+                )
+            finally:
+                exception = None
             return
         
         # Call command
@@ -236,12 +247,15 @@ class FormSubmitCommand(CommandBaseCustomId):
         else:
             return
         
-        await handle_command_exception(
-            self,
-            client,
-            interaction_event,
-            exception,
-        )
+        try:
+            await handle_command_exception(
+                self,
+                client,
+                interaction_event,
+                exception,
+            )
+        finally:
+            exception = None
         return
     
     
@@ -249,7 +263,6 @@ class FormSubmitCommand(CommandBaseCustomId):
     def copy(self):
         new = CommandBaseCustomId.copy(self)
         
-        new._keyword_parameter_converters = self._keyword_parameter_converters
         new._multi_parameter_converter = self._multi_parameter_converter
         
         return new

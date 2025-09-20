@@ -1,64 +1,61 @@
 import vampytest
 
+from ....component import InteractionComponent
+
 from ..base import InteractionMetadataBase
 
 
-def test__InteractionMetadataBase__iter_components():
-    """
-    Tests whether ``InteractionMetadataBase.iter_components`` works as intended.
-    """
-    interaction_metadata = InteractionMetadataBase()
-    
-    vampytest.assert_eq([*interaction_metadata.iter_components()], [])
-
-
-def test__InteractionMetadataBase__iter_custom_ids_and_values():
-    """
-    Tests whether ``InteractionMetadataBase.iter_custom_ids_and_values`` works as intended.
-    """
-    interaction_metadata = InteractionMetadataBase()
-    
-    vampytest.assert_eq(dict(interaction_metadata.iter_custom_ids_and_values()), {})
-
-
-def test__InteractionMetadataBase__get_custom_id_value_relation():
-    """
-    Tests whether ``InteractionMetadataBase.get_custom_id_value_relation`` works as intended.
-    """
-    interaction_metadata = InteractionMetadataBase()
-    
-    vampytest.assert_eq(interaction_metadata.get_custom_id_value_relation(), {})
-
-
-
-def test__InteractionMetadataBase__get_value_for():
-    """
-    Tests whether ``InteractionMetadataBase.get_value_for`` works as intended.
-    """
-    interaction_metadata = InteractionMetadataBase()
-    
-    vampytest.assert_is(interaction_metadata.get_value_for('Ran'), None)
-
-
-def test__InteractionMetadataBase__get_match_and_value():
-    """
-    Tests whether ``InteractionMetadataBase.get_match_and_value`` works as intended.
-    """
-    interaction_metadata = InteractionMetadataBase()
-    
-    vampytest.assert_eq(
-        interaction_metadata.get_match_and_value(lambda custom_id: 'Ran' if custom_id == 'custom_id' else None),
-        (None, None)
-    )
-
-
-def test__InteractionMetadataBase__iter_matches_and_values():
-    """
-    Tests whether ``InteractionMetadataBase.iter_matches_and_values`` works as intended.
-    """
-    interaction_metadata = InteractionMetadataBase()
-    
-    vampytest.assert_eq(
-        [*interaction_metadata.iter_matches_and_values(lambda custom_id: 'Ran' if custom_id == 'custom_id' else None)],
+def _iter_options__iter_components():
+    yield (
+        {},
         [],
     )
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_components()).returning_last())
+def test__InteractionMetadataBase__iter_components(keyword_parameters):
+    """
+    Tests whether ``InteractionMetadataBase.iter_components`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : ``list<InteractionComponent>``
+    """
+    interaction_metadata = InteractionMetadataBase(**keyword_parameters)
+    
+    output = [*interaction_metadata.iter_components()]
+    
+    for element in output:
+        vampytest.assert_instance(element, InteractionComponent)
+    
+    return output
+
+
+def _iter_options__iter_custom_ids_and_values():
+    yield (
+        {},
+        [],
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_custom_ids_and_values()).returning_last())
+def test__InteractionMetadataBase__iter_custom_ids_and_values(keyword_parameters):
+    """
+    Tests whether ``InteractionMetadataBase.iter_custom_ids_and_values`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `list<(str, ComponentType, None | str | tuple<str>)>`
+    """
+    interaction_metadata = InteractionMetadataBase(**keyword_parameters)
+    return [*interaction_metadata.iter_custom_ids_and_values()]

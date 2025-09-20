@@ -73,7 +73,7 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the activity metadata's representation."""
-        return f'<{self.__class__.__name__}>'
+        return f'<{type(self).__name__}>'
     
     
     def __hash__(self):
@@ -136,8 +136,10 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         ----------
         defaults : `bool` = `False`, Optional (Keyword only)
             Whether fields with their default values should be included as well.
+        
         include_internals : `bool` = `False`, Optional (Keyword only)
             Whether internal fields, like id-s should be present as well.
+        
         user : `bool` = `False`, Optional (Keyword only)
             Whether not only bot compatible fields should be included.
         
@@ -180,15 +182,17 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         +-------------------+-----------------------------------+
         | Keys              | Values                            |
         +===================+===================================+
-        | assets            | `None`, ``ActivityAssets``        |
+        | assets            | ``None | ActivityAssets``         |
         +-------------------+-----------------------------------+
         | buttons           | `None | tuple<str>`               |
         +-------------------+-----------------------------------+
         | created_at        | `None`, `dateTime`                |
         +-------------------+-----------------------------------+
-        | details           | `None`, `str`                     |
+        | details           | `None | str`                      |
         +-------------------+-----------------------------------+
-        | emoji             | `None`, ``Emoji``                 |
+        | details_url       | `None | str`                      |
+        +-------------------+-----------------------------------+
+        | emoji             | ``None | Emoji``                  |
         +-------------------+-----------------------------------+
         | flags             | ``ActivityFlag``                  |
         +-------------------+-----------------------------------+
@@ -198,19 +202,21 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         +-------------------+-----------------------------------+
         | metadata          | ``ActivityMetadataBase``          |
         +-------------------+-----------------------------------+
-        | party             | `None`, ``ActivityParty``         |
+        | party             | ``None | ActivityParty``          |
         +-------------------+-----------------------------------+
-        | secrets           | `None`, ``ActivitySecrets``       |
+        | secrets           | ``None | ActivitySecrets``        |
         +-------------------+-----------------------------------+
-        | session_id        | `None`, `str`                     |
+        | session_id        | `None | str`                      |
         +-------------------+-----------------------------------+
-        | state             | `None`, `str`                     |
+        | state             | `None | str`                      |
         +-------------------+-----------------------------------+
-        | sync_id           | `None`, `str`                     |
+        | state_url         | `None | str`                      |
         +-------------------+-----------------------------------+
-        | timestamps        | `None`, `ActivityTimestamps``     |
+        | sync_id           | `None | str`                      |
         +-------------------+-----------------------------------+
-        | url               | `None`, `str`                     |
+        | timestamps        | ``None | ActivityTimestamps``     |
+        +-------------------+-----------------------------------+
+        | url               | `None | str`                      |
         +-------------------+-----------------------------------+
         """
         return {}
@@ -288,7 +294,7 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        assets : `None`, ``ActivityAssets``
+        assets : ``None | ActivityAssets``
         """
     )
     
@@ -312,7 +318,7 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        created_at : `None`, `DateTime`
+        created_at : `None | DateTime`
         """
     )
     
@@ -324,7 +330,19 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        details : `None`, `str`
+        details : `None | str`
+        """
+    )
+    
+    
+    details_url = PlaceHolder(
+        None,
+        """
+        Returns the activity's details's url.
+        
+        Returns
+        -------
+        details_url : `None | str`
         """
     )
     
@@ -336,7 +354,7 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        emoji : `None`, ``Emoji``
+        emoji : ``None | Emoji``
         """
     )
     
@@ -396,7 +414,7 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        party : `None`, ``ActivityParty``
+        party : ``None | ActivityParty``
         """
     )
     
@@ -408,7 +426,7 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        secrets : `None`, ``ActivitySecrets``
+        secrets : ``None | ActivitySecrets``
         """
     )
     
@@ -420,10 +438,10 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        session_id : `None`, `str`
+        session_id : `None | str`
         """
     )
-
+    
     
     state = PlaceHolder(
         None,
@@ -434,7 +452,19 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        state : `None`, `str`
+        state : `None | str`
+        """
+    )
+    
+    
+    state_url = PlaceHolder(
+        None,
+        """
+        Returns the activity's state's url.
+        
+        Returns
+        -------
+        state_url : `None | str`
         """
     )
     
@@ -446,7 +476,7 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        sync_id : `None`, `str`
+        sync_id : `None | str`
         """
     )
     
@@ -458,7 +488,7 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        timestamps : `None`, ``ActivityTimestamps``
+        timestamps : ``None | ActivityTimestamps``
         """
     )
     
@@ -470,6 +500,6 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        url : `None`, `str`
+        url : `None | str`
         """
     )

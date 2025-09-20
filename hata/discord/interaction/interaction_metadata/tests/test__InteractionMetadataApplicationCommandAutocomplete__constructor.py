@@ -15,12 +15,12 @@ def _assert_fields_set(interaction_metadata):
         The interaction metadata to check.
     """
     vampytest.assert_instance(interaction_metadata, InteractionMetadataApplicationCommandAutocomplete)
-    vampytest.assert_instance(interaction_metadata.id, int)
-    vampytest.assert_instance(interaction_metadata.name, str)
+    vampytest.assert_instance(interaction_metadata.application_command_id, int)
+    vampytest.assert_instance(interaction_metadata.application_command_name, str)
     vampytest.assert_instance(interaction_metadata.options, tuple, nullable = True)
 
 
-def test__InteractionMetadataApplicationCommandAutocomplete__new__0():
+def test__InteractionMetadataApplicationCommandAutocomplete__new__no_fields():
     """
     Tests whether ``InteractionMetadataApplicationCommandAutocomplete.__new__`` works as intended.
     
@@ -30,27 +30,59 @@ def test__InteractionMetadataApplicationCommandAutocomplete__new__0():
     _assert_fields_set(interaction_metadata)
 
 
-def test__InteractionMetadataApplicationCommandAutocomplete__new__1():
+def test__InteractionMetadataApplicationCommandAutocomplete__new__all_fields():
     """
     Tests whether ``InteractionMetadataApplicationCommandAutocomplete.__new__`` works as intended.
     
     Case: All fields given.
     """
     application_command_id = 202211060001
-    name = 'Inaba'
+    application_command_name = 'Inaba'
     options = [InteractionOption(name = 'Rem')]
     
     interaction_metadata = InteractionMetadataApplicationCommandAutocomplete(
         application_command_id = application_command_id,
-        name = name,
+        application_command_name = application_command_name,
         options = options,
     )
     _assert_fields_set(interaction_metadata)
     
-    vampytest.assert_eq(interaction_metadata.id, application_command_id)
-    vampytest.assert_eq(interaction_metadata.name, name)
+    vampytest.assert_eq(interaction_metadata.application_command_id, application_command_id)
+    vampytest.assert_eq(interaction_metadata.application_command_name, application_command_name)
     vampytest.assert_eq(interaction_metadata.options, tuple(options))
+
+
+def test__InteractionMetadataApplicationCommandAutocomplete__from_keyword_parameters__no_fields():
+    """
+    Tests whether ``InteractionMetadataApplicationCommandAutocomplete.from_keyword_parameters`` works as intended.
     
+    Case: No fields given.
+    """
+    interaction_metadata = InteractionMetadataApplicationCommandAutocomplete.from_keyword_parameters({})
+    _assert_fields_set(interaction_metadata)
+
+
+def test__InteractionMetadataApplicationCommandAutocomplete__from_keyword_parameters__all_fields():
+    """
+    Tests whether ``InteractionMetadataApplicationCommandAutocomplete.from_keyword_parameters`` works as intended.
+    
+    Case: All fields given.
+    """
+    application_command_id = 202509140002
+    application_command_name = 'Inaba'
+    options = [InteractionOption(name = 'Rem')]
+    
+    interaction_metadata = InteractionMetadataApplicationCommandAutocomplete.from_keyword_parameters({
+        'application_command_id': application_command_id,
+        'application_command_name': application_command_name,
+        'options': options,
+    })
+    _assert_fields_set(interaction_metadata)
+    
+    vampytest.assert_eq(interaction_metadata.application_command_id, application_command_id)
+    vampytest.assert_eq(interaction_metadata.application_command_name, application_command_name)
+    vampytest.assert_eq(interaction_metadata.options, tuple(options))
+
 
 def test__InteractionMetadataApplicationCommandAutocomplete__create_empty():
     """

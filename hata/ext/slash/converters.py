@@ -34,9 +34,10 @@ from .converter_constants import (
     INTERNAL_ANNOTATION_TYPES, STR_ANNOTATION_TO_ANNOTATION_TYPE, TYPE_ANNOTATION_TO_ANNOTATION_TYPE
 )
 from .expression_parser import evaluate_text
-from .parameter_converters.internal import ParameterConverterInternal
 from .parameter_converters.form_field_keyword import ParameterConverterFormFieldKeyword
 from .parameter_converters.form_field_multi import ParameterConverterFormFieldMulti
+from .parameter_converters.internal import ParameterConverterInternal
+from .parameter_converters.message_component_keyword import ParameterConverterMessageComponentKeyword
 from .parameter_converters.regex import ParameterConverterRegex
 from .parameter_converters.slash_command import ParameterConverterSlashCommand
 from .utils import normalize_description, raw_name_to_display
@@ -630,7 +631,7 @@ def check_component_converters_satisfy_string(parameter_converters):
     
     Parameters
     ----------
-    parameter_converters : `tuple` of ``ParameterConverterBase``
+    parameter_converters : ``tuple<ParameterConverterBase>``
         Parameter converters to check.
     
     Raises
@@ -658,7 +659,7 @@ def check_component_converters_satisfy_regex(parameter_converters, regex_matcher
     
     Parameters
     ----------
-    parameter_converters : `tuple` of ``ParameterConverterBase``
+    parameter_converters : ``tuple<ParameterConverterBase>``
         Parameter converters to check.
     regex_matcher : ``RegexMatcher``
         The matcher to check whether is satisfied.
@@ -865,7 +866,7 @@ class SlashParameter(RichAttributeErrorBaseType):
     
     
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         field_added = False
         
@@ -2309,7 +2310,7 @@ def get_slash_command_parameter_converters(function, parameter_configurers):
     -------
     func : `async-callable`
         The converted function.
-    parameter_converters : `tuple` of ``ParameterConverterBase``
+    parameter_converters : ``tuple<ParameterConverterBase>``
         Parameter converters for the given `func` in order.
     
     Raises
@@ -2382,44 +2383,54 @@ def get_component_command_parameter_converters(function):
     -------
     func : `async-callable`
         The converted function.
-    parameter_converters : `tuple` of ``ParameterConverterBase``
+    
+    positional_parameter_converters : ``tuple<ParameterConverterBase>``
         Parameter converters for the given `func` in order.
+    
+    keyword_parameter_converters : ``tuple<ParameterConverterBase>``
+        Parameter converters for the given `func` for it's keyword parameters.
     
     Raises
     ------
     TypeError
         - If `function` is not async callable, neither cannot be instanced to async.
-        - If `function` accepts keyword only parameters.
         - If `function` accepts `*positional_parameters`.
         - If `function` accepts `**keyword_parameters`.
+        - If `function accepts multiple keyword parameters.
     """
-    analyzer, real_analyzer, should_instance = check_command_coroutine(function, True, False, False, False)
+    analyzer, real_analyzer, should_instance = check_command_coroutine(function, True, False, True, False)
     
-    parameters = real_analyzer.get_non_reserved_positional_parameters()
-    
-    parameter_converters = []
-    
-    for parameter in parameters:
-        parameter_converter = create_internal_parameter_converter(parameter)
-        parameter_converters.append(parameter_converter)
+    positional_parameters = real_analyzer.get_non_reserved_positional_parameters()
+    positional_parameter_converters = []
     
     parameter_index = 0
-    for index in range(len(parameter_converters)):
-        parameter_converter = parameter_converters[index]
-        if (parameter_converter is not None):
-            continue
-        
-        parameter = parameters[index]
-        parameter_converter = ParameterConverterRegex(parameter, parameter_index)
-        parameter_converters[index] = parameter_converter
-        parameter_index += 1
     
-    parameter_converters = tuple(parameter_converters)
+    for parameter in positional_parameters:
+        parameter_converter = create_internal_parameter_converter(parameter)
+        if (parameter_converter is None):
+            parameter_converter = ParameterConverterRegex(parameter, parameter_index)
+            parameter_index += 1
+
+        positional_parameter_converters.append(parameter_converter)
+    
+    positional_parameter_converters = tuple(positional_parameter_converters)
+    
+    keyword_parameters = real_analyzer.get_non_reserved_keyword_only_parameters()
+    keyword_parameter_count = len(keyword_parameters)
+    
+    if keyword_parameter_count == 0:
+        keyword_parameter_converters = ()
+    elif keyword_parameter_count == 1:
+        keyword_parameter_converters = (ParameterConverterMessageComponentKeyword(keyword_parameters[0]),)
+    else:
+        raise TypeError(
+            f'`{real_analyzer.real_function!r}` accepts multiple keyword only parameters.'
+        )
     
     if should_instance:
         function = analyzer.instance()
     
-    return function, parameter_converters
+    return function, positional_parameter_converters, keyword_parameter_converters
 
 
 def get_context_command_parameter_converters(function):
@@ -2435,7 +2446,7 @@ def get_context_command_parameter_converters(function):
     -------
     function : `async-callable`
         The converted function.
-    parameter_converters : `tuple` of ``ParameterConverterBase``
+    parameter_converters : ``tuple<ParameterConverterBase>``
         Parameter converters for the given `func` in order.
     
     Raises
@@ -2493,7 +2504,7 @@ def get_embedded_activity_launch_command_parameter_converters(function):
     -------
     function : `async-callable`
         The converted function.
-    parameter_converters : `tuple` of ``ParameterConverterBase``
+    parameter_converters : ``tuple<ParameterConverterBase>``
         Parameter converters for the given `func` in order.
     
     Raises
@@ -2546,7 +2557,7 @@ def get_application_command_parameter_auto_completer_converters(function):
     -------
     func : `async-callable`
         The converted function.
-    parameter_converters : `tuple` of ``ParameterConverterBase``
+    parameter_converters : ``tuple<ParameterConverterBase>``
         Parameter converters for the given `func` in order.
     
     Raises
@@ -2575,9 +2586,9 @@ def get_application_command_parameter_auto_completer_converters(function):
                     f'`{real_analyzer.real_function!r}`\'s `{parameter.name}` do not refers to any of the '
                     f'expected internal parameters. Context commands do not accept any additional parameters.'
                 )
-            else:
-                parameter_converter = create_value_parameter_converter(parameter)
-                value_converter_detected = True
+            
+            parameter_converter = create_value_parameter_converter(parameter)
+            value_converter_detected = True
         
         parameter_converters.append(parameter_converter)
     
@@ -2603,11 +2614,11 @@ def get_form_submit_command_parameter_converters(function):
     -------
     func : `async-callable`
         The converted function.
-    positional_parameter_converters : `tuple` of ``ParameterConverterBase``
+    positional_parameter_converters : ``tuple<ParameterConverterBase>``
         Parameter converters for the given `func` in order.
     multi_parameter_converter : `None | ParameterConverterBase`
          Parameter converter for `*positional_parameters` parameter.
-    keyword_parameter_converters : `tuple` of ``ParameterConverterBase``
+    keyword_parameter_converters : ``tuple<ParameterConverterBase>``
         Parameter converters for the given `func` for it's keyword parameters.
     
     Raises
@@ -2623,20 +2634,14 @@ def get_form_submit_command_parameter_converters(function):
     
     positional_parameter_converters = []
     
+    parameter_index = 0
     for parameter in positional_parameters:
         parameter_converter = create_internal_parameter_converter(parameter)
+        if (parameter_converter is None):
+            parameter_converter = ParameterConverterRegex(parameter, parameter_index)
+            parameter_index += 1
+            
         positional_parameter_converters.append(parameter_converter)
-    
-    parameter_index = 0
-    for index in range(len(positional_parameter_converters)):
-        parameter_converter = positional_parameter_converters[index]
-        if (parameter_converter is not None):
-            continue
-        
-        parameter = positional_parameters[index]
-        parameter_converter = ParameterConverterRegex(parameter, parameter_index)
-        positional_parameter_converters[index] = parameter_converter
-        parameter_index += 1
     
     positional_parameter_converters = tuple(positional_parameter_converters)
     

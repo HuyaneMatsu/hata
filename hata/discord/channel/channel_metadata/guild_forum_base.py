@@ -41,7 +41,7 @@ class ChannelMetadataGuildForumBase(ChannelMetadataGuildMainBase):
     default_thread_auto_archive_after : `int`
         The default duration (in seconds) for newly created threads to automatically archive the themselves. Defaults
         to `3600`. Can be one of: `3600`, `86400`, `259200`, `604800`.
-    default_thread_reaction_emoji : `None`, ``Emoji``
+    default_thread_reaction_emoji : ``None | Emoji``
         The emoji to show in the add reaction button on a thread of the forum channel.
     default_thread_slowmode : `int`
         The default slowmode applied to the channel's threads.
@@ -97,7 +97,7 @@ class ChannelMetadataGuildForumBase(ChannelMetadataGuildMainBase):
             The default thread ordering of the forum.
         default_thread_auto_archive_after : `int`, Optional (Keyword only)
             The default duration (in seconds) for newly created threads to automatically archive the themselves.
-        default_thread_reaction_emoji : `None`, ``Emoji``, Optional (Keyword only)
+        default_thread_reaction_emoji : ``None | Emoji``, Optional (Keyword only)
             The emoji to show in the add reaction button on a thread of the forum channel.
         default_thread_slowmode : `int`, Optional (Keyword only)
             The default slowmode applied to the channel's threads.
@@ -360,7 +360,7 @@ class ChannelMetadataGuildForumBase(ChannelMetadataGuildMainBase):
             The default thread ordering of the forum.
         default_thread_auto_archive_after : `int`, Optional (Keyword only)
             The default duration (in seconds) for newly created threads to automatically archive the themselves.
-        default_thread_reaction_emoji : `None`, ``Emoji``, Optional (Keyword only)
+        default_thread_reaction_emoji : ``None | Emoji``, Optional (Keyword only)
             The emoji to show in the add reaction button on a thread of the forum channel.
         default_thread_slowmode : `int`, Optional (Keyword only)
             The default slowmode applied to the channel's threads.

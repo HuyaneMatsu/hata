@@ -107,7 +107,7 @@ class MessageInteraction(DiscordEntity):
                 , Optional (Keyword only)
             The users' identifier who authorized the integration.
         
-        interacted_message_id : `int`, `None`, ``Message``, Optional (Keyword only)
+        interacted_message_id : ``None | int | Message``, Optional (Keyword only)
             The interacted message's identifier. Present if the message is created from a component interaction.
         
         interaction_type : ``InteractionType``, `int`, Optional (Keyword only)
@@ -116,7 +116,7 @@ class MessageInteraction(DiscordEntity):
         name : `str`, Optional (Keyword only)
             The invoked interaction's name.
         
-        response_message_id : `int`, `None`, ``Message``, Optional (Keyword only)
+        response_message_id : ``None | int | Message``, Optional (Keyword only)
             The response message's identifier. Present if the message is a followup one.
         
         sub_command_name_stack : `None`, `iterable` of `str`, Optional (Keyword only)
@@ -242,10 +242,10 @@ class MessageInteraction(DiscordEntity):
         
         Other Parameters
         ----------------
-        interacted_message : `int`, `None`, ``Message``, Optional (Keyword only)
+        interacted_message : ``None | int | Message``, Optional (Keyword only)
             Alternative for `interacted_message_id`.
         
-        interacted_message_id : `int`, `None`, ``Message``, Optional (Keyword only)
+        interacted_message_id : ``None | int | Message``, Optional (Keyword only)
             The interacted message's identifier. Present if the message is created from a component interaction.
         
         interaction_type : ``InteractionType``, `int`, Optional (Keyword only)
@@ -254,10 +254,10 @@ class MessageInteraction(DiscordEntity):
         name : `str`, Optional (Keyword only)
             The invoked interaction's name.
         
-        response_message : `int`, `None`, ``Message``, Optional (Keyword only)
+        response_message : ``None | int | Message``, Optional (Keyword only)
             Alternative for `response_message_id`.
         
-        response_message_id : `int`, `None`, ``Message``, Optional (Keyword only)
+        response_message_id : ``None | int | Message``, Optional (Keyword only)
             The response message's identifier. Present if the message is a followup one.
         
         target_message : `int | Message`, Optional (Keyword only)
@@ -680,7 +680,7 @@ class MessageInteraction(DiscordEntity):
                 , Optional (Keyword only)
             The users' identifier who authorized the integration.
         
-        interacted_message_id : `int`, `None`, ``Message``, Optional (Keyword only)
+        interacted_message_id : ``None | int | Message``, Optional (Keyword only)
             The interacted message's identifier. Present if the message is created from a component interaction.
         
         interaction_type : ``InteractionType``, `int`, Optional (Keyword only)
@@ -689,7 +689,7 @@ class MessageInteraction(DiscordEntity):
         name : `str`, Optional (Keyword only)
             The invoked interaction's name.
         
-        response_message_id : `int`, `None`, ``Message``, Optional (Keyword only)
+        response_message_id : ``None | int | Message``, Optional (Keyword only)
             The response message's identifier. Present if the message is a followup one.
         
         sub_command_name_stack : `None`, `iterable` of `str`, Optional (Keyword only)

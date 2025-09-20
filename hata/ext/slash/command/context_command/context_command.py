@@ -377,13 +377,16 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
             else:
                 parameters.append(parameter)
                 continue
-                
-            await handle_command_exception(
-                self,
-                client,
-                interaction_event,
-                exception,
-            )
+            
+            try:
+                await handle_command_exception(
+                    self,
+                    client,
+                    interaction_event,
+                    exception,
+                )
+            finally:
+                exception = None
             return
             
         
@@ -405,12 +408,15 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
         else:
             return
         
-        await handle_command_exception(
-            self,
-            client,
-            interaction_event,
-            exception,
-        )
+        try:
+            await handle_command_exception(
+                self,
+                client,
+                interaction_event,
+                exception,
+            )
+        finally:
+            exception = None
         return
     
     

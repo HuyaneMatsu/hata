@@ -456,6 +456,8 @@ class AuditLogEntryType(PreinstancedBase, value_type = int):
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------+
     | auto_moderation_user_timeout              | auto moderation user timeout              | 145   | auto_moderation_action_execution      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------+
+    | auto_moderation_quarantined_user          | auto moderation quarantined user          | 146   | auto_moderation_action_execution      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------+
     | creator_monetization_request_created      | creator_monetization_request_created      | 150   | none                                  |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------+
     | creator_monetization_terms_accepted       | creator_monetization_terms_accepted       | 151   | none                                  |
@@ -649,6 +651,9 @@ class AuditLogEntryType(PreinstancedBase, value_type = int):
     )
     auto_moderation_user_timeout = P(
         145, 'auto moderation user timeout', AuditLogEntryTargetType.auto_moderation_action_execution
+    )
+    auto_moderation_quarantined_user = P(
+        146, 'auto moderation quarantined user', AuditLogEntryTargetType.auto_moderation_action_execution
     )
     
     creator_monetization_request_created = P(150, 'creator monetization request created', AuditLogEntryTargetType.none)

@@ -256,9 +256,9 @@ def test__ApplicationCommand__has_integration_type(integration_types, integratio
     
     Parameters
     ----------
-    integration_types : `None | list<ApplicationIntegrationType>`
+    integration_types : ``None | list<ApplicationIntegrationType>``
         Application integration types to create the application command with.
-    integration_type : `int | ApplicationIntegrationType`
+    integration_type : ``int | ApplicationIntegrationType``
         Integration type to check for.
     
     Returns
@@ -285,7 +285,7 @@ def test__ApplicationCommand__iter_integration_types(integration_types):
     
     Parameters
     ----------
-    integration_types : `None | list<ApplicationIntegrationType>`
+    integration_types : ``None | list<ApplicationIntegrationType>``
         Application integration types to create the application command with.
     
     Returns

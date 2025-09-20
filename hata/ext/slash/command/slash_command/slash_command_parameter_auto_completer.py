@@ -210,12 +210,15 @@ class SlashCommandParameterAutoCompleter(CommandInterface, ExceptionHandlerInter
             return
         
         # Do not put this into the `except` branch.
-        await handle_command_exception(
-            self,
-            client,
-            interaction_event,
-            exception,
-        )
+        try:
+            await handle_command_exception(
+                self,
+                client,
+                interaction_event,
+                exception,
+            )
+        finally:
+            exception = None
         return
     
     

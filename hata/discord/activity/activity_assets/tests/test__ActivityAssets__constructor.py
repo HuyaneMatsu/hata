@@ -3,33 +3,35 @@ import vampytest
 from ..assets import ActivityAssets
 
 
-def _assert_fields_set(field):
+def _assert_fields_set(activity_assets):
     """
     Checks whether every attribute is set of the given activity assets field.
     
     Parameters
     ----------
-    field : ``ActivityAssets``
+    activity_assets : ``ActivityAssets``
         The field to check.
     """
-    vampytest.assert_instance(field, ActivityAssets)
-    vampytest.assert_instance(field.image_large, str, nullable = True)
-    vampytest.assert_instance(field.image_small, str, nullable = True)
-    vampytest.assert_instance(field.text_large, str, nullable = True)
-    vampytest.assert_instance(field.text_small, str, nullable = True)
+    vampytest.assert_instance(activity_assets, ActivityAssets)
+    vampytest.assert_instance(activity_assets.image_large, str, nullable = True)
+    vampytest.assert_instance(activity_assets.image_small, str, nullable = True)
+    vampytest.assert_instance(activity_assets.text_large, str, nullable = True)
+    vampytest.assert_instance(activity_assets.text_small, str, nullable = True)
+    vampytest.assert_instance(activity_assets.url_large, str, nullable = True)
+    vampytest.assert_instance(activity_assets.url_small, str, nullable = True)
 
 
-def test__ActivityAssets__new__0():
+def test__ActivityAssets__new__no_fields():
     """
     Tests whether ``ActivityAssets.__new__`` works as intended.
     
     Case: No fields given.
     """
-    field = ActivityAssets()
-    _assert_fields_set(field)
+    activity_assets = ActivityAssets()
+    _assert_fields_set(activity_assets)
 
 
-def test__ActivityAssets__new__1():
+def test__ActivityAssets__new__all_fields():
     """
     Tests whether ``ActivityAssets.__new__`` works as intended.
     
@@ -39,16 +41,22 @@ def test__ActivityAssets__new__1():
     image_small = 'asia'
     text_large = 'senya'
     text_small = 'vocal'
+    url_large = 'https://orindance.party/bbo.png'
+    url_small = 'https://orindance.party/llo.png'
     
-    field = ActivityAssets(
+    activity_assets = ActivityAssets(
         image_large = image_large,
         image_small = image_small,
         text_large = text_large,
         text_small = text_small,
+        url_large = url_large,
+        url_small = url_small,
     )
-    _assert_fields_set(field)
+    _assert_fields_set(activity_assets)
     
-    vampytest.assert_eq(field.image_large, image_large)
-    vampytest.assert_eq(field.image_small, image_small)
-    vampytest.assert_eq(field.text_large, text_large)
-    vampytest.assert_eq(field.text_small, text_small)
+    vampytest.assert_eq(activity_assets.image_large, image_large)
+    vampytest.assert_eq(activity_assets.image_small, image_small)
+    vampytest.assert_eq(activity_assets.text_large, text_large)
+    vampytest.assert_eq(activity_assets.text_small, text_small)
+    vampytest.assert_eq(activity_assets.url_large, url_large)
+    vampytest.assert_eq(activity_assets.url_small, url_small)

@@ -50,20 +50,20 @@ class Pagination(Menu):
    
     
     async def invoke(self, event):
-        interaction = event.interaction
-        if interaction == self.BUTTON_CANCEL:
+        component = event.component
+        if component % self.BUTTON_CANCEL:
             self.cancel(CancelledError())
             return False
         
         pages_index_limit = len(self.pages) - 1
         
-        if interaction == self.BUTTON_LEFT:
+        if component % self.BUTTON_LEFT:
             page_index = self.page_index - 1
-        elif interaction == self.BUTTON_RIGHT:
+        elif component % self.BUTTON_RIGHT:
             page_index = self.page_index + 1
-        elif interaction == self.BUTTON_LEFT_2:
+        elif component % self.BUTTON_LEFT_2:
             page_index = 0
-        elif interaction == self.BUTTON_RIGHT_2:
+        elif component % self.BUTTON_RIGHT_2:
             page_index = pages_index_limit
         else:
              return False

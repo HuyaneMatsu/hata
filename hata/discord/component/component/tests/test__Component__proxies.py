@@ -26,6 +26,7 @@ def test__Component__proxies__reading_defaults():
     vampytest.assert_instance(component.button_style, ButtonStyle)
     vampytest.assert_instance(component.channel_types, tuple, nullable = True)
     vampytest.assert_instance(component.color, Color, nullable = True)
+    vampytest.assert_instance(component.component, Component, nullable = True)
     vampytest.assert_instance(component.components, tuple, nullable = True)
     vampytest.assert_instance(component.content, str, nullable = True)
     vampytest.assert_instance(component.custom_id, str, nullable = True)
@@ -140,7 +141,6 @@ def test__Component__proxies__read_row():
     )
     
     vampytest.assert_eq(component.components, tuple(components))
-
 
 
 def test__Component__proxies__read_section():
@@ -316,7 +316,6 @@ def test__Component__proxies__read_separator():
     vampytest.assert_is(component.spacing_size, spacing_size)
 
 
-
 def test__Component__proxies__read_container():
     """
     Tests whether ``Component`` field proxies work as intended.
@@ -339,6 +338,28 @@ def test__Component__proxies__read_container():
     vampytest.assert_eq(component.color, color)
     vampytest.assert_eq(component.components, tuple(components))
     vampytest.assert_eq(component.spoiler, spoiler)
+
+
+def test__Component__proxies__read_label():
+    """
+    Tests whether ``Component`` field proxies work as intended.
+    
+    Case: reading label fields.
+    """
+    sub_component = Component(ComponentType.text_input, placeholder = 'chata')
+    description = 'Wake up'
+    label = 'Koishi'
+    
+    component = Component(
+        ComponentType.label,
+        component = sub_component,
+        description = description,
+        label = label,
+    )
+    
+    vampytest.assert_eq(component.component, sub_component)
+    vampytest.assert_eq(component.description, description)
+    vampytest.assert_eq(component.label, label)
 
 
 def test__Component__proxies__write_button__generic():
@@ -618,3 +639,26 @@ def test__Component__proxies__write_container():
     vampytest.assert_eq(component.color, color)
     vampytest.assert_eq(component.components, tuple(components))
     vampytest.assert_eq(component.spoiler, spoiler)
+
+
+def test__Component__proxies__write_label():
+    """
+    Tests whether ``Component`` field proxies work as intended.
+    
+    Case: writing label fields.
+    """
+    sub_component = Component(ComponentType.text_input, placeholder = 'chata')
+    description = 'Wake up'
+    label = 'Koishi'
+    
+    component = Component(
+        ComponentType.label,
+    )
+    
+    component.component = sub_component
+    component.description = description
+    component.label = label
+    
+    vampytest.assert_eq(component.component, sub_component)
+    vampytest.assert_eq(component.description, description)
+    vampytest.assert_eq(component.label, label)

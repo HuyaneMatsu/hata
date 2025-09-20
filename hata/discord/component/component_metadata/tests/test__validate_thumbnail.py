@@ -73,7 +73,7 @@ def _iter_options__value_error():
 
     component_text_input = Component(
         ComponentType.text_input,
-        label = 'Fairies',
+        placeholder = 'Fairies',
     )
     
     component_user_select = Component(
@@ -96,6 +96,14 @@ def _iter_options__value_error():
         ComponentType.separator,
     )
     
+    component_label = Component(
+        ComponentType.label,
+        component = Component(
+            ComponentType.text_input,
+            placeholder = 'Orin',
+        ),
+    )
+    
     
     yield component_none
     yield component_row
@@ -108,6 +116,7 @@ def _iter_options__value_error():
     yield component_mentionable_select
     yield component_channel_select
     yield component_separator
+    yield component_label
 
 
 @vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())

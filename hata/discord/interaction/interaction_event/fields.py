@@ -30,6 +30,7 @@ from ...message.message_interaction.fields import (
 )
 from ...permission import Permission
 from ...permission.permission import PERMISSION_PRIVATE
+from ...resolved import Resolved
 from ...user import ClientUserBase, User, ZEROUSER
 
 from ..interaction_metadata import InteractionMetadataBase
@@ -243,6 +244,78 @@ def put_message(message, data, defaults):
     return data
 
 validate_message = nullable_entity_validator_factory('message', Message)
+
+# resolved
+
+def parse_resolved(data, guild_id = 0):
+    """
+    Parsers out a resolved object from the given data.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Interaction metadata data.
+    
+    guild_id : `int` = `0`, Optional
+        The respective guild's identifier.
+    
+    Returns
+    -------
+    resolved : ``None | Resolved``
+    """
+    nested_data = data.get('data', None)
+    if (nested_data is not None):
+        resolved_data = nested_data.get('resolved', None)
+        if (resolved_data is not None) and resolved_data:
+            return Resolved.from_data(resolved_data, guild_id)
+
+
+def put_resolved(resolved, data, defaults, *, guild_id = 0):
+    """
+    Puts the given `resolved` into the given interaction metadata data.
+    
+    Parameters
+    ----------
+    resolved  : ``None | Resolved``
+        The instance to serialise.
+        
+    data : `dict<str, object>`
+        Interaction metadata data.
+    
+    defaults : `bool`
+        Whether default field values should be included as well.
+    
+    guild_id : `int` = `None`, Optional (Keyword only)
+        The respective guild's identifier to use for handing user guild profiles.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    # Cpython devs: "We do not need goto in python".
+    # Also them: *uSeS gOtO TwIcE iN EveRy C fUnCTiOn*.
+    while True:
+        if (resolved is None):
+            if not defaults:
+                break
+            
+            resolved_data = {}
+        
+        else:
+            resolved_data = resolved.to_data(defaults = defaults, guild_id = guild_id)
+        
+        try:
+            nested_data = data['data']
+        except KeyError:
+            data['data'] = nested_data = {}
+        
+        nested_data['resolved'] = resolved_data
+        break
+    
+    return data
+
+
+validate_resolved = nullable_entity_validator_factory('resolved', Resolved)
 
 # token
 

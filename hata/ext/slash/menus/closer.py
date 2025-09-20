@@ -34,8 +34,8 @@ class Closer(Menu):
         self.allowed_mentions = None
     
     async def invoke(self, event):
-        interaction = event.interaction
-        if interaction == self.BUTTON_CANCEL:
+        component = event.component
+        if component % self.BUTTON_CANCEL:
             self.cancel(CancelledError())
         
         return False

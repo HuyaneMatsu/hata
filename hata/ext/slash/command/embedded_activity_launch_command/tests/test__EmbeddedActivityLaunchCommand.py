@@ -449,7 +449,7 @@ async def test__EmbeddedActivityLaunchCommand__invoke():
     
     embedded_activity_launch_command = EmbeddedActivityLaunchCommand(function, name)
     
-    client_id = 202410240000
+    client_id = 202509100016
     interaction_event_id = 202410240001
     token = 'token_' + str(client_id)
     api = TestDiscordApiClient(False, token)
@@ -462,7 +462,6 @@ async def test__EmbeddedActivityLaunchCommand__invoke():
     interaction_event = InteractionEvent.precreate(
         interaction_event_id,
         interaction_type = InteractionType.application_command,
-        interaction = InteractionMetadataApplicationCommand(),
     )
     
     try:

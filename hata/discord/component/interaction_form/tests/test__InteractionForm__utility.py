@@ -12,10 +12,8 @@ def test__InteractionForm__copy():
     Test whether ``InteractionForm.copy`` works as intended.
     """
     title = 'important'
-    components = [Component(ComponentType.text_input, label = 'chata')]
+    components = [Component(ComponentType.text_input, placeholder = 'chata')]
     custom_id = 'lie'
-    
-    rows = tuple(Component(ComponentType.row, components = [component]) for component in components)
     
     interaction_form = InteractionForm(title, components, custom_id)
     copy = interaction_form.copy()
@@ -23,7 +21,10 @@ def test__InteractionForm__copy():
     _check_are_fields_set(copy)
     vampytest.assert_is_not(interaction_form, copy)
     vampytest.assert_eq(copy.title, title)
-    vampytest.assert_eq(copy.components, rows)
+    vampytest.assert_eq(
+        copy.components,
+        (*(Component(ComponentType.label, component = component) for component in components),),
+    )
     vampytest.assert_eq(copy.custom_id, custom_id)
 
 
@@ -34,10 +35,8 @@ def test__InteractionForm__copy_with__no_fields():
     Case: no fields given.
     """
     title = 'important'
-    components = [Component(ComponentType.text_input, label = 'chata')]
+    components = [Component(ComponentType.text_input, placeholder = 'chata')]
     custom_id = 'lie'
-    
-    rows = tuple(Component(ComponentType.row, components = [component]) for component in components)
     
     interaction_form = InteractionForm(title, components, custom_id)
     copy = interaction_form.copy_with()
@@ -45,7 +44,10 @@ def test__InteractionForm__copy_with__no_fields():
     _check_are_fields_set(copy)
     vampytest.assert_is_not(interaction_form, copy)
     vampytest.assert_eq(copy.title, title)
-    vampytest.assert_eq(copy.components, rows)
+    vampytest.assert_eq(
+        copy.components,
+        (*(Component(ComponentType.label, component = component) for component in components),),
+    )
     vampytest.assert_eq(copy.custom_id, custom_id)
 
 
@@ -56,14 +58,12 @@ def test__InteractionForm__copy_with__all_fields():
     Case: All fields given.
     """
     old_title = 'important'
-    old_components = [Component(ComponentType.text_input, label = 'chata')]
+    old_components = [Component(ComponentType.text_input, placeholder = 'chata')]
     old_custom_id = 'lie'
     
     new_title = 'fire'
-    new_components = [Component(ComponentType.text_input, label = 'in my')]
+    new_components = [Component(ComponentType.text_input, placeholder = 'in my')]
     new_custom_id = 'heart'
-    
-    rows = tuple(Component(ComponentType.row, components = [component]) for component in new_components)
     
     interaction_form = InteractionForm(old_title, old_components, old_custom_id)
     copy = interaction_form.copy_with(title = new_title, components = new_components, custom_id = new_custom_id)
@@ -71,13 +71,16 @@ def test__InteractionForm__copy_with__all_fields():
     _check_are_fields_set(copy)
     vampytest.assert_is_not(interaction_form, copy)
     vampytest.assert_eq(copy.title, new_title)
-    vampytest.assert_eq(copy.components, rows)
+    vampytest.assert_eq(
+        copy.components,
+        (*(Component(ComponentType.label, component = component) for component in new_components),),
+    )
     vampytest.assert_eq(copy.custom_id, new_custom_id)
 
 
 def _iter_options__iter_components():
-    component_0 = Component(ComponentType.row, components = [Component(ComponentType.text_input, label = 'chata')])
-    component_1 = Component(ComponentType.row, components = [Component(ComponentType.text_input, label = 'izna')])
+    component_0 = Component(ComponentType.label, component = Component(ComponentType.text_input, placeholder = 'chata'))
+    component_1 = Component(ComponentType.label, component = Component(ComponentType.text_input, placeholder = 'izna'))
     
     yield None, []
     yield [component_0], [component_0]

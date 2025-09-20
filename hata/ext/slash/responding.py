@@ -385,7 +385,7 @@ class InteractionResponse(
         interaction_event : ``None | InteractionEvent`` = `None`, Optional
             A specific event ot answer instead of the command's.
         
-        message : `None`, ``Message``, Optional (Keyword only)
+        message : ``None | Message``, Optional (Keyword only)
             Whether the interaction's message should be edited.
         
         show_for_invoking_user_only : `bool` = `False`, Optional (Keyword only)
@@ -646,7 +646,7 @@ def abort(
     interaction_event : ``None | InteractionEvent`` = `None`, Optional
         A specific event ot answer instead of the command's.
     
-    message : `None`, ``Message``, Optional (Keyword only)
+    message : ``None | Message``, Optional (Keyword only)
         Whether the interaction's message should be edited.
     
     silent : `bool` = `False`, Optional (Keyword only)

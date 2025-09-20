@@ -28,8 +28,9 @@ def _assert_fields_set(command_base_custom_id):
     vampytest.assert_instance(command_base_custom_id, CommandBaseCustomId)
     vampytest.assert_instance(command_base_custom_id._command_function, object)
     vampytest.assert_instance(command_base_custom_id._exception_handlers, list, nullable = True)
-    vampytest.assert_instance(command_base_custom_id._parameter_converters, tuple)
+    vampytest.assert_instance(command_base_custom_id._keyword_parameter_converters, tuple)
     vampytest.assert_instance(command_base_custom_id._parent_reference, WeakReferer, nullable = True)
+    vampytest.assert_instance(command_base_custom_id._positional_parameter_converters, tuple)
     vampytest.assert_instance(command_base_custom_id._regex_custom_ids, tuple, nullable = True)
     vampytest.assert_instance(command_base_custom_id._string_custom_ids, tuple, nullable = True)
     vampytest.assert_instance(command_base_custom_id.name, str)
@@ -43,15 +44,20 @@ class InstantiableCommandBaseCustomId(CommandBaseCustomId):
         name = check_name(function, name)
         assert custom_id is not ...
         custom_id = _validate_custom_ids(custom_id)
-        command, parameter_converters = get_component_command_parameter_converters(function)
-        string_custom_ids, regex_custom_ids = split_and_check_satisfaction(custom_id, parameter_converters)
+        (
+            command,
+            positional_parameter_converters,
+            keyword_parameter_converters,
+        ) = get_component_command_parameter_converters(function)
+        string_custom_ids, regex_custom_ids = split_and_check_satisfaction(custom_id, positional_parameter_converters)
         response_modifier = ResponseModifier(keyword_parameters)
         
         self = object.__new__(cls)
         self._command_function = function
         self._exception_handlers = None
-        self._parameter_converters = parameter_converters
+        self._keyword_parameter_converters = keyword_parameter_converters
         self._parent_reference = None
+        self._positional_parameter_converters = positional_parameter_converters
         self._regex_custom_ids = regex_custom_ids
         self._string_custom_ids = string_custom_ids
         self.name = name

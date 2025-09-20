@@ -13,7 +13,7 @@ def test__validate_interaction__0():
     Case: passing.
     """
     interaction_0 = InteractionMetadataApplicationCommand()
-    interaction_1 = InteractionMetadataApplicationCommand(name = 'Yumemi')
+    interaction_1 = InteractionMetadataApplicationCommand(application_command_name = 'Yumemi')
     
     
     for input_value, expected_output in (

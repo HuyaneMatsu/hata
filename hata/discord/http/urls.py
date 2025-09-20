@@ -1166,6 +1166,30 @@ def build_name_plate_url(asset_path):
     return f'{DISCORD_ENDPOINT}/assets/collectibles/{asset_path}asset.webm'
 
 
+def build_name_plate_url_as(asset_path, animated):
+    """
+    Builds name plate url.
+    
+    Parameters
+    ----------
+    asset_path : `str`
+        Part to the name plate's asset.
+    
+    animated : `bool`
+        Whether to return an url to an animated asset.
+    
+    Returns
+    -------
+    url : `str`
+    """
+    if animated:
+        end = 'asset.webm'
+    else:
+        end = 'static.png'
+
+    return f'{DISCORD_ENDPOINT}/assets/collectibles/{asset_path}{end}'
+
+
 def build_role_icon_url(role_id, icon_type, icon_hash):
     """
     Returns the role's icon's image's url. If the role has no icon, then returns `None`.

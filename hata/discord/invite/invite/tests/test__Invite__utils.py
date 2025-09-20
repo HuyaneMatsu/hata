@@ -1,3 +1,5 @@
+from datetime import datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
+
 import vampytest
 
 from ....application import Application
@@ -317,3 +319,48 @@ def test__Invite__url(invite_code):
     url = invite.url
     vampytest.assert_instance(url, str)
     return True
+
+
+def _iter_options__expires_at():
+    date_time = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    
+    yield (
+        'tewi',
+        date_time,
+        None,
+        None,
+    )
+    
+    yield (
+        'tewi',
+        date_time,
+        1000,
+        date_time + TimeDelta(seconds = 1000),
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__expires_at()).returning_last())
+def test__Invite__expires_at(invite_code, created_at, max_age):
+    """
+    Tests whether ``Invite.expires_at`` works as intended.
+    
+    Parameters
+    ----------
+    invite_code : `str`
+        Invite code to create the invite with.
+    
+    created_at : `DateTime`
+        When the invite was created.
+    
+    max_age : `None | int`
+        The time in seconds after the invite will expire.
+    
+    Returns
+    -------
+    has_expires_at : `None | DateTime`
+    """
+    invite = Invite.precreate(invite_code, created_at = created_at, max_age = max_age)
+    
+    expires_at = invite.expires_at
+    vampytest.assert_instance(expires_at, DateTime, nullable = True)
+    return expires_at

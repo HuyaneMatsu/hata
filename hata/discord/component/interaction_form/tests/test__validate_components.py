@@ -18,9 +18,29 @@ def _iter_options__passing():
         ],
     )
     
+    component_label = Component(
+        ComponentType.label,
+        component = Component(
+            ComponentType.text_input,
+            placeholder = 'Fairies',
+        ),
+    )
+    
     component_text_input = Component(
         ComponentType.text_input,
-        label = 'Fairies',
+        placeholder = 'Fairies',
+    )
+    
+    component_string_select = Component(
+        ComponentType.string_select,
+        options = [
+            StringSelectOption('cart'),
+        ],
+    )
+    
+    component_text_display = Component(
+        ComponentType.text_display,
+        content = 'Orin',
     )
     
     yield (
@@ -44,13 +64,43 @@ def _iter_options__passing():
     
     yield (
         [
+            component_label,
+        ],
+        (
+            component_label,
+        ),
+    )
+    
+    yield (
+        [
             component_text_input,
         ],
         (
             Component(
-                ComponentType.row,
-                components = [component_text_input],
+                ComponentType.label,
+                component = component_text_input,
             ),
+        ),
+    )
+    
+    yield (
+        [
+            component_string_select,
+        ],
+        (
+            Component(
+                ComponentType.label,
+                component = component_string_select,
+            ),
+        ),
+    )
+    
+    yield (
+        [
+            component_text_display,
+        ],
+        (
+            component_text_display,
         ),
     )
 
@@ -74,13 +124,6 @@ def _iter_options__value_error():
         media = MediaInfo('attachment://orin.png'),
     )
     
-    component_string_select = Component(
-        ComponentType.string_select,
-        options = [
-            StringSelectOption('cart'),
-        ],
-    )
-    
     component_user_select = Component(
         ComponentType.user_select,
     )
@@ -95,11 +138,6 @@ def _iter_options__value_error():
     
     component_channel_select = Component(
         ComponentType.channel_select,
-    )
-    
-    component_text_display = Component(
-        ComponentType.text_display,
-        content = 'Orin',
     )
     
     component_attachment_media = Component(
@@ -134,10 +172,6 @@ def _iter_options__value_error():
     ]
     
     yield [
-        component_string_select,
-    ]
-    
-    yield [
         component_user_select,
     ]
     
@@ -151,10 +185,6 @@ def _iter_options__value_error():
     
     yield [
         component_channel_select,
-    ]
-    
-    yield [
-        component_text_display,
     ]
     
     yield [

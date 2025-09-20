@@ -1,5 +1,6 @@
 __all__ = ('InteractionMetadataApplicationCommand',)
 
+from warnings import warn
 
 from scarletio import copy_docs
 
@@ -7,8 +8,7 @@ from ...application_command import ApplicationCommandTargetType
 
 from .application_command_autocomplete import InteractionMetadataApplicationCommandAutocomplete
 from .fields import (
-    parse_resolved, parse_target_id, parse_target_type, put_resolved, put_target_id, put_target_type,
-    validate_resolved, validate_target_id, validate_target_type
+    parse_target_id, parse_target_type, put_target_id, put_target_type, validate_target_id, validate_target_type
 )
 
 
@@ -18,17 +18,14 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
     
     Parameters
     ----------
-    id : `int`
+    application_command_id : `int`
         The represented application command's identifier number.
     
-    name : `str`
-        The represented application command's name.
+    application_command_name : `str`
+        The represented application command's application_command_name.
     
-    options : `None`, `tuple` of ``InteractionOption``
+    options : ``None | tuple<InteractionOption>``
         Application command option representations. Like sub-command or parameter.
-    
-    resolved : ``None | Resolved``
-        Contains the received entities.
     
     target_id : `int`
         The interaction's target's identifier. Applicable for context commands.
@@ -36,16 +33,15 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
     target_type : ``ApplicationCommandTargetType``
         The invoked application command's target type.
     """
-    __slots__ = ('resolved', 'target_id', 'target_type')
-    
+    __slots__ = ('target_id', 'target_type')
     
     def __new__(
         cls,
         *,
         application_command_id = ...,
+        application_command_name = ...,
         name = ...,
         options = ...,
-        resolved = ...,
         target_id = ...,
         target_type = ...,
     ):
@@ -54,22 +50,19 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
         
         Parameters
         ----------
-        application_command_id : `int`, Optional (Keyword only)
+        application_command_id : ``None | int | ApplicationCommand``, Optional (Keyword only)
             The represented application command's identifier number.
         
-        name : `str`, Optional (Keyword only)
-            The represented application command's name.
+        application_command_name : `None | str`, Optional (Keyword only)
+            The represented application command's application_command_name.
         
-        options : `None`, `tuple` of ``InteractionOption``, Optional (Keyword only)
+        options : ``None | iterable<InteractionOption>``, Optional (Keyword only)
             Application command option representations. Like sub-command or parameter.
-        
-        resolved : ``None | Resolved``, Optional (Keyword only)
-            Contains the received entities.
         
         target_id : `int`, Optional (Keyword only)
             The interaction's target's identifier. Applicable for context commands.
         
-        target_type : `ApplicationCommandTargetType | None | int`, Optional (Keyword only)
+        target_type : ``None | int | ApplicationCommandTargetType``, Optional (Keyword only)
             The invoked application command's target type.
         
         Raises
@@ -79,11 +72,17 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
         ValueError
             - If a parameter's value is incorrect.
         """
-        # resolved
-        if resolved is ...:
-            resolved = None
-        else:
-            resolved = validate_resolved(resolved)
+        # Deprecations
+        if (name is not ...):
+            warn(
+                (
+                    f'`{cls.__name__}.__new__`\'s `name` parameter is deprecated and is scheduled '
+                    f'for removal at 2026 February. Please use the `application_command_name` parameter instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            application_command_name = name
         
         # target_id
         if target_id is ...:
@@ -101,20 +100,30 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
         self = InteractionMetadataApplicationCommandAutocomplete.__new__(
             cls,
             application_command_id = application_command_id,
-            name = name,
+            application_command_name = application_command_name,
             options = options,
         )
-        self.resolved = resolved
         self.target_id = target_id
         self.target_type = target_type
         return self
     
     
     @classmethod
+    @copy_docs(InteractionMetadataApplicationCommandAutocomplete.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            application_command_id = keyword_parameters.pop('application_command_id', ...),
+            application_command_name = keyword_parameters.pop('application_command_name', ...),
+            options = keyword_parameters.pop('options', ...),
+            target_id = keyword_parameters.pop('target_id', ...),
+            target_type = keyword_parameters.pop('target_type', ...),
+        )
+    
+    
+    @classmethod
     @copy_docs(InteractionMetadataApplicationCommandAutocomplete._create_empty)
     def _create_empty(cls):
         self = super(InteractionMetadataApplicationCommand, cls)._create_empty()
-        self.resolved = None
         self.target_id = 0
         self.target_type = ApplicationCommandTargetType.none
         return self
@@ -123,12 +132,6 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
     @copy_docs(InteractionMetadataApplicationCommandAutocomplete.copy)
     def copy(self):
         new = InteractionMetadataApplicationCommandAutocomplete.copy(self)
-        
-        resolved = self.resolved
-        if (resolved is not None):
-            resolved = resolved.copy()
-        new.resolved = resolved
-        
         new.target_id = self.target_id 
         new.target_type = self.target_type
         
@@ -139,9 +142,9 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
         self,
         *,
         application_command_id = ...,
+        application_command_name = ...,
         name = ...,
         options = ...,
-        resolved = ...,
         target_id = ...,
         target_type = ...,
     ):
@@ -150,22 +153,19 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
         
         Parameters
         ----------
-        application_command_id : `int`, Optional (Keyword only)
+        application_command_id : ``None | int | ApplicationCommand``, Optional (Keyword only)
             The represented application command's identifier number.
         
-        name : `str`, Optional (Keyword only)
-            The represented application command's name.
+        application_command_name : `None | str`, Optional (Keyword only)
+            The represented application command's application_command_name.
         
-        options : `None`, `tuple` of ``InteractionOption``, Optional (Keyword only)
+        options : ``None | iterable<InteractionOption>``, Optional (Keyword only)
             Application command option representations. Like sub-command or parameter.
-        
-        resolved : ``None | Resolved``, Optional (Keyword only)
-            Contains the received entities.
         
         target_id : `int`, Optional (Keyword only)
             The interaction's target's identifier. Applicable for context commands.
         
-        target_type : `ApplicationCommandTargetType | None | int`, Optional (Keyword only)
+        target_type : ``None | int | ApplicationCommandTargetType``, Optional (Keyword only)
             The invoked application command's target type.
         
         Returns
@@ -179,13 +179,17 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
         ValueError
             - If a parameter's value is incorrect.
         """
-        # resolved
-        if resolved is ...:
-            resolved = self.resolved
-            if (resolved is not None):
-                resolved = resolved.copy()
-        else:
-            resolved = validate_resolved(resolved)
+        # Deprecations
+        if (name is not ...):
+            warn(
+                (
+                    f'`{type(self).__name__}.copy_with`\'s `name` parameter is deprecated and is scheduled '
+                    f'for removal at 2026 February. Please use the `application_command_name` parameter instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            application_command_name = name
         
         # target_id
         if target_id is ...:
@@ -203,20 +207,29 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
         new = InteractionMetadataApplicationCommandAutocomplete.copy_with(
             self,
             application_command_id = application_command_id,
-            name = name,
+            application_command_name = application_command_name,
             options = options,
         )
-        new.resolved = resolved
         new.target_id = target_id
         new.target_type = target_type
         return new
+    
+    
+    @copy_docs(InteractionMetadataApplicationCommandAutocomplete.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            application_command_id = keyword_parameters.pop('application_command_id', ...),
+            application_command_name = keyword_parameters.pop('application_command_name', ...),
+            options = keyword_parameters.pop('options', ...),
+            target_id = keyword_parameters.pop('target_id', ...),
+            target_type = keyword_parameters.pop('target_type', ...),
+        )
     
     
     @classmethod
     @copy_docs(InteractionMetadataApplicationCommandAutocomplete.from_data)
     def from_data(cls, data, guild_id = 0):
         self = super(InteractionMetadataApplicationCommand, cls).from_data(data, guild_id)
-        self.resolved = parse_resolved(data, guild_id)
         self.target_id = parse_target_id(data)
         self.target_type = parse_target_type(data)
         return self
@@ -227,7 +240,6 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
         data = InteractionMetadataApplicationCommandAutocomplete.to_data(
             self, defaults = defaults, guild_id = guild_id
         )
-        put_resolved(self.resolved, data, defaults, guild_id = guild_id)
         put_target_id(self.target_id, data, defaults)
         put_target_type(self.target_type, data, defaults)
         return data
@@ -238,17 +250,6 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
         field_added = InteractionMetadataApplicationCommandAutocomplete._put_attribute_representations_into(
             self, repr_parts
         )
-        
-        # resolved
-        resolved = self.resolved
-        if (resolved is not None):
-            if field_added:
-                repr_parts.append(',')
-            else:
-                field_added = True
-            
-            repr_parts.append(' resolved = ')
-            repr_parts.append(repr(resolved))
         
         # target_id
         target_id = self.target_id
@@ -281,11 +282,6 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
     def __hash__(self):
         hash_value = InteractionMetadataApplicationCommandAutocomplete.__hash__(self)
         
-        # resolved
-        resolved = self.resolved
-        if (resolved is not None):
-            hash_value ^= hash(resolved)
-        
         # target_id
         hash_value ^= self.target_id
         
@@ -298,10 +294,6 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
     @copy_docs(InteractionMetadataApplicationCommandAutocomplete._is_equal_same_type)
     def _is_equal_same_type(self, other):
         if not InteractionMetadataApplicationCommandAutocomplete._is_equal_same_type(self, other):
-            return False
-        
-        # resolved
-        if self.resolved != other.resolved:
             return False
         
         # target_id

@@ -1,17 +1,23 @@
 import vampytest
 
-from ....component import ComponentType
-
-from ...interaction_component import InteractionComponent
+from ....component import ComponentType, InteractionComponent
 
 from ..fields import validate_components
 
 
 def _iter_options__passing():
-    component_0 = InteractionComponent(custom_id = 'fury')
+    component_0 = InteractionComponent(
+        ComponentType.text_input,
+        custom_id = 'fury',
+    )
     component_1 = InteractionComponent(
-        component_type = ComponentType.row,
-        components = [InteractionComponent(custom_id = 'Rose')],
+        ComponentType.row,
+        components = [
+            InteractionComponent(
+                ComponentType.text_input,
+                custom_id = 'Rose',
+            ),
+        ],
     )
     
     yield None, None

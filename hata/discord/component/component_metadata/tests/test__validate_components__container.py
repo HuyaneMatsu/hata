@@ -234,7 +234,7 @@ def _iter_options__value_error():
     
     component_text_input = Component(
         ComponentType.text_input,
-        label = 'Fairies',
+        placeholder = 'Fairies',
     )
     
     component_thumbnail_media = Component(
@@ -247,6 +247,14 @@ def _iter_options__value_error():
         content = 'Orin',
     )
     
+    component_label = Component(
+        ComponentType.label,
+        component = Component(
+            ComponentType.text_input,
+            placeholder = 'Orin',
+        ),
+    )
+    
     yield [
         component_text_input,
     ]
@@ -257,6 +265,10 @@ def _iter_options__value_error():
     
     yield [
         component_thumbnail_media,
+    ]
+    
+    yield [
+        component_label,
     ]
     
     # double nesting | cannot nest text display into a row

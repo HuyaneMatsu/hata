@@ -23,7 +23,7 @@ def parse_emoji(data):
     
     Returns
     -------
-    emoji : `None`, ``Emoji``
+    emoji : ``None | Emoji``
     """
     nested_data = data.get('poll_media', None)
     if nested_data is None:
@@ -42,7 +42,7 @@ def put_emoji(emoji, data, defaults):
     
     Parameters
     ----------
-    emoji : `None`, ``Emoji``
+    emoji : ``None | Emoji``
         The emoji to serialize.
     data : `dict<str, object>`
         Json serializable dictionary.

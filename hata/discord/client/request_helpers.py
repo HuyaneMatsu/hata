@@ -39,7 +39,7 @@ def validate_message_to_delete(message):
         The channel's identifier where the message is.
     message_id : `int`
         The message's identifier.
-    message : `None`, ``Message``
+    message : ``None | Message``
         The referenced message if found.
     
     Raises
@@ -534,7 +534,7 @@ def get_message_and_channel_id_and_message_id(message):
     
     Returns
     -------
-    message : `None`, ``Message``
+    message : ``None | Message``
         The message in context if found.
     channel_id : `int`
         The message's channel's identifier.

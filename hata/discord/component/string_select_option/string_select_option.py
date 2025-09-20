@@ -24,7 +24,7 @@ class StringSelectOption(RichAttributeErrorBaseType):
     description : `None`, `str`
         Description of the option.
     
-    emoji : `None`, ``Emoji``
+    emoji : ``None | Emoji``
         Emoji on the option if applicable.
     
     label : `str`
@@ -47,7 +47,7 @@ class StringSelectOption(RichAttributeErrorBaseType):
             
             Defaults to the `value` parameter if not given or if given as `None`.
         
-        emoji : `None`, ``Emoji``, Optional
+        emoji : ``None | Emoji``, Optional
             Emoji of the option if applicable.
         
         default : `bool`, Optional (Keyword only)
@@ -287,7 +287,7 @@ class StringSelectOption(RichAttributeErrorBaseType):
         description : `None`, `str`, Optional (Keyword only)
             Description of the component option.
         
-        emoji : `None`, ``Emoji``, Optional (Keyword only)
+        emoji : ``None | Emoji``, Optional (Keyword only)
             Emoji of the option if applicable.
         
         label : `str`, Optional (Keyword only)

@@ -128,24 +128,25 @@ Hata does this for you automatically.
 Here is a complete overview of where components can be used, how can they be nested and much more.
 
 
-| Component type name | Allowed in message | Allowed in form | Top level | Nestable into row | Nestable into container | Nestable into section | Section thumbnail | Version 1 | Version 2 |
-|---------------------|--------------------|-----------------|-----------|-------------------|-------------------------|-----------------------|-------------------|-----------|-----------|
-| none                |                    |                 |           |                   |                         |                       |                   |           |           |
-| row                 | X                  | X               | X         |                   | X                       |                       |                   | X         |           |
-| button              | X                  |                 |           | X                 |                         |                       | X                 | X         |           |
-| string select       | X                  |                 |           | X                 |                         |                       |                   | X         |           |
-| text input          |                    | X               |           | X                 |                         |                       |                   | X         |           |
-| user select         | X                  |                 |           | X                 |                         |                       |                   | X         |           |
-| role select         | X                  |                 |           | X                 |                         |                       |                   | X         |           |
-| mentionable select  | X                  |                 |           | X                 |                         |                       |                   | X         |           |
-| channel select      | X                  |                 |           | X                 |                         |                       |                   | X         |           |
-| section             | X                  |                 | X         |                   | X                       |                       |                   |           | X         |
-| text display        | X                  |                 | X         |                   | X                       | X                     |                   |           | X         |
-| thumbnail media     | X                  |                 |           |                   |                         |                       | X                 |           | X         |
-| media gallery       | X                  |                 | X         |                   | X                       |                       |                   |           | X         |
-| attachment media    | X                  |                 | X         |                   | X                       |                       |                   |           | X         |
-| separator           | X                  |                 | X         |                   | X                       |                       |                   |           | X         |
-| container           | X                  |                 | X         |                   |                         |                       |                   |           | X         |
+| Component type name | Allowed in message | Allowed in form | Top level | Nestable into row | Nestable into container | Nestable into section | Nestable into label    | Section thumbnail | Holds value single    | Holds value multiple  | Version 1 | Version 2 |
+|---------------------|--------------------|-----------------|-----------|-------------------|-------------------------|-----------------------|------------------------|-------------------|-----------------------|-----------------------|-----------|-----------|
+| none                |                    |                 |           |                   |                         |                       |                        |                   |                       |                       |           |           |
+| row                 | X                  | X               | X         |                   | X                       |                       |                        |                   |                       |                       | X         |           |
+| button              | X                  |                 |           | X                 |                         |                       |                        | X                 |                       |                       | X         |           |
+| string select       | X                  | X               |           | X                 |                         |                       | X                      |                   |                       | X                     | X         |           |
+| text input          |                    | X               |           | X                 |                         |                       | X                      |                   | X                     |                       | X         |           |
+| user select         | X                  | X               |           | X                 |                         |                       | X                      |                   |                       | X                     | X         |           |
+| role select         | X                  | X               |           | X                 |                         |                       | X                      |                   |                       | X                     | X         |           |
+| mentionable select  | X                  | X               |           | X                 |                         |                       | X                      |                   |                       | X                     | X         |           |
+| channel select      | X                  | X               |           | X                 |                         |                       | X                      |                   |                       | X                     | X         |           |
+| section             | X                  |                 | X         |                   | X                       |                       |                        |                   |                       |                       |           | X         |
+| text display        | X                  | X               | X         |                   | X                       | X                     |                        |                   |                       |                       |           | X         |
+| thumbnail media     | X                  |                 |           |                   |                         |                       |                        | X                 |                       |                       |           | X         |
+| media gallery       | X                  |                 | X         |                   | X                       |                       |                        |                   |                       |                       |           | X         |
+| attachment media    | X                  |                 | X         |                   | X                       |                       |                        |                   |                       |                       |           | X         |
+| separator           | X                  |                 | X         |                   | X                       |                       |                        |                   |                       |                       |           | X         |
+| container           | X                  |                 | X         |                   |                         |                       |                        |                   |                       |                       |           | X         |
+| label               |                    | X               | X         |                   |                         |                       |                        |                   |                       |                       |           | X         |
 
 
 This information can also be accessed at runtime:

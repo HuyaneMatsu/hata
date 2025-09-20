@@ -10,7 +10,7 @@ def test__InteractionForm__repr():
     Test whether ``InteractionForm.__repr__`` works as intended.
     """
     title = 'important'
-    components = [Component(ComponentType.text_input, label = 'chata')]
+    components = [Component(ComponentType.text_input, placeholder = 'chata')]
     custom_id = 'lie'
     
     interaction_form = InteractionForm(title, components, custom_id)
@@ -22,7 +22,7 @@ def test__InteractionForm__hash():
     Test whether ``InteractionForm.__hash__`` works as intended.
     """
     title = 'important'
-    components = [Component(ComponentType.text_input, label = 'chata')]
+    components = [Component(ComponentType.text_input, placeholder = 'chata')]
     custom_id = 'lie'
     
     interaction_form = InteractionForm(title, components, custom_id)
@@ -31,7 +31,7 @@ def test__InteractionForm__hash():
 
 def _iter_options__eq():
     title = 'important'
-    components = [Component(ComponentType.text_input, label = 'chata')]
+    components = [Component(ComponentType.text_input, placeholder = 'chata')]
     custom_id = 'lie'
     
     keyword_parameters = {

@@ -20,6 +20,7 @@ def test__ActivityMetadataRich__repr():
     buttons = ['Party', 'Trick']
     created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     details = 'vocal'
+    details_url = 'https://orindance.party/cart'
     flags = ActivityFlag(1)
     activity_id = 202209070014
     name = 'Iceon'
@@ -27,6 +28,7 @@ def test__ActivityMetadataRich__repr():
     secrets = ActivitySecrets(join = 'deitarabochi')
     session_id = 'Autobahn'
     state = 'plain'
+    state_url = 'https://orindance.party/stand'
     sync_id = 'asia'
     timestamps = ActivityTimestamps(
         end = DateTime(2014, 9, 12, tzinfo = TimeZone.utc),
@@ -40,6 +42,7 @@ def test__ActivityMetadataRich__repr():
         buttons = buttons,
         created_at = created_at,
         details = details,
+        details_url = details_url,
         flags = flags,
         activity_id = activity_id,
         name = name,
@@ -47,12 +50,14 @@ def test__ActivityMetadataRich__repr():
         secrets = secrets,
         session_id = session_id,
         state = state,
+        state_url = state_url,
         sync_id = sync_id,
         timestamps = timestamps,
         url = url,
     )
     
-    vampytest.assert_instance(repr(activity_metadata), str)
+    output = repr(activity_metadata)
+    vampytest.assert_instance(output, str)
 
 
 def test__ActivityMetadataRich__hash():
@@ -64,6 +69,7 @@ def test__ActivityMetadataRich__hash():
     buttons = ['Party', 'Trick']
     created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     details = 'vocal'
+    details_url = 'https://orindance.party/cart'
     flags = ActivityFlag(1)
     activity_id = 202209070016
     name = 'Iceon'
@@ -71,6 +77,7 @@ def test__ActivityMetadataRich__hash():
     secrets = ActivitySecrets(join = 'deitarabochi')
     session_id = 'Autobahn'
     state = 'plain'
+    state_url = 'https://orindance.party/stand'
     sync_id = 'asia'
     timestamps = ActivityTimestamps(
         end = DateTime(2014, 9, 12, tzinfo = TimeZone.utc),
@@ -84,6 +91,7 @@ def test__ActivityMetadataRich__hash():
         buttons = buttons,
         created_at = created_at,
         details = details,
+        details_url = details_url,
         flags = flags,
         activity_id = activity_id,
         name = name,
@@ -91,6 +99,7 @@ def test__ActivityMetadataRich__hash():
         secrets = secrets,
         session_id = session_id,
         state = state,
+        state_url = state_url,
         sync_id = sync_id,
         timestamps = timestamps,
         url = url,
@@ -105,6 +114,7 @@ def _iter_options__eq():
     buttons = ['Party', 'Trick']
     created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     details = 'vocal'
+    details_url = 'https://orindance.party/cart'
     flags = ActivityFlag(1)
     activity_id = 202209070018
     name = 'Iceon'
@@ -112,6 +122,7 @@ def _iter_options__eq():
     secrets = ActivitySecrets(join = 'deitarabochi')
     session_id = 'Autobahn'
     state = 'plain'
+    state_url = 'https://orindance.party/stand'
     sync_id = 'asia'
     timestamps = ActivityTimestamps(
         end = DateTime(2014, 9, 12, tzinfo = TimeZone.utc),
@@ -125,6 +136,7 @@ def _iter_options__eq():
         'buttons': buttons,
         'created_at': created_at,
         'details': details,
+        'details_url': details_url,
         'flags': flags,
         'activity_id': activity_id,
         'name': name,
@@ -132,6 +144,7 @@ def _iter_options__eq():
         'secrets': secrets,
         'session_id': session_id,
         'state': state,
+        'state_url': state_url,
         'sync_id': sync_id,
         'timestamps': timestamps,
         'url': url,
@@ -198,6 +211,15 @@ def _iter_options__eq():
         keyword_parameters,
         {
             **keyword_parameters,
+            'details_url': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
             'flags': ActivityFlag(2),
         },
         False,
@@ -253,6 +275,15 @@ def _iter_options__eq():
         {
             **keyword_parameters,
             'state': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'state_url': None,
         },
         False,
     )

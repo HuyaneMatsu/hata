@@ -1,9 +1,6 @@
 import vampytest
 
-from ....component import Component, ComponentType
-from ....message import Attachment
-
-from ...resolved import Resolved
+from ....component import Component, ComponentType, InteractionComponent
 
 from ..message_component import InteractionMetadataMessageComponent
 
@@ -12,97 +9,158 @@ def test__InteractionMetadataMessageComponent__repr():
     """
     Tests whether ``InteractionMetadataMessageComponent.__repr__`` works as intended.
     """
-    component_type = ComponentType.button
-    custom_id = 'Inaba'
-    resolved = Resolved(attachments = [Attachment.precreate(202211060050)])
-    values = ['black', 'rock', 'shooter']
+    component = InteractionComponent(
+        ComponentType.string_select,
+        custom_id = 'Inaba',
+        values = ['black', 'rock', 'shooter'],
+    )
     
     interaction_metadata = InteractionMetadataMessageComponent(
-        component_type = component_type,
-        custom_id = custom_id,
-        resolved = resolved,
-        values = values,
+        component = component,
     )
-    vampytest.assert_instance(repr(interaction_metadata), str)
+    
+    output = repr(interaction_metadata)
+    vampytest.assert_instance(output, str)
 
 
 def test__InteractionMetadataMessageComponent__hash():
     """
     Tests whether ``InteractionMetadataMessageComponent.__hash__`` works as intended.
     """
-    component_type = ComponentType.button
-    custom_id = 'Inaba'
-    resolved = Resolved(attachments = [Attachment.precreate(202211060051)])
-    values = ['black', 'rock', 'shooter']
+    component = InteractionComponent(
+        ComponentType.string_select,
+        custom_id = 'Inaba',
+        values = ['black', 'rock', 'shooter'],
+    )
     
     interaction_metadata = InteractionMetadataMessageComponent(
-        component_type = component_type,
-        custom_id = custom_id,
-        resolved = resolved,
-        values = values,
+        component = component,
     )
-    vampytest.assert_instance(hash(interaction_metadata), int)
+    
+    output = hash(interaction_metadata)
+    vampytest.assert_instance(output, int)
 
 
-def test__InteractionMetadataMessageComponent__eq__0():
+def test__InteractionMetadataMessageComponent__eq__different_type():
     """
     Tests whether ``InteractionMetadataMessageComponent.__eq__`` works as intended.
     
-    Case: generic.
+    Case: different type.
     """
+    interaction_metadata = InteractionMetadataMessageComponent()
+    vampytest.assert_ne(interaction_metadata, object())
+
+
+def _iter_options__eq():
+    component = InteractionComponent(
+        ComponentType.string_select,
+        custom_id = 'Inaba',
+        values = ['black', 'rock', 'shooter'],
+    )
+    
+    keyword_parameters = {
+        'component': component,
+    }
+    
+    yield (
+        keyword_parameters,
+        keyword_parameters,
+        True,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'component': InteractionComponent(
+                component_type = ComponentType.button,
+                custom_id = 'Reisen',
+            ),
+        },
+        False,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__eq()).returning_last())
+def test__InteractionMetadataMessageComponent__eq(keyword_parameters_0, keyword_parameters_1):
+    """
+    Tests whether ``InteractionMetadataMessageComponent.__eq__`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters_0 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    keyword_parameters_1 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    interaction_metadata_0 = InteractionMetadataMessageComponent(**keyword_parameters_0)
+    interaction_metadata_1 = InteractionMetadataMessageComponent(**keyword_parameters_1)
+    
+    output = interaction_metadata_0 == interaction_metadata_1
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__eq__component():
     component_type = ComponentType.button
     custom_id = 'Inaba'
-    resolved = Resolved(attachments = [Attachment.precreate(202211060052)])
-    values = ['black', 'rock', 'shooter']
     
     keyword_parameters = {
         'component_type': component_type,
         'custom_id': custom_id,
-        'resolved': resolved,
-        'values': values,
     }
     
-    interaction_metadata = InteractionMetadataMessageComponent(**keyword_parameters)
+    yield (
+        keyword_parameters,
+        keyword_parameters,
+        True,
+    )
     
-    vampytest.assert_eq(interaction_metadata, interaction_metadata)
-    vampytest.assert_ne(interaction_metadata, object())
+    yield (
+        {
+            **keyword_parameters,
+            'component_type': ComponentType.user_select,
+            
+        },
+        keyword_parameters,
+        False,
+    )
     
-    for field_custom_id, field_value in (
-        ('component_type', ComponentType.row),
-        ('custom_id', 'Reisen'),
-        ('resolved', None),
-        ('values', None),
-    ):
-        test_interaction_metadata = InteractionMetadataMessageComponent(
-            **{**keyword_parameters, field_custom_id: field_value}
-        )
-        vampytest.assert_ne(interaction_metadata, test_interaction_metadata)
+    yield (
+        {
+            **keyword_parameters,
+            'custom_id': 'Reisen',
+        },
+        keyword_parameters,
+        False,
+    )
 
 
-def test__InteractionMetadataMessageComponent__eq__1():
+@vampytest._(vampytest.call_from(_iter_options__eq__component()).returning_last())
+def test__InteractionMetadataMessageComponent__eq__component(keyword_parameters_0, keyword_parameters_1):
     """
     Tests whether ``InteractionMetadataMessageComponent.__eq__`` works as intended.
     
     Case: With component.
+    
+    Parameters
+    ----------
+    keyword_parameters_0 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    keyword_parameters_1 : `dict<str, object>`
+        Keyword parameters to create component with.
     """
-    component_type = ComponentType.button
-    custom_id = 'Inaba'
-    
     interaction_metadata = InteractionMetadataMessageComponent(
-        component_type = component_type,
-        custom_id = custom_id,
+        component = InteractionComponent(**keyword_parameters_0),
     )
+    component = Component(**keyword_parameters_1)
     
-    keyword_parameters = {
-        'component_type': component_type,
-        'custom_id': custom_id,
-    }
-    component = Component(**keyword_parameters)
-    
-    vampytest.assert_eq(interaction_metadata, component)
-    for field_custom_id, field_value in (
-        ('component_type', ComponentType.user_select),
-        ('custom_id', 'Reisen'),
-    ):
-        component = Component(**{**keyword_parameters, field_custom_id: field_value})
-        vampytest.assert_ne(interaction_metadata, component)
+    output = interaction_metadata == component
+    vampytest.assert_instance(output, bool)
+    return output

@@ -13,15 +13,14 @@ def test__InteractionForm__from_data():
     Test whether ``InteractionForm.from_data`` works as intended.
     """
     title = 'important'
-    components = [Component(ComponentType.text_input, label = 'chata')]
+    components = [Component(ComponentType.text_input, placeholder = 'chata')]
     custom_id = 'lie'
     
-    rows = tuple(Component(ComponentType.row, components = [component]) for component in components)
-    
+    expected_labels = (*(Component(ComponentType.label, component = component) for component in components),)
     
     data = {
         'title': title,
-        'components': [row.to_data() for row in rows],
+        'components': [component.to_data() for component in expected_labels],
         'custom_id': custom_id
     }
     
@@ -29,7 +28,7 @@ def test__InteractionForm__from_data():
     _check_are_fields_set(interaction_form)
     
     vampytest.assert_eq(interaction_form.title, title)
-    vampytest.assert_eq(interaction_form.components, rows)
+    vampytest.assert_eq(interaction_form.components, expected_labels)
     vampytest.assert_eq(interaction_form.custom_id, custom_id)
 
 
@@ -40,10 +39,10 @@ def test__InteractionForm__to_data():
     Case: include defaults.
     """
     title = 'important'
-    components = [Component(ComponentType.text_input, label = 'chata')]
+    components = [Component(ComponentType.text_input, placeholder = 'chata')]
     custom_id = 'lie'
     
-    rows = tuple(Component(ComponentType.row, components = [component]) for component in components)
+    expected_labels = (*(Component(ComponentType.label, component = component) for component in components),)
     
     
     interaction_form = InteractionForm(title, components, custom_id)
@@ -54,7 +53,7 @@ def test__InteractionForm__to_data():
         ),
         {
             'title': title,
-            'components': [row.to_data(defaults = True) for row in rows],
+            'components': [component.to_data(defaults = True) for component in expected_labels],
             'custom_id': custom_id
         },
     )

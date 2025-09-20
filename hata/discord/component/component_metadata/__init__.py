@@ -5,6 +5,7 @@ from .channel_select import *
 from .constants import *
 from .container import *
 from .fields import *
+from .label import *
 from .media_gallery import *
 from .mentionable_select import *
 from .preinstanced import *
@@ -28,6 +29,7 @@ __all__ = (
     *constants.__all__,
     *container.__all__,
     *fields.__all__,
+    *label.__all__,
     *media_gallery.__all__,
     *mentionable_select.__all__,
     *preinstanced.__all__,

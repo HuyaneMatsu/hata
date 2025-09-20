@@ -28,11 +28,14 @@ class ComponentCommand(CommandBaseCustomId):
     _exception_handlers : `None | list<CoroutineFunction>`
         Exception handlers added with ``.error`` to the interaction handler.
     
-    _parameter_converters : `tuple<ParameterConverterBase>`
-        Parsers to parse command parameters.
+    _keyword_parameter_converters : `tuple<ParameterConverterBase>`
+        Parsers to parse keyword command parameters.
     
     _parent_reference : `None | WeakReferer<SelfReferenceInterface>`
         The parent slasher of the component command.
+    
+    _positional_parameter_converters : `tuple<ParameterConverterBase>`
+        Parsers to parse positional command parameters.
     
     _regex_custom_ids : `None | tuple<RegexMatcher>`.
         Regex matchers to match custom-ids.
@@ -120,17 +123,18 @@ class ComponentCommand(CommandBaseCustomId):
         
         # Post validate
         name = check_name(command_function, name)
-        command_function, parameter_converters = get_component_command_parameter_converters(command_function)
-        string_custom_ids, regex_custom_ids = split_and_check_satisfaction(custom_id, parameter_converters)
+        command_function, positional_parameter_converters, keyword_parameter_converters = get_component_command_parameter_converters(command_function)
+        string_custom_ids, regex_custom_ids = split_and_check_satisfaction(custom_id, positional_parameter_converters)
         
         # Construct
         self = object.__new__(cls)
         self._command_function = command_function
-        self._parameter_converters = parameter_converters
-        self._string_custom_ids = string_custom_ids
-        self._regex_custom_ids = regex_custom_ids
-        self._parent_reference = None
+        self._keyword_parameter_converters = keyword_parameter_converters
         self._exception_handlers = None
+        self._parent_reference = None
+        self._positional_parameter_converters = positional_parameter_converters
+        self._regex_custom_ids = regex_custom_ids
+        self._string_custom_ids = string_custom_ids
         self.name = name
         self.response_modifier = response_modifier
         
@@ -143,9 +147,10 @@ class ComponentCommand(CommandBaseCustomId):
     
     @copy_docs(CommandBaseCustomId.invoke)
     async def invoke(self, client, interaction_event, regex_match):
-        parameters = []
+        positional_parameters = []
         
-        for parameter_converter in self._parameter_converters:
+        # Positional parameters
+        for parameter_converter in self._positional_parameter_converters:
             try:
                 parameter = await parameter_converter(client, interaction_event, regex_match)
             except GeneratorExit:
@@ -155,18 +160,49 @@ class ComponentCommand(CommandBaseCustomId):
                 exception = err
             
             else:
-                parameters.append(parameter)
+                positional_parameters.append(parameter)
                 continue
             
-            await handle_command_exception(
-                self,
-                client,
-                interaction_event,
-                exception,
-            )
+            try:
+                await handle_command_exception(
+                    self,
+                    client,
+                    interaction_event,
+                    exception,
+                )
+            finally:
+                exception = None
+            
             return
         
-        command_coroutine = self._command_function(*parameters)
+        # Keyword parameters
+        keyword_parameters = {}
+        
+        for parameter_converter in self._keyword_parameter_converters:
+            try:
+                parameter = await parameter_converter(client, interaction_event, regex_match)
+            except GeneratorExit:
+                raise
+            
+            except BaseException as err:
+                exception = err
+            
+            else:
+                keyword_parameters[parameter_converter.parameter_name] = parameter
+                continue
+            
+            try:
+                await handle_command_exception(
+                    self,
+                    client,
+                    interaction_event,
+                    exception,
+                )
+            finally:
+                exception = None
+            return
+        
+        command_coroutine = self._command_function(*positional_parameters, **keyword_parameters)
         
         try:
             await process_command_coroutine(client, interaction_event, self.response_modifier, command_coroutine)
@@ -179,10 +215,14 @@ class ComponentCommand(CommandBaseCustomId):
         else:
             return
         
-        await handle_command_exception(
-            self,
-            client,
-            interaction_event,
-            exception,
-        )
+        try:
+            await handle_command_exception(
+                self,
+                client,
+                interaction_event,
+                exception,
+            )
+        finally:
+            exception = None
+        
         return

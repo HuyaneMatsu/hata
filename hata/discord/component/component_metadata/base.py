@@ -10,7 +10,7 @@ from .preinstanced import ButtonStyle, TextInputStyle
 
 class ComponentMetadataBase(RichAttributeErrorBaseType):
     """
-    Base class for component metadata.
+    Base type for component metadata.
     """
     __slots__ = ()
     
@@ -240,6 +240,18 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         Passing `0` means black.
         
         color : ``None | Color``
+        """
+    )
+    
+    
+    component = PlaceHolder(
+        None,
+        """
+        The sub-component nested inside (the label component).
+        
+        Returns
+        -------
+        component : ``None | Component``
         """
     )
     
@@ -519,7 +531,7 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        thumbnail : ``Component``
+        thumbnail : ``None | Component``
         """
     )
     

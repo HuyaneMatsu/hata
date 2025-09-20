@@ -1,33 +1,100 @@
 import vampytest
 
-from ....component import ComponentType
+from ....component import ComponentType, InteractionComponent
 
-from ...interaction_component import InteractionComponent
 
 from ..fields import put_components
 
 
 def _iter_options():
-    component_0 = InteractionComponent(custom_id = 'Hell')
-    component_1 = InteractionComponent(
-        component_type = ComponentType.row,
-        components = [InteractionComponent(custom_id = 'Rose')])
-
-    yield None, False, {}
-    yield None, True, {'components': []}
-    
-    yield (component_0, ), False, {'components': [component_0.to_data()]}
-    yield (component_0, ), True, {'components': [component_0.to_data(defaults = True)]}
-    
-    yield (
-        (component_0, component_1),
-        False,
-        {'components': [component_0.to_data(), component_1.to_data()]},
+    component_0 = InteractionComponent(
+        ComponentType.text_input,
+        custom_id = 'Hell',
     )
+    component_1 = InteractionComponent(
+        ComponentType.row,
+        components = [
+            InteractionComponent(
+                ComponentType.text_input,
+                custom_id = 'Rose',
+            ),
+        ],
+    )
+
     yield (
-        (component_0, component_1),
+        None,
+        False,
+        {},
+    )
+    
+    yield (
+        None,
         True,
-        {'components': [component_0.to_data(defaults = True), component_1.to_data(defaults = True)]},
+        {
+            'data': {
+                'components': [],
+            },
+        },
+    )
+    
+    yield (
+        (
+            component_0,
+        ),
+        False,
+        {
+            'data': {
+                'components': [
+                    component_0.to_data(),
+                ],
+            },
+        },
+    )
+    
+    yield (
+        (
+            component_0,
+        ),
+        True,
+        {
+            'data': {
+                'components': [
+                    component_0.to_data(defaults = True),
+                ],
+            },
+        },
+    )
+    
+    yield (
+        (
+            component_0,
+            component_1,
+        ),
+        False,
+        {
+            'data': {
+                'components': [
+                    component_0.to_data(),
+                    component_1.to_data(),
+                ],
+            },
+        },
+    )
+    
+    yield (
+        (
+            component_0,
+            component_1,
+        ),
+        True,
+        {
+            'data': {
+                'components': [
+                    component_0.to_data(defaults = True),
+                    component_1.to_data(defaults = True),
+                ],
+            },
+        },
     )
 
 

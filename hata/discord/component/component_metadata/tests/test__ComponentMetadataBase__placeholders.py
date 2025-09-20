@@ -17,9 +17,10 @@ def test__ComponentMetadataBase__placeholders():
     component_metadata = ComponentMetadataBase()
     
     vampytest.assert_instance(component_metadata.button_style, ButtonStyle)
-    vampytest.assert_instance(component_metadata.channel_types, tuple, nullable = True)
-    vampytest.assert_instance(component_metadata.components, tuple, nullable = True)
     vampytest.assert_instance(component_metadata.color, Color, nullable = True)
+    vampytest.assert_instance(component_metadata.channel_types, tuple, nullable = True)
+    vampytest.assert_instance(component_metadata.component, Component, nullable = True)
+    vampytest.assert_instance(component_metadata.components, tuple, nullable = True)
     vampytest.assert_instance(component_metadata.content, str, nullable = True)
     vampytest.assert_instance(component_metadata.custom_id, str, nullable = True)
     vampytest.assert_instance(component_metadata.default_values, tuple, nullable = True)

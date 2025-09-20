@@ -1,24 +1,14 @@
 __all__ = ('InteractionMetadataBase',)
 
-from scarletio import RichAttributeErrorBaseType, copy_docs
+from scarletio import RichAttributeErrorBaseType
 
 from ...application_command import ApplicationCommandTargetType
 from ...bases import PlaceHolder
-from ...component import ComponentType
-
-from ..resolved import Resolved
-
-ENTITY_RESOLVERS = {
-    ComponentType.user_select: (lambda resolved, entity_id: resolved.resolve_user(entity_id)),
-    ComponentType.role_select: (lambda resolved, entity_id: resolved.resolve_role(entity_id)),
-    ComponentType.mentionable_select: (lambda resolved, entity_id: resolved.resolve_mentionable(entity_id)),
-    ComponentType.channel_select: (lambda resolved, entity_id: resolved.resolve_channel(entity_id)),
-}
 
 
 class InteractionMetadataBase(RichAttributeErrorBaseType):
     """
-    Base class for values assigned to ``InteractionEvent.interaction`` field.
+    Base type for values assigned to ``InteractionEvent.message`` field.
     """
     __slots__ = ()
     
@@ -36,6 +26,26 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
         # Construct
         self = object.__new__(cls)
         return self
+    
+    
+    @classmethod
+    def from_keyword_parameters(cls, keyword_parameters):
+        """
+        Creates the interaction metadata from the given keyword parameters.
+        
+        Parameters
+        ----------
+        keyword_parameters : `dict<str, object>`
+            Keyword parameters to work with.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        return cls()
     
     
     @classmethod
@@ -79,6 +89,29 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
         # Construct
         new = object.__new__(type(self))
         return new
+    
+    
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        """
+        Copies the interaction metadata from the given keyword parameters.
+        
+        Parameters
+        ----------
+        keyword_parameters : `dict<str, object>`
+            Keyword parameters to work with.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        return self.copy_with()
     
     
     @classmethod
@@ -178,43 +211,7 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
         return True
     
     
-    component_type = PlaceHolder(
-        ComponentType.none,
-        """
-        The used component's type.
-        
-        Returns
-        -------
-        component_type : ``ComponentType``
-        """
-    )
-    
-    
-    components = PlaceHolder(
-        None,
-        """
-        Submitted component values of a form submit interaction.
-        
-        Returns
-        -------
-        components : `None`, `tuple` of ``InteractionComponent``
-        """
-    )
-    
-    
-    custom_id = PlaceHolder(
-        None,
-        """
-        Component or form interaction's custom identifier.
-        
-        Returns
-        -------
-        custom_id : `None`, `str`
-        """,
-    )
-    
-    
-    id = PlaceHolder(
+    application_command_id = PlaceHolder(
         0,
         """
         The represented application command's identifier number.
@@ -226,7 +223,7 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
     )
     
     
-    name = PlaceHolder(
+    application_command_name = PlaceHolder(
         '',
         """
         The represented application command's name.
@@ -234,6 +231,42 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
         Returns
         -------
         application_command_name : `str`
+        """,
+    )
+    
+    
+    component = PlaceHolder(
+        None,
+        """
+        The interacted component of a message component interaction.
+        
+        Returns
+        -------
+        components : ``None | InteractionComponent``
+        """
+    )
+    
+    
+    components = PlaceHolder(
+        None,
+        """
+        Submitted component values of a form submit interaction.
+        
+        Returns
+        -------
+        components : ``None | tuple<InteractionComponent>``
+        """
+    )
+    
+    
+    custom_id = PlaceHolder(
+        None,
+        """
+        Form interaction's custom identifier.
+        
+        Returns
+        -------
+        custom_id : `None | str`
         """,
     )
     
@@ -246,18 +279,6 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
         Returns
         -------
         options : `None`, `tuple` of ``InteractionOption``
-        """,
-    )
-    
-    
-    resolved = PlaceHolder(
-        None,
-        """
-        Contains the received entities.
-        
-        Returns
-        -------
-        resolved : ``None | Resolved``
         """,
     )
     
@@ -284,33 +305,6 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
         target_type : ``ApplicationCommandTargetType``
         """,
     )
-    
-    
-    values = PlaceHolder(
-        None,
-        """
-        Values selected by the user. Applicable for component interactions.
-        
-        Returns
-        -------
-        values : `None | tuple<str>`
-        """
-    )
-    
-    # Extra utility | Application command
-    
-    @property
-    def target(self):
-        """
-        Returns the application command's target. Applicable if the interaction was invoked by a context command.
-        
-        Returns
-        -------
-        entity : `None` ``Attachment``, ``Channel``, ``ClientUserBase``, ``Role``, ``Message``
-        """
-        target_id = self.target_id
-        if target_id:
-            return self.resolve_entity(target_id)
     
     # Extra utility
     
@@ -352,7 +346,7 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        non_focused_options : `dict` of (`str`, (`None`, `str`)) items
+        non_focused_options : `dict<str, None | str>`
         """
         return dict(self._iter_non_focused_values())
     
@@ -368,7 +362,7 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
         name : `str`
             The option's name.
         
-        value : `None`, `str`
+        value : `None | str`
             The option's value.
         """
         for option in self.iter_options():
@@ -386,7 +380,7 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        value : `None`, `str`
+        value : `None | str`
             The value, the user has been typed.
         """
         if not option_names:
@@ -397,82 +391,6 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
         for option in self.iter_options():
             if option.name == option_name:
                 return option.get_value_of(*option_names)
-    
-    
-    @property
-    def value(self):
-        """
-        Returns the selected value of an component interaction.
-        
-        Returns
-        -------
-        value : `None`, `str`
-        """
-        values = self.values
-        if (values is not None):
-            return values[0]
-    
-    # Message component
-    
-    def iter_values(self):
-        """
-        Iterates over the values selected by the user.
-        
-        This method is an iterable generator.
-        
-        Yields
-        ------
-        value : `str`
-        """
-        values = self.values
-        if (values is not None):
-            yield from values
-    
-    
-    def iter_entities(self):
-        """
-        Iterates over the entities that were selected by the user of a select component interaction.
-        
-        This method is an iterable generator.
-        
-        Yields
-        ------
-        entity : ``Channel``, ``ClientUserbase``, ``Role``
-        """
-        resolved = self.resolved
-        if resolved is None:
-            return
-        
-        values = self.values
-        if values is None:
-            return
-        
-        try:
-            resolver = ENTITY_RESOLVERS[self.component_type]
-        except KeyError:
-            return
-        
-        for value in values:
-            try:
-                entity_id = int(value)
-            except ValueError:
-                continue
-            
-            entity = resolver(resolved, entity_id)
-            if (entity is not None):
-                yield entity
-    
-    
-    @property
-    def entities(self):
-        """
-        Returns the entities that were selected by the user of a select component interaction.
-        
-        Returns
-        -------
-        entities : `list` of (``Channel``, ``ClientUserbase``, ``Role``)
-        """
-        return [*self.iter_entities()]
     
     # Form submit
     
@@ -486,9 +404,8 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
         ------
         component : ``InteractionComponent``
         """
-        components = self.components
-        if (components is not None):
-            yield from components
+        return
+        yield
     
     
     def iter_custom_ids_and_values(self):
@@ -499,164 +416,7 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
         
         Yields
         ------
-        custom_id : `str`
-            The `custom_id` of a represented component.
-        value : `str`
-            The `value` passed by the user.
+        custom_id_is_multi_value_values : `(str, ComponentType, None | str | tuple<str>)`
         """
-        for component in self.iter_components():
-            yield from component.iter_custom_ids_and_values()
-    
-    
-    def get_custom_id_value_relation(self):
-        """
-        Returns a dictionary with `custom_id` to `value` relation.
-        
-        Returns
-        -------
-        custom_id_value_relation : `dict<str, str>`
-        """
-        custom_id_value_relation = {}
-        
-        for custom_id, value in self.iter_custom_ids_and_values():
-            if (value is not None):
-                custom_id_value_relation[custom_id] = value
-        
-        return custom_id_value_relation
-    
-    
-    def get_value_for(self, custom_id_to_match):
-        """
-        Returns the value for the given `custom_id`.
-        
-        Parameters
-        ----------
-        custom_id_to_match : `str`
-            A respective components `custom_id` to match.
-        
-        Returns
-        -------
-        value : `None`, `str`
-            The value if any.
-        """
-        for custom_id, value in self.iter_custom_ids_and_values():
-            if (custom_id == custom_id_to_match):
-                return value
-    
-    
-    def get_match_and_value(self, matcher):
-        """
-        Gets a `custom_id`'s value matching the given `matcher`.
-        
-        Parameters
-        ----------
-        matcher : `callable`
-            Matcher to call on a `custom_id`
-            
-            Should accept the following parameters:
-            
-            +-----------+-----------+
-            | Name      | Type      |
-            +===========+===========+
-            | custom_id | `str`     |
-            +-----------+-----------+
-            
-            Should return non-`None` on success.
-        
-        Returns
-        -------
-        match : `None | object`
-            The returned value by the ``matcher``
-        value : `None`, `str`
-            The matched `custom_id`'s value.
-        """
-        for custom_id, value in self.iter_custom_ids_and_values():
-            match = matcher(custom_id)
-            if (match is not None):
-                return match, value
-        
-        return None, None
-    
-    
-    def iter_matches_and_values(self, matcher):
-        """
-        Gets a `custom_id`'s value matching the given `matcher`.
-        
-        This method is an iterable generator.
-        
-        Parameters
-        ----------
-        matcher : `callable`
-            Matcher to call on a `custom_id`
-            
-            Should accept the following parameters:
-            
-            +-----------+-----------+
-            | Name      | Type      |
-            +===========+===========+
-            | custom_id | `str`     |
-            +-----------+-----------+
-            
-            Should return non-`None` on success.
-        
-        Yields
-        -------
-        match : `None | object`
-            The returned value by the ``matcher``
-        value : `None`, `str`
-            The matched `custom_id`'s value.
-        """
-        for custom_id, value in self.iter_custom_ids_and_values():
-            match = matcher(custom_id)
-            if (match is not None):
-                yield match, value
-    
-    # resolved
-    
-    @copy_docs(Resolved.resolve_attachment)
-    def resolve_attachment(self, attachment_id):
-        resolved = self.resolved
-        if (resolved is not None):
-            return resolved.resolve_attachment(attachment_id)
-    
-    
-    @copy_docs(Resolved.resolve_channel)
-    def resolve_channel(self, channel_id):
-        resolved = self.resolved
-        if (resolved is not None):
-            return resolved.resolve_channel(channel_id)
-    
-    
-    @copy_docs(Resolved.resolve_role)
-    def resolve_role(self, role_id):
-        resolved = self.resolved
-        if (resolved is not None):
-            return resolved.resolve_role(role_id)
-    
-    
-    @copy_docs(Resolved.resolve_message)
-    def resolve_message(self, message_id):
-        resolved = self.resolved
-        if (resolved is not None):
-            return resolved.resolve_message(message_id)
-    
-    
-    @copy_docs(Resolved.resolve_user)
-    def resolve_user(self, user_id):
-        resolved = self.resolved
-        if (resolved is not None):
-            return resolved.resolve_user(user_id)
-    
-    
-    @copy_docs(Resolved.resolve_mentionable)
-    def resolve_mentionable(self, mentionable_id):
-        resolved = self.resolved
-        if (resolved is not None):
-            return resolved.resolve_mentionable(mentionable_id)
-    
-    
-    @copy_docs(Resolved.resolve_entity)
-    def resolve_entity(self, entity_id):
-        resolved = self.resolved
-        if (resolved is not None):
-            return resolved.resolve_entity(entity_id)
+        return
+        yield

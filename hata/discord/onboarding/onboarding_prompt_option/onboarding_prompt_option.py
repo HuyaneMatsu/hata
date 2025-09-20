@@ -33,7 +33,7 @@ class OnboardingPromptOption(DiscordEntity):
         The channels' identifier opted into when this option is selected.
     description : `None`, `str`
         The option's description
-    emoji : `None`, ``Emoji``
+    emoji : ``None | Emoji``
         The emoji of the option.
     id : `int`
         the option's identifier.

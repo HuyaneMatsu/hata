@@ -33,6 +33,7 @@ def test__Application__copy():
     """
     aliases = ['orin', 'rin']
     approximate_guild_count = 11
+    approximate_user_authorization_count = 21
     approximate_user_install_count = 13
     bot_public = True
     bot_requires_code_grant = True
@@ -103,6 +104,7 @@ def test__Application__copy():
     application = Application(
         aliases = aliases,
         approximate_guild_count = approximate_guild_count,
+        approximate_user_authorization_count = approximate_user_authorization_count,
         approximate_user_install_count = approximate_user_install_count,
         bot_public = bot_public,
         bot_requires_code_grant = bot_requires_code_grant,
@@ -174,6 +176,7 @@ def test__Application__copy_with__no_fields():
     """
     aliases = ['orin', 'rin']
     approximate_guild_count = 11
+    approximate_user_authorization_count = 21
     approximate_user_install_count = 13
     bot_public = True
     bot_requires_code_grant = True
@@ -244,6 +247,7 @@ def test__Application__copy_with__no_fields():
     application = Application(
         aliases = aliases,
         approximate_guild_count = approximate_guild_count,
+        approximate_user_authorization_count = approximate_user_authorization_count,
         approximate_user_install_count = approximate_user_install_count,
         bot_public = bot_public,
         bot_requires_code_grant = bot_requires_code_grant,
@@ -316,6 +320,7 @@ def test__Application__copy_with__all_fields():
     """
     old_aliases = ['orin', 'rin']
     old_approximate_guild_count = 12
+    old_approximate_user_authorization_count = 21
     old_approximate_user_install_count = 13
     old_bot_requires_code_grant = True
     old_bot_public = True
@@ -385,6 +390,7 @@ def test__Application__copy_with__all_fields():
     
     new_aliases = ['nue']
     new_approximate_guild_count = 15
+    new_approximate_user_authorization_count = 23
     new_approximate_user_install_count = 14
     new_bot_public = False
     new_bot_requires_code_grant = False
@@ -452,6 +458,7 @@ def test__Application__copy_with__all_fields():
     application = Application(
         aliases = old_aliases,
         approximate_guild_count = old_approximate_guild_count,
+        approximate_user_authorization_count = old_approximate_user_authorization_count,
         approximate_user_install_count = old_approximate_user_install_count,
         bot_public = old_bot_public,
         bot_requires_code_grant = old_bot_requires_code_grant,
@@ -513,6 +520,7 @@ def test__Application__copy_with__all_fields():
     copy = application.copy_with(
         aliases = new_aliases,
         approximate_guild_count = new_approximate_guild_count,
+        approximate_user_authorization_count = new_approximate_user_authorization_count,
         approximate_user_install_count = new_approximate_user_install_count,
         bot_public = new_bot_public,
         bot_requires_code_grant = new_bot_requires_code_grant,
@@ -575,6 +583,7 @@ def test__Application__copy_with__all_fields():
     
     vampytest.assert_eq(copy.aliases, tuple(new_aliases))
     vampytest.assert_eq(copy.approximate_guild_count, new_approximate_guild_count)
+    vampytest.assert_eq(copy.approximate_user_authorization_count, new_approximate_user_authorization_count)
     vampytest.assert_eq(copy.approximate_user_install_count, new_approximate_user_install_count)
     vampytest.assert_eq(copy.bot_public, new_bot_public)
     vampytest.assert_eq(copy.bot_requires_code_grant, new_bot_requires_code_grant)
@@ -960,9 +969,9 @@ def test__Application__has_integration_type(input_value, integration_type):
     
     Parameters
     ----------
-    input_value : `None | list<ApplicationIntegrationType>`
+    input_value : ``None | list<ApplicationIntegrationType>``
         Application integration types to create the application with.
-    integration_type : `int | ApplicationIntegrationType`
+    integration_type : ``int | ApplicationIntegrationType``
         Integration type to check for.
     
     Returns
@@ -989,7 +998,7 @@ def test__Application__iter_integration_types(input_value):
     
     Parameters
     ----------
-    input_value : `None | list<ApplicationIntegrationType>`
+    input_value : ``None | list<ApplicationIntegrationType>``
         Application integration types to create the application with.
     
     Returns
@@ -1031,9 +1040,10 @@ def test__Application__get_integration_type_configuration(input_value, integrati
     
     Parameters
     ----------
-    input_value : `None | list<ApplicationIntegrationType>`
+    input_value : ``None | list<ApplicationIntegrationType>``
         Application integration types to create the application with.
-    integration_type : `int | ApplicationIntegrationType`
+    
+    integration_type : ``int | ApplicationIntegrationType``
         Integration type to check for.
     
     Returns

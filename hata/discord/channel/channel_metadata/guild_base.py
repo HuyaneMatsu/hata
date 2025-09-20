@@ -1,10 +1,7 @@
 __all__ = ('ChannelMetadataGuildBase',)
 
-from re import I as re_ignore_case, compile as re_compile, escape as re_escape
-
 from scarletio import copy_docs, export, include
 
-from ...core import GUILDS
 from ...permission.permission import PERMISSION_MASK_VIEW_CHANNEL
 
 from .fields import parse_name, parse_parent_id, put_name, put_parent_id, validate_name, validate_parent_id
@@ -284,7 +281,16 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
         if guild is None:
             return []
         
-        return guild.clients
+        return [client for client in guild.clients if self._get_cached_permissions_for(channel_entity, client)]
+    
+    
+    @copy_docs(ChannelMetadataBase._get_partial)
+    def _get_partial(self, channel_entity):
+        guild = channel_entity.guild
+        if guild is None:
+            return True
+        
+        return False if guild.clients else True
     
     
     @copy_docs(ChannelMetadataBase._get_cached_permissions_for)

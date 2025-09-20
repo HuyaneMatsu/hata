@@ -45,7 +45,7 @@ async def send_response(command_context, response):
     
     Returns
     -------
-    message : `None`, ``Message``
+    message : ``None | Message``
         The sent message if any.
     """
     if (response is None):

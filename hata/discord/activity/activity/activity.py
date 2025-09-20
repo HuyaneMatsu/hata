@@ -66,6 +66,9 @@ class Activity(RichAttributeErrorBaseType):
         details : `None | str`, Optional (Keyword only)
             What the player is currently doing.
         
+        details_url : `None | str`, Optional (Keyword only)
+            Url to open when a user click on the player is currently doing.
+        
         flags : `ActivityFlag | int`, Optional (Keyword only)
             The flags of the activity.
         
@@ -80,6 +83,9 @@ class Activity(RichAttributeErrorBaseType):
         
         session_id : `None | str`, Optional (Keyword only)
             Spotify activity's session's id.
+        
+        state : `None | str`, Optional (Keyword only)
+            The player's current party status.
         
         state : `None | str`, Optional (Keyword only)
             The player's current party status.
@@ -271,7 +277,7 @@ class Activity(RichAttributeErrorBaseType):
         +-------------------+-----------------------------------+
         | Keys              | Values                            |
         +===================+===================================+
-        | assets            | `None`, ``ActivityAssets``        |
+        | assets            | ``None | ActivityAssets``         |
         +-------------------+-----------------------------------+
         | buttons           | `None | tuple<str>`               |
         +-------------------+-----------------------------------+
@@ -279,7 +285,9 @@ class Activity(RichAttributeErrorBaseType):
         +-------------------+-----------------------------------+
         | details           | `None | str`                      |
         +-------------------+-----------------------------------+
-        | emoji             | `None`, ``Emoji``                 |
+        | details_url       | `None | str`                      |
+        +-------------------+-----------------------------------+
+        | emoji             | ``None | Emoji``                  |
         +-------------------+-----------------------------------+
         | flags             | ``ActivityFlag``                  |
         +-------------------+-----------------------------------+
@@ -289,17 +297,19 @@ class Activity(RichAttributeErrorBaseType):
         +-------------------+-----------------------------------+
         | metadata          | ``ActivityMetadataBase``          |
         +-------------------+-----------------------------------+
-        | party             | `None`, ``ActivityParty``         |
+        | party             | ``None | ActivityParty``          |
         +-------------------+-----------------------------------+
-        | secrets           | `None`, ``ActivitySecrets``       |
+        | secrets           | ``None | ActivitySecrets``        |
         +-------------------+-----------------------------------+
         | session_id        | `None | str`                      |
         +-------------------+-----------------------------------+
         | state             | `None | str`                      |
         +-------------------+-----------------------------------+
+        | state_url         | `None | str`                      |
+        +-------------------+-----------------------------------+
         | sync_id           | `None | str`                      |
         +-------------------+-----------------------------------+
-        | timestamps        | `None`, `ActivityTimestamps``     |
+        | timestamps        | ``None | ActivityTimestamps``     |
         +-------------------+-----------------------------------+
         | type              | ``ActivityType``                  |
         +-------------------+-----------------------------------+
@@ -375,6 +385,9 @@ class Activity(RichAttributeErrorBaseType):
         details : `None | str`, Optional (Keyword only)
             What the player is currently doing.
         
+        details_url : `None | str`, Optional (Keyword only)
+            Url to open when a user click on the player is currently doing.
+        
         flags : `ActivityFlag | int`, Optional (Keyword only)
             The flags of the activity.
         
@@ -392,6 +405,9 @@ class Activity(RichAttributeErrorBaseType):
         
         session_id : `None | str`, Optional (Keyword only)
             Spotify activity's session's id.
+        
+        state : `None | str`, Optional (Keyword only)
+            The player's current party status.
         
         state : `None | str`, Optional (Keyword only)
             The player's current party status.
@@ -475,6 +491,12 @@ class Activity(RichAttributeErrorBaseType):
     
     
     @property
+    @copy_docs(ActivityMetadataBase.details_url)
+    def details_url(self):
+        return self.metadata.details_url
+    
+    
+    @property
     @copy_docs(ActivityMetadataBase.emoji)
     def emoji(self):
         return self.metadata.emoji
@@ -526,6 +548,12 @@ class Activity(RichAttributeErrorBaseType):
     @copy_docs(ActivityMetadataBase.state)
     def state(self):
         return self.metadata.state
+    
+    
+    @property
+    @copy_docs(ActivityMetadataBase.state_url)
+    def state_url(self):
+        return self.metadata.state_url
     
     
     @property

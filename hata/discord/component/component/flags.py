@@ -11,6 +11,7 @@ from ...bases import FlagBase, FlagDescriptor as F, FlagDeprecation as FD
 class ComponentTypeLayoutFlag(FlagBase):
     """
     Represents a components layout information.
+    
     +---------------------------+-------------------+
     | Respective name           | Bitwise position  |
     +===========================+===================+
@@ -32,6 +33,12 @@ class ComponentTypeLayoutFlag(FlagBase):
     +---------------------------+-------------------+
     | version_2                 | 8                 |
     +---------------------------+-------------------+
+    | nestable_into_label       | 9                 |
+    +---------------------------+-------------------+
+    | holds_value_single        | 10                |
+    +---------------------------+-------------------+
+    | holds_value_multiple      | 11                |
+    +---------------------------+-------------------+
     """
     allowed_in_message = F(0)
     allowed_in_form = F(1)
@@ -42,7 +49,9 @@ class ComponentTypeLayoutFlag(FlagBase):
     section_thumbnail = F(6)
     version_1 = F(7)
     version_2 = F(8)
-    
+    nestable_into_label = F(9)
+    holds_value_single = F(10)
+    holds_value_multiple = F(11)
     
     nestable = F(
         nestable_into_row.shift,

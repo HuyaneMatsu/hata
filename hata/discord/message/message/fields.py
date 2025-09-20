@@ -1,10 +1,9 @@
 __all__ = ()
 
-from scarletio import include
+from scarletio import include, include_with_callback
 
 from ...application import Application
 from ...bases import id_sort_key
-from ...component import Component, ComponentTypeLayoutFlag
 from ...embed import Embed
 from ...emoji import ReactionMapping, merge_update_reaction_mapping
 from ...field_parsers import (
@@ -49,6 +48,7 @@ from .preinstanced import MessageType
 
 
 Channel = include('Channel')
+Component = include('Component')
 Message = include('Message')
 MessageSnapshot = include('MessageSnapshot')
 Resolved = include('Resolved')
@@ -206,13 +206,21 @@ validate_channel_id = entity_id_validator_factory('channel_id', NotImplemented, 
 
 # components
 
-COMPONENT_TYPE_LAYOUT_MAS_REQUIRED = ComponentTypeLayoutFlag().update_by_keys(
-    allowed_in_message = True,
-    top_level = True,
-)
+COMPONENT_TYPE_LAYOUT_MAS_REQUIRED = 0
 
-parse_components = nullable_object_array_parser_factory('components', Component)
-put_components = nullable_object_array_optional_putter_factory('components', Component)
+@include_with_callback('ComponentTypeLayoutFlag')
+def _set_COMPONENT_TYPE_LAYOUT_MAS_REQUIRED(ComponentTypeLayoutFlag):
+    global COMPONENT_TYPE_LAYOUT_MAS_REQUIRED
+    COMPONENT_TYPE_LAYOUT_MAS_REQUIRED = ComponentTypeLayoutFlag().update_by_keys(
+        allowed_in_message = True,
+        top_level = True,
+    )
+
+del _set_COMPONENT_TYPE_LAYOUT_MAS_REQUIRED
+
+
+parse_components = nullable_object_array_parser_factory('components', NotImplemented, include = 'Component')
+put_components = nullable_object_array_optional_putter_factory('components', can_include_internals = True)
 
 
 def validate_components(components):
@@ -656,7 +664,7 @@ def parse_referenced_message(data):
     
     Returns
     -------
-    referenced_message : `None`, ``Message``
+    referenced_message : ``None | Message``
     """
     referenced_message_data = data.get('referenced_message', None)
     if (referenced_message_data is not None):
@@ -675,7 +683,7 @@ def put_referenced_message_into(
     
     Parameters
     ----------
-    referenced_message : `None`, ``Message``
+    referenced_message : ``None | Message``
         The referenced message.
     
     data : `dict<str, object>`

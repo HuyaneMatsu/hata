@@ -4,8 +4,8 @@ from types import FunctionType
 import vampytest
 
 from .....discord import (
-    ApplicationCommandOption, Client, ComponentType, InteractionComponent, InteractionEvent,
-    InteractionMetadataFormSubmit, InteractionType
+    ApplicationCommandOption, Client, ComponentType, InteractionComponent, InteractionEvent, InteractionType, Resolved,
+    User
 )
 
 from ...command import SlashCommandFunction
@@ -159,25 +159,23 @@ async def test__ParameterConverterFormFieldMulti__call__string__hit():
     interaction_event = InteractionEvent.precreate(
         interaction_event_id,
         interaction_type = InteractionType.form_submit,
-        interaction = InteractionMetadataFormSubmit(
-            components = [
-                InteractionComponent(
-                    component_type = ComponentType.text_input,
-                    custom_id = 'kokoro',
-                    value = 'love',
-                ),
-                InteractionComponent(
-                    component_type = ComponentType.text_input,
-                    custom_id = 'cake_type',
-                    value = 'potato',
-                ),
-                InteractionComponent(
-                    component_type = ComponentType.text_input,
-                    custom_id = 'pudding_type',
-                    value = 'flan',
-                ),
-            ],
-        ),
+        components = [
+            InteractionComponent(
+                component_type = ComponentType.text_input,
+                custom_id = 'kokoro',
+                value = 'love',
+            ),
+            InteractionComponent(
+                component_type = ComponentType.text_input,
+                custom_id = 'cake_type',
+                value = 'potato',
+            ),
+            InteractionComponent(
+                component_type = ComponentType.text_input,
+                custom_id = 'pudding_type',
+                value = 'flan',
+            ),
+        ],
     )
     
     client = Client(
@@ -214,7 +212,6 @@ async def test__ParameterConverterFormFieldMulti__call__string__miss():
     interaction_event = InteractionEvent.precreate(
         interaction_event_id,
         interaction_type = InteractionType.form_submit,
-        interaction = InteractionMetadataFormSubmit(),
     )
     
     client = Client(
@@ -227,6 +224,55 @@ async def test__ParameterConverterFormFieldMulti__call__string__miss():
         
         vampytest.assert_instance(output, list, nullable = True)
         vampytest.assert_is(output, None)
+        
+    finally:
+        client._delete()
+        client = None
+
+
+async def test__ParameterConverterFormFieldMulti__call__string__resolved():
+    """
+    Tests whether ``ParameterConverterFormFieldMulti.__call__`` works as intended.
+    
+    This function is a coroutine.
+    
+    Case: string & resolved.
+    """
+    parameter_name = 'cake_type'
+    client_id = 202509130030
+    interaction_event_id = 202509130031
+    parameter = _create_parameter(parameter_name, annotation = parameter_name)
+     
+    user_0 = User.precreate(202509130032)
+    user_1 = User.precreate(202509130033)
+    
+    parameter_converter = ParameterConverterFormFieldMulti(parameter)
+    
+    interaction_event = InteractionEvent.precreate(
+        interaction_event_id,
+        interaction_type = InteractionType.form_submit,
+        components = [
+            InteractionComponent(
+                component_type = ComponentType.user_select,
+                custom_id = 'cake_type',
+                values = [str(user_0.id), str(user_1.id)],
+            ),
+        ],
+        resolved = Resolved(
+            users = [user_0, user_1],
+        ),
+    )
+    
+    client = Client(
+        'token_' + str(client_id),
+        client_id = client_id,
+    )
+    
+    try:
+        output = await parameter_converter(client, interaction_event, None)
+        
+        vampytest.assert_instance(output, list, nullable = True)
+        vampytest.assert_eq(output, [user_0, user_1])
         
     finally:
         client._delete()
@@ -252,25 +298,23 @@ async def test__ParameterConverterFormFieldMulti__call__regex_no_group__hit():
     interaction_event = InteractionEvent.precreate(
         interaction_event_id,
         interaction_type = InteractionType.form_submit,
-        interaction = InteractionMetadataFormSubmit(
-            components = [
-                InteractionComponent(
-                    component_type = ComponentType.text_input,
-                    custom_id = 'kokoro',
-                    value = 'love',
-                ),
-                InteractionComponent(
-                    component_type = ComponentType.text_input,
-                    custom_id = 'cake_type',
-                    value = 'potato',
-                ),
-                InteractionComponent(
-                    component_type = ComponentType.text_input,
-                    custom_id = 'pudding_type',
-                    value = 'flan',
-                ),
-            ],
-        ),
+        components = [
+            InteractionComponent(
+                component_type = ComponentType.text_input,
+                custom_id = 'kokoro',
+                value = 'love',
+            ),
+            InteractionComponent(
+                component_type = ComponentType.text_input,
+                custom_id = 'cake_type',
+                value = 'potato',
+            ),
+            InteractionComponent(
+                component_type = ComponentType.text_input,
+                custom_id = 'pudding_type',
+                value = 'flan',
+            ),
+        ],
     )
     
     client = Client(
@@ -308,7 +352,6 @@ async def test__ParameterConverterFormFieldMulti__call__regex_no_group__miss():
     interaction_event = InteractionEvent.precreate(
         interaction_event_id,
         interaction_type = InteractionType.form_submit,
-        interaction = InteractionMetadataFormSubmit(),
     )
     
     client = Client(
@@ -321,6 +364,68 @@ async def test__ParameterConverterFormFieldMulti__call__regex_no_group__miss():
         
         vampytest.assert_instance(output, list, nullable = True)
         vampytest.assert_is(output, None)
+        
+    finally:
+        client._delete()
+        client = None
+
+
+async def test__ParameterConverterFormFieldMulti__call__regex_no_group__resolved():
+    """
+    Tests whether ``ParameterConverterFormFieldMulti.__call__`` works as intended.
+    
+    This function is a coroutine.
+    
+    Case: Regex no group & resolved.
+    """
+    parameter_name = 'cake_type'
+    client_id = 202509130035
+    interaction_event_id = 202509130036
+    annotation = re_compile('[a-z]+_type')
+    parameter = _create_parameter(parameter_name, annotation = annotation)
+     
+    user_0 = User.precreate(202509130037)
+    user_1 = User.precreate(202509130038)
+    user_2 = User.precreate(202509130039)
+    user_3 = User.precreate(202509130040)
+    
+    parameter_converter = ParameterConverterFormFieldMulti(parameter)
+    
+    interaction_event = InteractionEvent.precreate(
+        interaction_event_id,
+        interaction_type = InteractionType.form_submit,
+        components = [
+            InteractionComponent(
+                component_type = ComponentType.user_select,
+                custom_id = 'kokoro',
+                values = [str(user_0.id), str(user_2.id)],
+            ),
+            InteractionComponent(
+                component_type = ComponentType.user_select,
+                custom_id = 'cake_type',
+                values = [str(user_0.id), str(user_1.id)],
+            ),
+            InteractionComponent(
+                component_type = ComponentType.user_select,
+                custom_id = 'pudding_type',
+                values = [str(user_2.id), str(user_3.id)],
+            ),
+        ],
+        resolved = Resolved(
+            users = [user_0, user_1, user_2, user_3],
+        ),
+    )
+    
+    client = Client(
+        'token_' + str(client_id),
+        client_id = client_id,
+    )
+    
+    try:
+        output = await parameter_converter(client, interaction_event, None)
+        
+        vampytest.assert_instance(output, list, nullable = True)
+        vampytest.assert_eq(output, [user_0, user_1, user_2, user_3])
         
     finally:
         client._delete()
@@ -346,25 +451,23 @@ async def test__ParameterConverterFormFieldMulti__call__regex_tuple__hit():
     interaction_event = InteractionEvent.precreate(
         interaction_event_id,
         interaction_type = InteractionType.form_submit,
-        interaction = InteractionMetadataFormSubmit(
-            components = [
-                InteractionComponent(
-                    component_type = ComponentType.text_input,
-                    custom_id = 'kokoro',
-                    value = 'love',
-                ),
-                InteractionComponent(
-                    component_type = ComponentType.text_input,
-                    custom_id = 'cake_type',
-                    value =  'potato',
-                ),
-                InteractionComponent(
-                    component_type = ComponentType.text_input,
-                    custom_id = 'pudding_type',
-                    value = 'flan',
-                ),
-            ],
-        ),
+        components = [
+            InteractionComponent(
+                component_type = ComponentType.text_input,
+                custom_id = 'kokoro',
+                value = 'love',
+            ),
+            InteractionComponent(
+                component_type = ComponentType.text_input,
+                custom_id = 'cake_type',
+                value =  'potato',
+            ),
+            InteractionComponent(
+                component_type = ComponentType.text_input,
+                custom_id = 'pudding_type',
+                value = 'flan',
+            ),
+        ],
     )
     
     client = Client(
@@ -402,7 +505,6 @@ async def test__ParameterConverterFormFieldMulti__call__regex_tuple__miss():
     interaction_event = InteractionEvent.precreate(
         interaction_event_id,
         interaction_type = InteractionType.form_submit,
-        interaction = InteractionMetadataFormSubmit(),
     )
     
     client = Client(
@@ -415,6 +517,68 @@ async def test__ParameterConverterFormFieldMulti__call__regex_tuple__miss():
         
         vampytest.assert_instance(output, list, nullable = True)
         vampytest.assert_is(output, None)
+        
+    finally:
+        client._delete()
+        client = None
+
+
+async def test__ParameterConverterFormFieldMulti__call__regex_tuple__resolved():
+    """
+    Tests whether ``ParameterConverterFormFieldMulti.__call__`` works as intended.
+    
+    This function is a coroutine.
+    
+    Case: Regex tuple group & resolved.
+    """
+    parameter_name = 'cake_type'
+    client_id = 202509130041
+    interaction_event_id = 202509130042
+    annotation = re_compile('([a-z]+)_type')
+    parameter = _create_parameter(parameter_name, annotation = annotation)
+     
+    user_0 = User.precreate(202509130043)
+    user_1 = User.precreate(202509130044)
+    user_2 = User.precreate(202509130045)
+    user_3 = User.precreate(202509130046)
+    
+    parameter_converter = ParameterConverterFormFieldMulti(parameter)
+    
+    interaction_event = InteractionEvent.precreate(
+        interaction_event_id,
+        interaction_type = InteractionType.form_submit,
+        components = [
+            InteractionComponent(
+                component_type = ComponentType.user_select,
+                custom_id = 'kokoro',
+                values = [str(user_0.id), str(user_2.id)],
+            ),
+            InteractionComponent(
+                component_type = ComponentType.user_select,
+                custom_id = 'cake_type',
+                values = [str(user_0.id), str(user_1.id)],
+            ),
+            InteractionComponent(
+                component_type = ComponentType.user_select,
+                custom_id = 'pudding_type',
+                values = [str(user_2.id), str(user_3.id)],
+            ),
+        ],
+        resolved = Resolved(
+            users = [user_0, user_1, user_2, user_3],
+        ),
+    )
+    
+    client = Client(
+        'token_' + str(client_id),
+        client_id = client_id,
+    )
+    
+    try:
+        output = await parameter_converter(client, interaction_event, None)
+        
+        vampytest.assert_instance(output, list, nullable = True)
+        vampytest.assert_eq(output, [(('cake', ), (user_0, user_1)), (('pudding', ), (user_2, user_3))])
         
     finally:
         client._delete()
@@ -440,25 +604,23 @@ async def test__ParameterConverterFormFieldMulti__call__regex_dict__hit():
     interaction_event = InteractionEvent.precreate(
         interaction_event_id,
         interaction_type = InteractionType.form_submit,
-        interaction = InteractionMetadataFormSubmit(
-            components = [
-                InteractionComponent(
-                    component_type = ComponentType.text_input,
-                    custom_id = 'kokoro',
-                    value = 'love',
-                ),
-                InteractionComponent(
-                    component_type = ComponentType.text_input,
-                    custom_id = 'cake_type',
-                    value = 'potato',
-                ),
-                InteractionComponent(
-                    component_type = ComponentType.text_input,
-                    custom_id = 'pudding_type',
-                    value = 'flan',
-                ),
-            ],
-        ),
+        components = [
+            InteractionComponent(
+                component_type = ComponentType.text_input,
+                custom_id = 'kokoro',
+                value = 'love',
+            ),
+            InteractionComponent(
+                component_type = ComponentType.text_input,
+                custom_id = 'cake_type',
+                value = 'potato',
+            ),
+            InteractionComponent(
+                component_type = ComponentType.text_input,
+                custom_id = 'pudding_type',
+                value = 'flan',
+            ),
+        ],
     )
     
     client = Client(
@@ -496,7 +658,6 @@ async def test__ParameterConverterFormFieldMulti__call__regex_dict__miss():
     interaction_event = InteractionEvent.precreate(
         interaction_event_id,
         interaction_type = InteractionType.form_submit,
-        interaction = InteractionMetadataFormSubmit(),
     )
     
     client = Client(
@@ -509,6 +670,68 @@ async def test__ParameterConverterFormFieldMulti__call__regex_dict__miss():
         
         vampytest.assert_instance(output, list, nullable = True)
         vampytest.assert_is(output, None)
+        
+    finally:
+        client._delete()
+        client = None
+
+
+async def test__ParameterConverterFormFieldMulti__call__regex_dict__resolved():
+    """
+    Tests whether ``ParameterConverterFormFieldMulti.__call__`` works as intended.
+    
+    This function is a coroutine.
+    
+    Case: Regex dict group & resolved.
+    """
+    parameter_name = 'cake_type'
+    client_id = 202509130047
+    interaction_event_id = 202509130048
+    annotation = re_compile('(?P<name>[a-z]+)_type')
+    parameter = _create_parameter(parameter_name, annotation = annotation)
+     
+    user_0 = User.precreate(202509130049)
+    user_1 = User.precreate(202509130050)
+    user_2 = User.precreate(202509130051)
+    user_3 = User.precreate(202509130052)
+    
+    parameter_converter = ParameterConverterFormFieldMulti(parameter)
+    
+    interaction_event = InteractionEvent.precreate(
+        interaction_event_id,
+        interaction_type = InteractionType.form_submit,
+        components = [
+            InteractionComponent(
+                component_type = ComponentType.user_select,
+                custom_id = 'kokoro',
+                values = [str(user_0.id), str(user_2.id)],
+            ),
+            InteractionComponent(
+                component_type = ComponentType.user_select,
+                custom_id = 'cake_type',
+                values = [str(user_0.id), str(user_1.id)],
+            ),
+            InteractionComponent(
+                component_type = ComponentType.user_select,
+                custom_id = 'pudding_type',
+                values = [str(user_2.id), str(user_3.id)],
+            ),
+        ],
+        resolved = Resolved(
+            users = [user_0, user_1, user_2, user_3],
+        ),
+    )
+    
+    client = Client(
+        'token_' + str(client_id),
+        client_id = client_id,
+    )
+    
+    try:
+        output = await parameter_converter(client, interaction_event, None)
+        
+        vampytest.assert_instance(output, list)
+        vampytest.assert_eq(output, [({'name': 'cake'}, (user_0, user_1)), ({'name': 'pudding'}, (user_2, user_3))])
         
     finally:
         client._delete()

@@ -24,7 +24,7 @@ class ForumTagUpdate(RichAttributeErrorBaseType):
         +-----------+-------------------+
         | Keys      | Values            |
         +===========+===================+
-        | emoji     | `None`, ``Emoji`` |
+        | emoji     | ``None | Emoji``  |
         +-----------+-------------------+
         | name      | `str`             |
         +-----------+-------------------+

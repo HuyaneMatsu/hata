@@ -5,6 +5,7 @@ from scarletio import copy_docs, include
 from ...activity import ActivityType
 from ...bases import Preinstance as P, PreinstancedBase
 from ...embed import EmbedType
+from ...emoji import parse_emoji
 from ...emoji.emoji.utils import _create_partial_emoji_from_fields
 from ...utils import DATETIME_FORMAT_CODE, elapsed_time, sanitize_mentions, timestamp_to_datetime
 
@@ -287,15 +288,27 @@ def convert_invite_reminder(self):
 
 
 def convert_stage_start(self):
-    return f'{self.author.name_at(self.guild_id)!s} started {self.content!s}.'
+    content = self.content
+    if content is None:
+        return
+    
+    return f'{self.author.name_at(self.guild_id)!s} started {content!s}.'
 
 
 def convert_stage_end(self):
-    return f'{self.author.name_at(self.guild_id)!s} ended {self.content!s}.'
+    content = self.content
+    if content is None:
+        return
+    
+    return f'{self.author.name_at(self.guild_id)!s} ended {content!s}.'
 
 
 def convert_stage_topic_change(self):
-    return f'{self.author.name_at(self.guild_id)!s} changed the Stage topic: {self.content!s}'
+    content = self.content
+    if content is None:
+        return
+    
+    return f'{self.author.name_at(self.guild_id)!s} changed the Stage topic: {content!s}'
 
 
 def convert_stage_speaker(self):
@@ -472,6 +485,24 @@ def convert_poll_result(self):
         return ''.join(content_parts)
 
 
+def convert_emoji_added_notification(self):
+    content = self.content
+    if content is None:
+        return
+    
+    # Parse and get the emoji, since the content is not updated when the emoji is, but the displayed content is.
+    emoji = parse_emoji(content)
+    if emoji is None:
+        return
+    
+    emoji_name_encapsulator = ':' if emoji.require_colons else ''
+    
+    return (
+        f'{self.author.name_at(self.guild_id)!s} added a new emoji, {emoji.as_emoji!s} '
+        f'{emoji_name_encapsulator!s}{emoji.name!s}{emoji_name_encapsulator!s}'
+    )
+
+
 class MessageType(PreinstancedBase, value_type = int):
     """
     Represents a ``Message``'s type.
@@ -612,7 +643,19 @@ class MessageType(PreinstancedBase, value_type = int):
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     | channel_wallpaper_set                     | channel wallpaper set                     | 56    | MESSAGE_DEFAULT_CONVERTER                         | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
-    | channel_wallpaper_removed                  | channel wallpaper removed                | 57    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    | channel_wallpaper_removed                 | channel wallpaper removed                 | 57    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | ???                                       | ???                                       | 58    | ???                                               | ???       |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | ???                                       | ???                                       | 59    | ???                                               | ???       |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | ???                                       | ???                                       | 60    | ???                                               | ???       |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | ???                                       | ???                                       | 61    | ???                                               | ???       |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | ???                                       | ???                                       | 62    | ???                                               | ???       |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | emoji_added_notification                  | emoji added notification                  | 63    | convert_emoji_added_notification                  | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     """
     __slots__ = ('converter', 'deletable',)
@@ -724,6 +767,12 @@ class MessageType(PreinstancedBase, value_type = int):
     streaming_quality_upgraded = P(55, 'streaming quality upgraded', MESSAGE_DEFAULT_CONVERTER, True)
     channel_wallpaper_set = P(56, 'channel wallpaper set', MESSAGE_DEFAULT_CONVERTER, True)
     channel_wallpaper_removed = P(57, 'channel wallpaper removed', MESSAGE_DEFAULT_CONVERTER, True)
+    # 58 ???
+    # 59 ???
+    # 60 ???
+    # 61 ???
+    # 62 ???
+    emoji_added_notification = P(63, 'emoji added notification', convert_emoji_added_notification)
 
 
 GENERIC_MESSAGE_TYPES = frozenset((

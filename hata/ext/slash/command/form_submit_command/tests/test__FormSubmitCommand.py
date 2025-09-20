@@ -26,14 +26,14 @@ def _assert_fields_set(form_submit_command):
     vampytest.assert_instance(form_submit_command, FormSubmitCommand)
     vampytest.assert_instance(form_submit_command._command_function, object)
     vampytest.assert_instance(form_submit_command._exception_handlers, list, nullable = True)
-    vampytest.assert_instance(form_submit_command._parameter_converters, tuple)
+    vampytest.assert_instance(form_submit_command._keyword_parameter_converters, tuple)
+    vampytest.assert_instance(form_submit_command._multi_parameter_converter, ParameterConverterBase, nullable = True)
     vampytest.assert_instance(form_submit_command._parent_reference, WeakReferer, nullable = True)
+    vampytest.assert_instance(form_submit_command._positional_parameter_converters, tuple)
     vampytest.assert_instance(form_submit_command._regex_custom_ids, tuple, nullable = True)
     vampytest.assert_instance(form_submit_command._string_custom_ids, tuple, nullable = True)
     vampytest.assert_instance(form_submit_command.name, str)
     vampytest.assert_instance(form_submit_command.response_modifier, ResponseModifier, nullable = True)
-    vampytest.assert_instance(form_submit_command._keyword_parameter_converters, tuple)
-    vampytest.assert_instance(form_submit_command._multi_parameter_converter, ParameterConverterBase, nullable = True)
 
 
 def test__FormSubmitCommand__new():

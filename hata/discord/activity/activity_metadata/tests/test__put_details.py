@@ -19,6 +19,7 @@ def test__put_details(input_value, defaults):
     ----------
     input_value : `None | str`
         Value to serialize.
+    
     defaults : `bool`
         Whether values of their default value should be included as well.
     

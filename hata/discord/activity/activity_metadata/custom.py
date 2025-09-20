@@ -19,7 +19,7 @@ class ActivityMetadataCustom(ActivityMetadataBase):
     ----------
     created_at : `None | DateTime`
         When the status was created.
-    emoji : `None`, ``Emoji``
+    emoji : ``None | Emoji``
         The emoji of the activity. If it has no emoji, then set as `None`.
     state : `None`, `str`
         The activity's text under it's emoji. Defaults to `None`.
@@ -35,7 +35,7 @@ class ActivityMetadataCustom(ActivityMetadataBase):
         ----------
         created_at : `None | DateTime`, Optional (Keyword only)
             When the activity was created.
-        emoji : `None`, ``Emoji``, Optional (Keyword only)
+        emoji : ``None | Emoji``, Optional (Keyword only)
             The emoji of the activity.
         state : `None`, `str`, Optional (Keyword only)
             The activity's text under it's emoji.
@@ -233,7 +233,7 @@ class ActivityMetadataCustom(ActivityMetadataBase):
         ----------
         created_at : `None | DateTime`, Optional (Keyword only)
             When the status was created.
-        emoji : `None`, ``Emoji``, Optional (Keyword only)
+        emoji : ``None | Emoji``, Optional (Keyword only)
             The emoji of the activity.
         state : `None`, `str`, Optional (Keyword only)
             The activity's text under it's emoji.

@@ -31,6 +31,7 @@ def test__Application__repr():
     
     aliases = ['orin', 'rin']
     approximate_guild_count = 11
+    approximate_user_authorization_count = 21
     approximate_user_install_count = 13
     bot_public = True
     bot_requires_code_grant = True
@@ -102,6 +103,7 @@ def test__Application__repr():
         application_id,
         aliases = aliases,
         approximate_guild_count = approximate_guild_count,
+        approximate_user_authorization_count = approximate_user_authorization_count,
         approximate_user_install_count = approximate_user_install_count,
         bot_public = bot_public,
         bot_requires_code_grant = bot_requires_code_grant,
@@ -165,6 +167,7 @@ def test__Application__repr():
     application = Application(
         aliases = aliases,
         approximate_guild_count = approximate_guild_count,
+        approximate_user_authorization_count = approximate_user_authorization_count,
         approximate_user_install_count = approximate_user_install_count,
         bot_public = bot_public,
         bot_requires_code_grant = bot_requires_code_grant,
@@ -234,6 +237,7 @@ def test__Application__hash():
     
     aliases = ['orin', 'rin']
     approximate_guild_count = 11
+    approximate_user_authorization_count = 21
     approximate_user_install_count = 13
     bot_public = True
     bot_requires_code_grant = True
@@ -253,7 +257,6 @@ def test__Application__hash():
     ]
     event_webhook_state = ApplicationEventWebhookState.enabled
     event_webhook_url = 'https://orindance.party/event-webhook'
-    executables = [ApplicationExecutable(name = 'Okuu')]
     executables = [ApplicationExecutable(name = 'Okuu')]
     explicit_content_filter_level = ApplicationExplicitContentFilterLevel.filtered
     flags = ApplicationFlag(96)
@@ -306,6 +309,7 @@ def test__Application__hash():
         application_id,
         aliases = aliases,
         approximate_guild_count = approximate_guild_count,
+        approximate_user_authorization_count = approximate_user_authorization_count,
         approximate_user_install_count = approximate_user_install_count,
         bot_public = bot_public,
         bot_requires_code_grant = bot_requires_code_grant,
@@ -369,6 +373,7 @@ def test__Application__hash():
     application = Application(
         aliases = aliases,
         approximate_guild_count = approximate_guild_count,
+        approximate_user_authorization_count = approximate_user_authorization_count,
         approximate_user_install_count = approximate_user_install_count,
         bot_public = bot_public,
         bot_requires_code_grant = bot_requires_code_grant,
@@ -434,6 +439,7 @@ def test__Application__hash():
 def _iter_options__eq():
     aliases = ['orin', 'rin']
     approximate_guild_count = 11
+    approximate_user_authorization_count = 21
     approximate_user_install_count = 13
     bot_public = True
     bot_requires_code_grant = True
@@ -504,6 +510,7 @@ def _iter_options__eq():
     keyword_parameters = {
         'aliases': aliases,
         'approximate_guild_count': approximate_guild_count,
+        'approximate_user_authorization_count': approximate_user_authorization_count,
         'approximate_user_install_count': approximate_user_install_count,
         'bot_public': bot_public,
         'bot_requires_code_grant': bot_requires_code_grant,
@@ -588,6 +595,15 @@ def _iter_options__eq():
         {
             **keyword_parameters,
             'approximate_guild_count': 26,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'approximate_user_authorization_count': 23,
         },
         False,
     )

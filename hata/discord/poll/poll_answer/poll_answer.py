@@ -22,7 +22,7 @@ class PollAnswer(DiscordEntity):
     
     Attributes
     ----------
-    emoji : `None`, ``Emoji``
+    emoji : ``None | Emoji``
         The poll answer's emoji.
     id : `int`
         The answer's identifier.
@@ -37,7 +37,7 @@ class PollAnswer(DiscordEntity):
         
         Parameters
         ----------
-        emoji : `None`, ``Emoji``, Optional (Keyword only)
+        emoji : ``None | Emoji``, Optional (Keyword only)
             The answer's emoji.
         text : `None`, `str`, Optional (Keyword only)
             The answer's text.
@@ -270,7 +270,7 @@ class PollAnswer(DiscordEntity):
         
         Parameters
         ----------
-        emoji : `None`, ``Emoji``, Optional (Keyword only)
+        emoji : ``None | Emoji``, Optional (Keyword only)
             The answer's emoji.
         text : `None`, `str`, Optional (Keyword only)
             The answer's text.
@@ -324,7 +324,7 @@ class PollAnswer(DiscordEntity):
         
         Other Parameters
         ----------------
-        emoji : `None`, ``Emoji``, Optional (Keyword only)
+        emoji : ``None | Emoji``, Optional (Keyword only)
             The answer's emoji.
         text : `None`, `str`, Optional (Keyword only)
             The answer's text.

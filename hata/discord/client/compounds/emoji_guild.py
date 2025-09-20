@@ -124,7 +124,7 @@ class ClientCompoundEmojiGuildEndpoints(Compound):
         image : `bytes-like`
             The emoji's icon. Up to 256 kB.
         
-        emoji_template : `None`, ``Emoji`` = `None`, Optional
+        emoji_template : ``None | Emoji`` = `None`, Optional
             Emoji entity to use as a template.
         
         reason : `None`, `str` = `None`, Optional (Keyword only)
@@ -182,7 +182,7 @@ class ClientCompoundEmojiGuildEndpoints(Compound):
         emoji : ``Emoji``, `(int, int)`
             The emoji to edit.
         
-        emoji_template : `None`, ``Emoji`` = `None`, Optional
+        emoji_template : ``None | Emoji`` = `None`, Optional
             A emoji to use as a template.
         
         **keyword_parameters : Keyword parameters

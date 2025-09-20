@@ -24,6 +24,7 @@ def test__ActivityMetadataRich__from_data():
     buttons = ['Party', 'Trick']
     created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     details = 'vocal'
+    details_url = 'https://orindance.party/cart'
     flags = ActivityFlag(1)
     activity_id = 202209070003
     name = 'Iceon'
@@ -31,6 +32,7 @@ def test__ActivityMetadataRich__from_data():
     secrets = ActivitySecrets(join = 'deitarabochi')
     session_id = 'Autobahn'
     state = 'plain'
+    state_url = 'https://orindance.party/stand'
     sync_id = 'asia'
     timestamps = ActivityTimestamps(
         end = DateTime(2014, 9, 12, tzinfo = TimeZone.utc),
@@ -44,6 +46,7 @@ def test__ActivityMetadataRich__from_data():
         'buttons': buttons,
         'created_at': datetime_to_millisecond_unix_time(created_at),
         'details': details,
+        'details_url': details_url,
         'flags': int(flags),
         'id': format(activity_id, 'x'),
         'name': name,
@@ -51,6 +54,7 @@ def test__ActivityMetadataRich__from_data():
         'secrets': secrets.to_data(),
         'session_id': session_id,
         'state': state,
+        'state_url': state_url,
         'sync_id': sync_id,
         'timestamps': timestamps.to_data(),
         'url': url,
@@ -64,6 +68,7 @@ def test__ActivityMetadataRich__from_data():
     vampytest.assert_eq(activity_metadata.buttons, tuple(buttons))
     vampytest.assert_eq(activity_metadata.created_at, created_at)
     vampytest.assert_eq(activity_metadata.details, details)
+    vampytest.assert_eq(activity_metadata.details_url, details_url)
     vampytest.assert_eq(activity_metadata.flags, flags)
     vampytest.assert_eq(activity_metadata.id, activity_id)
     vampytest.assert_eq(activity_metadata.name, name)
@@ -71,6 +76,7 @@ def test__ActivityMetadataRich__from_data():
     vampytest.assert_eq(activity_metadata.secrets, secrets)
     vampytest.assert_eq(activity_metadata.session_id, session_id)
     vampytest.assert_eq(activity_metadata.state, state)
+    vampytest.assert_eq(activity_metadata.state_url, state_url)
     vampytest.assert_eq(activity_metadata.sync_id, sync_id)
     vampytest.assert_eq(activity_metadata.timestamps, timestamps)
     vampytest.assert_eq(activity_metadata.url, url)
@@ -85,6 +91,7 @@ def test__ActivityMetadataRich__to_data():
     buttons = ['Party', 'Trick']
     created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     details = 'vocal'
+    details_url = 'https://orindance.party/cart'
     flags = ActivityFlag(1)
     activity_id = 202209070005
     name = 'Iceon'
@@ -92,6 +99,7 @@ def test__ActivityMetadataRich__to_data():
     secrets = ActivitySecrets(join = 'deitarabochi')
     session_id = 'Autobahn'
     state = 'plain'
+    state_url = 'https://orindance.party/stand'
     sync_id = 'asia'
     timestamps = ActivityTimestamps(
         end = DateTime(2014, 9, 12, tzinfo = TimeZone.utc),
@@ -105,6 +113,7 @@ def test__ActivityMetadataRich__to_data():
         buttons = buttons,
         created_at = created_at,
         details = details,
+        details_url = details_url,
         flags = flags,
         activity_id = activity_id,
         name = name,
@@ -112,6 +121,7 @@ def test__ActivityMetadataRich__to_data():
         secrets = secrets,
         session_id = session_id,
         state = state,
+        state_url = state_url,
         sync_id = sync_id,
         timestamps = timestamps,
         url = url,
@@ -120,6 +130,7 @@ def test__ActivityMetadataRich__to_data():
     expected_output = {
         'name': name,
         'state': state,
+        'state_url': state_url,
         'url': url,
     }
     
@@ -138,6 +149,7 @@ def test__ActivityMetadataRich__to_data__user():
     buttons = ['Party', 'Trick']
     created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     details = 'vocal'
+    details_url = 'https://orindance.party/cart'
     flags = ActivityFlag(1)
     activity_id = 202209070007
     name = 'Iceon'
@@ -145,6 +157,7 @@ def test__ActivityMetadataRich__to_data__user():
     secrets = ActivitySecrets(join = 'deitarabochi')
     session_id = 'Autobahn'
     state = 'plain'
+    state_url = 'https://orindance.party/stand'
     sync_id = 'asia'
     timestamps = ActivityTimestamps(
         end = DateTime(2014, 9, 12, tzinfo = TimeZone.utc),
@@ -158,6 +171,7 @@ def test__ActivityMetadataRich__to_data__user():
         buttons = buttons,
         created_at = created_at,
         details = details,
+        details_url = details_url,
         flags = flags,
         activity_id = activity_id,
         name = name,
@@ -165,6 +179,7 @@ def test__ActivityMetadataRich__to_data__user():
         secrets = secrets,
         session_id = session_id,
         state = state,
+        state_url = state_url,
         sync_id = sync_id,
         timestamps = timestamps,
         url = url,
@@ -174,10 +189,12 @@ def test__ActivityMetadataRich__to_data__user():
         'assets': assets.to_data(defaults = True),
         'buttons': buttons,
         'details': details,
+        'details_url': details_url,
         'name': name,
         'party': party.to_data(defaults = True),
         'secrets': secrets.to_data(defaults = True),
         'state': state,
+        'state_url': state_url,
         'timestamps': timestamps.to_data(defaults = True),
         'url': url,
     }
@@ -197,6 +214,7 @@ def test__ActivityMetadataRich__to_data__include_internals():
     buttons = ['Party', 'Trick']
     created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     details = 'vocal'
+    details_url = 'https://orindance.party/cart'
     flags = ActivityFlag(1)
     activity_id = 202209070009
     name = 'Iceon'
@@ -204,6 +222,7 @@ def test__ActivityMetadataRich__to_data__include_internals():
     secrets = ActivitySecrets(join = 'deitarabochi')
     session_id = 'Autobahn'
     state = 'plain'
+    state_url = 'https://orindance.party/stand'
     sync_id = 'asia'
     timestamps = ActivityTimestamps(
         end = DateTime(2014, 9, 12, tzinfo = TimeZone.utc),
@@ -217,6 +236,7 @@ def test__ActivityMetadataRich__to_data__include_internals():
         buttons = buttons,
         created_at = created_at,
         details = details,
+        details_url = details_url,
         flags = flags,
         activity_id = activity_id,
         name = name,
@@ -224,6 +244,7 @@ def test__ActivityMetadataRich__to_data__include_internals():
         secrets = secrets,
         session_id = session_id,
         state = state,
+        state_url = state_url,
         sync_id = sync_id,
         timestamps = timestamps,
         url = url,
@@ -235,6 +256,7 @@ def test__ActivityMetadataRich__to_data__include_internals():
         'buttons': buttons,
         'created_at': datetime_to_millisecond_unix_time(created_at),
         'details': details,
+        'details_url': details_url,
         'flags': int(flags),
         'id': format(activity_id, 'x'),
         'name': name,
@@ -242,6 +264,7 @@ def test__ActivityMetadataRich__to_data__include_internals():
         'secrets': secrets.to_data(defaults = True),
         'session_id': session_id,
         'state': state,
+        'state_url': state_url,
         'sync_id': sync_id,
         'timestamps': timestamps.to_data(defaults = True),
         'url': url,
@@ -265,11 +288,13 @@ def test__ActivityMetadataRich__update_attributes():
     old_created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     old_flags = ActivityFlag(1)
     old_details = 'vocal'
+    old_details_url = 'https://orindance.party/cart'
     old_name = 'Iceon'
     old_party = ActivityParty(party_id = 'Kamase-Tora')
     old_secrets = ActivitySecrets(join = 'deitarabochi')
     old_session_id = 'Autobahn'
     old_state = 'plain'
+    old_state_url = 'https://orindance.party/stand'
     old_sync_id = 'asia'
     old_timestamps = ActivityTimestamps(
         end = DateTime(2014, 9, 12, tzinfo = TimeZone.utc),
@@ -281,12 +306,14 @@ def test__ActivityMetadataRich__update_attributes():
     new_buttons = ['C.L']
     new_created_at = DateTime(2012, 9, 11, tzinfo = TimeZone.utc)
     new_details = 'pop'
+    new_details_url = 'https://orindance.party/crematory'
     new_flags = ActivityFlag(2)
     new_name = 'Worldly'
     new_party = ActivityParty(max_ = 12, size = 6)
     new_secrets = ActivitySecrets(join = 'Flower')
     new_session_id = 'flower'
     new_state = 'land'
+    new_state_url = 'https://orindance.party/run'
     new_sync_id = 'past'
     new_timestamps = ActivityTimestamps(
         end = DateTime(2012, 9, 12, tzinfo = TimeZone.utc),
@@ -300,6 +327,7 @@ def test__ActivityMetadataRich__update_attributes():
         buttons = old_buttons,
         created_at = old_created_at,
         details = old_details,
+        details_url = old_details_url,
         flags = old_flags,
         activity_id = activity_id,
         name = old_name,
@@ -307,6 +335,7 @@ def test__ActivityMetadataRich__update_attributes():
         secrets = old_secrets,
         session_id = old_session_id,
         state = old_state,
+        state_url = old_state_url,
         sync_id = old_sync_id,
         timestamps = old_timestamps,
         url = old_url,
@@ -317,12 +346,14 @@ def test__ActivityMetadataRich__update_attributes():
         'buttons': new_buttons,
         'created_at': datetime_to_millisecond_unix_time(new_created_at),
         'details': new_details,
+        'details_url': new_details_url,
         'flags': int(new_flags),
         'name': new_name,
         'party': new_party.to_data(),
         'secrets': new_secrets.to_data(),
         'session_id': new_session_id,
         'state': new_state,
+        'state_url': new_state_url,
         'sync_id': new_sync_id,
         'timestamps': new_timestamps.to_data(),
         'url': new_url,
@@ -333,12 +364,14 @@ def test__ActivityMetadataRich__update_attributes():
     vampytest.assert_eq(activity_metadata.created_at, new_created_at)
     vampytest.assert_eq(activity_metadata.buttons, tuple(new_buttons))
     vampytest.assert_eq(activity_metadata.details, new_details)
+    vampytest.assert_eq(activity_metadata.details_url, new_details_url)
     vampytest.assert_eq(activity_metadata.flags, new_flags)
     vampytest.assert_eq(activity_metadata.name, new_name)
     vampytest.assert_eq(activity_metadata.party, new_party)
     vampytest.assert_eq(activity_metadata.secrets, new_secrets)
     vampytest.assert_eq(activity_metadata.session_id, new_session_id)
     vampytest.assert_eq(activity_metadata.state, new_state)
+    vampytest.assert_eq(activity_metadata.state_url, new_state_url)
     vampytest.assert_eq(activity_metadata.sync_id, new_sync_id)
     vampytest.assert_eq(activity_metadata.timestamps, new_timestamps)
     vampytest.assert_eq(activity_metadata.url, new_url)
@@ -355,12 +388,14 @@ def test__ActivityMetadataRich__difference_update_attributes():
     old_buttons = ['Party', 'Trick']
     old_created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     old_details = 'vocal'
+    old_details_url = 'https://orindance.party/cart'
     old_flags = ActivityFlag(1)
     old_name = 'Iceon'
     old_party = ActivityParty(party_id = 'Kamase-Tora')
     old_secrets = ActivitySecrets(join = 'deitarabochi')
     old_session_id = 'Autobahn'
     old_state = 'plain'
+    old_state_url = 'https://orindance.party/stand'
     old_sync_id = 'asia'
     old_timestamps = ActivityTimestamps(
         end = DateTime(2014, 9, 12, tzinfo = TimeZone.utc),
@@ -372,12 +407,14 @@ def test__ActivityMetadataRich__difference_update_attributes():
     new_buttons = ['C.L']
     new_created_at = DateTime(2012, 9, 11, tzinfo = TimeZone.utc)
     new_details = 'pop'
+    new_details_url = 'https://orindance.party/crematory'
     new_flags = ActivityFlag(2)
     new_name = 'Worldly'
     new_party = ActivityParty(max_ = 12, size = 6)
     new_secrets = ActivitySecrets(join = 'Flower')
     new_session_id = 'flower'
     new_state = 'land'
+    new_state_url = 'https://orindance.party/run'
     new_sync_id = 'past'
     new_timestamps = ActivityTimestamps(
         end = DateTime(2012, 9, 12, tzinfo = TimeZone.utc),
@@ -391,6 +428,7 @@ def test__ActivityMetadataRich__difference_update_attributes():
         buttons = old_buttons,
         created_at = old_created_at,
         details = old_details,
+        details_url = old_details_url,
         flags = old_flags,
         activity_id = activity_id,
         name = old_name,
@@ -398,6 +436,7 @@ def test__ActivityMetadataRich__difference_update_attributes():
         secrets = old_secrets,
         session_id = old_session_id,
         state = old_state,
+        state_url = old_state_url,
         sync_id = old_sync_id,
         timestamps = old_timestamps,
         url = old_url,
@@ -408,12 +447,14 @@ def test__ActivityMetadataRich__difference_update_attributes():
         'buttons': new_buttons,
         'created_at': datetime_to_millisecond_unix_time(new_created_at),
         'details': new_details,
+        'details_url': new_details_url,
         'flags': int(new_flags),
         'name': new_name,
         'party': new_party.to_data(),
         'secrets': new_secrets.to_data(),
         'session_id': new_session_id,
         'state': new_state,
+        'state_url': new_state_url,
         'sync_id': new_sync_id,
         'timestamps': new_timestamps.to_data(),
         'url': new_url,
@@ -424,12 +465,14 @@ def test__ActivityMetadataRich__difference_update_attributes():
     vampytest.assert_eq(activity_metadata.buttons, tuple(new_buttons))
     vampytest.assert_eq(activity_metadata.created_at, new_created_at)
     vampytest.assert_eq(activity_metadata.details, new_details)
+    vampytest.assert_eq(activity_metadata.details_url, new_details_url)
     vampytest.assert_eq(activity_metadata.flags, new_flags)
     vampytest.assert_eq(activity_metadata.name, new_name)
     vampytest.assert_eq(activity_metadata.party, new_party)
     vampytest.assert_eq(activity_metadata.secrets, new_secrets)
     vampytest.assert_eq(activity_metadata.session_id, new_session_id)
     vampytest.assert_eq(activity_metadata.state, new_state)
+    vampytest.assert_eq(activity_metadata.state_url, new_state_url)
     vampytest.assert_eq(activity_metadata.sync_id, new_sync_id)
     vampytest.assert_eq(activity_metadata.timestamps, new_timestamps)
     vampytest.assert_eq(activity_metadata.url, new_url)
@@ -441,12 +484,14 @@ def test__ActivityMetadataRich__difference_update_attributes():
             'buttons': tuple(old_buttons),
             'created_at': old_created_at,
             'details': old_details,
+            'details_url': old_details_url,
             'flags': old_flags,
             'name': old_name,
             'party': old_party,
             'secrets': old_secrets,
             'session_id': old_session_id,
             'state': old_state,
+            'state_url': old_state_url,
             'sync_id': old_sync_id,
             'timestamps': old_timestamps,
             'url': old_url,

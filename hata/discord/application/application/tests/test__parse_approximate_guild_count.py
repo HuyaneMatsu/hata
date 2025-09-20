@@ -22,4 +22,6 @@ def test__parse_approximate_guild_count(input_data):
     -------
     output : `int`
     """
-    return parse_approximate_guild_count(input_data)
+    output = parse_approximate_guild_count(input_data)
+    vampytest.assert_instance(output, int)
+    return output

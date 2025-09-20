@@ -1,3 +1,94 @@
+## 1.3.84 *\[2025-09-20\]*
+
+### Improvements
+
+- Add `AuditLogEntryType.auto_moderation_quarantined_user`.
+- Add `NamePlate.url_as`.
+- Add `Invite.expires_at`.
+- Add `ActivityAssets.text_large_url`.
+- Add `ActivityAssets.text_small_url`.
+- Add `ActivityMetadataBase.details_url`.
+- Add `ActivityMetadataBase.state_url`.
+- Add `Activity.details_url`.
+- Add `Activity.state_url`.
+- Add `Application.approximate_user_authorization_count`.
+- Add `Permission.pin_messages`.
+- Add `MessageType.emoji_added_notification`.
+- Add `SystemChannelFlag.emoji_added_notification`.
+- Add `ComponentTypeLayoutFlag.nestable_into_label`.
+- Add `ComponentType.label`.
+- Add `ComponentMetadataLabel`.
+- Add `create_label`.
+- Add `ComponentMetadataBase.component`.
+- Add `Component.component`.
+- Add `ComponentType.interaction_metadata_type`.
+- Add `ComponentTypeLayoutFlag.holds_value_single`.
+- Add `ComponentTypeLayoutFlag.holds_value_multiple`.
+- `.iter_custom_ids_and_values` yield changed
+    `(str, None | str)` -> `(str, ComponentType, None | str | tuple<str>)`.
+- `.get_custom_id_value_relation` return changed
+    `dict<str, None | str>` -> `dict<str, (ComponentType, None | str | tuple<str>)>`.
+- `.get_value_for` return changed `None | str` -> `(ComponentType, None | str | tuple<str>)` .
+- `.get_match_and_value` return changed
+    `(None | object, None | str)` -> `(None | object, ComponentType, None | str | tuple<str>)`.
+- `.get_match_and_value` yield changed
+    `(object, None | str)` -> `(object, ComponentType, None | str | tuple<str>)`.
+- Implement `InteractionMetadataMessageComponent.iter_custom_ids_and_values`.
+- Add `InteractionComponentMetadataBase`.
+- Add `InteractionComponentMetadataRow`.
+- Add `InteractionComponentMetadataLabel`.
+- Add `InteractionComponentMetadataTextInput`.
+- Add `InteractionComponentMetadataStringSelect`.
+- Add `InteractionComponent.metadata`.
+- Add `InteractionComponentMetadataButton`.
+- Add `InteractionComponentMetadataUserSelect`.
+- Add `InteractionComponentMetadataChannelSelect`.
+- Add `InteractionComponentMetadataRoleSelect`.
+- Add `InteractionComponentMetadataMentionableSelect`.
+- Add `InteractionComponentMetadataSection`.
+- Add `InteractionComponent.thumbnail`.
+- Add `InteractionComponentMetadataContainer`.
+- Add `Resolver`.
+- Add `ComponentType.resolver`.
+- Add `ComponentType.resolve`.
+- Add `ComponentType.iter_resolve`.
+- Add `InteractionEvent.component`.
+- Add `InteractionMetadataBase.component`.
+- Add `InteractionMetadataBase.from_keyword_parameters`.
+- Add `InteractionMetadataBase.copy_with_keyword_parameters`.
+- Add `InteractionComponent % Component` for checking whether they are alike.
+    This is to deprecate `InteractionComponentMetadata` matching with `Component`-s in the future.
+
+#### ext.slash
+
+- Component commands now allow a single keyword only parameters retrieving the processed value of the field.
+- Form submit command parameters now process the received values as they should.
+
+### Bug fixes
+
+- Fix `Channel.clients` could return clients who had no access to the channel.
+    This could make some events to not be triggered if clients with different permissions were in the same guild.
+
+#### ext.slash
+
+- Remove possibility for reference loops when handing command exception.
+
+### Renames, Deprecations & Removals
+
+- Rename `GuildProfileFlag.auto_moderation_quarantined_clan_tag` to `.auto_moderation_quarantined_guild_badge`.
+- Move `InteractionMetadataBase.resolved` implementation to `InteractionEvent.resolved`.
+- `InteractionMetadataMessageComponent` now implements `.components`  as `None | InteractionComponent`,
+    instead of implementing `.component_type`, `.custom_id`, `.values` fields separately.
+- Deprecate `InteractionEvent.value`.
+- Deprecate `InteractionEvent.values`.
+- Deprecate `InteractionEvent.iter_values`.
+- Remove `InteractionMetadataBase.value`.
+- Remove `InteractionMetadataBase.values`.
+- Remove `InteractionMetadataBase.iter_values`.
+- Remove `InteractionMetadataBase.component_type`.
+- Rename `InteractionMetadataBase.id` to `.application_command_id`.
+- Rename `InteractionMetadataBase.name` to `.application_command_name`.
+
 ## 1.3.83 *\[2025-08-26\]*
 
 ### Improvements

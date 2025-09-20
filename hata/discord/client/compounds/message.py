@@ -373,7 +373,7 @@ class ClientCompoundMessageEndpoints(Compound):
         
         Returns
         -------
-        message : `None`, ``Message``
+        message : ``None | Message``
             Returns `None` if there is nothing to send.
         
         Raises
@@ -1685,7 +1685,7 @@ class ClientCompoundMessageEndpoints(Compound):
         
         Returns
         -------
-        message : `None`, ``Message``
+        message : ``None | Message``
         
         Raises
         ------

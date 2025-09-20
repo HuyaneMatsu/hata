@@ -22,6 +22,7 @@ def test__ActivityMetadataRich__copy():
     buttons = ['Party', 'Trick']
     created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     details = 'vocal'
+    details_url = 'https://orindance.party/cart'
     flags = ActivityFlag(1)
     activity_id = 202212300006
     name = 'Iceon'
@@ -29,6 +30,7 @@ def test__ActivityMetadataRich__copy():
     secrets = ActivitySecrets(join = 'deitarabochi')
     session_id = 'Autobahn'
     state = 'plain'
+    state_url = 'https://orindance.party/stand'
     sync_id = 'asia'
     timestamps = ActivityTimestamps(
         end = DateTime(2014, 9, 12, tzinfo = TimeZone.utc),
@@ -42,6 +44,7 @@ def test__ActivityMetadataRich__copy():
         buttons = buttons,
         created_at = created_at,
         details = details,
+        details_url = details_url,
         flags = flags,
         activity_id = activity_id,
         name = name,
@@ -49,6 +52,7 @@ def test__ActivityMetadataRich__copy():
         secrets = secrets,
         session_id = session_id,
         state = state,
+        state_url = state_url,
         sync_id = sync_id,
         timestamps = timestamps,
         url = url,
@@ -72,6 +76,7 @@ def test__ActivityMetadataRich__copy_with__no_fields_given():
     buttons = ['Party', 'Trick']
     created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     details = 'vocal'
+    details_url = 'https://orindance.party/cart'
     flags = ActivityFlag(1)
     activity_id = 202212300008
     name = 'Iceon'
@@ -79,6 +84,7 @@ def test__ActivityMetadataRich__copy_with__no_fields_given():
     secrets = ActivitySecrets(join = 'deitarabochi')
     session_id = 'Autobahn'
     state = 'plain'
+    state_url = 'https://orindance.party/stand'
     sync_id = 'asia'
     timestamps = ActivityTimestamps(
         end = DateTime(2014, 9, 12, tzinfo = TimeZone.utc),
@@ -92,6 +98,7 @@ def test__ActivityMetadataRich__copy_with__no_fields_given():
         buttons = buttons,
         created_at = created_at,
         details = details,
+        details_url = details_url,
         flags = flags,
         activity_id = activity_id,
         name = name,
@@ -99,6 +106,7 @@ def test__ActivityMetadataRich__copy_with__no_fields_given():
         secrets = secrets,
         session_id = session_id,
         state = state,
+        state_url = state_url,
         sync_id = sync_id,
         timestamps = timestamps,
         url = url,
@@ -122,6 +130,7 @@ def test__ActivityMetadataRich__copy_with__all_fields_given():
     old_buttons = ['Party', 'Trick']
     old_created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     old_details = 'vocal'
+    old_details_url = 'https://orindance.party/cart'
     old_flags = ActivityFlag(1)
     old_activity_id = 202212300011
     old_name = 'Iceon'
@@ -129,6 +138,7 @@ def test__ActivityMetadataRich__copy_with__all_fields_given():
     old_secrets = ActivitySecrets(join = 'deitarabochi')
     old_session_id = 'Autobahn'
     old_state = 'plain'
+    old_state_url = 'https://orindance.party/stand'
     old_sync_id = 'asia'
     old_timestamps = ActivityTimestamps(
         end = DateTime(2014, 9, 12, tzinfo = TimeZone.utc),
@@ -141,6 +151,7 @@ def test__ActivityMetadataRich__copy_with__all_fields_given():
     new_buttons = ['C.L']
     new_created_at = DateTime(2012, 9, 11, tzinfo = TimeZone.utc)
     new_details = 'pop'
+    new_details_url = 'https://orindance.party/crematory'
     new_flags = ActivityFlag(2)
     new_activity_id = 202212300012
     new_name = 'Worldly'
@@ -148,6 +159,7 @@ def test__ActivityMetadataRich__copy_with__all_fields_given():
     new_secrets = ActivitySecrets(join = 'Flower')
     new_session_id = 'flower'
     new_state = 'land'
+    new_state_url = 'https://orindance.party/run'
     new_sync_id = 'past'
     new_timestamps = ActivityTimestamps(
         end = DateTime(2012, 9, 12, tzinfo = TimeZone.utc),
@@ -161,6 +173,7 @@ def test__ActivityMetadataRich__copy_with__all_fields_given():
         buttons = old_buttons,
         created_at = old_created_at,
         details = old_details,
+        details_url = old_details_url,
         flags = old_flags,
         activity_id = old_activity_id,
         name = old_name,
@@ -168,6 +181,7 @@ def test__ActivityMetadataRich__copy_with__all_fields_given():
         secrets = old_secrets,
         session_id = old_session_id,
         state = old_state,
+        state_url = old_state_url,
         sync_id = old_sync_id,
         timestamps = old_timestamps,
         url = old_url,
@@ -179,6 +193,7 @@ def test__ActivityMetadataRich__copy_with__all_fields_given():
         buttons = new_buttons,
         created_at = new_created_at,
         details = new_details,
+        details_url = new_details_url,
         flags = new_flags,
         activity_id = new_activity_id,
         name = new_name,
@@ -186,6 +201,7 @@ def test__ActivityMetadataRich__copy_with__all_fields_given():
         secrets = new_secrets,
         session_id = new_session_id,
         state = new_state,
+        state_url = new_state_url,
         sync_id = new_sync_id,
         timestamps = new_timestamps,
         url = new_url,
@@ -198,6 +214,7 @@ def test__ActivityMetadataRich__copy_with__all_fields_given():
     vampytest.assert_eq(copy.buttons, tuple(new_buttons))
     vampytest.assert_eq(copy.created_at, new_created_at)
     vampytest.assert_eq(copy.details, new_details)
+    vampytest.assert_eq(copy.details_url, new_details_url)
     vampytest.assert_eq(copy.flags, new_flags)
     vampytest.assert_eq(copy.id, new_activity_id)
     vampytest.assert_eq(copy.name, new_name)
@@ -205,12 +222,13 @@ def test__ActivityMetadataRich__copy_with__all_fields_given():
     vampytest.assert_eq(copy.secrets, new_secrets)
     vampytest.assert_eq(copy.session_id, new_session_id)
     vampytest.assert_eq(copy.state, new_state)
+    vampytest.assert_eq(copy.state_url, new_state_url)
     vampytest.assert_eq(copy.sync_id, new_sync_id)
     vampytest.assert_eq(copy.timestamps, new_timestamps)
     vampytest.assert_eq(copy.url, new_url)
 
 
-def test__ActivityMetadataRich__copy_with_keyword_parameters__no_fields_given():
+def test__ActivityMetadataRich__copy_with_keyword_parameters__no_fields():
     """
     Tests whether ``ActivityMetadataRich.copy_with_keyword_parameters`` works as intended.
     
@@ -221,6 +239,7 @@ def test__ActivityMetadataRich__copy_with_keyword_parameters__no_fields_given():
     buttons = ['Party', 'Trick']
     created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     details = 'vocal'
+    details_url = 'https://orindance.party/cart'
     flags = ActivityFlag(1)
     activity_id = 202304090003
     name = 'Iceon'
@@ -228,6 +247,7 @@ def test__ActivityMetadataRich__copy_with_keyword_parameters__no_fields_given():
     secrets = ActivitySecrets(join = 'deitarabochi')
     session_id = 'Autobahn'
     state = 'plain'
+    state_url = 'https://orindance.party/stand'
     sync_id = 'asia'
     timestamps = ActivityTimestamps(
         end = DateTime(2014, 9, 12, tzinfo = TimeZone.utc),
@@ -241,6 +261,7 @@ def test__ActivityMetadataRich__copy_with_keyword_parameters__no_fields_given():
         buttons = buttons,
         created_at = created_at,
         details = details,
+        details_url = details_url,
         flags = flags,
         activity_id = activity_id,
         name = name,
@@ -248,6 +269,7 @@ def test__ActivityMetadataRich__copy_with_keyword_parameters__no_fields_given():
         secrets = secrets,
         session_id = session_id,
         state = state,
+        state_url = state_url,
         sync_id = sync_id,
         timestamps = timestamps,
         url = url,
@@ -261,7 +283,7 @@ def test__ActivityMetadataRich__copy_with_keyword_parameters__no_fields_given():
     vampytest.assert_eq(copy, activity_metadata)
 
 
-def test__ActivityMetadataRich__copy_with_keyword_parameters__1():
+def test__ActivityMetadataRich__copy_with_keyword_parameters__all_fields():
     """
     Tests whether ``ActivityMetadataRich.copy_with_keyword_parameters`` works as intended.
     
@@ -272,6 +294,7 @@ def test__ActivityMetadataRich__copy_with_keyword_parameters__1():
     old_buttons = ['Party', 'Trick']
     old_created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     old_details = 'vocal'
+    old_details_url = 'https://orindance.party/cart'
     old_flags = ActivityFlag(1)
     old_activity_id = 202304090006
     old_name = 'Iceon'
@@ -279,6 +302,7 @@ def test__ActivityMetadataRich__copy_with_keyword_parameters__1():
     old_secrets = ActivitySecrets(join = 'deitarabochi')
     old_session_id = 'Autobahn'
     old_state = 'plain'
+    old_state_url = 'https://orindance.party/stand'
     old_sync_id = 'asia'
     old_timestamps = ActivityTimestamps(
         end = DateTime(2014, 9, 12, tzinfo = TimeZone.utc),
@@ -291,6 +315,7 @@ def test__ActivityMetadataRich__copy_with_keyword_parameters__1():
     new_buttons = ['C.L']
     new_created_at = DateTime(2012, 9, 11, tzinfo = TimeZone.utc)
     new_details = 'pop'
+    new_details_url = 'https://orindance.party/crematory'
     new_flags = ActivityFlag(2)
     new_activity_id = 202304090007
     new_name = 'Worldly'
@@ -298,6 +323,7 @@ def test__ActivityMetadataRich__copy_with_keyword_parameters__1():
     new_secrets = ActivitySecrets(join = 'Flower')
     new_session_id = 'flower'
     new_state = 'land'
+    new_state_url = 'https://orindance.party/run'
     new_sync_id = 'past'
     new_timestamps = ActivityTimestamps(
         end = DateTime(2012, 9, 12, tzinfo = TimeZone.utc),
@@ -311,6 +337,7 @@ def test__ActivityMetadataRich__copy_with_keyword_parameters__1():
         buttons = old_buttons,
         created_at = old_created_at,
         details = old_details,
+        details_url = old_details_url,
         flags = old_flags,
         activity_id = old_activity_id,
         name = old_name,
@@ -318,6 +345,7 @@ def test__ActivityMetadataRich__copy_with_keyword_parameters__1():
         secrets = old_secrets,
         session_id = old_session_id,
         state = old_state,
+        state_url = old_state_url,
         sync_id = old_sync_id,
         timestamps = old_timestamps,
         url = old_url,
@@ -329,6 +357,7 @@ def test__ActivityMetadataRich__copy_with_keyword_parameters__1():
         'buttons': new_buttons,
         'created_at': new_created_at,
         'details': new_details,
+        'details_url': new_details_url,
         'flags': new_flags,
         'activity_id': new_activity_id,
         'name': new_name,
@@ -336,6 +365,7 @@ def test__ActivityMetadataRich__copy_with_keyword_parameters__1():
         'secrets': new_secrets,
         'session_id': new_session_id,
         'state': new_state,
+        'state_url': new_state_url,
         'sync_id': new_sync_id,
         'timestamps': new_timestamps,
         'url': new_url,
@@ -349,6 +379,7 @@ def test__ActivityMetadataRich__copy_with_keyword_parameters__1():
     vampytest.assert_eq(copy.buttons, tuple(new_buttons))
     vampytest.assert_eq(copy.created_at, new_created_at)
     vampytest.assert_eq(copy.details, new_details)
+    vampytest.assert_eq(copy.details_url, new_details_url)
     vampytest.assert_eq(copy.flags, new_flags)
     vampytest.assert_eq(copy.id, new_activity_id)
     vampytest.assert_eq(copy.name, new_name)
@@ -356,6 +387,7 @@ def test__ActivityMetadataRich__copy_with_keyword_parameters__1():
     vampytest.assert_eq(copy.secrets, new_secrets)
     vampytest.assert_eq(copy.session_id, new_session_id)
     vampytest.assert_eq(copy.state, new_state)
+    vampytest.assert_eq(copy.state_url, new_state_url)
     vampytest.assert_eq(copy.sync_id, new_sync_id)
     vampytest.assert_eq(copy.timestamps, new_timestamps)
     vampytest.assert_eq(copy.url, new_url)

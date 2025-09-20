@@ -204,7 +204,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
             +---------------------------------------+-----------------------------------------------------------+
             | default_thread_auto_archive_after     | `int`                                                     |
             +---------------------------------------+-----------------------------------------------------------+
-            | default_thread_reaction_emoji         | `None`, ``Emoji``                                         |
+            | default_thread_reaction_emoji         | ``None | Emoji``                                          |
             +---------------------------------------+-----------------------------------------------------------+
             | default_thread_slowmode               | `int`                                                     |
             +---------------------------------------+-----------------------------------------------------------+
@@ -481,7 +481,23 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         """
         return self.name
     
-
+    
+    def _get_partial(self, channel_entity):
+        """
+        Returns whether the channel is partial.
+        
+        Parameters
+        ----------
+        channel_entity : ``Channel``
+            The channel entity owning the metadata.
+        
+        Returns
+        -------
+        is_partial : `bool`
+        """
+        return False if self._get_clients(channel_entity) else True
+    
+    
     def _get_permissions_for(self, channel_entity, user):
         """
         Returns the permissions for the given user at the channel.
@@ -490,6 +506,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         ----------
         channel_entity : ``Channel``
             The channel entity owning the metadata.
+        
         user : ``UserBase``
             The user to calculate it's permissions of.
         
@@ -497,7 +514,6 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         -------
         permissions : ``Permission``
             The calculated permissions.
-            
         
         See Also
         --------

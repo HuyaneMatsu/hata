@@ -8,8 +8,8 @@ from ....component import Component, ComponentType
 from ....core import BUILTIN_EMOJIS
 from ....embed import Embed
 from ....emoji import Reaction, ReactionMapping, ReactionMappingLine, ReactionType
-from ....interaction import Resolved
 from ....poll import Poll
+from ....resolved import Resolved
 from ....soundboard import SoundboardSound
 from ....sticker import Sticker, create_partial_sticker_data
 from ....user import User

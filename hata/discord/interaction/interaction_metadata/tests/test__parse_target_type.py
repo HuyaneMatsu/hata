@@ -12,12 +12,34 @@ def _iter_options():
     )
     
     yield (
-        {'type': None},
+        {
+            'data': None,
+        },
         ApplicationCommandTargetType.none,
     )
     
     yield (
-        {'type': ApplicationCommandTargetType.user.value},
+        {
+            'data': {},
+        },
+        ApplicationCommandTargetType.none,
+    )
+    
+    yield (
+        {
+            'data': {
+                'type': None,
+            },
+        },
+        ApplicationCommandTargetType.none,
+    )
+    
+    yield (
+        {
+            'data': {
+                'type': ApplicationCommandTargetType.user.value,
+            },
+        },
         ApplicationCommandTargetType.user,
     )
 

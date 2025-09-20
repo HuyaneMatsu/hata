@@ -1,6 +1,8 @@
 __all__ = ('GuildProfileFlag',)
 
-from ...bases import FlagBase, FlagDescriptor as F
+from datetime import datetime as DateTime, timezone as TimeZone
+
+from ...bases import FlagBase,  FlagDeprecation as FD, FlagDescriptor as F
 
 
 class GuildProfileFlag(FlagBase):
@@ -31,9 +33,9 @@ class GuildProfileFlag(FlagBase):
     | auto_moderation_quarantined_bio                           | 8                 |
     +-----------------------------------------------------------+-------------------+
     | privacy_settings_direct_message_promotion_acknowledged    | 9                 |
-    +------------------------------------------------------------+------------------+
-    | auto_moderation_quarantined_clan_tag                      | 10                |
-    +------------------------------------------------------------+------------------+
+    +-----------------------------------------------------------+-------------------+
+    | auto_moderation_quarantined_guild_badge                   | 10                |
+    +-----------------------------------------------------------+-------------------+
     """
     rejoined = F(0)
     onboarding_completed = F(1)
@@ -45,4 +47,9 @@ class GuildProfileFlag(FlagBase):
     auto_moderation_quarantined_name_or_nick = F(7)
     auto_moderation_quarantined_bio = F(8)
     privacy_settings_direct_message_promotion_acknowledged = F(9)
-    auto_moderation_quarantined_clan_tag = F(10)
+    auto_moderation_quarantined_guild_badge = F(10)
+    
+    auto_moderation_quarantined_clan_tag = F(
+        10,
+        deprecation = FD('auto_moderation_quarantined_guild_badge', DateTime(2026, 2, 27, tzinfo = TimeZone.utc)),
+    )

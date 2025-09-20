@@ -42,7 +42,7 @@ class ActivityMetadataHanging(ActivityMetadataBase):
         created_at : `None | DateTime`, Optional (Keyword only)
             When the activity was created.
         
-        emoji : `None`, ``Emoji``, Optional (Keyword only)
+        emoji : ``None | Emoji``, Optional (Keyword only)
             The emoji of the activity.
         
         details : `None`, `str`, Optional (Keyword only)
@@ -290,7 +290,7 @@ class ActivityMetadataHanging(ActivityMetadataBase):
         details : `None`, `str`, Optional (Keyword only)
             The activity's next to its emoji.
         
-        emoji : `None`, ``Emoji``, Optional (Keyword only)
+        emoji : ``None | Emoji``, Optional (Keyword only)
             The emoji of the activity.
         
         hang_type : ``HangType``, Optional (Keyword only)

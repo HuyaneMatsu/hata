@@ -1,9 +1,6 @@
 import vampytest
 
-from ....component import ComponentType
-from ....message import Attachment, Message
-
-from ...resolved import Resolved
+from ....component import ComponentType, InteractionComponent
 
 from ..message_component import InteractionMetadataMessageComponent
 
@@ -14,16 +11,14 @@ def test__InteractionMetadataMessageComponent__copy():
     """
     Tests whether ``InteractionMetadataMessageComponent.copy`` works as intended.
     """
-    component_type = ComponentType.button
-    custom_id = 'Inaba'
-    resolved = Resolved(attachments = [Attachment.precreate(202211060053)])
-    values = ['black', 'rock', 'shooter']
+    component = InteractionComponent(
+        ComponentType.string_select,
+        custom_id = 'Inaba',
+        values = ['black', 'rock', 'shooter'],
+    )
     
     interaction_metadata = InteractionMetadataMessageComponent(
-        component_type = component_type,
-        custom_id = custom_id,
-        resolved = resolved,
-        values = values,
+        component = component,
     )
     copy = interaction_metadata.copy()
     _assert_fields_set(copy)
@@ -31,22 +26,20 @@ def test__InteractionMetadataMessageComponent__copy():
     vampytest.assert_eq(copy, interaction_metadata)
 
 
-def test__InteractionMetadataMessageComponent__copy_with__0():
+def test__InteractionMetadataMessageComponent__copy_with__no_fields():
     """
     Tests whether ``InteractionMetadataMessageComponent.copy_with`` works as intended.
     
     Case: No fields given.
     """
-    component_type = ComponentType.button
-    custom_id = 'Inaba'
-    resolved = Resolved(attachments = [Attachment.precreate(202211060054)])
-    values = ['black', 'rock', 'shooter']
+    component = InteractionComponent(
+        ComponentType.string_select,
+        custom_id = 'Inaba',
+        values = ['black', 'rock', 'shooter'],
+    )
     
     interaction_metadata = InteractionMetadataMessageComponent(
-        component_type = component_type,
-        custom_id = custom_id,
-        resolved = resolved,
-        values = values,
+        component = component,
     )
     copy = interaction_metadata.copy_with()
     _assert_fields_set(copy)
@@ -54,38 +47,77 @@ def test__InteractionMetadataMessageComponent__copy_with__0():
     vampytest.assert_eq(copy, interaction_metadata)
 
 
-def test__InteractionMetadataMessageComponent__copy_with__1():
+def test__InteractionMetadataMessageComponent__copy_with__all_fields():
     """
     Tests whether ``InteractionMetadataMessageComponent.copy_with`` works as intended.
     
     Case: All fields given.
     """
-    old_component_type = ComponentType.button
-    old_custom_id = 'Inaba'
-    old_resolved = Resolved(attachments = [Attachment.precreate(202211060055)])
-    old_values = ['black', 'rock', 'shooter']
+    old_component = InteractionComponent(
+        ComponentType.string_select,
+        custom_id = 'Inaba',
+        values = ['black', 'rock', 'shooter'],
+    )
     
-    new_component_type = ComponentType.row
-    new_custom_id = 'Reisen'
-    new_resolved = Resolved(messages = [Message.precreate(202211060056)])
-    new_values = ['Empress']
+    new_component = InteractionComponent(
+        ComponentType.string_select,
+        custom_id = 'Reisen',
+        values = ['Empress'],
+    )
     
     interaction_metadata = InteractionMetadataMessageComponent(
-        component_type = old_component_type,
-        custom_id = old_custom_id,
-        resolved = old_resolved,
-        values = old_values,
+        component = old_component,
     )
     copy = interaction_metadata.copy_with(
-        component_type = new_component_type,
-        custom_id = new_custom_id,
-        resolved = new_resolved,
-        values = new_values,
+        component = new_component,
     )
     _assert_fields_set(copy)
     vampytest.assert_is_not(copy, interaction_metadata)
     
-    vampytest.assert_eq(copy.component_type, new_component_type)
-    vampytest.assert_eq(copy.custom_id, new_custom_id)
-    vampytest.assert_eq(copy.resolved, new_resolved)
-    vampytest.assert_eq(copy.values, tuple(new_values))
+    vampytest.assert_eq(copy.component, new_component)
+
+
+def test__InteractionMetadataMessageComponent__copy_with_keyword_parameters__no_fields():
+    """
+    Tests whether ``InteractionMetadataMessageComponent.copy_with_keyword_parameters`` works as intended.
+    
+    Case: No fields given.
+    """
+    interaction_metadata = InteractionMetadataMessageComponent()
+    copy = interaction_metadata.copy_with_keyword_parameters({})
+    _assert_fields_set(copy)
+    vampytest.assert_is_not(copy, interaction_metadata)
+    vampytest.assert_eq(copy, interaction_metadata)
+
+
+def test__InteractionMetadataMessageComponent__copy_with_keyword_parameters__all_fields():
+    """
+    Tests whether ``InteractionMetadataMessageComponent.copy_with_keyword_parameters`` works as intended.
+    
+    Case: No fields given.
+    """
+    old_component = InteractionComponent(
+        ComponentType.string_select,
+        custom_id = 'Inaba',
+        values = ['black', 'rock', 'shooter'],
+    )
+    
+    new_component = InteractionComponent(
+        ComponentType.string_select,
+        custom_id = 'Reisen',
+        values = ['Empress'],
+    )
+    
+    interaction_metadata = InteractionMetadataMessageComponent(
+        component = old_component,
+    )
+    
+    copy = interaction_metadata.copy_with_keyword_parameters({
+        'component': new_component,
+    })
+    
+    _assert_fields_set(copy)
+    vampytest.assert_is_not(copy, interaction_metadata)
+    vampytest.assert_ne(copy, interaction_metadata)
+    
+    vampytest.assert_eq(copy.component, new_component)

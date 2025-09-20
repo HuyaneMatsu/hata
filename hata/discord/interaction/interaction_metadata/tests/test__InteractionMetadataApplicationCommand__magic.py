@@ -4,7 +4,6 @@ from ....application_command import ApplicationCommandTargetType
 from ....message import Attachment
 
 from ...interaction_option import InteractionOption
-from ...resolved import Resolved
 
 from ..application_command import InteractionMetadataApplicationCommand
 
@@ -14,21 +13,21 @@ def test__InteractionMetadataApplicationCommand__repr():
     Tests whether ``InteractionMetadataApplicationCommand.__repr__`` works as intended.
     """
     application_command_id = 202211060023
-    name = 'Inaba'
+    application_command_name = 'Inaba'
     options = [InteractionOption(name = 'Rem')]
-    resolved = Resolved(attachments = [Attachment.precreate(202211060024)])
     target_id = 202211060025
     target_type = ApplicationCommandTargetType.user
     
     interaction_metadata = InteractionMetadataApplicationCommand(
         application_command_id = application_command_id,
-        name = name,
+        application_command_name = application_command_name,
         options = options,
-        resolved = resolved,
         target_id = target_id,
         target_type = target_type,
     )
-    vampytest.assert_instance(repr(interaction_metadata), str)
+    
+    output = repr(interaction_metadata)
+    vampytest.assert_instance(output, str)
 
 
 def test__InteractionMetadataApplicationCommand__hash():
@@ -36,36 +35,34 @@ def test__InteractionMetadataApplicationCommand__hash():
     Tests whether ``InteractionMetadataApplicationCommand.__hash__`` works as intended.
     """
     application_command_id = 202211060026
-    name = 'Inaba'
+    application_command_name = 'Inaba'
     options = [InteractionOption(name = 'Rem')]
-    resolved = Resolved(attachments = [Attachment.precreate(202211060027)])
     target_id = 202211060028
     target_type = ApplicationCommandTargetType.user
     
     interaction_metadata = InteractionMetadataApplicationCommand(
         application_command_id = application_command_id,
-        name = name,
+        application_command_name = application_command_name,
         options = options,
-        resolved = resolved,
         target_id = target_id,
         target_type = target_type,
     )
-    vampytest.assert_instance(hash(interaction_metadata), int)
+    
+    output = hash(interaction_metadata)
+    vampytest.assert_instance(output, int)
 
 
 def _iter_options__eq():
     application_command_id = 202211060029
-    name = 'Inaba'
+    application_command_name = 'Inaba'
     options = [InteractionOption(name = 'Rem')]
-    resolved = Resolved(attachments = [Attachment.precreate(202211060030)])
     target_id = 202211060031
     target_type = ApplicationCommandTargetType.user
     
     keyword_parameters = {
         'application_command_id': application_command_id,
-        'name': name,
+        'application_command_name': application_command_name,
         'options': options,
-        'resolved': resolved,
         'target_id': target_id,
         'target_type': target_type,
     }
@@ -89,7 +86,7 @@ def _iter_options__eq():
         keyword_parameters,
         {
             **keyword_parameters,
-            'name': 'Reisen',
+            'application_command_name': 'Reisen',
         },
         False,
     )
@@ -99,15 +96,6 @@ def _iter_options__eq():
         {
             **keyword_parameters,
             'options': None,
-        },
-        False,
-    )
-    
-    yield (
-        keyword_parameters,
-        {
-            **keyword_parameters,
-            'resolved': None,
         },
         False,
     )

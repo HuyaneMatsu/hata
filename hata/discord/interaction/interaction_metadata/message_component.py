@@ -1,42 +1,32 @@
 __all__ = ('InteractionMetadataMessageComponent',)
 
+from warnings import warn
+
 from scarletio import copy_docs
 
-from ...component import Component, ComponentType
+from ...component import Component, ComponentType, InteractionComponent
 
 from .base import InteractionMetadataBase
-from .fields import (
-    parse_component_type, parse_custom_id, parse_resolved, parse_values, put_component_type, put_custom_id,
-    put_resolved, put_values, validate_component_type, validate_custom_id, validate_resolved, validate_values
-)
+from .fields import parse_component, validate_component, put_component
 
 
 class InteractionMetadataMessageComponent(InteractionMetadataBase):
     """
     Interaction metadata used when the interaction was triggered by an application command's auto completion.
     
-    Parameters
+    Attributes
     ----------
-    component_type : ``ComponentType``
-        The used component's type.
-    
-    custom_id : `None`, `str`
-        Component or form interaction's custom identifier.
-    
-    resolved : ``None | Resolved``
-        Contains the received entities.
-    
-    values : `None | tuple<str>`
-        Values selected by the user.
+    component : ``None | InteractionComponent``
+        The interacted interaction component.
     """
-    __slots__ = ('component_type', 'custom_id', 'resolved', 'values')
+    __slots__ = ('component',)
     
     def __new__(
         cls,
         *,
+        component = ...,
         component_type = ...,
         custom_id = ...,
-        resolved = ...,
         values = ...,
     ):
         """
@@ -44,17 +34,8 @@ class InteractionMetadataMessageComponent(InteractionMetadataBase):
         
         Parameters
         ----------
-        component_type : ``ComponentType``, Optional (Keyword only)
-            The used component's type.
-        
-        custom_id : `None`, `str`, Optional (Keyword only)
-            Component or form interaction's custom identifier.
-        
-        resolved : ``None | Resolved``, Optional (Keyword only)
-            Contains the received entities.
-        
-        values : `None | tuple<str>`, Optional (Keyword only)
-            Values selected by the user. Applicable for component interactions.
+        component : ``None | InteractionComponent``, Optional (Keyword only)
+            The interacted component.
         
         Raises
         ------
@@ -63,74 +44,91 @@ class InteractionMetadataMessageComponent(InteractionMetadataBase):
         ValueError
             - If a parameter's value is incorrect.
         """
-        # component_type
-        if component_type is ...:
-            component_type = ComponentType.none
-        else:
-            component_type = validate_component_type(component_type)
+        # Deprecations
+        if (component_type is not ...) or (custom_id is not ...) or (values is not ...):
+            if (component_type is not ...):
+                warn(
+                    (
+                        f'`{cls.__name__}.__new__`\'s `component_type` parameter is deprecated and is scheduled for '
+                        f'removal at 2026 February. Please use the `component` parameter instead.'
+                    ),
+                    FutureWarning,
+                    stacklevel = 2,
+                )
+            
+            if (custom_id is not ...):
+                warn(
+                    (
+                        f'`{cls.__name__}.__new__`\'s `custom_id` parameter is deprecated and is scheduled for '
+                        f'removal at 2026 February. Please use the `component` parameter instead.'
+                    ),
+                    FutureWarning,
+                    stacklevel = 2,
+                )
+            
+            if (values is not ...):
+                warn(
+                    (
+                        f'`{cls.__name__}.__new__`\'s `values` parameter is deprecated and is scheduled for '
+                        f'removal at 2026 February. Please use the `component` parameter instead.'
+                    ),
+                    FutureWarning,
+                    stacklevel = 2,
+                )
+            
+            component = InteractionComponent(
+                **{'component_type': ComponentType.string_select if component_type is ... else component_type},
+                **({} if custom_id is ... else {'custom_id': custom_id}),
+                **({} if values is ... else {'values': values}),
+            )
         
-        # custom_id
-        if custom_id is ...:
-            custom_id = None
-        else:
-            custom_id = validate_custom_id(custom_id)
         
-        # resolved
-        if resolved is ...:
-            resolved = None
+        # component
+        if component is ...:
+            component = None
         else:
-            resolved = validate_resolved(resolved)
-        
-        # values
-        if values is ...:
-            values = None
-        else:
-            values = validate_values(values)
+            component = validate_component(component)
         
         # Construct
         self = object.__new__(cls)
-        self.component_type = component_type
-        self.custom_id = custom_id
-        self.resolved = resolved
-        self.values = values
+        self.component = component
         return self
+    
+    
+    @classmethod
+    @copy_docs(InteractionMetadataBase.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            component = keyword_parameters.pop('component', ...),
+        )
     
     
     @classmethod
     @copy_docs(InteractionMetadataBase._create_empty)
     def _create_empty(cls):
         self = object.__new__(cls)
-        self.component_type = ComponentType.none
-        self.custom_id = None
-        self.resolved = None
-        self.values = None
+        self.component = None
         return self
     
     
     @copy_docs(InteractionMetadataBase.copy)
     def copy(self):
         new = object.__new__(type(self))
-        new.component_type = self.component_type
-        new.custom_id = self.custom_id
         
-        resolved = self.resolved
-        if (resolved is not None):
-            resolved = resolved.copy()
-        new.resolved = resolved
-        
-        values = self.values
-        if (values is not None):
-            values = (*values,)
-        new.values = values
+        component = self.component
+        if (component is not None):
+            component = component.copy()
+        new.component = component
         
         return new
+    
     
     def copy_with(
         self,
         *,
+        component = ...,
         component_type = ...,
         custom_id = ...,
-        resolved = ...,
         values = ...,
     ):
         """
@@ -138,17 +136,8 @@ class InteractionMetadataMessageComponent(InteractionMetadataBase):
         
         Parameters
         ----------
-        component_type : ``ComponentType``, Optional (Keyword only)
-            The used component's type.
-        
-        custom_id : `None`, `str`, Optional (Keyword only)
-            Component or form interaction's custom identifier.
-        
-        resolved : ``None | Resolved``, Optional (Keyword only)
-            Contains the received entities.
-        
-        values : `None | tuple<str>`, Optional (Keyword only)
-            Values selected by the user. Applicable for component interactions.
+        component : ``None | InteractionComponent``, Optional (Keyword only)
+            The interacted component.
         
         Returns
         -------
@@ -161,88 +150,85 @@ class InteractionMetadataMessageComponent(InteractionMetadataBase):
         ValueError
             - If a parameter's value is incorrect.
         """
-        # component_type
-        if component_type is ...:
-            component_type = self.component_type
-        else:
-            component_type = validate_component_type(component_type)
+        # Deprecations
+        if (component_type is not ...) or (custom_id is not ...) or (values is not ...):
+            if (component_type is not ...):
+                warn(
+                    (
+                        f'`{type(self).__name__}.copy_with`\'s `component_type` parameter is deprecated and is '
+                        f'scheduled for removal at 2026 February. Please use the `component` parameter instead.'
+                    ),
+                    FutureWarning,
+                    stacklevel = 2,
+                )
+            
+            if (custom_id is not ...):
+                warn(
+                    (
+                        f'`{type(self).__name__}.copy_with`\'s `custom_id` parameter is deprecated and is scheduled '
+                        f'for removal at 2026 February. Please use the `component` parameter instead.'
+                    ),
+                    FutureWarning,
+                    stacklevel = 2,
+                )
+            
+            if (values is not ...):
+                warn(
+                    (
+                        f'`{type(self).__name__}.copy_with`\'s `values` parameter is deprecated and is scheduled for '
+                        f'removal at 2026 February. Please use the `component` parameter instead.'
+                    ),
+                    FutureWarning,
+                    stacklevel = 2,
+                )
+            
+            component = InteractionComponent(
+                **{'component_type': ComponentType.string_select if component_type is ... else component_type},
+                **({} if custom_id is ... else {'custom_id': custom_id}),
+                **({} if values is ... else {'values': values}),
+            )
         
-        # custom_id
-        if custom_id is ...:
-            custom_id = self.custom_id
+        # component
+        if component is ...:
+            component = self.component
+            if (component is not None):
+                component = component.copy()
         else:
-            custom_id = validate_custom_id(custom_id)
-        
-        # resolved
-        if resolved is ...:
-            resolved = self.resolved
-            if (resolved is not None):
-                resolved = resolved.copy()
-        else:
-            resolved = validate_resolved(resolved)
-        
-        # values
-        if values is ...:
-            values = self.values
-            if (values is not None):
-                values = (*values,)
-        else:
-            values = validate_values(values)
+            component = validate_component(component)
         
         # Construct
         new = object.__new__(type(self))
-        new.component_type = component_type
-        new.custom_id = custom_id
-        new.resolved = resolved
-        new.values = values
+        new.component = component
         return new
+    
+    
+    @copy_docs(InteractionMetadataBase.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            component = keyword_parameters.pop('component', ...),
+        )
     
     
     @classmethod
     @copy_docs(InteractionMetadataBase.from_data)
     def from_data(cls, data, guild_id = 0):
         self = object.__new__(cls)
-        self.component_type = parse_component_type(data)
-        self.custom_id = parse_custom_id(data)
-        self.resolved = parse_resolved(data, guild_id)
-        self.values = parse_values(data)
+        self.component = parse_component(data)
         return self
     
     
     @copy_docs(InteractionMetadataBase.to_data)
     def to_data(self, *, defaults = False, guild_id = 0):
         data = {}
-        put_component_type(self.component_type, data, defaults)
-        put_custom_id(self.custom_id, data, defaults)
-        put_resolved(self.resolved, data, defaults, guild_id = guild_id)
-        put_values(self.values, data, defaults)
+        put_component(self.component, data, defaults)
         return data
     
     
     @copy_docs(InteractionMetadataBase._put_attribute_representations_into)
     def _put_attribute_representations_into(self, repr_parts):
-        # component_type
-        repr_parts.append(' component_type = ')
-        repr_parts.append(repr(self.component_type))
-        
-        # custom_id
-        custom_id = self.custom_id
-        if (custom_id is not None):
-            repr_parts.append(', custom_id = ')
-            repr_parts.append(repr(custom_id))
-        
-        # resolved
-        resolved = self.resolved
-        if (resolved is not None):
-            repr_parts.append(', resolved = ')
-            repr_parts.append(repr(resolved))
-        
-        # values
-        values = self.values
-        if (values is not None):
-            repr_parts.append(', values = ')
-            repr_parts.append(repr(values))
-        
+        # component
+        repr_parts.append(' component = ')
+        repr_parts.append(repr(self.component))
         return True
     
     
@@ -250,26 +236,8 @@ class InteractionMetadataMessageComponent(InteractionMetadataBase):
     def __hash__(self):
         hash_value = 0
         
-        # component_type
-        hash_value ^= self.component_type.value
-        
-        # custom_id
-        custom_id = self.custom_id
-        if (custom_id is not None):
-            hash_value ^= hash(custom_id)
-        
-        # resolved
-        resolved = self.resolved
-        if (resolved is not None):
-            hash_value ^= hash(resolved)
-        
-        # values
-        values = self.values
-        if (values is not None):
-            hash_value ^= len(values)
-            
-            for option in values:
-                hash_value ^= hash(option)
+        # component
+        hash_value ^= hash(self.component)
         
         return hash_value
     
@@ -282,14 +250,18 @@ class InteractionMetadataMessageComponent(InteractionMetadataBase):
         
         # Compare with components.
         if issubclass(other_type, Component):
+            component = self.component
+            if component is None:
+                return False
+            
             # Check `type` before `custom_id`
             
             # type
-            if self.component_type is not other.type:
+            if component.type is not other.type:
                 return False
             
             # custom_id
-            if self.custom_id != other.custom_id:
+            if component.custom_id != other.custom_id:
                 return False
             
             return True
@@ -299,20 +271,23 @@ class InteractionMetadataMessageComponent(InteractionMetadataBase):
     
     @copy_docs(InteractionMetadataBase._is_equal_same_type)
     def _is_equal_same_type(self, other):
-        # component_type
-        if self.component_type is not other.component_type:
-            return False
-        
-        # custom_id
-        if self.custom_id != other.custom_id:
-            return False
-        
-        # resolved
-        if self.resolved != other.resolved:
-            return False
-        
-        # values
-        if self.values != other.values:
+        # component
+        if self.component != other.component:
             return False
         
         return True
+    
+    
+    @copy_docs(InteractionMetadataBase.iter_custom_ids_and_values)
+    def iter_custom_ids_and_values(self):
+        component = self.component
+        if (component is not None):
+            yield from component.iter_custom_ids_and_values()
+    
+    
+    @property
+    @copy_docs(InteractionMetadataBase.custom_id)
+    def custom_id(self):
+        component = self.component
+        if component is not None:
+            return component.custom_id

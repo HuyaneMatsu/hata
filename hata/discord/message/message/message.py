@@ -189,7 +189,7 @@ class Message(DiscordEntity, immortal = True):
         
         > If all reactions are removed from a message, `.reactions` will not default back to `None`.
     
-    referenced_message : `None`, ``Message``
+    referenced_message : ``None | Message``
         The referenced message. The message can be partial.
         
         Set when the message is a reply, a crosspost or when is a pin message.
@@ -339,7 +339,7 @@ class Message(DiscordEntity, immortal = True):
         reactions : `None`, ``ReactionMapping`` (or compatible), Optional (Keyword only)
             A dictionary like object that contains the reactions on the message
         
-        referenced_message : `None`, ``Message``, Optional (Keyword only)
+        referenced_message : ``None | Message``, Optional (Keyword only)
             The referenced message.
         
         resolved : ``None | Resolved``, Optional (Keyword only)
@@ -1964,7 +1964,7 @@ class Message(DiscordEntity, immortal = True):
         reactions : `None`, ``ReactionMapping`` (or compatible), Optional (Keyword only)
             A dictionary like object that contains the reactions on the message
         
-        referenced_message : `None`, ``Message``, Optional (Keyword only)
+        referenced_message : ``None | Message``, Optional (Keyword only)
             The referenced message.
         
         resolved : ``None | Resolved``, Optional (Keyword only)
@@ -2249,7 +2249,7 @@ class Message(DiscordEntity, immortal = True):
         reactions : `None`, ``ReactionMapping`` (or compatible), Optional (Keyword only)
             A dictionary like object that contains the reactions on the message
         
-        referenced_message : `None`, ``Message``, Optional (Keyword only)
+        referenced_message : ``None | Message``, Optional (Keyword only)
             The referenced message.
         
         resolved : ``None | Resolved``, Optional (Keyword only)

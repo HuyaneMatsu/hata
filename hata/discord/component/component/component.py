@@ -4,11 +4,11 @@ from scarletio import RichAttributeErrorBaseType, copy_docs, export
 
 from ..component_metadata import ComponentMetadataBase
 from ..component_metadata.fields import (
-    validate_button_style, validate_channel_types, validate_color, validate_content, validate_default_values,
-    validate_description, validate_divider, validate_enabled, validate_items, validate_label, validate_max_length,
-    validate_max_values, validate_media, validate_min_length, validate_min_values, validate_options,
-    validate_placeholder, validate_required, validate_sku_id, validate_spacing_size, validate_spoiler,
-    validate_text_input_style, validate_thumbnail, validate_url, validate_value
+    validate_button_style, validate_channel_types, validate_color, validate_component__label, validate_content,
+    validate_default_values, validate_description, validate_divider, validate_enabled, validate_items, validate_label,
+    validate_max_length, validate_max_values, validate_media, validate_min_length, validate_min_values,
+    validate_options, validate_placeholder, validate_required, validate_sku_id, validate_spacing_size,
+    validate_spoiler, validate_text_input_style, validate_thumbnail, validate_url, validate_value
 )
 from ..shared_fields import validate_components, validate_custom_id, validate_emoji
 
@@ -23,11 +23,11 @@ class Component(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    type : ``ComponentType``
-        The component's type.
-    
     metadata : ``ComponentMetadataBase``
         The component's metadata.
+    
+    type : ``ComponentType``
+        The component's type.
     """
     __slots__ = ('metadata', 'type',)
     
@@ -37,7 +37,7 @@ class Component(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        component_type : `int`, ``ComponentType``
+        component_type : ``None | int | ComponentType``
             The component's type to create.
         
         **keyword_parameters : Keyword parameters
@@ -45,7 +45,7 @@ class Component(RichAttributeErrorBaseType):
         
         Other Parameters
         ----------------
-        button_style : ``int | ButtonStyle``, Optional (Keyword only)
+        button_style : ``None | int | ButtonStyle``, Optional (Keyword only)
             The component's style. Applicable for button components.
         
         channel_types : ``None | iterable<int> | iterable<ChannelType>``, Optional (Keyword only)
@@ -53,6 +53,9 @@ class Component(RichAttributeErrorBaseType):
         
         color : ``None | int | Color``, Optional (Keywords only)
             The color of the component.
+        
+        component : ``None | Component``, Optional (Keyword only)
+            The sub-component nested inside (the label component).
         
         components : ``None | tuple<Component>``, Optional (Keyword only)
             Sub-components.
@@ -169,7 +172,7 @@ class Component(RichAttributeErrorBaseType):
     
     
     def __eq__(self, other):
-        """Returns whether the two components are equal."""
+        """Returns self == other."""
         if type(self) is not type(other):
             return NotImplemented
         
@@ -183,8 +186,8 @@ class Component(RichAttributeErrorBaseType):
     
     
     def __repr__(self):
-        """Returns the component's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        """Returns repr(self)."""
+        repr_parts = ['<', type(self).__name__]
         
         repr_parts.append(' type = ')
         
@@ -201,7 +204,7 @@ class Component(RichAttributeErrorBaseType):
     
     
     def __hash__(self):
-        """Returns the component's hash value."""
+        """Returns hash(self)."""
         hash_value = 0
         
         # metadata
@@ -313,7 +316,7 @@ class Component(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        component_type : `int`, ``ComponentType``, Optional (Keyword only)
+        component_type : ``None | int | ComponentType``, Optional (Keyword only)
             The component's type.
         
         **keyword_parameters : Keyword parameters
@@ -321,7 +324,7 @@ class Component(RichAttributeErrorBaseType):
         
         Other Parameters
         ----------------
-        button_style : ``int | ButtonStyle``, Optional (Keyword only)
+        button_style : ``None | int | ButtonStyle``, Optional (Keyword only)
             The component's style. Applicable for button components.
         
         channel_types : ``None | iterable<int> | iterable<ChannelType>``, Optional (Keyword only)
@@ -330,7 +333,10 @@ class Component(RichAttributeErrorBaseType):
         color : ``None | int | Color``, Optional (Keywords only)
             The color of the component.
         
-        components : ``None | tuple<Component>``, Optional (Keyword only)
+        component : ``None | Component``, Optional (Keyword only)
+            The sub-component nested inside (the label component).
+        
+        components : ``None | iterable<Component>``, Optional (Keyword only)
             Sub-components.
         
         content : `None | str`, Optional (Keyword only)
@@ -467,17 +473,6 @@ class Component(RichAttributeErrorBaseType):
         self.metadata.channel_types = validate_channel_types(channel_types)
     
     
-    # components
-    @property
-    @copy_docs(ComponentMetadataBase.components)
-    def components(self):
-        return self.metadata.components
-    
-    @components.setter
-    def components(self, components):
-        self.metadata.components = validate_components(components)
-    
-    
     # color
     @property
     @copy_docs(ComponentMetadataBase.color)
@@ -487,6 +482,28 @@ class Component(RichAttributeErrorBaseType):
     @color.setter
     def color(self, color):
         self.metadata.color = validate_color(color)
+    
+    
+    # component
+    @property
+    @copy_docs(ComponentMetadataBase.component)
+    def component(self):
+        return self.metadata.component
+    
+    @component.setter
+    def component(self, component):
+        self.metadata.component = validate_component__label(component)
+    
+    
+    # components
+    @property
+    @copy_docs(ComponentMetadataBase.components)
+    def components(self):
+        return self.metadata.components
+    
+    @components.setter
+    def components(self, components):
+        self.metadata.components = validate_components(components)
     
     
     # content
@@ -742,6 +759,7 @@ class Component(RichAttributeErrorBaseType):
         self.metadata.url = validate_url(url)
     
     
+    # value
     @property
     @copy_docs(ComponentMetadataBase.value)
     def value(self):

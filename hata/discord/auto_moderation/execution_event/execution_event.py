@@ -89,7 +89,7 @@ class AutoModerationActionExecutionEvent(EventBase):
         action : `None`, ``AutoModerationAction``, Optional (Keyword only)
             The action which was executed.
         
-        alert_system_message_id : `None`, ``Message``, `int`, Optional (Keyword only)
+        alert_system_message_id : ``None | int | Message``, Optional (Keyword only)
             The id of the system auto moderation message posted as a result of this action.
         
         channel_id : ``None | int | Channel``, Optional (Keyword only)
@@ -485,7 +485,7 @@ class AutoModerationActionExecutionEvent(EventBase):
         action : `None`, ``AutoModerationAction``, Optional (Keyword only)
             The action which was executed.
         
-        alert_system_message_id : `None`, ``Message``, `int`, Optional (Keyword only)
+        alert_system_message_id : ``None | int | Message``, Optional (Keyword only)
             The id of the system auto moderation message posted as a result of this action.
         
         channel_id : ``None | int | Channel``, Optional (Keyword only)
@@ -648,7 +648,7 @@ class AutoModerationActionExecutionEvent(EventBase):
         
         Returns
         -------
-        message : `None`, ``Message``
+        message : ``None | Message``
         """
         alert_system_message_id = self.alert_system_message_id
         if alert_system_message_id:

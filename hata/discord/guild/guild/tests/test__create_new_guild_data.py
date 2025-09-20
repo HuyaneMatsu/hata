@@ -24,7 +24,7 @@ def test__create_new_guild_data__no_fields():
         'roles': [],
         'default_message_notifications': 0,
         'system_channel_id': None,
-        'system_channel_flags': 63,
+        'system_channel_flags': int(SystemChannelFlag.NONE),
         'verification_level': 0,
     }
     

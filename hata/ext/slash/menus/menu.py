@@ -938,7 +938,7 @@ class Menu(RichAttributeErrorBaseType, metaclass = MenuType):
         The channel where the menu is executed.
     client : ``Client``
         The executor client instance.
-    message : `None`, ``Message``
+    message : ``None | Message``
         The message which executes the menu.
     
     Class Attributes

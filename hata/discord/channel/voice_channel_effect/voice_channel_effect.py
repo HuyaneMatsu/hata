@@ -31,7 +31,7 @@ class VoiceChannelEffect(EventBase):
         The animation's type.
     channel_id : `int`
         The channel's identifier where the effect was sent.
-    emoji : `None`, ``Emoji``
+    emoji : ``None | Emoji``
         The emoji sent.
     guild_id : `int`
         The guild's identifier where the event was sent.
@@ -69,7 +69,7 @@ class VoiceChannelEffect(EventBase):
             The animation's type.
         channel_id : `int`, ``Channel``, Optional (Keyword only)
             The channel or its identifier where the effect was sent.
-        emoji : `None`, ``Emoji``, Optional (Keyword only)
+        emoji : ``None | Emoji``, Optional (Keyword only)
             The emoji sent.
         guild_id : `int`, ``Guild``, Optional (Keyword only)
             The guild or its identifier where the event was sent.
@@ -373,7 +373,7 @@ class VoiceChannelEffect(EventBase):
             The animation's type.
         channel_id : `int`, ``Channel``, Optional (Keyword only)
             The channel or its identifier where the effect was sent.
-        emoji : `None`, ``Emoji``, Optional (Keyword only)
+        emoji : ``None | Emoji``, Optional (Keyword only)
             The emoji sent.
         guild_id : `int`, ``Guild``, Optional (Keyword only)
             The guild or its identifier where the event was sent.

@@ -356,13 +356,16 @@ class EmbeddedActivityLaunchCommand(CommandInterface, CommandBaseApplicationComm
             else:
                 parameters.append(parameter)
                 continue
-                
-            await handle_command_exception(
-                self,
-                client,
-                interaction_event,
-                exception,
-            )
+            
+            try:
+                await handle_command_exception(
+                    self,
+                    client,
+                    interaction_event,
+                    exception,
+                )
+            finally:
+                exception = None
             return
         
         command_coroutine = command_function(*parameters)
@@ -383,12 +386,15 @@ class EmbeddedActivityLaunchCommand(CommandInterface, CommandBaseApplicationComm
         else:
             return
         
-        await handle_command_exception(
-            self,
-            client,
-            interaction_event,
-            exception,
-        )
+        try:
+            await handle_command_exception(
+                self,
+                client,
+                interaction_event,
+                exception,
+            )
+        finally:
+            exception = None
         return
     
     

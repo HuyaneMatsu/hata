@@ -33,6 +33,7 @@ parse_application_id = entity_id_parser_factory('application_id')
 put_application_id = entity_id_optional_putter_factory('application_id')
 validate_application_id = entity_id_validator_factory('application_id', NotImplemented, include = 'Application')
 
+
 # assets
 
 parse_assets = nullable_entity_parser_factory('assets', ActivityAssets)
@@ -101,6 +102,13 @@ validate_created_at = nullable_date_time_validator_factory('created_at')
 parse_details = nullable_string_parser_factory('details')
 put_details = nullable_string_optional_putter_factory('details')
 validate_details = nullable_string_validator_factory('details', 0, 1024)
+
+
+# details_url
+
+parse_details_url = nullable_string_parser_factory('details_url')
+put_details_url = nullable_string_optional_putter_factory('details_url')
+validate_details_url = nullable_string_validator_factory('details_url', 0, 1024)
 
 
 # emoji
@@ -200,11 +208,20 @@ parse_session_id = nullable_string_parser_factory('session_id')
 put_session_id = nullable_string_optional_putter_factory('session_id')
 validate_session_id = nullable_string_validator_factory('session_id', 0, 1024)
 
+
 # state
 
 parse_state = nullable_string_parser_factory('state')
 put_state = nullable_string_optional_putter_factory('state')
 validate_state = nullable_string_validator_factory('state', 0, 1024)
+
+
+# state_url
+
+parse_state_url = nullable_string_parser_factory('state_url')
+put_state_url = nullable_string_optional_putter_factory('state_url')
+validate_state_url = nullable_string_validator_factory('state_url', 0, 1024)
+
 
 # sync_id
 

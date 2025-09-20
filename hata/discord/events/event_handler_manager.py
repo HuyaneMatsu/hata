@@ -458,7 +458,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +---------------------------------------+-----------------------------------------------------------+
         | default_thread_auto_archive_after     | `int`                                                     |
         +---------------------------------------+-----------------------------------------------------------+
-        | default_thread_reaction_emoji         | `None`, ``Emoji``                                         |
+        | default_thread_reaction_emoji         | ``None | Emoji``                                          |
         +---------------------------------------+-----------------------------------------------------------+
         | default_thread_slowmode               | `int`                                                     |
         +---------------------------------------+-----------------------------------------------------------+
@@ -583,7 +583,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-------------------+-----------------------------------+
         | Keys              | Values                            |
         +===================+===================================+
-        | assets            | `None`, ``ActivityAssets``        |
+        | assets            | ``None | ActivityAssets``         |
         +-------------------+-----------------------------------+
         | buttons           | `None | tuple<str>`               |
         +-------------------+-----------------------------------+
@@ -599,9 +599,9 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-------------------+-----------------------------------+
         | metadata          | ``ActivityMetadataBase``          |
         +-------------------+-----------------------------------+
-        | party             | `None`, ``ActivityParty``         |
+        | party             | ``None | ActivityParty``          |
         +-------------------+-----------------------------------+
-        | secrets           | `None`, ``ActivitySecrets``       |
+        | secrets           | ``None | ActivitySecrets``        |
         +-------------------+-----------------------------------+
         | session_id        | `None`, `str`                     |
         +-------------------+-----------------------------------+
@@ -609,7 +609,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-------------------+-----------------------------------+
         | sync_id           | `None`, `str`                     |
         +-------------------+-----------------------------------+
-        | timestamps        | `None`, `ActivityTimestamps``     |
+        | timestamps        | ``None | ActivityTimestamps``     |
         +-------------------+-----------------------------------+
         | url               | `None`, `str`                     |
         +-------------------+-----------------------------------+
@@ -1092,7 +1092,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +===========+===================+
         | available | `bool`            |
         +-----------+-------------------+
-        | emoji     | `None`, ``Emoji`` |
+        | emoji     | ``None | Emoji``  |
         +-----------+-------------------+
         | name      | `str`             |
         +-----------+-------------------+

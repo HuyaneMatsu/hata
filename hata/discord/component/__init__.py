@@ -1,6 +1,8 @@
 from .component import *
 from .component_metadata import *
 from .entity_select_default_value import *
+from .interaction_component import *
+from .interaction_component_metadata import *
 from .media_info import *
 from .interaction_form import *
 from .media_item import *
@@ -16,6 +18,8 @@ __all__ = (
     *component.__all__,
     *component_metadata.__all__,
     *entity_select_default_value.__all__,
+    *interaction_component.__all__,
+    *interaction_component_metadata.__all__,
     *media_info.__all__,
     *interaction_form.__all__,
     *media_item.__all__,

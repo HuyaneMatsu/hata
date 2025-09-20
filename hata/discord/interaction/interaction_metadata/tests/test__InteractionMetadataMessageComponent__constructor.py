@@ -1,9 +1,6 @@
 import vampytest
 
-from ....component import ComponentType
-from ....message import Attachment
-
-from ...resolved import Resolved
+from ....component import ComponentType, InteractionComponent
 
 from ..message_component import InteractionMetadataMessageComponent
 
@@ -18,13 +15,10 @@ def _assert_fields_set(interaction_metadata):
         The interaction metadata to check.
     """
     vampytest.assert_instance(interaction_metadata, InteractionMetadataMessageComponent)
-    vampytest.assert_instance(interaction_metadata.component_type, ComponentType)
-    vampytest.assert_instance(interaction_metadata.custom_id, str, nullable = True)
-    vampytest.assert_instance(interaction_metadata.resolved, Resolved, nullable = True)
-    vampytest.assert_instance(interaction_metadata.values, tuple, nullable = True)
+    vampytest.assert_instance(interaction_metadata.component, InteractionComponent, nullable = True)
 
 
-def test__InteractionMetadataMessageComponent__new__0():
+def test__InteractionMetadataMessageComponent__new__no_fields():
     """
     Tests whether ``InteractionMetadataMessageComponent.__new__`` works as intended.
     
@@ -34,30 +28,55 @@ def test__InteractionMetadataMessageComponent__new__0():
     _assert_fields_set(interaction_metadata)
 
 
-def test__InteractionMetadataMessageComponent__new__1():
+def test__InteractionMetadataMessageComponent__new__all_fields():
     """
     Tests whether ``InteractionMetadataMessageComponent.__new__`` works as intended.
     
     Case: All fields given.
     """
-    component_type = ComponentType.button
-    custom_id = 'Inaba'
-    resolved = Resolved(attachments = [Attachment.precreate(202211060047)])
-    values = ['black', 'rock', 'shooter']
+    component = InteractionComponent(
+        ComponentType.string_select,
+        custom_id = 'Inaba',
+        values = ['black', 'rock', 'shooter'],
+    )
     
     interaction_metadata = InteractionMetadataMessageComponent(
-        component_type = component_type,
-        custom_id = custom_id,
-        resolved = resolved,
-        values = values,
+        component = component,
     )
     _assert_fields_set(interaction_metadata)
     
-    vampytest.assert_eq(interaction_metadata.component_type, component_type)
-    vampytest.assert_eq(interaction_metadata.custom_id, custom_id)
-    vampytest.assert_eq(interaction_metadata.resolved, resolved)
-    vampytest.assert_eq(interaction_metadata.values, tuple(values))
+    vampytest.assert_eq(interaction_metadata.component, component)
+
+
+def test__InteractionMetadataMessageComponent__from_keyword_parameters__no_fields():
+    """
+    Tests whether ``InteractionMetadataMessageComponent.from_keyword_parameters`` works as intended.
     
+    Case: No fields given.
+    """
+    interaction_metadata = InteractionMetadataMessageComponent.from_keyword_parameters({})
+    _assert_fields_set(interaction_metadata)
+
+
+def test__InteractionMetadataMessageComponent__from_keyword_parameters__all_fields():
+    """
+    Tests whether ``InteractionMetadataMessageComponent.from_keyword_parameters`` works as intended.
+    
+    Case: All fields given.
+    """
+    component = InteractionComponent(
+        ComponentType.string_select,
+        custom_id = 'Inaba',
+        values = ['black', 'rock', 'shooter'],
+    )
+    
+    interaction_metadata = InteractionMetadataMessageComponent.from_keyword_parameters({
+        'component': component,
+    })
+    _assert_fields_set(interaction_metadata)
+    
+    vampytest.assert_eq(interaction_metadata.component, component)
+
 
 def test__InteractionMetadataMessageComponent__create_empty():
     """

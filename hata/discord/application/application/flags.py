@@ -1,9 +1,7 @@
 __all__ = ('ApplicationDiscoveryEligibilityFlags', 'ApplicationFlag', 'ApplicationMonetizationEligibilityFlags')
 
 
-from datetime import datetime as DateTime, timezone as TimeZone
-
-from ...bases import FlagBase, FlagDeprecation as FD, FlagDescriptor as F
+from ...bases import FlagBase, FlagDescriptor as F
 
 
 class ApplicationDiscoveryEligibilityFlags(FlagBase):
@@ -217,9 +215,6 @@ class ApplicationMonetizationEligibilityFlags(FlagBase):
     no_blocking_issues = F(17)
     valid_payout_status = F(18)
     eligible = F(19)
-    
-    
-    user_2fa_enabled = F(13, deprecation = FD('user_mfa_enabled', DateTime(2024, 12, 15, tzinfo = TimeZone.utc)))
 
 
 class ApplicationOverlayMethodFlags(FlagBase):

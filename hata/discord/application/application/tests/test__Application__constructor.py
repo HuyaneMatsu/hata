@@ -35,6 +35,7 @@ def _assert_fields_set(application):
     vampytest.assert_instance(application._cache_emojis, dict, nullable = True)
     vampytest.assert_instance(application.aliases, tuple, nullable = True)
     vampytest.assert_instance(application.approximate_guild_count, int)
+    vampytest.assert_instance(application.approximate_user_authorization_count, int)
     vampytest.assert_instance(application.approximate_user_install_count, int)
     vampytest.assert_instance(application.bot_public, bool)
     vampytest.assert_instance(application.bot_requires_code_grant, bool)
@@ -114,6 +115,7 @@ def test__Application__new__all_fields():
     """
     aliases = ['orin', 'rin']
     approximate_guild_count = 11
+    approximate_user_authorization_count = 21
     approximate_user_install_count = 13
     bot_public = True
     bot_requires_code_grant = True
@@ -184,6 +186,7 @@ def test__Application__new__all_fields():
     application = Application(
         aliases = aliases,
         approximate_guild_count = approximate_guild_count,
+        approximate_user_authorization_count = approximate_user_authorization_count,
         approximate_user_install_count = approximate_user_install_count,
         bot_public = bot_public,
         bot_requires_code_grant = bot_requires_code_grant,
@@ -245,6 +248,7 @@ def test__Application__new__all_fields():
     
     vampytest.assert_eq(application.aliases, tuple(aliases))
     vampytest.assert_eq(application.approximate_guild_count, approximate_guild_count)
+    vampytest.assert_eq(application.approximate_user_authorization_count, approximate_user_authorization_count)
     vampytest.assert_eq(application.approximate_user_install_count, approximate_user_install_count)
     vampytest.assert_eq(application.bot_public, bot_public)
     vampytest.assert_eq(application.bot_requires_code_grant, bot_requires_code_grant)
@@ -325,6 +329,7 @@ def test__Application__precreate__all_fields():
     
     aliases = ['orin', 'rin']
     approximate_guild_count = 11
+    approximate_user_authorization_count = 21
     approximate_user_install_count = 13
     bot_public = True
     bot_requires_code_grant = True
@@ -396,6 +401,7 @@ def test__Application__precreate__all_fields():
         application_id,
         aliases = aliases,
         approximate_guild_count = approximate_guild_count,
+        approximate_user_authorization_count = approximate_user_authorization_count,
         approximate_user_install_count = approximate_user_install_count,
         bot_public = bot_public,
         bot_requires_code_grant = bot_requires_code_grant,
@@ -458,6 +464,7 @@ def test__Application__precreate__all_fields():
     
     vampytest.assert_eq(application.aliases, tuple(aliases))
     vampytest.assert_eq(application.approximate_guild_count, approximate_guild_count)
+    vampytest.assert_eq(application.approximate_user_authorization_count, approximate_user_authorization_count)
     vampytest.assert_eq(application.approximate_user_install_count, approximate_user_install_count)
     vampytest.assert_eq(application.bot_public, bot_public)
     vampytest.assert_eq(application.bot_requires_code_grant, bot_requires_code_grant)

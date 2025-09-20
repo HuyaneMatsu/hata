@@ -121,7 +121,7 @@ class Channel(DiscordEntity, immortal = True):
         default_thread_auto_archive_after : `int`, Optional (Keyword only)
             The default duration (in seconds) for newly created threads to automatically archive the themselves.
         
-        default_thread_reaction_emoji : `None`, ``Emoji``, Optional (Keyword only)
+        default_thread_reaction_emoji : ``None | Emoji``, Optional (Keyword only)
             The emoji to show in the add reaction button on a thread of the forum channel.
         
         default_thread_slowmode : `int`, Optional (Keyword only)
@@ -456,10 +456,7 @@ class Channel(DiscordEntity, immortal = True):
         -------
         is_partial : `bool`
         """
-        if self.id == 0:
-            return True
-        
-        return (not self.clients)
+        return (self.id == 0) or self.metadata._get_partial(self)
     
 
     @property
@@ -469,7 +466,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Returns
         -------
-        clients : `list` of ``Client``
+        clients : ``list<Client>``
         """
         return self.metadata._get_clients(self)
     
@@ -984,7 +981,7 @@ class Channel(DiscordEntity, immortal = True):
             +---------------------------------------+-----------------------------------------------------------+
             | default_thread_auto_archive_after     | `int`                                                     |
             +---------------------------------------+-----------------------------------------------------------+
-            | default_thread_reaction_emoji         | `None`, ``Emoji``                                         |
+            | default_thread_reaction_emoji         | ``None | Emoji``                                          |
             +---------------------------------------+-----------------------------------------------------------+
             | default_thread_slowmode               | `int`                                                     |
             +---------------------------------------+-----------------------------------------------------------+
@@ -1241,7 +1238,7 @@ class Channel(DiscordEntity, immortal = True):
         default_thread_auto_archive_after : `int`, Optional (Keyword only)
             The default duration (in seconds) for newly created threads to automatically archive the themselves.
         
-        default_thread_reaction_emoji : `None`, ``Emoji``, Optional (Keyword only)
+        default_thread_reaction_emoji : ``None | Emoji``, Optional (Keyword only)
             The emoji to show in the add reaction button on a thread of the forum channel.
         
         default_thread_slowmode : `int`, Optional (Keyword only)
@@ -1346,6 +1343,7 @@ class Channel(DiscordEntity, immortal = True):
         ----------
         defaults : `bool` = `False`, Optional (Keyword only)
             Whether default values should be included as well.
+        
         include_internals : `bool` = `False`, Optional (Keyword only)
             Whether we want to include identifiers as well.
         
@@ -2113,7 +2111,7 @@ class Channel(DiscordEntity, immortal = True):
         default_thread_slowmode : `int`, Optional (Keyword only)
             The default slowmode applied to the channel's threads.
         
-        default_thread_reaction_emoji : `None`, ``Emoji``, Optional (Keyword only)
+        default_thread_reaction_emoji : ``None | Emoji``, Optional (Keyword only)
             The emoji to show in the add reaction button on a thread of the forum channel.
         
         flags : `int`, ``ChannelFlag``, Optional (Keyword only)
@@ -2568,7 +2566,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Returns
         -------
-        message : `None`, ``Message``
+        message : ``None | Message``
         """
         messages = self.messages
         if (messages is not None):

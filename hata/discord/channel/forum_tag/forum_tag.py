@@ -25,7 +25,7 @@ class ForumTag(DiscordEntity, immortal = True):
     
     Attributes
     ----------
-    emoji : `None`, ``Emoji``
+    emoji : ``None | Emoji``
         The tag's emoji.
     id : `int`
         The tag's identifier.
@@ -44,7 +44,7 @@ class ForumTag(DiscordEntity, immortal = True):
         ----------
         name : `str`
             The tag's name.
-        emoji : `None`, ``Emoji``, Optional (Keyword only)
+        emoji : ``None | Emoji``, Optional (Keyword only)
             The tag's emoji.
         moderated : `bool`, Optional (Keyword only)
             Whether this tag can only be added or removed by a user with `manage_threads` permission.
@@ -286,7 +286,7 @@ class ForumTag(DiscordEntity, immortal = True):
         
         Other Parameters
         ----------------
-        emoji : `None`, ``Emoji``, Optional (Keyword only)
+        emoji : ``None | Emoji``, Optional (Keyword only)
             The tag's emoji.
         
         name : `str`, Optional (Keyword only)
@@ -397,7 +397,7 @@ class ForumTag(DiscordEntity, immortal = True):
             +-----------+-------------------+
             | Keys      | Values            |
             +===========+===================+
-            | emoji     | `None`, ``Emoji`` |
+            | emoji     | ``None | Emoji``  |
             +-----------+-------------------+
             | name      | `str`             |
             +-----------+-------------------+

@@ -23,7 +23,7 @@ def parse_emoji(data):
     
     Returns
     -------
-    emoji : `None`, ``Emoji``
+    emoji : ``None | Emoji``
     """
     return create_emoji_from_exclusive_inline_data(data)
 
@@ -34,7 +34,7 @@ def put_emoji(emoji, data, defaults):
     
     Parameters
     ----------
-    emoji : `None`, ``Emoji``
+    emoji : ``None | Emoji``
         The forum tag's emoji.
     data : `dict<str, object>`
         Json serializable dictionary.

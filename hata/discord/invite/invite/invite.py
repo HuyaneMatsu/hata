@@ -1,6 +1,6 @@
 __all__ = ('Invite',)
 
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timedelta as TimeDelta
 
 from scarletio import export
 
@@ -926,3 +926,17 @@ class Invite(DiscordEntity, immortal = True):
         partial : `bool`
         """
         return False if self.code else True
+    
+    
+    @property
+    def expires_at(self):
+        """
+        Returns when the invite expires.
+        
+        Returns
+        -------
+        expires_at : `None | DateTime`
+        """
+        max_age = self.max_age
+        if (max_age is not None):
+            return self.created_at + TimeDelta(seconds = max_age)

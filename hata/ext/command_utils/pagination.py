@@ -59,7 +59,7 @@ class Pagination(PaginationBase):
     client : ``Client`` of ``Embed`` (or any compatible)
         The client who executes the ``Pagination``.
     
-    message : `None`, ``Message``
+    message : ``None | Message``
         The message on what the ``Pagination`` is executed.
     
     check : `None`, `callable`
@@ -135,7 +135,7 @@ class Pagination(PaginationBase):
             An indexable container, what stores the displayable pages.
         timeout : `float` = `240.0`, Optional (Keyword only)
             The timeout of the ``Pagination`` in seconds.
-        message : `None`, ``Message`` = `None`, Optional (Keyword only)
+        message : ``None | Message`` = `None`, Optional (Keyword only)
             The message on what the ``Pagination`` will be executed. If not given a new message will be created.
         check : `None`, `callable` = `None`, Optional (Keyword only)
             A callable what decides whether the ``Pagination`` should process a received reaction event.

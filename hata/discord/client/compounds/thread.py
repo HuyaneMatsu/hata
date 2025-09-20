@@ -332,7 +332,7 @@ class ClientCompoundThreadEndpoints(Compound):
         -------
         thread_channel : ``None | Channel``
             The created thread channel. `None` if there was nothing to send.
-        message : `None`, ``Message``
+        message : ``None | Message``
             Returns `None` if there is nothing to send.
         
         Raises

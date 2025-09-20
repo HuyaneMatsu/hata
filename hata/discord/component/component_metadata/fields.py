@@ -70,6 +70,47 @@ validate_color = nullable_flag_validator_factory('color', Color)
 
 # components
 
+parse_component__label = nullable_entity_parser_factory('component', NotImplemented, include = 'Component')
+put_component__label = nullable_entity_optional_putter_factory(
+    'component', NotImplemented, can_include_internals = True
+)
+
+def validate_component__label(component):
+    """
+    Validates whether the given label component is correct type.
+    
+    Parameters
+    ----------
+    component : ``None | Component``
+        The component to validate.
+    
+    Returns
+    -------
+    component : ``None | Component``
+    
+    Raises
+    ------
+    TypeError
+        - If `component` is given as an invalid type.
+    """
+    if component is None:
+        return None
+    
+    if isinstance(component, Component):
+        if component.type.layout_flags.nestable_into_label:
+            return component
+        
+        raise ValueError(
+            f'Component of type: {component.type.name} cannot be used as a label component, got {component!r}.'
+        )
+    
+    raise TypeError(
+        f'`component` can be `{Component.__name__}`, got {type(component).__name__}, {component!r}.'
+    )
+
+
+# components
+
 validate_components__row = validate_components_factory(
     'row',
     'message / form',
@@ -425,7 +466,9 @@ validate_max_values = int_conditional_validator_factory(
 
 # media
 
-parse_media__attachment_only = default_entity_parser_factory('file', MediaInfo, default_factory = MediaInfo._create_empty)
+parse_media__attachment_only = default_entity_parser_factory(
+    'file', MediaInfo, default_factory = MediaInfo._create_empty
+)
 put_media__attachment_only = entity_putter_factory('file', MediaInfo)
 
 parse_media = default_entity_parser_factory('media', MediaInfo, default_factory = MediaInfo._create_empty)
@@ -543,7 +586,7 @@ def validate_thumbnail(thumbnail):
     
     Returns
     -------
-    thumbnail : ``Component``
+    thumbnail : ``None | Component``
     
     Raises
     ------

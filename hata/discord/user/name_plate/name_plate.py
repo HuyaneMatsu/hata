@@ -1,7 +1,7 @@
 __all__ = ('NamePlate',)
 
 from ...bases import Slotted
-from ...http.urls import build_name_plate_url
+from ...http.urls import build_name_plate_url, build_name_plate_url_as
 from ...utils import DATETIME_FORMAT_CODE
 
 from .fields import (
@@ -335,3 +335,19 @@ class NamePlate(metaclass = Slotted):
         url : `str`
         """
         return build_name_plate_url(self.asset_path)
+    
+    
+    def url_as(self, animated = True):
+        """
+        Returns the name plate's asset's url.
+        
+        Parameters
+        ----------
+        animated : `bool` = `False`, Optional
+            Whether to return an url to an animated asset.
+        
+        Returns
+        -------
+        url : `str`
+        """
+        return build_name_plate_url_as(self.asset_path, animated)

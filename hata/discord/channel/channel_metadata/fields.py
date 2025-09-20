@@ -358,7 +358,7 @@ def parse_default_thread_reaction_emoji(data):
     
     Returns
     -------
-    default_thread_reaction_emoji : `None`, ``Emoji``
+    default_thread_reaction_emoji : ``None | Emoji``
     """
     default_thread_reaction_emoji_data = data.get('default_reaction_emoji', None)
     if (default_thread_reaction_emoji_data is None):
@@ -375,7 +375,7 @@ def put_default_thread_reaction_emoji(default_thread_reaction_emoji, data, defau
     
     Parameters
     ----------
-    default_thread_reaction_emoji : `None`, ``Emoji``
+    default_thread_reaction_emoji : ``None | Emoji``
         The emoji to show in the add reaction button on a thread of the forum channel.
     data : `dict<str, object>`
         Json serializable dictionary.

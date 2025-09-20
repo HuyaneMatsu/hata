@@ -4,10 +4,7 @@ from scarletio import WeakReferer
 from ......discord.application_command import ApplicationCommandOption, ApplicationCommandOptionType
 from ......discord.client import Client
 from ......discord.client.compounds.tests.helpers import TestDiscordApiClient
-from ......discord.interaction import (
-    InteractionEvent, InteractionMetadataApplicationCommand, InteractionMetadataApplicationCommandAutocomplete,
-    InteractionOption, InteractionResponseType, InteractionType
-)
+from ......discord.interaction import InteractionEvent, InteractionOption, InteractionResponseType, InteractionType
 
 from ....converters import (
     ANNOTATION_TYPE_SELF_CLIENT, ANNOTATION_TYPE_SELF_INTERACTION_EVENT, ParameterConverterInternal,
@@ -359,11 +356,10 @@ async def test__SlashCommandCategory__invoke__with_sub_command():
     )
     interaction_event = InteractionEvent.precreate(
         interaction_event_id,
+        application_command_name = slash_command_category.name,
         interaction_type = InteractionType.application_command,
-        interaction = InteractionMetadataApplicationCommand(
-            name = slash_command_category.name,
-            options = options,
-        )
+        options = options,
+            
     )
     
     try:
@@ -807,7 +803,14 @@ async def test__SlashCommandCategory__invoke_auto_completion():
     api = TestDiscordApiClient(False, token)
     api.interaction_response_message_create = mock_interaction_response_message_create
     
-    auto_complete_option = InteractionMetadataApplicationCommandAutocomplete(
+    client = Client(
+        token,
+        api = api,
+        client_id = client_id,
+    )
+    interaction_event = InteractionEvent.precreate(
+        interaction_event_id,
+        interaction_type = InteractionType.application_command_autocomplete,
         options = [
             InteractionOption(
                 option_type = ApplicationCommandOptionType.sub_command,
@@ -822,22 +825,11 @@ async def test__SlashCommandCategory__invoke_auto_completion():
                 ],
             ),
         ],
-    )
-    
-    client = Client(
-        token,
-        api = api,
-        client_id = client_id,
-    )
-    interaction_event = InteractionEvent.precreate(
-        interaction_event_id,
-        interaction = auto_complete_option,
-        interaction_type = InteractionType.application_command_autocomplete,
         token = interaction_event_token,
     )
     
     try:
-        await slash_command_function.invoke_auto_completion(client, interaction_event, auto_complete_option)
+        await slash_command_function.invoke_auto_completion(client, interaction_event, interaction_event.metadata)
         
         vampytest.assert_eq(func_called, 1)
         vampytest.assert_eq(request_made, 1)

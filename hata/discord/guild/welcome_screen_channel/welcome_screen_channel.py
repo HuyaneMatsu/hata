@@ -20,7 +20,7 @@ class WelcomeScreenChannel(RichAttributeErrorBaseType):
         The represented channel's identifier.
     description : `None`, `str`
         The channel's short description.
-    emoji : `None`, ``Emoji``
+    emoji : ``None | Emoji``
         An emoji displayed before the `description`.
     """
     __slots__ = ('channel_id', 'description', 'emoji', )
@@ -35,7 +35,7 @@ class WelcomeScreenChannel(RichAttributeErrorBaseType):
             The represented channel or its identifier.
         description : `None`, `str`, Optional (Keyword only)
             The channel's short description.
-        emoji : `None`, ``Emoji``, Optional (Keyword only)
+        emoji : ``None | Emoji``, Optional (Keyword only)
             An emoji displayed before the `description`.
         
         Raises
@@ -201,7 +201,7 @@ class WelcomeScreenChannel(RichAttributeErrorBaseType):
             The represented channel or its identifier.
         description : `None`, `str`, Optional (Keyword only)
             The channel's short description.
-        emoji : `None`, ``Emoji``, Optional (Keyword only)
+        emoji : ``None | Emoji``, Optional (Keyword only)
             An emoji displayed before the `description`.
         
         Returns

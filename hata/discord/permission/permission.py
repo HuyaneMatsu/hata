@@ -2,12 +2,7 @@ __all__ = ('Permission', )
 
 from datetime import datetime as DateTime, timezone as TimeZone
 
-from warnings import warn
-
 from ..bases import FlagBase, FlagDescriptor as F
-
-
-DO_CAN_DEPRECATION = DateTime.now(tz = TimeZone.utc) > DateTime(2025, 5, 14, tzinfo = TimeZone.utc)
 
 
 PERMISSION_SHIFT_CREATE_INSTANT_INVITE = 0
@@ -61,6 +56,7 @@ PERMISSION_SHIFT_USE_CLYDE_AI = 47
 PERMISSION_SHIFT_SET_VOICE_CHANNEL_STATUS = 48
 PERMISSION_SHIFT_SEND_POLLS = 49
 PERMISSION_SHIFT_USE_EXTERNAL_APPLICATION_COMMANDS = 50
+PERMISSION_SHIFT_PIN_MESSAGES = 51
 
 
 PERMISSION_MASK_CREATE_INSTANT_INVITE = 1 << PERMISSION_SHIFT_CREATE_INSTANT_INVITE
@@ -114,6 +110,7 @@ PERMISSION_MASK_USE_CLYDE_AI = 1 << PERMISSION_SHIFT_USE_CLYDE_AI
 PERMISSION_MASK_SET_VOICE_CHANNEL_STATUS = 1 << PERMISSION_SHIFT_SET_VOICE_CHANNEL_STATUS
 PERMISSION_MASK_SEND_POLLS = 1 << PERMISSION_SHIFT_SEND_POLLS
 PERMISSION_MASK_USE_EXTERNAL_APPLICATION_COMMANDS = 1 << PERMISSION_SHIFT_USE_EXTERNAL_APPLICATION_COMMANDS
+PERMISSION_MASK_PIN_MESSAGES = 1 << PERMISSION_SHIFT_PIN_MESSAGES
 
 
 class Permission(FlagBase):
@@ -225,6 +222,8 @@ class Permission(FlagBase):
     +---------------------------------------+-------------------+
     | use_external_application_commands     | 50                |
     +---------------------------------------+-------------------+
+    | pin_messages                          | 51                |
+    +---------------------------------------+-------------------+
     
     Each permission can be accessed as property with `can_` + it's respective name, meanwhile a new edited permission
     can be created with the `allow_...` and with the `deny_...` methods.
@@ -280,6 +279,7 @@ class Permission(FlagBase):
     set_voice_channel_status = F(PERMISSION_SHIFT_SET_VOICE_CHANNEL_STATUS)
     send_polls = F(PERMISSION_SHIFT_SEND_POLLS)
     use_external_application_commands = F(PERMISSION_SHIFT_USE_EXTERNAL_APPLICATION_COMMANDS)
+    pin_messages = F(PERMISSION_SHIFT_PIN_MESSAGES)
 
 
 PERMISSION_ALL = Permission().update_by_keys(
@@ -334,6 +334,7 @@ PERMISSION_ALL = Permission().update_by_keys(
     set_voice_channel_status = True,
     send_polls = True,
     use_external_application_commands = True,
+    pin_messages = True,
 )
 
 PERMISSION_NONE = Permission()
@@ -388,6 +389,7 @@ PERMISSION_PRIVATE = Permission().update_by_keys(
     set_voice_channel_status = False,
     send_polls = True,
     use_external_application_commands = True,
+    pin_messages = True,
 )
 
 PERMISSION_PRIVATE_BOT = PERMISSION_PRIVATE.update_by_keys(
@@ -454,6 +456,7 @@ PERMISSION_TEXT_ALL = Permission().update_by_keys(
     set_voice_channel_status = False,
     send_polls = True,
     use_external_application_commands = True,
+    pin_messages = True,
 )
 
 PERMISSION_TEXT_DENY = Permission(~PERMISSION_TEXT_ALL)

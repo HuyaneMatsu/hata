@@ -108,14 +108,19 @@ class ParameterConverterFormFieldKeyword(ParameterConverterBase):
         
         Returns
         -------
-        value : `object`
+        value : `object | str | tuple<str>`
             The matched value or the converter's default value.
         """
-        value = interaction_event.get_value_for(converter.annotation)
-        if (value is None):
-            value = converter.default
+        component_type, value_or_values = interaction_event.get_value_for(converter.annotation)
         
-        return value
+        resolve = component_type.resolve
+        if (resolve is not None):
+            value_or_values = resolve(interaction_event.resolved, value_or_values)
+        
+        if (value_or_values is None):
+            value_or_values = converter.default
+        
+        return value_or_values
     
     
     @staticmethod
@@ -136,11 +141,16 @@ class ParameterConverterFormFieldKeyword(ParameterConverterBase):
         value : `object`
             The matched value or the converter's default value.
         """
-        match, value = interaction_event.get_match_and_value(converter.annotation.fullmatch)
-        if (value is None):
-            value = converter.default
+        match, component_type, value_or_values = interaction_event.get_match_and_value(converter.annotation.fullmatch)
         
-        return value
+        resolve = component_type.resolve
+        if (resolve is not None):
+            value_or_values = resolve(interaction_event.resolved, value_or_values)
+        
+        if (value_or_values is None):
+            value_or_values = converter.default
+        
+        return value_or_values
     
     
     @staticmethod
@@ -158,22 +168,27 @@ class ParameterConverterFormFieldKeyword(ParameterConverterBase):
         
         Returns
         -------
-        groups : `None | dict<<str, str>`
+        groups : `None | dict<str, str>`
             The matched values by the regex pattern.
         
-        value : `object`
+        value : `object | str | tuple<str>`
             The matched value or the converter's default value.
         """
-        match, value = interaction_event.get_match_and_value(converter.annotation.fullmatch)
-        if (value is None):
-            value = converter.default
+        match, component_type, value_or_values = interaction_event.get_match_and_value(converter.annotation.fullmatch)
+        
+        resolve = component_type.resolve
+        if (resolve is not None):
+            value_or_values = resolve(interaction_event.resolved, value_or_values)
+        
+        if (value_or_values is None):
+            value_or_values = converter.default
         
         if match is None:
             groups = None
         else:
             groups = match.groupdict()
         
-        return groups, value
+        return groups, value_or_values
     
     
     @staticmethod
@@ -194,16 +209,21 @@ class ParameterConverterFormFieldKeyword(ParameterConverterBase):
         groups : `None | tuple<str>`
             The matched values by the regex pattern.
         
-        value : `object`
+        value : `object | str | tuple<str>`
             The matched value or the converter's default value.
         """
-        match, value = interaction_event.get_match_and_value(converter.annotation.fullmatch)
-        if (value is None):
-            value = converter.default
+        match, component_type, value_or_values = interaction_event.get_match_and_value(converter.annotation.fullmatch)
+        
+        resolve = component_type.resolve
+        if (resolve is not None):
+            value_or_values = resolve(interaction_event.resolved, value_or_values)
+        
+        if (value_or_values is None):
+            value_or_values = converter.default
         
         if match is None:
             groups = None
         else:
             groups = match.groups()
         
-        return groups, value
+        return groups, value_or_values

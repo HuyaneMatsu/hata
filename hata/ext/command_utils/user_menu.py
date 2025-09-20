@@ -217,7 +217,7 @@ class UserMenuFactory:
         | exception | `None`, `BaseException`   |
         +-----------+---------------------------+
     
-    close_emoji : `None`, ``Emoji``
+    close_emoji : ``None | Emoji``
         The emoji which triggers closing.
     
     emojis : `None`, `tuple` of ``Emoji``
@@ -281,7 +281,7 @@ class UserMenuFactory:
             - If `klass` was not given as `type`.
             - If `klass.check` is not `None` neither a non-async function accepting 1 parameter.
             - If `invoke` is not async callable or accepts not 1 parameter.
-            - If `close_emoji` is neither `None`, ``Emoji``.
+            - If `close_emoji` is not ``None | Emoji``.
             - If `emojis` is neither `None` nor `tuple`, `list`.
             - If `emojis` contains a non ``Emoji`` element.
             - If `initial_invoke` is not async callable or accepts any parameters.
@@ -468,7 +468,7 @@ class UserMenuRunner(PaginationBase):
     client : ``Client``
         The client who executes the ``UserMenuRunner``.
     
-    message : `None`, ``Message``
+    message : ``None | Message``
         The message on what the ``UserMenuRunner`` is executed.
     
     _factory : ``UserMenuFactory``
@@ -495,7 +495,7 @@ class UserMenuRunner(PaginationBase):
             The channel where the ``UserMenuRunner`` is executed.
         *args : Parameters
             Additional parameters to pass to the factory's class's constructor.
-        message : `None`, ``Message`` = `None`, Optional (Keyword Only)
+        message : ``None | Message`` = `None`, Optional (Keyword Only)
             The message to use instead of creating a new one.
         **kwargs : Keyword parameters
             Additional keyword parameters to pass to the factory's class's constructor.

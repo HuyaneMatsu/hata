@@ -4,8 +4,9 @@ from ....application import ApplicationIntegrationType, Entitlement
 from ....channel import Channel
 from ....guild import create_interaction_guild_data, create_partial_guild_from_id
 from ....localization import Locale
+from ....message import Attachment, Message
 from ....permission import Permission
-from ....message import Message
+from ....resolved import Resolved
 from ....user import GuildProfile, User
 
 from ...interaction_metadata import InteractionMetadataApplicationCommand
@@ -20,6 +21,7 @@ def test__InteractionEvent__from_data():
     """
     Tests whether ``InteractionEvent.from_data`` works as intended.
     """
+    application_command_name = '3L'
     application_id = 202211070005
     application_permissions = Permission(123)
     attachment_size_limit = 10 << 20
@@ -30,9 +32,9 @@ def test__InteractionEvent__from_data():
     channel = Channel.precreate(202211070006)
     entitlements = [Entitlement.precreate(202310050014), Entitlement.precreate(202310050015)]
     guild = create_partial_guild_from_id(202211070007)
-    interaction = InteractionMetadataApplicationCommand(name = '3L')
     interaction_type = InteractionType.application_command
     message = Message.precreate(202211070008, content = 'Rise')
+    resolved = Resolved(attachments = [Attachment.precreate(202509100002)])
     token = 'Fall'
     user = User.precreate(202211070009, name = 'masuta spark')
     user_locale = Locale.thai
@@ -51,7 +53,10 @@ def test__InteractionEvent__from_data():
         'channel': channel.to_data(include_internals = True),
         'entitlements': [entitlement.to_data(include_internals = True) for entitlement in entitlements],
         'guild': create_interaction_guild_data(guild),
-        'data': interaction.to_data(defaults = True),
+        'data': {
+            'name': application_command_name,
+            'resolved': resolved.to_data(defaults = True),
+        },
         'type': interaction_type.value,
         'locale': user_locale.value,
         'message': message.to_data(defaults = True, include_internals = True),
@@ -68,6 +73,7 @@ def test__InteractionEvent__from_data():
     
     _assert_attributes_set(interaction_event)
     
+    vampytest.assert_eq(interaction_event.application_command_name, application_command_name)
     vampytest.assert_eq(interaction_event.application_id, application_id)
     vampytest.assert_eq(interaction_event.application_permissions, application_permissions)
     vampytest.assert_eq(interaction_event.attachment_size_limit, attachment_size_limit)
@@ -75,8 +81,8 @@ def test__InteractionEvent__from_data():
     vampytest.assert_is(interaction_event.channel, channel)
     vampytest.assert_eq(interaction_event.entitlements, tuple(entitlements))
     vampytest.assert_is(interaction_event.guild, guild)
-    vampytest.assert_eq(interaction_event.interaction, interaction)
     vampytest.assert_is(interaction_event.message, message)
+    vampytest.assert_eq(interaction_event.resolved, resolved)
     vampytest.assert_eq(interaction_event.token, token)
     vampytest.assert_is(interaction_event.type, interaction_type)
     vampytest.assert_is(interaction_event.user, user)
@@ -92,6 +98,7 @@ def test__InteractionEvent__to_data():
     
     Case: include defaults.
     """
+    application_command_name = '3L'
     application_id = 202211070019
     application_permissions = Permission(123)
     attachment_size_limit = 10 << 20
@@ -102,9 +109,9 @@ def test__InteractionEvent__to_data():
     channel = Channel.precreate(202211070020)
     entitlements = [Entitlement.precreate(202310050016), Entitlement.precreate(202310050017)]
     guild = create_partial_guild_from_id(202211070021)
-    interaction = InteractionMetadataApplicationCommand(name = '3L')
     interaction_type = InteractionType.application_command
     message = Message.precreate(202211070022, content = 'Rise')
+    resolved = Resolved(attachments = [Attachment.precreate(202509100003)])
     token = 'Fall'
     user = User.precreate(202211070023, name = 'masuta spark')
     user_locale = Locale.thai
@@ -116,6 +123,7 @@ def test__InteractionEvent__to_data():
     
     interaction_event = InteractionEvent.precreate(
         interaction_id,
+        application_command_name = application_command_name,
         application_id = application_id,
         application_permissions = application_permissions,
         attachment_size_limit = attachment_size_limit,
@@ -123,9 +131,9 @@ def test__InteractionEvent__to_data():
         channel = channel,
         entitlements = entitlements,
         guild = guild,
-        interaction = interaction,
         interaction_type = interaction_type,
         message = message,
+        resolved = resolved,
         token = token,
         user = user,
         user_locale = user_locale,
@@ -156,7 +164,14 @@ def test__InteractionEvent__to_data():
             'permissions': format(user_permissions, 'd'),
             'user': user.to_data(defaults = True, include_internals = True),
         },
-        'data': interaction.to_data(defaults = True),
+        'data': {
+            'id': None,
+            'options': [],
+            'target_id': None,
+            'type': 0,
+            'name': application_command_name,
+            'resolved': resolved.to_data(defaults = True),
+        },
     }
     
     

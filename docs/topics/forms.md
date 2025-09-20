@@ -7,16 +7,13 @@ not intuitive enough. This is when multi-field forms / modal interactions come i
 
 Forms are standalone components, with sub-components as fields.
 
-For now forms are limited to 5 sub-components. And the only accepted sub-components are text inputs (basically rows
-of text inputs, but rows are inserted automatically if not defined.)
+Forms are limited to 5 sub-components. The allowed top level components are text displays and labels.
+Labels are meant to be used to wrap an input component, giving them a "label" and a description.
 
 ## Limitations
 
 - Up to `5` rows in each form.
-
-### Text input limitations
-
-- Up to `1` text input can be in a row.
+- Each input component must be nested into a label.
 
 # Form commands
 
@@ -24,23 +21,27 @@ To send a form response to the user just return the form from a slash or a compo
 `Client.interaction_form_send` method.
 
 ```py3
-from hata import InteractionForm, TextInputStyle, create_text_input
+from hata import InteractionForm, TextInputStyle, create_label, create_text_input
 
 INTRODUCTION_FORM = InteractionForm(
     'Introduce yourself',
     [
-        create_text_input(
+        create_label(
             'What is your name?',
-            min_length = 2,
-            max_length = 128,
-            custom_id = 'name',
+            component = create_text_input(
+                min_length = 2,
+                max_length = 128,
+                custom_id = 'name',
+            ),
         ),
-        create_text_input(
+        create_label(
             'Something about you?',
-            style = TextInputStyle.paragraph,
-            min_length = 64,
-            max_length = 1024,
-            custom_id = 'bio',
+            component = create_text_input(
+                style = TextInputStyle.paragraph,
+                min_length = 64,
+                max_length = 1024,
+                custom_id = 'bio',
+            ),
         ),
     ],
     custom_id = 'introduction',
@@ -52,12 +53,12 @@ async def introduce_myself():
     return INTRODUCTION_FORM
 ```
 
-Defining `custom_id` for each component is not required, but its highly recommended since each received field is matched by
-its `custom_id`.
+Defining `custom_id` for each component is not required, but its highly recommended since each received field is
+matched by its `custom_id`.
 
-You may add form commands to slasher by specifying what forms they should capture based on their `custom_id`. Also, you can
-specify that you want to match forms submit interaction and not component interactions by passing `target = ` either as
-`'form'` / `'form_submit'`.
+You may add form commands to slasher by specifying what forms they should capture based on their `custom_id`.
+Also, you can specify that you want to match forms submit interaction and not component interactions by
+passing `target = ` either as `'form'` / `'form_submit'`.
 
 
 ```py3
@@ -79,11 +80,12 @@ async def introduction_form_submit(event, *, name, bio):
 
 ## Parameters
 
-Positional parameters of form submit commands work in the same way as component commands'. This means single and 
-multiple regex `custom_id`-s are both supported.
+Positional parameters of form submit commands work in the same way as component commands'.
+This means single and  multiple regex `custom_id`-s are both supported.
 
-Additionally, form submit commands support keyword parameters as well. These are matched from the fields of the
-submitted form.
+Form submits commands additionally also support multiple keyword only parameters as well.
+Not like message component commands, form submit interactions can have multiple input components, therefor
+they keyword parameters are matched of the fields of the submitted form.
 
 ```py3
 import re
@@ -93,11 +95,13 @@ from hata.ext.slash import abort
 ADD_ROLE_FORM = InteractionForm(
     'Add role', # Any dummy title does it
     [
-        create_text_input(
+        create_label(
             'Additional message to send?',
-            style = TextInputStyle.paragraph,
-            max_length = 512,
-            custom_id = 'message',
+            component = create_text_input(
+                style = TextInputStyle.paragraph,
+                max_length = 512,
+                custom_id = 'message',
+            ),
         ),
     ],
 )
@@ -237,40 +241,49 @@ class Waifu:
 
 # We will need these 3 in an example later
 
-TEXT_INPUT_WAIFU_BIO = create_text_input(
+FIELD_INPUT_WAIFU_BIO = create_label(
     'Bio',
-    style = TextInputStyle.paragraph,
-    min_length = 64,
-    max_length = 1024,
-    custom_id = CUSTOM_ID_WAIFU_BIO,
+    component = create_text_input(
+        style = TextInputStyle.paragraph,
+        min_length = 64,
+        max_length = 1024,
+        custom_id = CUSTOM_ID_WAIFU_BIO,
+    ),
 )
 
-TEXT_INPUT_WAIFU_AGE = create_text_input(
+FIELD_INPUT_WAIFU_AGE = create_label(
     'Age',
-    min_length = 1,
-    max_length = 1024,
-    custom_id = CUSTOM_ID_WAIFU_AGE,
+    component = create_text_input(
+        min_length = 1,
+        max_length = 1024,
+        custom_id = CUSTOM_ID_WAIFU_AGE,
+    ),
 )
 
-TEXT_INPUT_WAIFU_HAIR = create_text_input(
+FIELD_INPUT_WAIFU_HAIR = create_label(
     'hair',
-    min_length = 1,
-    max_length = 1024,
-    custom_id = CUSTOM_ID_WAIFU_HAIR,
+    component = create_text_input(
+        min_length = 1,
+        max_length = 1024,
+        custom_id = CUSTOM_ID_WAIFU_HAIR,
+    ),
 )
+
 
 WAIFU_FORM = InteractionForm(
     'Describe your waifu',
     [
-        create_text_input(
+        create_label(
             'Name',
-            min_length = 2,
-            max_length = 64,
-            custom_id = CUSTOM_ID_WAIFU_NAME,
+            component = create_text_input(
+                min_length = 2,
+                max_length = 64,
+                custom_id = CUSTOM_ID_WAIFU_NAME,
+            ),
         ),
-        TEXT_INPUT_WAIFU_BIO,
-        TEXT_INPUT_WAIFU_AGE,
-        TEXT_INPUT_WAIFU_HAIR,
+        FIELD_INPUT_WAIFU_BIO,
+        FIELD_INPUT_WAIFU_AGE,
+        FIELD_INPUT_WAIFU_HAIR,
     ],
     custom_id = CUSTOM_ID_WAIFU_FORM,
 )
@@ -337,14 +350,15 @@ When using capturing groups or named capturing groups, you will get the captured
 useful when dynamically generating form fields.
 
 ```py3
+
 CUSTOM_ID_WAIFU_EDIT_BASE = 'waifu.edit.'
 CUSTOM_ID_WAIFU_EDIT_REGEX = re.compile('waifu\\.edit\\.(.*)')
 CUSTOM_ID_WAIFU_FIELD_ALL = re.compile('waifu\\.(?P<field>age|bio|hair)')
 
-FIELD_TO_TEXT_INPUT = {
-    'age': TEXT_INPUT_WAIFU_AGE,
-    'bio': TEXT_INPUT_WAIFU_BIO,
-    'hair': TEXT_INPUT_WAIFU_HAIR,
+FIELD_INPUTS = {
+    'age': FIELD_INPUT_WAIFU_AGE,
+    'bio': FIELD_INPUT_WAIFU_BIO,
+    'hair': FIELD_INPUT_WAIFU_HAIR,
 }
 
 FIELD_TO_ATTRIBUTE = {
@@ -352,6 +366,7 @@ FIELD_TO_ATTRIBUTE = {
     'bio': Waifu.bio,
     'hair': Waifu.hair,
 }
+
 
 @Nitori.interactions(guild = TEST_GUILD)
 async def edit_waifu(
@@ -369,16 +384,17 @@ async def edit_waifu(
     if waifu.user is not event.user:
         abort('You can only edit waifus added by yourself.')
     
-    text_input = FIELD_TO_TEXT_INPUT[field]
+    field_input = FIELD_INPUTS[field]
     
     # We auto-fill the current value
-    text_input = text_input.copy_with(value = FIELD_TO_ATTRIBUTE[field].__get__(waifu, Waifu))
+    field_input = field_input.copy_with(value = FIELD_TO_ATTRIBUTE[field].__get__(waifu, Waifu))
     
     return InteractionForm(
         f'Editing {waifu.name}',
-        [text_input],
+        [field_input],
         custom_id = f'{CUSTOM_ID_WAIFU_EDIT_BASE}{key}',
     )
+
 
 @edit_waifu.autocomplete('name')
 async def autocomplete_waifu_name(event, value):
@@ -406,6 +422,7 @@ async def waifu_edit_form_submit(
     FIELD_TO_ATTRIBUTE[field].__set__(waifu, value)
     
     return waifu.embed
+
 ```
 
 ![](assets/forms_0004.gif)
@@ -481,6 +498,99 @@ async def rate_cake_form_submit(
 ```
 
 ![](assets/forms_0005.gif)
+
+
+### Selects
+
+There are other input components outside the text input, which are the selects.
+You can also use these in form submit commands alongside with text displays.
+
+```py3
+from hata import (
+    InteractionForm, StringSelectOption, TextInputStyle, create_label, create_select, create_text_display,
+    create_user_select
+)
+from hata.ext.slash import InteractionResponse
+
+
+CUSTOM_ID_AWARD = 'award'
+
+REWARD_FORM = InteractionForm(
+    'Reward',
+    [
+        create_text_display(
+            '**Who** and with **what** would like to reward them?\n'
+            'What about telling them **why** as well?'
+        ),
+        create_label(
+            'Who you want to reward?',
+            'Select up to 10 users.',
+            component = create_user_select(
+                custom_id = 'users',
+                min_values = 1,
+                max_values = 10,
+            ),
+        ),
+        create_label(
+            'With what would you like to reward them?',
+            component = create_string_select(
+                [
+                    StringSelectOption('Cake',),
+                    StringSelectOption('Cookie',),
+                    StringSelectOption('Pudding',),
+                    StringSelectOption('Chocomilk',),
+                ],
+                custom_id = 'items',
+                min_values = 1,
+                max_values = 4,
+            ),
+        ),
+        create_label(
+            'Why would you like to reward them?',
+            component = create_text_input(
+                custom_id = 'reason',
+                min_length = 1,
+                max_length = 1000,
+                style = TextInputStyle.paragraph,
+            )
+        ),
+    ],
+    custom_id = CUSTOM_ID_AWARD,
+)
+
+
+@Nitori.interactions(guild = TEST_GUILD)
+async def reward():
+    """Reward people with sweets."""
+    return REWARD_FORM
+
+
+@Nitori.interactions(custom_id = CUSTOM_ID_AWARD, target = 'form')
+async def handle(event, *, users, items, reason):
+    content_parts = []
+    for user in users:
+        content_parts.append(user.mention)
+        content_parts.append(' ')
+    content_parts.append('!!!\n\n')
+    
+    content_parts.append(event.user.mention)
+    content_parts.append(' awarded you with:')
+    for item in items:
+        content_parts.append('\n- ')
+        content_parts.append(item)
+    content_parts.append('\n\n')
+
+    content_parts.append('They say:\n')
+    content_parts.append(reason)
+
+    return InteractionResponse(
+        allowed_mentions = None,
+        content = ''.join(content_parts),
+    )
+```
+
+![](assets/forms_0006.gif)
+
 
 ----
 

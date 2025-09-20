@@ -190,7 +190,7 @@ def _iter_options__value_error():
 
     component_text_input = Component(
         ComponentType.text_input,
-        label = 'Fairies',
+        placeholder = 'Fairies',
     )
     
     component_thumbnail_media = Component(

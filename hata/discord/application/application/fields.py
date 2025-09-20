@@ -75,6 +75,18 @@ validate_approximate_user_install_count = int_conditional_validator_factory(
     '>= 0',
 )
 
+
+# approximate_user_authorization_count
+
+parse_approximate_user_authorization_count = int_parser_factory('approximate_user_authorization_count', 0)
+put_approximate_user_authorization_count = int_putter_factory('approximate_user_authorization_count')
+validate_approximate_user_authorization_count = int_conditional_validator_factory(
+    'approximate_user_authorization_count',
+    0,
+    (lambda approximate_user_authorization_count : approximate_user_authorization_count >= 0),
+    '>= 0',
+)
+
 # bot_public
 
 parse_bot_public = bool_parser_factory('bot_public', BOT_PUBLIC_DEFAULT)

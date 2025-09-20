@@ -2771,7 +2771,7 @@ class Guild(DiscordEntity, immortal = True):
             +===========+===================+
             | available | `bool`            |
             +-----------+-------------------+
-            | emoji     | `None`, ``Emoji`` |
+            | emoji     | ``None | Emoji``  |
             +-----------+-------------------+
             | name      | `str`             |
             +-----------+-------------------+

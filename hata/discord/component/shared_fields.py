@@ -220,7 +220,6 @@ validate_components = validate_components_factory(
     ),
 )
 
-
 # custom_id
 
 parse_custom_id = nullable_string_parser_factory('custom_id')

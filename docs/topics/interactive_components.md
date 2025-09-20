@@ -183,7 +183,7 @@ async def choose_your_poison():
 
 @Nitori.interactions(custom_id = [CUSTOM_ID_CAKE, CUSTOM_ID_CAT, CUSTOM_ID_SNAKE, CUSTOM_ID_EGGPLANT])
 async def poison_edit(event):
-    emoji = CHOOSE_YOUR_POISON_CUSTOM_ID_TO_EMOJI.get(event.interaction.custom_id, None)
+    emoji = CHOOSE_YOUR_POISON_CUSTOM_ID_TO_EMOJI.get(event.custom_id, None)
     if (emoji is not None):
         return emoji.as_emoji
 ```
@@ -369,7 +369,7 @@ async def add_emoji(client, event,
         component_interaction = None
         cancelled = True
     else:
-        if component_interaction.interaction == ADD_EMOJI_BUTTON_CANCEL:
+        if component_interaction.component % ADD_EMOJI_BUTTON_CANCEL:
             cancelled = True
         else:
             cancelled = False
@@ -492,6 +492,12 @@ async def pick(client, event):
 Selects are not as useful as buttons in practice, since lacking form functionality means, they are just a dynamic
 slash command choice parameter.
 
+To retrieve the value of components, you can use a single keyword only parameter.
+The name or other properties of this parameter make no difference.
+
+This parameter is particularly useful when using channel, role, user or mentionable selects,
+because their values are resolved before passed.
+
 ```py3
 from hata import Embed, StringSelectOption, create_string_select
 from hata.ext.slash import InteractionResponse
@@ -531,14 +537,11 @@ async def waifu():
 
 
 @Nitori.interactions(custom_id = WAIFU_CUSTOM_ID)
-async def handle_waifu_select(client, event):
+async def handle_waifu_select(client, event, *, selected_waifu_types):
     # We filter out 3rd party users based on original and current invoking user.
     if event.message.interaction.user_id != event.user_id:
         return
     
-    # Second we filter out incorrect selected values.
-    # You can change the command over time and the can return bad option as well.
-    selected_waifu_types = event.values
     if (selected_waifu_types is None):
         return
     
@@ -594,7 +597,13 @@ async def handle_waifu_select(client, event):
     
     # We re-build the select again with one difference, we mark the used one as default.
     select = create_string_select(
-        [StringSelectOption(waifu_type, waifu_type, default = (waifu_type == selected_waifu_type)) for waifu_type in WAIFU_TYPES],
+        [
+            StringSelectOption(
+                waifu_type,
+                waifu_type,
+                default = (waifu_type == selected_waifu_type)
+            ) for waifu_type in WAIFU_TYPES
+        ],
         custom_id = WAIFU_CUSTOM_ID,
     )
     
@@ -668,22 +677,24 @@ async def zoo(event):
     except TimeoutError:
         content = 'You didn\'t decide which animals to visit and the zoo closed, see ya tomorrow!'
         component_interaction = None
+    
     else:
-        selected_animals = component_interaction.values
-        if selected_animals is None:
-            content = 'Going to zoo only to buy icecream?'
-        else:
-            content_parts = ['Visiting animals in the zoo!']
-            
-            for selected_animal in selected_animals:
-                try:
-                    description = ANIMAL_IDENTIFIER_TO_DESCRIPTION[selected_animal]
-                except KeyError:
-                    continue
+        for custom_id, component_type, value_or_values in component_interaction.iter_custom_ids_and_values():
+            if value_or_values is None:
+                content = 'Going to zoo only to buy icecream?'
+            else:
+                content_parts = ['Visiting animals in the zoo!']
                 
-                content_parts.append(description)
-            
-            content = '\n\n'.join(content_parts)
+                for selected_animal in value_or_values:
+                    try:
+                        description = ANIMAL_IDENTIFIER_TO_DESCRIPTION[selected_animal]
+                    except KeyError:
+                        continue
+                    
+                    content_parts.append(description)
+                
+                content = '\n\n'.join(content_parts)
+            break
     
     yield InteractionResponse(content, components = None, message = message, event = component_interaction)
 ```

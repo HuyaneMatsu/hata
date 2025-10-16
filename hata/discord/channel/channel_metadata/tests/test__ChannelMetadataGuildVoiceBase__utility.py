@@ -1,3 +1,5 @@
+from datetime import datetime as DateTime, timezone as TimeZone
+
 import vampytest
 
 from ...permission_overwrite import PermissionOverwrite, PermissionOverwriteTargetType
@@ -21,6 +23,7 @@ def test__ChannelMetadataGuildVoiceBase__copy():
     bitrate = 50000
     region = VoiceRegion.brazil
     user_limit = 4
+    voice_engaged_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     channel_metadata = ChannelMetadataGuildVoiceBase(
         name = name,
@@ -30,6 +33,7 @@ def test__ChannelMetadataGuildVoiceBase__copy():
         bitrate = bitrate,
         region = region,
         user_limit = user_limit,
+        voice_engaged_since = voice_engaged_since,
     )
     
     copy = channel_metadata.copy()
@@ -54,6 +58,7 @@ def test__ChannelMetadataGuildVoiceBase__copy_with__0():
     bitrate = 50000
     region = VoiceRegion.brazil
     user_limit = 4
+    voice_engaged_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     channel_metadata = ChannelMetadataGuildVoiceBase(
         name = name,
@@ -63,6 +68,7 @@ def test__ChannelMetadataGuildVoiceBase__copy_with__0():
         bitrate = bitrate,
         region = region,
         user_limit = user_limit,
+        voice_engaged_since = voice_engaged_since,
     )
     
     copy = channel_metadata.copy_with()
@@ -87,6 +93,7 @@ def test__ChannelMetadataGuildVoiceBase__copy_with__1():
     old_bitrate = 50000
     old_region = VoiceRegion.brazil
     old_user_limit = 4
+    old_voice_engaged_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     new_name = 'emotion'
     new_parent_id = 202304120198
@@ -97,6 +104,7 @@ def test__ChannelMetadataGuildVoiceBase__copy_with__1():
     new_bitrate = 60000
     new_region = VoiceRegion.india
     new_user_limit = 5
+    new_voice_engaged_since = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
     
     channel_metadata = ChannelMetadataGuildVoiceBase(
         name = old_name,
@@ -106,6 +114,7 @@ def test__ChannelMetadataGuildVoiceBase__copy_with__1():
         bitrate = old_bitrate,
         region = old_region,
         user_limit = old_user_limit,
+        voice_engaged_since = old_voice_engaged_since,
     )
     
     copy = channel_metadata.copy_with(
@@ -116,6 +125,7 @@ def test__ChannelMetadataGuildVoiceBase__copy_with__1():
         bitrate = new_bitrate,
         region = new_region,
         user_limit = new_user_limit,
+        voice_engaged_since = new_voice_engaged_since,
     )
     _assert_fields_set(copy)
     vampytest.assert_is_not(copy, channel_metadata)
@@ -130,9 +140,10 @@ def test__ChannelMetadataGuildVoiceBase__copy_with__1():
     vampytest.assert_eq(copy.bitrate, new_bitrate)
     vampytest.assert_eq(copy.region, new_region)
     vampytest.assert_eq(copy.user_limit, new_user_limit)
+    vampytest.assert_eq(copy.voice_engaged_since, new_voice_engaged_since)
 
 
-def test__ChannelMetadataGuildVoiceBase__copy_with_keyword_parameters__0():
+def test__ChannelMetadataGuildVoiceBase__copy_with_keyword_parameters__no_fields():
     """
     Tests whether ``ChannelMetadataGuildVoiceBase.copy_with_keyword_parameters` works as intended.
     
@@ -147,6 +158,7 @@ def test__ChannelMetadataGuildVoiceBase__copy_with_keyword_parameters__0():
     bitrate = 50000
     region = VoiceRegion.brazil
     user_limit = 4
+    voice_engaged_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     channel_metadata = ChannelMetadataGuildVoiceBase(
         name = name,
@@ -156,6 +168,7 @@ def test__ChannelMetadataGuildVoiceBase__copy_with_keyword_parameters__0():
         bitrate = bitrate,
         region = region,
         user_limit = user_limit,
+        voice_engaged_since = voice_engaged_since,
     )
     
     keyword_parameters = {}
@@ -167,7 +180,7 @@ def test__ChannelMetadataGuildVoiceBase__copy_with_keyword_parameters__0():
     vampytest.assert_eq(copy, channel_metadata)
 
 
-def test__ChannelMetadataGuildVoiceBase__copy_with_keyword_parameters__1():
+def test__ChannelMetadataGuildVoiceBase__copy_with_keyword_parameters__all_fields():
     """
     Tests whether ``ChannelMetadataGuildVoiceBase.copy_with_keyword_parameters` works as intended.
     
@@ -182,6 +195,7 @@ def test__ChannelMetadataGuildVoiceBase__copy_with_keyword_parameters__1():
     old_bitrate = 50000
     old_region = VoiceRegion.brazil
     old_user_limit = 4
+    old_voice_engaged_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     new_name = 'emotion'
     new_parent_id = 202304120204
@@ -192,6 +206,7 @@ def test__ChannelMetadataGuildVoiceBase__copy_with_keyword_parameters__1():
     new_bitrate = 60000
     new_region = VoiceRegion.india
     new_user_limit = 5
+    new_voice_engaged_since = DateTime(2016, 5, 18, tzinfo = TimeZone.utc)
     
     channel_metadata = ChannelMetadataGuildVoiceBase(
         name = old_name,
@@ -201,6 +216,7 @@ def test__ChannelMetadataGuildVoiceBase__copy_with_keyword_parameters__1():
         bitrate = old_bitrate,
         region = old_region,
         user_limit = old_user_limit,
+        voice_engaged_since = old_voice_engaged_since,
     )
     
     keyword_parameters = {
@@ -211,6 +227,7 @@ def test__ChannelMetadataGuildVoiceBase__copy_with_keyword_parameters__1():
         'bitrate': new_bitrate,
         'region': new_region,
         'user_limit': new_user_limit,
+        'voice_engaged_since': new_voice_engaged_since,
     }
     
     copy = channel_metadata.copy_with_keyword_parameters(keyword_parameters)
@@ -228,3 +245,4 @@ def test__ChannelMetadataGuildVoiceBase__copy_with_keyword_parameters__1():
     vampytest.assert_eq(copy.bitrate, new_bitrate)
     vampytest.assert_eq(copy.region, new_region)
     vampytest.assert_eq(copy.user_limit, new_user_limit)
+    vampytest.assert_eq(copy.voice_engaged_since, new_voice_engaged_since)

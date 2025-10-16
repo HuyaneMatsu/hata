@@ -260,60 +260,283 @@ def test__ClientUserBase__top_role_at():
     vampytest.assert_is(output, role)
 
 
-def test__ClientUserBase__can_use_emoji():
+def test__ClientUserBase__can_use_emoji__unicode():
     """
-    Tests whether ``ClientUserBase.top_role_at`` works as intended.
+    Tests whether ``ClientUserBase.can_use_emoji`` works as intended.
+    
+    Case: unicode.
     """
-    user_id = 202302060051
-    emoji_id = 202302060052
-    guild_id = 202302060053
-    role_id = 202302060054
+    user_id = 202510010090
+    
+    emoji = BUILTIN_EMOJIS['heart']
     
     user = ClientUserBase._create_empty(user_id)
-    guild = Guild.precreate(guild_id)
-    
-    # unicode
-    emoji = BUILTIN_EMOJIS['x']
     
     output = user.can_use_emoji(emoji)
     vampytest.assert_instance(output, bool)
-    vampytest.assert_true(output)
-    
-    # not in guild
-    emoji = Emoji.precreate(emoji_id)
-    
-    output = user.can_use_emoji(emoji)
-    vampytest.assert_instance(output, bool)
-    vampytest.assert_false(output)
-    
-    # owner
-    
-    emoji = Emoji.precreate(emoji_id, guild_id = guild_id)
-    user.guild_profiles[guild_id] = GuildProfile()
-    guild.owner_id = user_id
-    
-    output = user.can_use_emoji(emoji)
-    vampytest.assert_instance(output, bool)
-    vampytest.assert_true(output)
-    guild.owner_id = 0
+    vampytest.assert_eq(output, True)
 
-    # role locked
+
+def test__ClientUserBase__can_use_emoji__custom_allowed():
+    """
+    Tests whether ``ClientUserBase.can_use_emoji`` works as intended.
     
-    emoji = Emoji.precreate(emoji_id, guild_id = guild_id, role_ids = [role_id])
+    Case: custom & allowed.
+    """
+    user_id = 202510010100
+    guild_id = 202510010101
+    emoji_id = 202510010102
+    
+    emoji = Emoji.precreate(
+        emoji_id,
+        guild_id = guild_id,
+        name = 'hina',
+    )
+    
+    role = Role.precreate(
+        guild_id,
+        guild_id = guild_id,
+    )
+    
+    user = ClientUserBase._create_empty(user_id)
     user.guild_profiles[guild_id] = GuildProfile()
     
-    output = user.can_use_emoji(emoji)
-    vampytest.assert_instance(output, bool)
-    vampytest.assert_false(output)
-    
-    # role locked + has role
-    
-    emoji = Emoji.precreate(emoji_id, guild_id = guild_id, role_ids = [role_id])
-    user.guild_profiles[guild_id] = GuildProfile(role_ids = [role_id])
+    guild = Guild.precreate(
+        guild_id,
+        roles = [role],
+        users = [user],
+    )
     
     output = user.can_use_emoji(emoji)
     vampytest.assert_instance(output, bool)
-    vampytest.assert_true(output)
+    vampytest.assert_eq(output, True)
+
+
+def test__ClientUserBase__can_use_emoji__custom_not_available():
+    """
+    Tests whether ``ClientUserBase.can_use_emoji`` works as intended.
+    
+    Case: custom & not available.
+    """
+    user_id = 202510010110
+    guild_id = 202510010111
+    emoji_id = 202510010112
+    
+    emoji = Emoji.precreate(
+        emoji_id,
+        guild_id = guild_id,
+        name = 'hina',
+        available = False,
+    )
+    
+    role = Role.precreate(
+        guild_id,
+        guild_id = guild_id,
+    )
+    
+    user = ClientUserBase._create_empty(user_id)
+    user.guild_profiles[guild_id] = GuildProfile()
+    
+    guild = Guild.precreate(
+        guild_id,
+        roles = [role],
+        users = [user],
+    )
+    
+    output = user.can_use_emoji(emoji)
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, False)
+
+
+def test__ClientUserBase__can_use_emoji__custom_not_in_guild():
+    """
+    Tests whether ``ClientUserBase.can_use_emoji`` works as intended.
+    
+    Case: custom & not in guild.
+    """
+    user_id = 202510010120
+    guild_id = 202510010121
+    emoji_id = 202510010122
+    
+    emoji = Emoji.precreate(
+        emoji_id,
+        guild_id = guild_id,
+        name = 'hina',
+    )
+    
+    role = Role.precreate(
+        guild_id,
+        guild_id = guild_id,
+    )
+    
+    user = ClientUserBase._create_empty(user_id)
+    
+    guild = Guild.precreate(
+        guild_id,
+        roles = [role],
+    )
+    
+    output = user.can_use_emoji(emoji)
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, False)
+
+
+def test__ClientUserBase__can_use_emoji__custom_role_bound_guild_owner():
+    """
+    Tests whether ``ClientUserBase.can_use_emoji`` works as intended.
+    
+    Case: custom & role bound & guild owner.
+    """
+    user_id = 202510010130
+    guild_id = 202510010131
+    emoji_id = 202510010132
+    
+    role_id_bound = 202510010143
+    
+    emoji = Emoji.precreate(
+        emoji_id,
+        guild_id = guild_id,
+        name = 'hina',
+        roles = [role_id_bound],
+    )
+    
+    role = Role.precreate(
+        guild_id,
+        guild_id = guild_id,
+    )
+    
+    user = ClientUserBase._create_empty(user_id)
+    user.guild_profiles[guild_id] = GuildProfile()
+    
+    guild = Guild.precreate(
+        guild_id,
+        roles = [role],
+        users = [user],
+        owner_id = user_id,
+    )
+    
+    output = user.can_use_emoji(emoji)
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, True)
+
+
+def test__ClientUserBase__can_use_emoji__custom_role_bound_no_role():
+    """
+    Tests whether ``ClientUserBase.can_use_emoji`` works as intended.
+    
+    Case: custom & role bound & no role.
+    """
+    user_id = 202510010140
+    guild_id = 202510010141
+    emoji_id = 202510010142
+    
+    role_id_bound = 202510010143
+    
+    emoji = Emoji.precreate(
+        emoji_id,
+        guild_id = guild_id,
+        name = 'hina',
+        roles = [role_id_bound],
+    )
+    
+    role = Role.precreate(
+        guild_id,
+        guild_id = guild_id,
+    )
+    
+    user = ClientUserBase._create_empty(user_id)
+    user.guild_profiles[guild_id] = GuildProfile()
+    
+    guild = Guild.precreate(
+        guild_id,
+        roles = [role],
+        users = [user],
+    )
+    
+    output = user.can_use_emoji(emoji)
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, False)
+
+
+def test__ClientUserBase__can_use_emoji__custom_role_bound_no_role_intersection():
+    """
+    Tests whether ``ClientUserBase.can_use_emoji`` works as intended.
+    
+    Case: custom & role bound & no role intersection.
+    """
+    user_id = 202510010150
+    guild_id = 202510010151
+    emoji_id = 202510010152
+    
+    role_id_bound_0 = 202510010153
+    role_id_bound_1 = 202510010154
+    
+    emoji = Emoji.precreate(
+        emoji_id,
+        guild_id = guild_id,
+        name = 'hina',
+        roles = [role_id_bound_0],
+    )
+    
+    role = Role.precreate(
+        guild_id,
+        guild_id = guild_id,
+    )
+    
+    user = ClientUserBase._create_empty(user_id)
+    user.guild_profiles[guild_id] = GuildProfile(
+        role_ids = [role_id_bound_1,]
+    )
+    
+    guild = Guild.precreate(
+        guild_id,
+        roles = [role],
+        users = [user],
+    )
+    
+    output = user.can_use_emoji(emoji)
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, False)
+
+
+def test__ClientUserBase__can_use_emoji__custom_role_bound_with_role_intersection():
+    """
+    Tests whether ``ClientUserBase.can_use_emoji`` works as intended.
+    
+    Case: custom & role bound & no role intersection.
+    """
+    user_id = 202510010160
+    guild_id = 202510010161
+    emoji_id = 202510010162
+    
+    role_id_bound = 202510010163
+    
+    emoji = Emoji.precreate(
+        emoji_id,
+        guild_id = guild_id,
+        name = 'hina',
+        roles = [role_id_bound],
+    )
+    
+    role = Role.precreate(
+        guild_id,
+        guild_id = guild_id,
+    )
+    
+    user = ClientUserBase._create_empty(user_id)
+    user.guild_profiles[guild_id] = GuildProfile(
+        role_ids = [role_id_bound,]
+    )
+    
+    guild = Guild.precreate(
+        guild_id,
+        roles = [role],
+        users = [user],
+    )
+    
+    output = user.can_use_emoji(emoji)
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, True)
 
 
 def test__ClientUserBase__has_higher_role_than():

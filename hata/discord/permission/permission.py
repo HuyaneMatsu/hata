@@ -1,7 +1,5 @@
 __all__ = ('Permission', )
 
-from datetime import datetime as DateTime, timezone as TimeZone
-
 from ..bases import FlagBase, FlagDescriptor as F
 
 

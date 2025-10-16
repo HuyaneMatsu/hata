@@ -23,7 +23,7 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
     
     Attributes
     ----------
-    _cache_permission : `None`, `dict` of (`int`, ``Permission``) items
+    _cache_permission : ``None | dict<int, Permission>``
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     name : `str`
         The channel's name.
@@ -57,9 +57,9 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
         ----------
         name : `str`, Optional (Keyword only)
             The channel's name.
-        parent_id : `int`, ``Channel``, Optional (Keyword only)
+        parent_id : ``None | int | Channel``, Optional (Keyword only)
             The channel's parent's identifier.
-        permission_overwrites : `None`, `iterable` of ``PermissionOverwrite``, Optional (Keyword only)
+        permission_overwrites : ``None | iterable<PermissionOverwrite>``, Optional (Keyword only)
             The channel's permission overwrites.
         position : `int`, Optional (Keyword only)
             The channel's position.
@@ -249,9 +249,9 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
         ----------
         name : `str`, Optional (Keyword only)
             The channel's name.
-        parent_id : `int`, ``Channel``, Optional (Keyword only)
+        parent_id : ``None | int | Channel``, Optional (Keyword only)
             The channel's parent's identifier.
-        permission_overwrites : `None`, `iterable` of ``PermissionOverwrite``, Optional (Keyword only)
+        permission_overwrites : ``None | iterable<PermissionOverwrite>``, Optional (Keyword only)
             The channel's permission overwrites.
         position : `int`, Optional (Keyword only)
             The channel's position.

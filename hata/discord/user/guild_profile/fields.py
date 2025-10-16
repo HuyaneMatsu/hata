@@ -16,7 +16,7 @@ from ...field_validators import (
 
 from ..avatar_decoration import AvatarDecoration
 
-from .constants import NICK_LENGTH_MAX, NICK_LENGTH_MIN
+from .constants import BIO_LENGTH_MAX, NICK_LENGTH_MAX, NICK_LENGTH_MIN
 from .flags import GuildProfileFlag
 
 # avatar_decoration
@@ -24,6 +24,14 @@ from .flags import GuildProfileFlag
 parse_avatar_decoration = nullable_entity_parser_factory('avatar_decoration_data', AvatarDecoration)
 put_avatar_decoration = nullable_entity_optional_putter_factory('avatar_decoration_data', AvatarDecoration)
 validate_avatar_decoration = nullable_entity_validator_factory('avatar_decoration', AvatarDecoration)
+
+
+# bio
+
+parse_bio = nullable_string_parser_factory('bio')
+put_bio = nullable_string_optional_putter_factory('bio')
+validate_bio = nullable_string_validator_factory('bio', 0, BIO_LENGTH_MAX)
+
 
 # boosts_since
 

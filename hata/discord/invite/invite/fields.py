@@ -23,6 +23,7 @@ from ...field_validators import (
 from ...guild import (
     Guild, GuildActivityOverview, create_partial_guild_data, create_partial_guild_from_data, create_partial_guild_from_id
 )
+from ...permission import Permission
 from ...user import ClientUserBase, User, ZEROUSER
 
 from .flags import InviteFlag
@@ -293,10 +294,12 @@ def put_target_type(target_type, data, defaults):
     
     Parameters
     ----------
-    target-type : ``InviteTargetType``
+    target_type : ``InviteTargetType``
         The target type to serialize.
+    
     data : `dict<str, object>`
         Json serializable dictionary.
+    
     defaults : `bool`
         Whether default values should be included as well.
     
@@ -341,6 +344,66 @@ validate_type = preinstanced_validator_factory('invite_type', InviteType)
 
 put_unique = bool_optional_putter_factory('unique', False)
 validate_unique = bool_validator_factory('unique', False)
+
+
+# user_permissions
+
+FIELDS_TO_PERMISSION_MASKS = (
+    ('is_nickname_changeable', Permission.change_nickname.mask),
+)
+
+def parse_user_permissions(data):
+    """
+    Parses out the invite's user permissions from the given data.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    user_permissions : ``Permission``
+    """
+    permissions = 0
+    
+    for key, mask in FIELDS_TO_PERMISSION_MASKS:
+        value = data.get(key, None)
+        if (value is not None) and value:
+            permissions |= mask
+    
+    return Permission(permissions)
+
+
+def put_user_permissions(user_permissions, data, defaults):
+    """
+    Puts the invite's user permissions into the given data.
+    
+    Parameters
+    ----------
+    user_permissions : ``Permission``
+        A subset of permissions that the user has upon joining.
+    
+    data : `dict<str, object>`
+        Json serializable dictionary.
+    
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    for key, mask in FIELDS_TO_PERMISSION_MASKS:
+        value = True if user_permissions & mask else False
+        if value or defaults:
+            data[key] = value
+    
+    return data
+
+
+validate_user_permissions = flag_validator_factory('user_permissions', Permission)
+
 
 # uses
 

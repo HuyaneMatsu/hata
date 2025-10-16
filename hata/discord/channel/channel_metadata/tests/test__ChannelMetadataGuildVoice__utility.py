@@ -1,3 +1,5 @@
+from datetime import datetime as DateTime, timezone as TimeZone
+
 import vampytest
 
 from ...permission_overwrite import PermissionOverwrite, PermissionOverwriteTargetType
@@ -24,6 +26,7 @@ def test__ChannelMetadataGuildVoice__copy():
     status = 'koishi love'
     nsfw = True
     video_quality_mode = VideoQualityMode.full
+    voice_engaged_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     channel_metadata = ChannelMetadataGuildVoice(
         name = name,
@@ -36,6 +39,7 @@ def test__ChannelMetadataGuildVoice__copy():
         user_limit = user_limit,
         nsfw = nsfw,
         video_quality_mode = video_quality_mode,
+        voice_engaged_since = voice_engaged_since,
     )
     
     copy = channel_metadata.copy()
@@ -45,7 +49,7 @@ def test__ChannelMetadataGuildVoice__copy():
     vampytest.assert_eq(copy, channel_metadata)
 
 
-def test__ChannelMetadataGuildVoice__copy_with__0():
+def test__ChannelMetadataGuildVoice__copy_with__no_fields():
     """
     Tests whether ``ChannelMetadataGuildVoice.copy_with` works as intended.
     
@@ -63,6 +67,7 @@ def test__ChannelMetadataGuildVoice__copy_with__0():
     user_limit = 4
     nsfw = True
     video_quality_mode = VideoQualityMode.full
+    voice_engaged_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     channel_metadata = ChannelMetadataGuildVoice(
         name = name,
@@ -75,6 +80,7 @@ def test__ChannelMetadataGuildVoice__copy_with__0():
         user_limit = user_limit,
         nsfw = nsfw,
         video_quality_mode = video_quality_mode,
+        voice_engaged_since = voice_engaged_since,
     )
     
     copy = channel_metadata.copy_with()
@@ -84,7 +90,7 @@ def test__ChannelMetadataGuildVoice__copy_with__0():
     vampytest.assert_eq(copy, channel_metadata)
 
 
-def test__ChannelMetadataGuildVoice__copy_with__1():
+def test__ChannelMetadataGuildVoice__copy_with__all_fields():
     """
     Tests whether ``ChannelMetadataGuildVoice.copy_with` works as intended.
     
@@ -102,6 +108,7 @@ def test__ChannelMetadataGuildVoice__copy_with__1():
     old_user_limit = 4
     old_nsfw = True
     old_video_quality_mode = VideoQualityMode.full
+    old_voice_engaged_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     new_name = 'emotion'
     new_parent_id = 202304130020
@@ -115,6 +122,7 @@ def test__ChannelMetadataGuildVoice__copy_with__1():
     new_user_limit = 5
     new_nsfw = False
     new_video_quality_mode = VideoQualityMode.auto
+    new_voice_engaged_since = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
     
     channel_metadata = ChannelMetadataGuildVoice(
         name = old_name,
@@ -127,6 +135,7 @@ def test__ChannelMetadataGuildVoice__copy_with__1():
         user_limit = old_user_limit,
         nsfw = old_nsfw,
         video_quality_mode = old_video_quality_mode,
+        voice_engaged_since = old_voice_engaged_since,
     )
     
     copy = channel_metadata.copy_with(
@@ -140,6 +149,7 @@ def test__ChannelMetadataGuildVoice__copy_with__1():
         user_limit = new_user_limit,
         nsfw = new_nsfw,
         video_quality_mode = new_video_quality_mode,
+        voice_engaged_since = new_voice_engaged_since,
     )
     _assert_fields_set(copy)
     vampytest.assert_is_not(copy, channel_metadata)
@@ -156,10 +166,11 @@ def test__ChannelMetadataGuildVoice__copy_with__1():
     vampytest.assert_eq(copy.status, new_status)
     vampytest.assert_eq(copy.user_limit, new_user_limit)
     vampytest.assert_eq(copy.nsfw, new_nsfw)
-    vampytest.assert_eq(copy.video_quality_mode, new_video_quality_mode)
+    vampytest.assert_is(copy.video_quality_mode, new_video_quality_mode)
+    vampytest.assert_eq(copy.voice_engaged_since, new_voice_engaged_since)
 
 
-def test__ChannelMetadataGuildVoice__copy_with_keyword_parameters__0():
+def test__ChannelMetadataGuildVoice__copy_with_keyword_parameters__no_fields():
     """
     Tests whether ``ChannelMetadataGuildVoice.copy_with_keyword_parameters` works as intended.
     
@@ -177,6 +188,7 @@ def test__ChannelMetadataGuildVoice__copy_with_keyword_parameters__0():
     user_limit = 4
     nsfw = True
     video_quality_mode = VideoQualityMode.full
+    voice_engaged_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     channel_metadata = ChannelMetadataGuildVoice(
         name = name,
@@ -189,6 +201,7 @@ def test__ChannelMetadataGuildVoice__copy_with_keyword_parameters__0():
         user_limit = user_limit,
         nsfw = nsfw,
         video_quality_mode = video_quality_mode,
+        voice_engaged_since = voice_engaged_since,
     )
     
     keyword_parameters = {}
@@ -218,6 +231,7 @@ def test__ChannelMetadataGuildVoice__copy_with_keyword_parameters__1():
     old_user_limit = 4
     old_nsfw = True
     old_video_quality_mode = VideoQualityMode.full
+    old_voice_engaged_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     new_name = 'emotion'
     new_parent_id = 202304130026
@@ -231,6 +245,7 @@ def test__ChannelMetadataGuildVoice__copy_with_keyword_parameters__1():
     new_user_limit = 5
     new_nsfw = False
     new_video_quality_mode = VideoQualityMode.auto
+    new_voice_engaged_since = DateTime(2016, 5, 18, tzinfo = TimeZone.utc)
     
     channel_metadata = ChannelMetadataGuildVoice(
         name = old_name,
@@ -243,6 +258,7 @@ def test__ChannelMetadataGuildVoice__copy_with_keyword_parameters__1():
         user_limit = old_user_limit,
         nsfw = old_nsfw,
         video_quality_mode = old_video_quality_mode,
+        voice_engaged_since = old_voice_engaged_since,
     )
     
     keyword_parameters = {
@@ -256,6 +272,7 @@ def test__ChannelMetadataGuildVoice__copy_with_keyword_parameters__1():
         'user_limit': new_user_limit,
         'nsfw': new_nsfw,
         'video_quality_mode': new_video_quality_mode,
+        'voice_engaged_since': new_voice_engaged_since,
     }
     
     copy = channel_metadata.copy_with_keyword_parameters(keyword_parameters)
@@ -275,4 +292,5 @@ def test__ChannelMetadataGuildVoice__copy_with_keyword_parameters__1():
     vampytest.assert_eq(copy.status, new_status)
     vampytest.assert_eq(copy.user_limit, new_user_limit)
     vampytest.assert_eq(copy.nsfw, new_nsfw)
-    vampytest.assert_eq(copy.video_quality_mode, new_video_quality_mode)
+    vampytest.assert_is(copy.video_quality_mode, new_video_quality_mode)
+    vampytest.assert_eq(copy.voice_engaged_since, new_voice_engaged_since)

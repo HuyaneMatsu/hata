@@ -17,7 +17,7 @@ class ChannelMetadataGuildText(ChannelMetadataGuildTextBase):
     
     Attributes
     ----------
-    _cache_permission : `None`, `dict` of (`int`, ``Permission``) items
+    _cache_permission : ``None | dict<int, Permission>``
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     default_thread_auto_archive_after : `int`
         The default duration (in seconds) for newly created threads to automatically archive the themselves. Defaults
@@ -30,7 +30,7 @@ class ChannelMetadataGuildText(ChannelMetadataGuildTextBase):
         Whether the channel is marked as non safe for work.
     parent_id : `int`
         The channel's parent's identifier.
-    permission_overwrites :`None`,  `dict` of (`int`, ``PermissionOverwrite``) items
+    permission_overwrites : ``None | dict<int, PermissionOverwrite>``
         The channel's permission overwrites.
     position : `int`
         The channel's position.

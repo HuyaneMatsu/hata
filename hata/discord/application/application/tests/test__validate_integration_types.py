@@ -5,13 +5,43 @@ from ..preinstanced import ApplicationIntegrationType
 
 
 def _iter_options__passing():
-    yield None, None
-    yield [], None
-    yield [ApplicationIntegrationType.user_install], (ApplicationIntegrationType.user_install, )
-    yield [ApplicationIntegrationType.user_install.value], (ApplicationIntegrationType.user_install, )
     yield (
-        [ApplicationIntegrationType.user_install, ApplicationIntegrationType.guild_install],
-        (ApplicationIntegrationType.guild_install, ApplicationIntegrationType.user_install),
+        None,
+        None,
+    )
+    
+    yield (
+        [],
+        None,
+    )
+    
+    yield (
+        [
+            ApplicationIntegrationType.user_install
+        ],
+        (
+            ApplicationIntegrationType.user_install,
+        ),
+    )
+    
+    yield (
+        [
+            ApplicationIntegrationType.user_install.value,
+        ],
+        (
+            ApplicationIntegrationType.user_install,
+        ),
+    )
+    
+    yield (
+        [
+            ApplicationIntegrationType.user_install,
+            ApplicationIntegrationType.guild_install,
+        ],
+        (
+            ApplicationIntegrationType.guild_install,
+            ApplicationIntegrationType.user_install,
+        ),
     )
 
 
@@ -33,10 +63,17 @@ def test__validate_integration_types(input_value):
     
     Returns
     -------
-    output : `None | tuple<ApplicationIntegrationType>`
+    output : ``None | tuple<ApplicationIntegrationType>``
     
     Raises
     ------
     TypeError
     """
-    return validate_integration_types(input_value)
+    output = validate_integration_types(input_value)
+    vampytest.assert_instance(output, tuple, nullable = True)
+    
+    if (output is not None):
+        for element in output:
+            vampytest.assert_instance(element, ApplicationIntegrationType)
+    
+    return output

@@ -391,7 +391,7 @@ class PermissionOverwrite(RichAttributeErrorBaseType):
         
         Returns
         -------
-        new : `instance<cls<self>>`
+        new : `instance<type<self>>`
         """
         new = object.__new__(type(self))
         new.allow = self.allow

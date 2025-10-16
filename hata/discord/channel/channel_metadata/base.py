@@ -2,7 +2,7 @@ __all__ = ('ChannelMetadataBase',)
 
 from scarletio import RichAttributeErrorBaseType, include
 
-from ...bases import Icon, IconType, PlaceHolder, IconSlot
+from ...bases import Icon, IconType, PlaceHolder
 from ...permission.permission import PERMISSION_NONE
 from ...utils import id_to_datetime
 
@@ -255,7 +255,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         data : `dict<str, object>`
             Channel status update data received from Discord.
         """
-        pass
+        return
     
     
     def _difference_update_status(self, data):
@@ -280,6 +280,44 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
             +===========+===============+
             | status    | `None`, `str` |
             +-----------+---------------+
+        """
+        return {}
+    
+    
+    def _update_voice_engaged_since(self, data):
+        """
+        Updates the channel metadata's voice engaged since.
+        
+        Parameters
+        ----------
+        data : `dict<str, object>`
+            Channel status update data received from Discord.
+        """
+        return
+    
+    
+    def _difference_update_voice_engaged_since(self, data):
+        """
+        Updates the channel metadata's status and if changed returns it in a `dict` with a
+        `attribute-name` - `old-value` relation.
+        
+        Parameters
+        ----------
+        data : `dict<str, object>`
+            Channel status update data received from Discord.
+        
+        Returns
+        -------
+        old_attributes : `dict<str, object>`
+            All item in the returned dict is optional.
+            
+            Might contain the following items:
+            
+            +-----------------------+-------------------+
+            | Keys                  | Values            |
+            +=======================+===================+
+            | voice_engaged_since   | `None | DateTime` |
+            +-----------------------+-------------------+
         """
         return {}
     
@@ -439,25 +477,24 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         yield
     
     
-    def _get_clients(self, channel_entity):
+    def _iter_clients(self, channel_entity):
         """
-        Helper class to get the channel's clients.
+        Helper to get the channel's clients.
+        
+        This method is an iterable generator.
         
         Parameters
         ----------
         channel_entity : ``Channel``
             The channel entity owning the metadata.
         
-        Returns
-        -------
-        clients : `list` of ``Client``
+        Yields
+        ------
+        client : ``Client``
         """
-        clients = []
         for user in self._get_users(channel_entity):
             if isinstance(user, Client):
-                clients.append(user)
-        
-        return clients
+                yield user
     
     
     def _get_processed_name(self):
@@ -495,7 +532,10 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         -------
         is_partial : `bool`
         """
-        return False if self._get_clients(channel_entity) else True
+        for client in self._iter_clients(channel_entity):
+            return False
+        
+        return True
     
     
     def _get_permissions_for(self, channel_entity, user):
@@ -1036,5 +1076,17 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         Returns
         -------
         video_quality_mode : ``VideoQualityMode``
+        """
+    )
+    
+    
+    voice_engaged_since = PlaceHolder(
+        None,
+        """
+        Since when the voice channel is engaged with.
+        
+        Returns
+        -------
+        voice_engaged_since : ``None | DateTime``
         """
     )

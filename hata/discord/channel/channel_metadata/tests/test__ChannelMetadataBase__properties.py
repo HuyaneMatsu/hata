@@ -47,3 +47,4 @@ def test__ChannelMetadataBase__place_holders():
     vampytest.assert_instance(channel_metadata.topic, str, nullable = True)
     vampytest.assert_instance(channel_metadata.user_limit, int)
     vampytest.assert_instance(channel_metadata.video_quality_mode, VideoQualityMode)
+    vampytest.assert_instance(channel_metadata.voice_engaged_since, DateTime, nullable = True)

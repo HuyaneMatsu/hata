@@ -6,7 +6,7 @@ from ..fields import validate_permissions
 
 
 def _iter_options__passing():
-    yield None, Permission(0)
+    yield None, Permission()
     yield 1, Permission(1)
     yield Permission(1), Permission(1)
 

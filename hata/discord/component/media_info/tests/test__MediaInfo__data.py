@@ -9,6 +9,7 @@ def test__MediaInfo__from_data():
     """
     Tests whether ``MediaInfo.from_data`` works as intended.
     """
+    attachment_id = 202509200005
     content_type = 'image/png'
     height = 56
     proxy_url = 'https://orindance.party/proxy'
@@ -16,6 +17,7 @@ def test__MediaInfo__from_data():
     width = 23
     
     data = {
+        'attachment_id': str(attachment_id),
         'content_type': content_type,
         'height': height,
         'proxy_url': proxy_url,
@@ -26,6 +28,7 @@ def test__MediaInfo__from_data():
     media_info = MediaInfo.from_data(data)
     _assert_fields_set(media_info)
     
+    vampytest.assert_eq(media_info.attachment_id, attachment_id)
     vampytest.assert_eq(media_info.content_type, content_type)
     vampytest.assert_eq(media_info.height, height)
     vampytest.assert_eq(media_info.proxy_url, proxy_url)
@@ -39,6 +42,7 @@ def test__MediaInfo__to_data():
     
     Case: Include defaults & internals.
     """
+    attachment_id = 202509200006
     content_type = 'image/png'
     height = 56
     proxy_url = 'https://orindance.party/proxy'
@@ -46,6 +50,7 @@ def test__MediaInfo__to_data():
     width = 23
     
     media_info = MediaInfo.precreate(
+        attachment_id = attachment_id,
         content_type = content_type,
         height = height,
         proxy_url = proxy_url,
@@ -54,6 +59,7 @@ def test__MediaInfo__to_data():
     )
     
     expected_output = {
+        'attachment_id': str(attachment_id),
         'content_type': content_type,
         'height': height,
         'proxy_url': proxy_url,

@@ -5,13 +5,14 @@ from scarletio import RichAttributeErrorBaseType
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 
 from .fields import (
-    parse_content_type, parse_height, parse_proxy_url, parse_url, parse_width, put_content_type, put_height,
-    put_proxy_url, put_url, put_width, validate_content_type, validate_height, validate_proxy_url, validate_url,
-    validate_width
+    parse_attachment_id, parse_content_type, parse_height, parse_proxy_url, parse_url, parse_width, put_attachment_id,
+    put_content_type, put_height, put_proxy_url, put_url, put_width, validate_attachment_id, validate_content_type,
+    validate_height, validate_proxy_url, validate_url, validate_width
 )
 
 
 PRECREATE_FIELDS = {
+    'attachment_id': ('attachment_id', validate_attachment_id),
     'content_type': ('content_type', validate_content_type),
     'height': ('height', validate_height),
     'proxy_url': ('proxy_url', validate_proxy_url),
@@ -26,6 +27,9 @@ class MediaInfo(RichAttributeErrorBaseType):
     
     Attributes
     ----------
+    attachment_id : `int`
+        The identifier of the represented attachment if any.
+    
     content_type : `None | str`
         The media info's media type.
     
@@ -45,7 +49,7 @@ class MediaInfo(RichAttributeErrorBaseType):
         
         > Defaults to `0`.
     """
-    __slots__ = ('content_type', 'height', 'proxy_url', 'url', 'width')
+    __slots__ = ('attachment_id', 'content_type', 'height', 'proxy_url', 'url', 'width')
     
     
     def __new__(cls, url):
@@ -68,6 +72,7 @@ class MediaInfo(RichAttributeErrorBaseType):
         
         # Construct
         self = object.__new__(cls)
+        self.attachment_id = 0
         self.content_type = None
         self.height = 0
         self.proxy_url = None
@@ -86,6 +91,7 @@ class MediaInfo(RichAttributeErrorBaseType):
         self : `instance<cls>`
         """
         self = object.__new__(cls)
+        self.attachment_id = 0
         self.content_type = None
         self.height = 0
         self.proxy_url = None
@@ -109,6 +115,7 @@ class MediaInfo(RichAttributeErrorBaseType):
         self : `instance<cls>`
         """
         self = object.__new__(cls)
+        self.attachment_id = parse_attachment_id(data)
         self.content_type = parse_content_type(data)
         self.height = parse_height(data)
         self.proxy_url = parse_proxy_url(data)
@@ -150,6 +157,10 @@ class MediaInfo(RichAttributeErrorBaseType):
             if self.proxy_url != other.proxy_url:
                 return False
             
+            # attachment_id
+            if self.attachment_id != other.attachment_id:
+                return False
+            
             # content_type
             if self.content_type != other.content_type:
                 return False
@@ -177,6 +188,9 @@ class MediaInfo(RichAttributeErrorBaseType):
         proxy_url = self.proxy_url
         if (proxy_url is not None):
             hash_value ^= hash(proxy_url)
+            
+            # attachment_id
+            hash_value ^= self.attachment_id
             
             # content_type
             content_type = self.content_type
@@ -216,6 +230,7 @@ class MediaInfo(RichAttributeErrorBaseType):
         put_url(self.url, data, defaults)
         
         if include_internals:
+            put_attachment_id(self.attachment_id, data, defaults)
             put_content_type(self.content_type, data, defaults)
             put_height(self.height, data, defaults)
             put_width(self.width, data, defaults)
@@ -233,6 +248,7 @@ class MediaInfo(RichAttributeErrorBaseType):
         new : `instance<type<self>>`
         """
         new = object.__new__(type(self))
+        new.attachment_id = 0
         new.content_type = None
         new.height = 0
         new.proxy_url = None
@@ -262,6 +278,7 @@ class MediaInfo(RichAttributeErrorBaseType):
         
         # Construct
         new = object.__new__(type(self))
+        new.attachment_id = 0
         new.content_type = None
         new.height = 0
         new.proxy_url = None
@@ -286,6 +303,9 @@ class MediaInfo(RichAttributeErrorBaseType):
         
         Other Parameters
         ----------------
+        attachment_id : ``None | int | Attachment``, Optional (Keyword only)
+            The identifier of the represented attachment if any.
+        
         content_type : `None | str`, Optional (Keyword only)
             The media info's media type.
         

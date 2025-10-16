@@ -7,6 +7,7 @@ def test__MediaInfo__repr():
     """
     Tests whether ``MediaInfo.__repr__`` works as intended.
     """
+    attachment_id = 202509200007
     content_type = 'image/png'
     height = 56
     proxy_url = 'https://orindance.party/proxy'
@@ -14,6 +15,7 @@ def test__MediaInfo__repr():
     width = 23
     
     media_info = MediaInfo.precreate(
+        attachment_id = attachment_id,
         content_type = content_type,
         height = height,
         proxy_url = proxy_url,
@@ -29,6 +31,7 @@ def test__MediaInfo__hash():
     """
     Tests whether ``MediaInfo.__hash__`` works as intended.
     """
+    attachment_id = 202509200008
     content_type = 'image/png'
     height = 56
     proxy_url = 'https://orindance.party/proxy'
@@ -36,6 +39,7 @@ def test__MediaInfo__hash():
     width = 23
     
     media_info = MediaInfo.precreate(
+        attachment_id = attachment_id,
         content_type = content_type,
         height = height,
         proxy_url = proxy_url,
@@ -48,6 +52,7 @@ def test__MediaInfo__hash():
 
 
 def _iter_options__eq__same_type():
+    attachment_id = 202509200009
     content_type = 'image/png'
     height = 56
     proxy_url = 'https://orindance.party/proxy'
@@ -55,6 +60,7 @@ def _iter_options__eq__same_type():
     width = 23
     
     keyword_parameters = {
+        'attachment_id': attachment_id,
         'content_type': content_type,
         'proxy_url': proxy_url,
         'height': height,
@@ -66,6 +72,15 @@ def _iter_options__eq__same_type():
         keyword_parameters,
         keyword_parameters,
         True,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'attachment_id': 202509200010,
+        },
+        False,
     )
     
     yield (

@@ -5,6 +5,7 @@ import vampytest
 from ....application import Application
 from ....channel import Channel, create_partial_channel_data
 from ....guild import Guild, GuildActivityOverview, create_partial_guild_data
+from ....permission import Permission
 from ....user import User
 from ....utils import datetime_to_timestamp
 
@@ -42,6 +43,9 @@ def test__Invite__set_attributes():
     target_user = User.precreate(202308060020)
     temporary = True
     invite_type = InviteType.guild
+    user_permissions = Permission().update_by_keys(
+        change_nickname = True,
+    )
     uses = 69
     approximate_online_count = 11
     approximate_user_count = 13
@@ -60,6 +64,7 @@ def test__Invite__set_attributes():
         'target_user': target_user.to_data(include_internals = True),
         'temporary': temporary,
         'type': invite_type.value,
+        'is_nickname_changeable': True if user_permissions & Permission.change_nickname.mask else False,
         'uses': uses,
         'approximate_presence_count': approximate_online_count,
         'approximate_member_count': approximate_user_count,
@@ -79,6 +84,7 @@ def test__Invite__set_attributes():
     vampytest.assert_is(invite.target_user, target_user)
     vampytest.assert_eq(invite.temporary, temporary)
     vampytest.assert_is(invite.type, invite_type)
+    vampytest.assert_eq(invite.user_permissions, user_permissions)
     vampytest.assert_eq(invite.uses, uses)
     
     vampytest.assert_eq(invite.approximate_online_count, approximate_online_count)
@@ -149,6 +155,9 @@ def test__Invite__update_attributes():
     target_user = User.precreate(202308060028)
     temporary = True
     invite_type = InviteType.guild
+    user_permissions = Permission().update_by_keys(
+        change_nickname = True,
+    )
     uses = 69
     approximate_online_count = 11
     approximate_user_count = 13
@@ -168,6 +177,7 @@ def test__Invite__update_attributes():
         'temporary': temporary,
         'type': invite_type.value,
         'uses': uses,
+        'is_nickname_changeable': True if user_permissions & Permission.change_nickname.mask else False,
         'approximate_presence_count': approximate_online_count,
         'approximate_member_count': approximate_user_count,
     }
@@ -186,6 +196,7 @@ def test__Invite__update_attributes():
     vampytest.assert_is(invite.target_user, target_user)
     vampytest.assert_eq(invite.temporary, temporary)
     vampytest.assert_is(invite.type, invite_type)
+    vampytest.assert_eq(invite.user_permissions, user_permissions)
     vampytest.assert_eq(invite.uses, uses)
     
     vampytest.assert_eq(invite.approximate_online_count, approximate_online_count)
@@ -386,6 +397,9 @@ def test__Invite__from_data():
     target_user = User.precreate(202308060044)
     temporary = True
     invite_type = InviteType.guild
+    user_permissions = Permission().update_by_keys(
+        change_nickname = True,
+    )
     uses = 69
     approximate_online_count = 11
     approximate_user_count = 13
@@ -405,6 +419,7 @@ def test__Invite__from_data():
         'target_user': target_user.to_data(include_internals = True),
         'temporary': temporary,
         'type': invite_type.value,
+        'is_nickname_changeable': True if user_permissions & Permission.change_nickname.mask else False,
         'uses': uses,
         'approximate_presence_count': approximate_online_count,
         'approximate_member_count': approximate_user_count,
@@ -426,6 +441,7 @@ def test__Invite__from_data():
     vampytest.assert_is(invite.target_user, target_user)
     vampytest.assert_eq(invite.temporary, temporary)
     vampytest.assert_is(invite.type, invite_type)
+    vampytest.assert_eq(invite.user_permissions, user_permissions)
     vampytest.assert_eq(invite.uses, uses)
     
     vampytest.assert_eq(invite.approximate_online_count, approximate_online_count)
@@ -482,6 +498,9 @@ def test__Invite__to_data__with_internals():
     target_user = User.precreate(202308060058)
     temporary = True
     invite_type = InviteType.guild
+    user_permissions = Permission().update_by_keys(
+        change_nickname = True,
+    )
     uses = 69
     approximate_online_count = 11
     approximate_user_count = 13
@@ -501,6 +520,7 @@ def test__Invite__to_data__with_internals():
         target_user = target_user,
         temporary = temporary,
         invite_type = invite_type,
+        user_permissions = user_permissions,
         uses = uses,
         approximate_online_count = approximate_online_count,
         approximate_user_count = approximate_user_count,
@@ -526,6 +546,7 @@ def test__Invite__to_data__with_internals():
         'target_application': target_application.to_data_invite(defaults = True, include_internals = True),
         'target_user': target_user.to_data(defaults = True, include_internals = True),
         'type': invite_type.value,
+        'is_nickname_changeable': True if user_permissions & Permission.change_nickname.mask else False,
         'uses': uses,
     }
     
@@ -560,6 +581,9 @@ def test__Invite__to_data__without_internals():
     target_user = User.precreate(202308060064)
     temporary = True
     invite_type = InviteType.guild
+    user_permissions = Permission().update_by_keys(
+        change_nickname = True,
+    )
     uses = 69
     approximate_online_count = 11
     approximate_user_count = 13
@@ -579,6 +603,7 @@ def test__Invite__to_data__without_internals():
         target_user = target_user,
         temporary = temporary,
         invite_type = invite_type,
+        user_permissions = user_permissions,
         uses = uses,
         approximate_online_count = approximate_online_count,
         approximate_user_count = approximate_user_count,

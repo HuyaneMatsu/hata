@@ -21,7 +21,7 @@ from ..preinstanced import (
     ApplicationDiscoverabilityState, ApplicationEventWebhookEventType, ApplicationEventWebhookState,
     ApplicationExplicitContentFilterLevel, ApplicationIntegrationType, ApplicationInteractionEventType,
     ApplicationInteractionVersion, ApplicationInternalGuildRestriction, ApplicationMonetizationState,
-    ApplicationRPCState, ApplicationStoreState, ApplicationType, ApplicationVerificationState
+    ApplicationRPCState, ApplicationStoreState, ApplicationTheme, ApplicationType, ApplicationVerificationState
 )
 
 from .test__Application__constructor import _assert_fields_set
@@ -96,6 +96,7 @@ def test__Application__copy():
     store_state = ApplicationStoreState.approved
     tags = ['cat']
     terms_of_service_url = 'https://orindance.party/'
+    themes = [ApplicationTheme.action]
     third_party_skus = [ThirdPartySKU(distributor = 'Dead')]
     application_type = ApplicationType.game
     verification_state = ApplicationVerificationState.approved
@@ -157,6 +158,7 @@ def test__Application__copy():
         store_state = store_state,
         tags = tags,
         terms_of_service_url = terms_of_service_url,
+        themes = themes,
         third_party_skus = third_party_skus,
         application_type = application_type,
         verification_state = verification_state,
@@ -239,6 +241,7 @@ def test__Application__copy_with__no_fields():
     store_state = ApplicationStoreState.approved
     tags = ['cat']
     terms_of_service_url = 'https://orindance.party/'
+    themes = [ApplicationTheme.action]
     third_party_skus = [ThirdPartySKU(distributor = 'Dead')]
     application_type = ApplicationType.game
     verification_state = ApplicationVerificationState.approved
@@ -300,6 +303,7 @@ def test__Application__copy_with__no_fields():
         store_state = store_state,
         tags = tags,
         terms_of_service_url = terms_of_service_url,
+        themes = themes,
         third_party_skus = third_party_skus,
         application_type = application_type,
         verification_state = verification_state,
@@ -383,6 +387,7 @@ def test__Application__copy_with__all_fields():
     old_store_state = ApplicationStoreState.approved
     old_tags = ['cat']
     old_terms_of_service_url = 'https://orindance.party/'
+    old_themes = [ApplicationTheme.action]
     old_third_party_skus = [ThirdPartySKU(distributor = 'Dead')]
     old_application_type = ApplicationType.game
     old_verification_state = ApplicationVerificationState.approved
@@ -450,6 +455,7 @@ def test__Application__copy_with__all_fields():
     new_store_state = ApplicationStoreState.submitted
     new_tags = ['alien', 'lovely']
     new_terms_of_service_url = 'https://www.astil.dev/project/hata/'
+    new_themes = [ApplicationTheme.business]
     new_third_party_skus = [ThirdPartySKU(distributor = 'Sia')]
     new_application_type = ApplicationType.music
     new_verification_state = ApplicationVerificationState.submitted
@@ -511,6 +517,7 @@ def test__Application__copy_with__all_fields():
         store_state = old_store_state,
         tags = old_tags,
         terms_of_service_url = old_terms_of_service_url,
+        themes = old_themes,
         third_party_skus = old_third_party_skus,
         application_type = old_application_type,
         verification_state = old_verification_state,
@@ -573,6 +580,7 @@ def test__Application__copy_with__all_fields():
         store_state = new_store_state,
         tags = new_tags,
         terms_of_service_url = new_terms_of_service_url,
+        themes = new_themes,
         third_party_skus = new_third_party_skus,
         application_type = new_application_type,
         verification_state = new_verification_state,
@@ -635,6 +643,7 @@ def test__Application__copy_with__all_fields():
     vampytest.assert_is(copy.store_state, new_store_state)
     vampytest.assert_eq(copy.tags, tuple(new_tags))
     vampytest.assert_eq(copy.terms_of_service_url, new_terms_of_service_url)
+    vampytest.assert_eq(copy.themes, tuple(new_themes))
     vampytest.assert_eq(copy.third_party_skus, tuple(new_third_party_skus))
     vampytest.assert_is(copy.type, new_application_type)
     vampytest.assert_is(copy.verification_state, new_verification_state)
@@ -843,6 +852,33 @@ def test__Application__iter_tags(input_value):
     """
     application = Application(tags = input_value)
     return [*application.iter_tags()]
+
+
+def _iter_options__iter_themes():
+    theme_0 = ApplicationTheme.action
+    theme_1 = ApplicationTheme.business
+    
+    yield None, []
+    yield [theme_0], [theme_0]
+    yield [theme_0, theme_1], [theme_0, theme_1]
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_themes()).returning_last())
+def test__Application__iter_themes(input_value):
+    """
+    Tests whether ``Application.iter_themes`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<ThirdPartySKU>`
+        Third party stock keeping units origins to create the application with.
+    
+    Returns
+    -------
+    output : `list<ThirdPartySKU>`
+    """
+    application = Application(themes = input_value)
+    return [*application.iter_themes()]
 
 
 def _iter_options__iter_third_party_skus():

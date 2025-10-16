@@ -10,7 +10,7 @@ from .intent import INTENT_MASK_DIRECT_MESSAGES, INTENT_MASK_GUILD_MESSAGES, INT
 Client = include('Client')
 
 
-def filter_clients(clients, flag_mask, me):
+def filter_clients(iterator, flag_mask, me):
     """
     Filters the clients whether their intents allows the specific flag.
     
@@ -24,8 +24,9 @@ def filter_clients(clients, flag_mask, me):
     
     Parameters
     ----------
-    clients : `list` of ``Client``
-        The clients to filter.
+    iterator : ``GeneratorType<Client>``
+        An iterator over the clients to filter from.
+    
     flag_mask : `int`
         The intent flag's mask based on what the clients will be filtered.
     me : ``Client``
@@ -35,7 +36,6 @@ def filter_clients(clients, flag_mask, me):
     -------
     client : ``Client``, `None`
     """
-    iterator = iter(clients)
     for client in iterator:
         if client.intents & flag_mask == flag_mask:
             break
@@ -99,11 +99,11 @@ def get_message_enabled_user_ids(message_data):
     return enabled_user_ids
 
 
-def filter_content_intent_client(clients, message_data, me):
+def filter_content_intent_client(iterator, message_data, me):
     """
     Filters the clients who has message content intent.
     
-    First yields the first client from `clients` what allows message content. If non, then yields `None`.
+    First yields the first client from `clients` that allows message content. If non, then yields `None`.
     If a `None` or not the expected client was yielded, then the generator should be closed.
     
     If the correct client was yielded, then the generator is used at a for loop yielding all the clients from `clients`
@@ -113,23 +113,19 @@ def filter_content_intent_client(clients, message_data, me):
     
     Parameters
     ----------
-    clients : `list` of ``Client``
-        A list of client to search from.
+    iterator : ``GeneratorType<Client>``
+        An iterator over the client to filter from.
+    
     message_data : `dict<str, object>`
         Received message data.
+    
     me : ``Client``
         The client who received the respective event.
     
-    Returns
+    Yields
     -------
     client : ``Client``
     """
-    # Fast check for obvious speed reasons.
-    if (len(clients) <= 1) or (message_data.get('flags', 0) & (1 << 6)):
-        yield me
-        yield me
-        return
-    
     # Check whether any of the clients has the required intent mask
     flag_mask = INTENT_MASK_MESSAGE_CONTENT
     
@@ -140,7 +136,6 @@ def filter_content_intent_client(clients, message_data, me):
     
     enabled_user_ids = get_message_enabled_user_ids(message_data)
     
-    iterator = iter(clients)
     for client in iterator:
         if (client.intents & flag_mask == flag_mask) or (client.id in enabled_user_ids):
             break
@@ -158,7 +153,7 @@ def filter_content_intent_client(clients, message_data, me):
             yield client
 
 
-def filter_clients_or_me(clients, flag_mask, me):
+def filter_clients_or_me(iterator, flag_mask, me):
     """
     Filters the clients whether their intents allow the specific flag. This filter is used, when the clients receive
     the respective event for themselves even if they have the intent disabled.
@@ -180,10 +175,12 @@ def filter_clients_or_me(clients, flag_mask, me):
     
     Parameters
     ----------
-    clients : `list` of ``Client``
-        The clients to filter.
+    iterator : ``GeneratorType<Client>``
+        An iterator over the clients to filter from.
+    
     flag_mask : `int`
         The intent flag's mask based on what the clients will be filtered.
+    
     me : ``Client``
         The client who received the respective event.
     
@@ -191,7 +188,6 @@ def filter_clients_or_me(clients, flag_mask, me):
     -------
     client : ``Client``, `None`
     """
-    iterator = iter(clients)
     for client in iterator:
         if client.intents & flag_mask == flag_mask:
             break
@@ -239,16 +235,18 @@ def filter_just_me(me):
     yield me
 
 
-def first_client(clients, flag_mask, me):
+def first_client(iterator, flag_mask, me):
     """
     Returns the first client what allows the specified intent flag. If no client allows it, then returns `None`.
     
     Parameters
     ----------
-    clients : `list` of ``Client``
-        A list of client to search from.
+    iterator : ``GeneratorType<Client>``
+        An iterator over the clients to filter from.
+    
     flag_mask : `int`
         The intent flag's mask based on what the clients will be filtered.
+    
     me : ``Client``
         The client who received the respective event.
     
@@ -256,14 +254,14 @@ def first_client(clients, flag_mask, me):
     -------
     client : ``Client``
     """
-    for client in clients:
+    for client in iterator:
         if client.intents & flag_mask == flag_mask:
             return client
     
     return me
 
 
-def first_content_intent_client(clients, message_data, me):
+def first_content_intent_client(iterator, message_data, me):
     """
     Returns the first client, who has message content intent for the given message.
     
@@ -271,10 +269,12 @@ def first_content_intent_client(clients, message_data, me):
     
     Parameters
     ----------
-    clients : `list` of ``Client``
-        A list of client to search from.
+    iterator : ``GeneratorType<Client>``
+        An iterator over the clients to filter from.
+    
     message_data : `dict<str, object>`
         Received message data.
+    
     me : ``Client``
         The client who received the respective event.
     
@@ -282,6 +282,7 @@ def first_content_intent_client(clients, message_data, me):
     -------
     client : ``Client``
     """
+    clients = [*iterator]
     # Fast check for obvious speed reasons.
     if (len(clients) <= 1) or (message_data.get('flags', 0) & (1 << 6)):
         return me
@@ -305,14 +306,15 @@ def first_content_intent_client(clients, message_data, me):
     return clients[0]
 
 
-def first_client_or_me(clients, flag_mask, me):
+def first_client_or_me(iterator, flag_mask, me):
     """
     Returns the first client what allows the specified intent flag. If non of the clients allow it, then returns `me`.
     
     Parameters
     ----------
-    clients : `list` of ``Client``
-        A list of client to search from.
+    iterator : ``GeneratorType<Client>``
+        An iterator over the clients to filter from.
+    
     flag_mask : `int`
         The intent flag's mask based on what the clients will be filtered.
     me : ``Client``
@@ -322,7 +324,7 @@ def first_client_or_me(clients, flag_mask, me):
     -------
     client : ``Client``
     """
-    for client in clients:
+    for client in iterator:
         if client.intents & flag_mask == flag_mask:
             return client
     

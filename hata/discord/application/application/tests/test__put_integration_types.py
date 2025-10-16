@@ -5,17 +5,44 @@ from ..preinstanced import ApplicationIntegrationType
 
 
 def _iter_options():
-    yield None, False, {'integration_types': []}
-    yield None, True, {'integration_types': []}
     yield (
-        (ApplicationIntegrationType.user_install, ),
+        None,
         False,
-        {'integration_types': [ApplicationIntegrationType.user_install.value]},
+        {
+            'integration_types': [],
+        },
     )
+    
     yield (
-        (ApplicationIntegrationType.user_install, ),
+        None,
         True,
-        {'integration_types': [ApplicationIntegrationType.user_install.value]},
+        {
+            'integration_types': [],
+        },
+    )
+    
+    yield (
+        (
+            ApplicationIntegrationType.user_install,
+        ),
+        False,
+        {
+            'integration_types': [
+                ApplicationIntegrationType.user_install.value,
+            ],
+        },
+    )
+    
+    yield (
+        (
+            ApplicationIntegrationType.user_install,
+        ),
+        True,
+        {
+            'integration_types': [
+                ApplicationIntegrationType.user_install.value,
+            ],
+        },
     )
 
 
@@ -26,8 +53,9 @@ def test__put_integration_types(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `none | tuple<ApplicationIntegrationType>`
+    input_value : ``none | tuple<ApplicationIntegrationType>``
         Value to serialize.
+    
     defaults : `bool`
         Whether fields with their default value should be included as well.
     

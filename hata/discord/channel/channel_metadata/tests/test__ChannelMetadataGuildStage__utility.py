@@ -1,3 +1,5 @@
+from datetime import datetime as DateTime, timezone as TimeZone
+
 import vampytest
 
 from ...permission_overwrite import PermissionOverwrite, PermissionOverwriteTargetType
@@ -22,6 +24,7 @@ def test__ChannelMetadataGuildStage__copy():
     region = VoiceRegion.brazil
     user_limit = 4
     topic = 'orin'
+    voice_engaged_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     channel_metadata = ChannelMetadataGuildStage(
         name = name,
@@ -32,6 +35,7 @@ def test__ChannelMetadataGuildStage__copy():
         region = region,
         user_limit = user_limit,
         topic = topic,
+        voice_engaged_since = voice_engaged_since,
     )
     
     copy = channel_metadata.copy()
@@ -41,7 +45,7 @@ def test__ChannelMetadataGuildStage__copy():
     vampytest.assert_eq(copy, channel_metadata)
 
 
-def test__ChannelMetadataGuildStage__copy_with__0():
+def test__ChannelMetadataGuildStage__copy_with__no_fields():
     """
     Tests whether ``ChannelMetadataGuildStage.copy_with` works as intended.
     
@@ -57,6 +61,7 @@ def test__ChannelMetadataGuildStage__copy_with__0():
     region = VoiceRegion.brazil
     user_limit = 4
     topic = 'orin'
+    voice_engaged_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     channel_metadata = ChannelMetadataGuildStage(
         name = name,
@@ -67,6 +72,7 @@ def test__ChannelMetadataGuildStage__copy_with__0():
         region = region,
         user_limit = user_limit,
         topic = topic,
+        voice_engaged_since = voice_engaged_since,
     )
     
     copy = channel_metadata.copy_with()
@@ -76,7 +82,7 @@ def test__ChannelMetadataGuildStage__copy_with__0():
     vampytest.assert_eq(copy, channel_metadata)
 
 
-def test__ChannelMetadataGuildStage__copy_with__1():
+def test__ChannelMetadataGuildStage__copy_with__all_fields():
     """
     Tests whether ``ChannelMetadataGuildStage.copy_with` works as intended.
     
@@ -92,6 +98,7 @@ def test__ChannelMetadataGuildStage__copy_with__1():
     old_region = VoiceRegion.brazil
     old_user_limit = 4
     old_topic = 'orin'
+    old_voice_engaged_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     new_name = 'emotion'
     new_parent_id = 202304130006
@@ -103,6 +110,7 @@ def test__ChannelMetadataGuildStage__copy_with__1():
     new_region = VoiceRegion.india
     new_user_limit = 5
     new_topic = 'rin'
+    new_voice_engaged_since = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
     
     channel_metadata = ChannelMetadataGuildStage(
         name = old_name,
@@ -113,6 +121,7 @@ def test__ChannelMetadataGuildStage__copy_with__1():
         region = old_region,
         user_limit = old_user_limit,
         topic = old_topic,
+        voice_engaged_since = old_voice_engaged_since,
     )
     
     copy = channel_metadata.copy_with(
@@ -124,6 +133,7 @@ def test__ChannelMetadataGuildStage__copy_with__1():
         region = new_region,
         user_limit = new_user_limit,
         topic = new_topic,
+        voice_engaged_since = new_voice_engaged_since,
     )
     _assert_fields_set(copy)
     vampytest.assert_is_not(copy, channel_metadata)
@@ -139,9 +149,10 @@ def test__ChannelMetadataGuildStage__copy_with__1():
     vampytest.assert_eq(copy.region, new_region)
     vampytest.assert_eq(copy.user_limit, new_user_limit)
     vampytest.assert_eq(copy.topic, new_topic)
+    vampytest.assert_eq(copy.voice_engaged_since, new_voice_engaged_since)
 
 
-def test__ChannelMetadataGuildStage__copy_with_keyword_parameters__0():
+def test__ChannelMetadataGuildStage__copy_with_keyword_parameters__no_fields():
     """
     Tests whether ``ChannelMetadataGuildStage.copy_with_keyword_parameters` works as intended.
     
@@ -157,6 +168,7 @@ def test__ChannelMetadataGuildStage__copy_with_keyword_parameters__0():
     region = VoiceRegion.brazil
     user_limit = 4
     topic = 'orin'
+    voice_engaged_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     channel_metadata = ChannelMetadataGuildStage(
         name = name,
@@ -167,6 +179,7 @@ def test__ChannelMetadataGuildStage__copy_with_keyword_parameters__0():
         region = region,
         user_limit = user_limit,
         topic = topic,
+        voice_engaged_since = voice_engaged_since,
     )
     
     keyword_parameters = {}
@@ -178,7 +191,7 @@ def test__ChannelMetadataGuildStage__copy_with_keyword_parameters__0():
     vampytest.assert_eq(copy, channel_metadata)
 
 
-def test__ChannelMetadataGuildStage__copy_with_keyword_parameters__1():
+def test__ChannelMetadataGuildStage__copy_with_keyword_parameters__all_fields():
     """
     Tests whether ``ChannelMetadataGuildStage.copy_with_keyword_parameters` works as intended.
     
@@ -194,6 +207,7 @@ def test__ChannelMetadataGuildStage__copy_with_keyword_parameters__1():
     old_region = VoiceRegion.brazil
     old_user_limit = 4
     old_topic = 'orin'
+    old_voice_engaged_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     new_name = 'emotion'
     new_parent_id = 202304130012
@@ -205,6 +219,7 @@ def test__ChannelMetadataGuildStage__copy_with_keyword_parameters__1():
     new_region = VoiceRegion.india
     new_user_limit = 5
     new_topic = 'rin'
+    new_voice_engaged_since = DateTime(2016, 5, 18, tzinfo = TimeZone.utc)
     
     channel_metadata = ChannelMetadataGuildStage(
         name = old_name,
@@ -215,6 +230,7 @@ def test__ChannelMetadataGuildStage__copy_with_keyword_parameters__1():
         region = old_region,
         user_limit = old_user_limit,
         topic = old_topic,
+        voice_engaged_since = old_voice_engaged_since,
     )
     
     keyword_parameters = {
@@ -226,6 +242,7 @@ def test__ChannelMetadataGuildStage__copy_with_keyword_parameters__1():
         'region': new_region,
         'user_limit': new_user_limit,
         'topic': new_topic,
+        'voice_engaged_since': new_voice_engaged_since,
     }
     
     copy = channel_metadata.copy_with_keyword_parameters(keyword_parameters)
@@ -244,3 +261,4 @@ def test__ChannelMetadataGuildStage__copy_with_keyword_parameters__1():
     vampytest.assert_eq(copy.region, new_region)
     vampytest.assert_eq(copy.user_limit, new_user_limit)
     vampytest.assert_eq(copy.topic, new_topic)
+    vampytest.assert_eq(copy.voice_engaged_since, new_voice_engaged_since)

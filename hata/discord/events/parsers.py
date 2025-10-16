@@ -259,7 +259,7 @@ def MESSAGE_DELETE__CAL_MC(client, data):
         message = None
     else:
         clients = filter_clients(
-            channel.clients,
+            channel.iter_clients(),
             INTENT_MASK_GUILD_MESSAGES if channel.is_in_group_guild() else INTENT_MASK_DIRECT_MESSAGES,
             client,
         )
@@ -313,7 +313,7 @@ def MESSAGE_DELETE__OPT_MC(client, data):
         return
     
     if first_client(
-        channel.clients,
+        channel.iter_clients(),
         INTENT_MASK_GUILD_MESSAGES if channel.is_in_group_guild() else INTENT_MASK_DIRECT_MESSAGES,
         client,
     ) is not client:
@@ -376,7 +376,7 @@ def MESSAGE_DELETE_BULK__CAL_MC(client, data):
         missed = [int(message_id) for message_id in data['ids']]
     
     else:
-        clients = filter_clients(channel.clients, INTENT_MASK_GUILD_MESSAGES, client)
+        clients = filter_clients(channel.iter_clients(), INTENT_MASK_GUILD_MESSAGES, client)
         if clients.send(None) is not client:
             clients.close()
             return
@@ -430,7 +430,7 @@ def MESSAGE_DELETE_BULK__OPT_MC(client, data):
         guild_sync(client, data, None)
         return
     
-    if first_client(channel.clients, INTENT_MASK_GUILD_MESSAGES, client) is not client:
+    if first_client(channel.iter_clients(), INTENT_MASK_GUILD_MESSAGES, client) is not client:
         return
     
     message_ids = [int(message_id) for message_id in data['ids']]
@@ -499,7 +499,7 @@ def MESSAGE_UPDATE__CAL_MC(client, data):
         if (event_handler is not DEFAULT_EVENT_HANDLER):
             Task(KOKORO, event_handler(client, message, None))
     
-    clients = filter_content_intent_client(channel.clients, data, client)
+    clients = filter_content_intent_client(channel.iter_clients(), data, client)
     
     if clients.send(None) is not client:
         clients.close()
@@ -550,7 +550,7 @@ def MESSAGE_UPDATE__OPT_MC(client, data):
         return
     
     channel = message.channel
-    if first_content_intent_client(channel.clients, data, client) is not client:
+    if first_content_intent_client(channel.iter_clients(), data, client) is not client:
         return
     
     if 'edited_timestamp' in data:
@@ -587,7 +587,7 @@ def MESSAGE_REACTION_ADD__CAL_MC(client, data):
         clients = None
     else:
         clients = filter_clients(
-            channel.clients,
+            channel.iter_clients(),
             INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
             client,
         )
@@ -624,7 +624,7 @@ def MESSAGE_REACTION_ADD__OPT_MC(client, data):
     
     channel = message.channel
     if first_client(
-        channel.clients,
+        channel.iter_clients(),
         INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
         client,
     ) is not client:
@@ -673,7 +673,7 @@ def MESSAGE_REACTION_REMOVE_ALL__CAL_MC(client, data):
     
     else:
         clients = filter_clients(
-            channel.clients,
+            channel.iter_clients(),
             INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
             client,
         )
@@ -723,7 +723,7 @@ def MESSAGE_REACTION_REMOVE_ALL__OPT_MC(client, data):
     
     channel = message.channel
     if first_client(
-        channel.clients,
+        channel.iter_clients(),
         INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
         client,
     ) is not client:
@@ -763,7 +763,7 @@ def MESSAGE_REACTION_REMOVE__CAL_MC(client, data):
     
     else:
         clients = filter_clients(
-            channel.clients,
+            channel.iter_clients(),
             INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
             client,
         )
@@ -800,7 +800,7 @@ def MESSAGE_REACTION_REMOVE__OPT_MC(client, data):
     
     channel = message.channel
     if first_client(
-        channel.clients,
+        channel.iter_clients(),
         INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
         client,
     ) is not client:
@@ -846,7 +846,7 @@ def MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC(client, data):
     
     else:
         clients = filter_clients(
-            channel.clients,
+            channel.iter_clients(),
             INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
             client,
         )
@@ -894,7 +894,7 @@ def MESSAGE_REACTION_REMOVE_EMOJI__OPT_MC(client, data):
     
     channel = message.channel
     if first_client(
-        channel.clients,
+        channel.iter_clients(),
         INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
         client,
     ) is not client:
@@ -1041,7 +1041,7 @@ if CACHE_USER:
             guild_sync(client, data, 'GUILD_MEMBER_UPDATE')
             return
         
-        clients = filter_clients_or_me(guild.clients, INTENT_MASK_GUILD_USERS, client)
+        clients = filter_clients_or_me(guild.iter_clients(), INTENT_MASK_GUILD_USERS, client)
         if clients.send(None) is not client:
             clients.close()
             return
@@ -1078,7 +1078,7 @@ if CACHE_USER:
             guild_sync(client, data, 'GUILD_MEMBER_UPDATE')
             return
         
-        if first_client_or_me(guild.clients, INTENT_MASK_GUILD_USERS, client) is not client:
+        if first_client_or_me(guild.iter_clients(), INTENT_MASK_GUILD_USERS, client) is not client:
             return
         
         User._from_data_and_update_profile(data, guild)
@@ -1210,7 +1210,7 @@ def GUILD_APPLIED_BOOSTS_UPDATE__CAL_MC(client, data):
         clients = None
     
     else:
-        clients = filter_clients(guild.clients, INTENT_MASK_GUILDS, client)
+        clients = filter_clients(guild.iter_clients(), INTENT_MASK_GUILDS, client)
         if clients.send(None) is not client:
             clients.close()
             return
@@ -1278,7 +1278,7 @@ def CHANNEL_DELETE__CAL_MC(client, data):
     except KeyError:
         return
     
-    clients = channel.clients
+    clients = channel.iter_clients()
     if channel.is_in_group_guild():
         clients = filter_clients(clients, INTENT_MASK_GUILDS, client)
         if clients.send(None) is not client:
@@ -1333,6 +1333,7 @@ def CHANNEL_UPDATE__CAL_SC(client, data):
     
     Task(KOKORO, client.events.channel_update(client, channel, old_attributes))
 
+
 def CHANNEL_UPDATE__CAL_MC(client, data):
     channel_id = int(data['id'])
     try:
@@ -1341,7 +1342,17 @@ def CHANNEL_UPDATE__CAL_MC(client, data):
         guild_sync(client, data, None)
         return
     
-    clients = filter_clients(channel.clients, INTENT_MASK_GUILDS, client)
+    if channel.is_in_group_guild():
+        guild = channel.guild
+        if guild is None:
+            clients = filter_just_me(client)
+        else:
+            clients = guild.iter_clients()
+    
+    else:
+        clients = channel.iter_clients()
+    
+    clients = filter_clients(clients, INTENT_MASK_GUILDS, client)
     if clients.send(None) is not client:
         clients.close()
         return
@@ -1367,6 +1378,7 @@ def CHANNEL_UPDATE__OPT_SC(client, data):
     
     channel._update_attributes(data)
 
+
 def CHANNEL_UPDATE__OPT_MC(client, data):
     channel_id = int(data['id'])
     try:
@@ -1375,10 +1387,21 @@ def CHANNEL_UPDATE__OPT_MC(client, data):
         guild_sync(client, data, None)
         return
     
-    if first_client(channel.clients, INTENT_MASK_GUILDS, client) is not client:
+    if channel.is_in_group_guild():
+        guild = channel.guild
+        if guild is None:
+            clients = filter_just_me(client)
+        else:
+            clients = guild.iter_clients()
+    
+    else:
+        clients = channel.iter_clients()
+    
+    if first_client(clients, INTENT_MASK_GUILDS, client) is not client:
         return
     
     channel._update_attributes(data)
+
 
 add_parser(
     'CHANNEL_UPDATE',
@@ -1428,7 +1451,7 @@ def THREAD_UPDATE__CAL_MC(client, data):
         except KeyError:
             clients = None
         else:
-            clients = guild.clients
+            clients = guild.iter_clients()
     
     channel_id = int(data['id'])
     channel = CHANNELS.get(channel_id, None)
@@ -1486,7 +1509,7 @@ def THREAD_UPDATE__OPT_MC(client, data):
         except KeyError:
             clients = None
         else:
-            clients = guild.clients
+            clients = guild.iter_clients()
     
     channel_id = int(data['id'])
     channel = CHANNELS.get(channel_id, None)
@@ -1530,6 +1553,7 @@ def VOICE_CHANNEL_STATUS_UPDATE__CAL_SC(client, data):
     
     Task(KOKORO, client.events.channel_update(client, channel, old_attributes))
 
+
 def VOICE_CHANNEL_STATUS_UPDATE__CAL_MC(client, data):
     channel_id = int(data['id'])
     try:
@@ -1538,7 +1562,7 @@ def VOICE_CHANNEL_STATUS_UPDATE__CAL_MC(client, data):
         guild_sync(client, data, None)
         return
     
-    clients = filter_clients(channel.clients, INTENT_MASK_GUILDS, client)
+    clients = filter_clients(channel.iter_clients(), INTENT_MASK_GUILDS, client)
     if clients.send(None) is not client:
         clients.close()
         return
@@ -1564,6 +1588,7 @@ def VOICE_CHANNEL_STATUS_UPDATE__OPT_SC(client, data):
     
     channel._update_status(data)
 
+
 def VOICE_CHANNEL_STATUS_UPDATE__OPT_MC(client, data):
     channel_id = int(data['id'])
     try:
@@ -1572,7 +1597,7 @@ def VOICE_CHANNEL_STATUS_UPDATE__OPT_MC(client, data):
         guild_sync(client, data, None)
         return
     
-    if first_client(channel.clients, INTENT_MASK_GUILDS, client) is not client:
+    if first_client(channel.iter_clients(), INTENT_MASK_GUILDS, client) is not client:
         return
     
     channel._update_status(data)
@@ -1590,6 +1615,85 @@ del (
     VOICE_CHANNEL_STATUS_UPDATE__CAL_MC,
     VOICE_CHANNEL_STATUS_UPDATE__OPT_SC,
     VOICE_CHANNEL_STATUS_UPDATE__OPT_MC,
+)
+
+
+def VOICE_CHANNEL_START_TIME_UPDATE__CAL_SC(client, data):
+    channel_id = int(data['id'])
+    try:
+        channel = CHANNELS[channel_id]
+    except KeyError:
+        guild_sync(client, data, None)
+        return
+    
+    old_attributes = channel._difference_update_voice_engaged_since(data)
+    if not old_attributes:
+        return
+    
+    Task(KOKORO, client.events.channel_update(client, channel, old_attributes))
+
+
+def VOICE_CHANNEL_START_TIME_UPDATE__CAL_MC(client, data):
+    channel_id = int(data['id'])
+    try:
+        channel = CHANNELS[channel_id]
+    except KeyError:
+        guild_sync(client, data, None)
+        return
+    
+    clients = filter_clients(channel.iter_clients(), INTENT_MASK_GUILDS, client)
+    if clients.send(None) is not client:
+        clients.close()
+        return
+    
+    old_attributes = channel._difference_update_voice_engaged_since(data)
+    if not old_attributes:
+        clients.close()
+        return
+    
+    for client_ in clients:
+        event_handler = client_.events.channel_update
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(KOKORO, event_handler(client_, channel, old_attributes))
+
+
+def VOICE_CHANNEL_START_TIME_UPDATE__OPT_SC(client, data):
+    channel_id = int(data['id'])
+    try:
+        channel = CHANNELS[channel_id]
+    except KeyError:
+        guild_sync(client, data, None)
+        return
+    
+    channel._update_voice_engaged_since(data)
+
+
+def VOICE_CHANNEL_START_TIME_UPDATE__OPT_MC(client, data):
+    channel_id = int(data['id'])
+    try:
+        channel = CHANNELS[channel_id]
+    except KeyError:
+        guild_sync(client, data, None)
+        return
+    
+    if first_client(channel.iter_clients(), INTENT_MASK_GUILDS, client) is not client:
+        return
+    
+    channel._update_voice_engaged_since(data)
+
+
+add_parser(
+    'VOICE_CHANNEL_START_TIME_UPDATE',
+    VOICE_CHANNEL_START_TIME_UPDATE__CAL_SC,
+    VOICE_CHANNEL_START_TIME_UPDATE__CAL_MC,
+    VOICE_CHANNEL_START_TIME_UPDATE__OPT_SC,
+    VOICE_CHANNEL_START_TIME_UPDATE__OPT_MC,
+)
+del (
+    VOICE_CHANNEL_START_TIME_UPDATE__CAL_SC,
+    VOICE_CHANNEL_START_TIME_UPDATE__CAL_MC,
+    VOICE_CHANNEL_START_TIME_UPDATE__OPT_SC,
+    VOICE_CHANNEL_START_TIME_UPDATE__OPT_MC,
 )
 
 
@@ -1710,6 +1814,7 @@ def CHANNEL_RECIPIENT_REMOVE__CAL_SC(client, data):
     if client != user:
         Task(KOKORO, client.events.channel_group_user_delete(client, channel, user))
 
+
 def CHANNEL_RECIPIENT_REMOVE__CAL_MC(client, data):
     channel_id = int(data['channel_id'])
     try:
@@ -1723,11 +1828,12 @@ def CHANNEL_RECIPIENT_REMOVE__CAL_MC(client, data):
     except ValueError:
         return
     
-    for client_ in channel.clients:
+    for client_ in channel.iter_clients():
         if (client_ is client) or (client_ != user):
             event_handler = client_.events.channel_group_user_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 Task(KOKORO, event_handler(client_, channel, user))
+
 
 def CHANNEL_RECIPIENT_REMOVE__OPT(client, data):
     channel_id = int(data['channel_id'])
@@ -1801,7 +1907,7 @@ def GUILD_EMOJIS_UPDATE__CAL_MC(client, data):
         guild_sync(client, data, None)
         return
     
-    clients = filter_clients(guild.clients, INTENT_MASK_GUILD_EXPRESSIONS, client)
+    clients = filter_clients(guild.iter_clients(), INTENT_MASK_GUILD_EXPRESSIONS, client)
     if clients.send(None) is not client:
         clients.close()
         return
@@ -1855,7 +1961,7 @@ def GUILD_EMOJIS_UPDATE__OPT_MC(client, data):
         guild_sync(client, data, None)
         return
     
-    if first_client(guild.clients, INTENT_MASK_GUILD_EXPRESSIONS, client) is not client:
+    if first_client(guild.iter_clients(), INTENT_MASK_GUILD_EXPRESSIONS, client) is not client:
         return
     
     guild._update_emojis(data['emojis'])
@@ -1918,7 +2024,7 @@ def GUILD_STICKERS_UPDATE__CAL_MC(client, data):
         guild_sync(client, data, None)
         return
     
-    clients = filter_clients(guild.clients, INTENT_MASK_GUILD_EXPRESSIONS, client)
+    clients = filter_clients(guild.iter_clients(), INTENT_MASK_GUILD_EXPRESSIONS, client)
     if clients.send(None) is not client:
         clients.close()
         return
@@ -1971,7 +2077,7 @@ def GUILD_STICKERS_UPDATE__OPT_MC(client, data):
         guild_sync(client, data, None)
         return
     
-    if first_client(guild.clients, INTENT_MASK_GUILD_EXPRESSIONS, client) is not client:
+    if first_client(guild.iter_clients(), INTENT_MASK_GUILD_EXPRESSIONS, client) is not client:
         return
     
     guild._update_stickers(data['stickers'])
@@ -2014,7 +2120,7 @@ def GUILD_MEMBER_ADD__CAL_MC(client, data):
         clients = None
     
     else:
-        clients = filter_clients(guild.clients, INTENT_MASK_GUILD_USERS, client)
+        clients = filter_clients(guild.iter_clients(), INTENT_MASK_GUILD_USERS, client)
         if clients.send(None) is not client:
             clients.close()
             return
@@ -2050,7 +2156,7 @@ if CACHE_USER:
         except KeyError:
             return
         
-        if first_client(guild.clients, INTENT_MASK_GUILD_USERS, client) is not client:
+        if first_client(guild.iter_clients(), INTENT_MASK_GUILD_USERS, client) is not client:
             return
         
         User.from_data(data['user'], data, guild_id)
@@ -2072,7 +2178,7 @@ else:
         except KeyError:
             return
         
-        if first_client(guild.clients, INTENT_MASK_GUILD_USERS, client) is not client:
+        if first_client(guild.iter_clients(), INTENT_MASK_GUILD_USERS, client) is not client:
             return
         
         guild.user_count += 1
@@ -2126,7 +2232,7 @@ if CACHE_USER:
             guild_sync(client, data, 'GUILD_MEMBER_REMOVE')
             return
         
-        clients = filter_clients(guild.clients, INTENT_MASK_GUILD_USERS, client)
+        clients = filter_clients(guild.iter_clients(), INTENT_MASK_GUILD_USERS, client)
         if clients.send(None) is not client:
             clients.close()
             return
@@ -2181,7 +2287,7 @@ if CACHE_USER:
             guild_sync(client, data, 'GUILD_MEMBER_REMOVE')
             return
         
-        if first_client(guild.clients, INTENT_MASK_GUILD_USERS, client) is not client:
+        if first_client(guild.iter_clients(), INTENT_MASK_GUILD_USERS, client) is not client:
             return
         
         user = User.from_data(data['user'])
@@ -2221,7 +2327,7 @@ else:
             guild_sync(client, data, 'GUILD_MEMBER_REMOVE')
             return
         
-        clients = filter_clients(guild.clients, INTENT_MASK_GUILD_USERS, client)
+        clients = filter_clients(guild.iter_clients(), INTENT_MASK_GUILD_USERS, client)
         if clients.send(None) is not client:
             clients.close()
             return
@@ -2252,7 +2358,7 @@ else:
             guild_sync(client, data, 'GUILD_MEMBER_REMOVE')
             return
         
-        if first_client(guild.clients, INTENT_MASK_GUILD_USERS, client) is not client:
+        if first_client(guild.iter_clients(), INTENT_MASK_GUILD_USERS, client) is not client:
             return
         
         guild.user_count -= 1
@@ -2454,7 +2560,7 @@ def GUILD_UPDATE__CAL_MC(client, data):
         guild_sync(client, data, None)
         return
     
-    clients = filter_clients(guild.clients, INTENT_MASK_GUILDS, client)
+    clients = filter_clients(guild.iter_clients(), INTENT_MASK_GUILDS, client)
     if clients.send(None) is not client:
         clients.close()
         return
@@ -2487,7 +2593,7 @@ def GUILD_UPDATE__OPT_MC(client, data):
         guild_sync(client, data, None)
         return
     
-    if first_client(guild.clients, INTENT_MASK_GUILDS, client) is not client:
+    if first_client(guild.iter_clients(), INTENT_MASK_GUILDS, client) is not client:
         return
     
     guild._update_attributes(data)
@@ -2792,7 +2898,7 @@ def GUILD_ROLE_CREATE__CAL_MC(client, data):
     except KeyError:
         clients = None
     else:
-        clients = filter_clients(guild.clients, INTENT_MASK_GUILDS, client)
+        clients = filter_clients(guild.iter_clients(), INTENT_MASK_GUILDS, client)
         if clients.send(None) is not client:
             clients.close()
             return
@@ -2824,7 +2930,7 @@ def GUILD_ROLE_CREATE__OPT_MC(client, data):
     except KeyError:
         pass
     else:
-        if first_client(guild.clients, INTENT_MASK_GUILDS, client) is not client:
+        if first_client(guild.iter_clients(), INTENT_MASK_GUILDS, client) is not client:
             return
     
     Role.from_data(data['role'], guild_id)
@@ -2861,7 +2967,7 @@ def GUILD_ROLE_DELETE__CAL_MC(client, data):
     if (guild is None):
         clients = None
     else:
-        clients = filter_clients(guild.clients, INTENT_MASK_GUILDS, client)
+        clients = filter_clients(guild.iter_clients(), INTENT_MASK_GUILDS, client)
         if clients.send(None) is not client:
             clients.close()
             return
@@ -2895,7 +3001,7 @@ def GUILD_ROLE_DELETE__OPT_MC(client, data):
     guild_id = int(data['guild_id'])
     guild = GUILDS.get(guild_id, None)
     
-    if (guild is not None) and first_client(guild.clients, INTENT_MASK_GUILDS, client) is not client:
+    if (guild is not None) and first_client(guild.iter_clients(), INTENT_MASK_GUILDS, client) is not client:
         return
     
     role_id = int(data['role_id'])
@@ -2952,7 +3058,7 @@ def GUILD_ROLE_UPDATE__CAL_MC(client, data):
         guild_sync(client, data, None)
         return
     
-    clients = filter_clients(guild.clients, INTENT_MASK_GUILDS, client)
+    clients = filter_clients(guild.iter_clients(), INTENT_MASK_GUILDS, client)
     if clients.send(None) is not client:
         clients.close()
         return
@@ -3002,7 +3108,7 @@ def GUILD_ROLE_UPDATE__OPT_MC(client, data):
         guild_sync(client, data, None)
         return
     
-    if first_client(guild.clients, INTENT_MASK_GUILDS, client) is not client:
+    if first_client(guild.iter_clients(), INTENT_MASK_GUILDS, client) is not client:
         return
     
     role_data = data['role']
@@ -3152,7 +3258,7 @@ def VOICE_STATE_UPDATE__CAL_MC(client, data):
         # Ignore this case
         return
     
-    clients = filter_clients(guild.clients, INTENT_MASK_GUILD_VOICE_STATES, client)
+    clients = filter_clients(guild.iter_clients(), INTENT_MASK_GUILD_VOICE_STATES, client)
     if clients.send(None) is not client:
         clients.close()
         return
@@ -3280,7 +3386,7 @@ def VOICE_STATE_UPDATE__OPT_MC(client, data):
     except KeyError:
         return
     
-    if first_client(guild.clients, INTENT_MASK_GUILD_VOICE_STATES, client) is not client:
+    if first_client(guild.iter_clients(), INTENT_MASK_GUILD_VOICE_STATES, client) is not client:
         return
     
     user = parse_voice_state_user(data)
@@ -3790,7 +3896,7 @@ def STAGE_INSTANCE_UPDATE__CAL_MC(client, data):
     except KeyError:
         return
     
-    clients = filter_clients(stage.channel.clients, INTENT_MASK_GUILDS, client)
+    clients = filter_clients(stage.channel.iter_clients(), INTENT_MASK_GUILDS, client)
     if clients.send(None) is not client:
         clients.close()
         return
@@ -3847,7 +3953,7 @@ def STAGE_INSTANCE_DELETE__CAL_MC(client, data):
     except KeyError:
         return
     
-    clients = filter_clients(stage.channel.clients, INTENT_MASK_GUILDS, client)
+    clients = filter_clients(stage.channel.iter_clients(), INTENT_MASK_GUILDS, client)
     if clients.send(None) is not client:
         clients.close()
         return
@@ -3936,7 +4042,7 @@ def THREAD_MEMBER_UPDATE__CAL_MC(client, data):
     except KeyError:
         return
     
-    clients = filter_clients(thread_channel.clients, INTENT_MASK_GUILDS, client)
+    clients = filter_clients(thread_channel.iter_clients(), INTENT_MASK_GUILDS, client)
     if clients.send(None) is not client:
         clients.close()
         return
@@ -4015,7 +4121,7 @@ def THREAD_MEMBERS_UPDATE__CAL_MC(client, data):
         return
     
     if client.intents & INTENT_MASK_GUILD_USERS:
-        clients = filter_clients(thread_channel.clients, INTENT_MASK_GUILD_USERS, client)
+        clients = filter_clients(thread_channel.iter_clients(), INTENT_MASK_GUILD_USERS, client)
     
         if clients.send(None) is not client:
             return
@@ -4100,7 +4206,7 @@ def THREAD_MEMBERS_UPDATE__OPT_MC(client, data):
     except KeyError:
         return
     
-    if first_client_or_me(thread_channel.clients, INTENT_MASK_GUILD_USERS, client) is not client:
+    if first_client_or_me(thread_channel.iter_clients(), INTENT_MASK_GUILD_USERS, client) is not client:
         return
     
     removed_user_ids = data.get('removed_member_ids', None)
@@ -4187,7 +4293,7 @@ def GUILD_SCHEDULED_EVENT_DELETE__CAL_MC(client, data):
     if (guild is None):
         clients = None
     else:
-        clients = filter_clients(guild.clients, INTENT_MASK_GUILDS, client)
+        clients = filter_clients(guild.iter_clients(), INTENT_MASK_GUILDS, client)
         if clients.send(None) is not client:
             clients.close()
             return
@@ -4257,7 +4363,7 @@ def GUILD_SCHEDULED_EVENT_UPDATE__CAL_MC(client, data):
     except KeyError:
         clients = None
     else:
-        clients = filter_clients(guild.clients, INTENT_MASK_GUILDS, client)
+        clients = filter_clients(guild.iter_clients(), INTENT_MASK_GUILDS, client)
         if clients.send(None) is not client:
             clients.close()
             return
@@ -4303,7 +4409,7 @@ def GUILD_SCHEDULED_EVENT_UPDATE__OPT_MC(client, data):
     except KeyError:
         pass
     else:
-        if first_client(guild.clients, INTENT_MASK_GUILDS, client) is not client:
+        if first_client(guild.iter_clients(), INTENT_MASK_GUILDS, client) is not client:
             return
     
     scheduled_event._update_attributes(data)
@@ -4438,7 +4544,7 @@ def GUILD_SCHEDULED_EVENT_EXCEPTION_CREATE__CAL_MC(client, data):
     except KeyError:
         clients = None
     else:
-        clients = filter_clients(guild.clients, INTENT_MASK_GUILD_SCHEDULED_EVENTS, client)
+        clients = filter_clients(guild.iter_clients(), INTENT_MASK_GUILD_SCHEDULED_EVENTS, client)
         if clients.send(None) is not client:
             clients.close()
             return
@@ -4565,7 +4671,7 @@ def GUILD_SCHEDULED_EVENT_EXCEPTION_DELETE__CAL_MC(client, data):
     except KeyError:
         clients = None
     else:
-        clients = filter_clients(guild.clients, INTENT_MASK_GUILD_SCHEDULED_EVENTS, client)
+        clients = filter_clients(guild.iter_clients(), INTENT_MASK_GUILD_SCHEDULED_EVENTS, client)
         if clients.send(None) is not client:
             clients.close()
             return
@@ -4686,7 +4792,7 @@ def EMBEDDED_ACTIVITY_UPDATE__CAL_MC(client, data):
     except KeyError:
         clients = None
     else:
-        clients = filter_clients(guild.clients, INTENT_MASK_GUILD_EXPRESSIONS, client)
+        clients = filter_clients(guild.iter_clients(), INTENT_MASK_GUILD_EXPRESSIONS, client)
         if clients.send(None) is not client:
             clients.close()
             return
@@ -4780,7 +4886,7 @@ def EMBEDDED_ACTIVITY_UPDATE__OPT_MC(client, data):
     except KeyError:
         pass
     else:
-        if first_client(guild.clients, INTENT_MASK_GUILDS, client) is not client:
+        if first_client(guild.iter_clients(), INTENT_MASK_GUILDS, client) is not client:
             return
     
     handle_embedded_activity_update_event(data)
@@ -4901,7 +5007,7 @@ def AUTO_MODERATION_RULE_UPDATE__CAL_MC(client, data):
             Task(KOKORO, event_handler(client, auto_moderation_rule, old_attributes))
         
     else:
-        clients = filter_clients(guild.clients, INTENT_MASK_AUTO_MODERATION_CONFIGURATION, client)
+        clients = filter_clients(guild.iter_clients(), INTENT_MASK_AUTO_MODERATION_CONFIGURATION, client)
         if clients.send(None) is not client:
             clients.close()
             return
@@ -5103,7 +5209,7 @@ def GUILD_SOUNDBOARD_SOUND_UPDATE__CAL__MC(client, data):
     if guild is None:
         clients = None
     else:
-        clients = filter_clients(guild.clients, INTENT_MASK_GUILD_EXPRESSIONS, client)
+        clients = filter_clients(guild.iter_clients(), INTENT_MASK_GUILD_EXPRESSIONS, client)
         if clients.send(None) is not client:
             clients.close()
             return
@@ -5154,7 +5260,7 @@ def GUILD_SOUNDBOARD_SOUND_DELETE__CAL__MC(client, data):
     if guild is None:
         clients = None
     else:
-        clients = filter_clients(guild.clients, INTENT_MASK_GUILD_EXPRESSIONS, client)
+        clients = filter_clients(guild.iter_clients(), INTENT_MASK_GUILD_EXPRESSIONS, client)
         if clients.send(None) is not client:
             clients.close()
             return
@@ -5234,7 +5340,7 @@ def GUILD_SOUNDBOARD_SOUNDS_UPDATE__CAL_MC(client, data):
         guild_sync(client, data, None)
         return
     
-    clients = filter_clients(guild.clients, INTENT_MASK_GUILD_EXPRESSIONS, client)
+    clients = filter_clients(guild.iter_clients(), INTENT_MASK_GUILD_EXPRESSIONS, client)
     if clients.send(None) is not client:
         clients.close()
         return
@@ -5288,7 +5394,7 @@ def GUILD_SOUNDBOARD_SOUNDS_UPDATE__OPT_MC(client, data):
         guild_sync(client, data, None)
         return
     
-    if first_client(guild.clients, INTENT_MASK_GUILD_EXPRESSIONS, client) is not client:
+    if first_client(guild.iter_clients(), INTENT_MASK_GUILD_EXPRESSIONS, client) is not client:
         return
     
     guild._update_soundboard_sounds(data['soundboard_sounds'])
@@ -5411,7 +5517,7 @@ def MESSAGE_POLL_VOTE_ADD__CAL_MC(client, data):
         clients = None
     else:
         clients = filter_clients(
-            channel.clients,
+            channel.iter_clients(),
             INTENT_MASK_GUILD_POLLS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_POLLS,
             client,
         )
@@ -5448,7 +5554,7 @@ def MESSAGE_POLL_VOTE_ADD__OPT_MC(client, data):
     
     channel = message.channel
     if first_client(
-        channel.clients,
+        channel.iter_clients(),
         INTENT_MASK_GUILD_POLLS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_POLLS,
         client,
     ) is not client:
@@ -5486,7 +5592,7 @@ def MESSAGE_POLL_VOTE_REMOVE__CAL_MC(client, data):
     
     else:
         clients = filter_clients(
-            channel.clients,
+            channel.iter_clients(),
             INTENT_MASK_GUILD_POLLS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_POLLS,
             client,
         )
@@ -5523,7 +5629,7 @@ def MESSAGE_POLL_VOTE_REMOVE__OPT_MC(client, data):
     
     channel = message.channel
     if first_client(
-        channel.clients,
+        channel.iter_clients(),
         INTENT_MASK_GUILD_POLLS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_POLLS,
         client,
     ) is not client:

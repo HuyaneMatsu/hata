@@ -4,10 +4,31 @@ from ..fields import parse_description
 
 
 def _iter_options():
-    yield {}, None
-    yield {'description': None}, None
-    yield {'description': ''}, None
-    yield {'description': 'a'}, 'a'
+    yield (
+        {},
+        None,
+    )
+    
+    yield (
+        {
+            'description': None,
+        },
+        None,
+    )
+    
+    yield (
+        {
+            'description': '',
+        },
+        None,
+    )
+    
+    yield (
+        {
+            'description': 'a',
+        },
+        'a',
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

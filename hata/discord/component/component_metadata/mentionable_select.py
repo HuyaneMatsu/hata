@@ -26,5 +26,8 @@ class ComponentMetadataMentionableSelect(ComponentMetadataEntitySelectBase):
     
     placeholder : `None | str`
         Placeholder text of the select.
+    
+    required : `bool`
+        Whether the field is required to be fulfilled.
     """
     __slots__ = ()

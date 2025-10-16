@@ -80,7 +80,7 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
         placeholder : `None | str`, Optional (Keyword only)
             Placeholder text of the select.
         
-        required : `bool`, Optional (Keyword only)
+        required : `None | bool`, Optional (Keyword only)
             Whether the field is required to be fulfilled.
         
         text_input_style : ``int | TextInputStyle``, Optional (Keyword only)
@@ -436,7 +436,7 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
         placeholder : `None | str`, Optional (Keyword only)
             Placeholder text of the select.
         
-        required : `bool`, Optional (Keyword only)
+        required : `None | bool`, Optional (Keyword only)
             Whether the field is required to be fulfilled.
         
         text_input_style : ``int | TextInputStyle``, Optional (Keyword only)

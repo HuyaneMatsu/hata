@@ -4,8 +4,8 @@ from scarletio import copy_docs
 
 from .constants import BITRATE_DEFAULT, USER_LIMIT_DEFAULT
 from .fields import (
-    parse_bitrate, parse_region, parse_user_limit, put_bitrate, put_region, put_user_limit,
-    validate_bitrate, validate_region, validate_user_limit
+    parse_bitrate, parse_region, parse_user_limit, parse_voice_engaged_since, put_bitrate, put_region, put_user_limit,
+    put_voice_engaged_since, validate_bitrate, validate_region, validate_user_limit, validate_voice_engaged_since
 )
 from .preinstanced import VoiceRegion
 
@@ -18,29 +18,39 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
     
     Attributes
     ----------
-    _cache_permission : `None`, `dict` of (`int`, ``Permission``) items
+    _cache_permission : ``None | dict<int, Permission>``
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
+    
     bitrate : `int`
         The bitrate (in bits) of the voice channel.
+    
     name : `str`
         The channel's name.
+    
     parent_id : `int`
         The channel's parent's identifier.
-    permission_overwrites :`None`,  `dict` of (`int`, ``PermissionOverwrite``) items
+    
+    permission_overwrites : ``None | dict<int, PermissionOverwrite>``
         The channel's permission overwrites.
+    
     position : `int`
         The channel's position.
+    
     region : ``VoiceRegion``
         The voice region of the channel.
+    
     user_limit : `int`
         The maximal amount of users, who can join the voice channel, or `0` if unlimited.
+    
+    voice_engaged_since : `None | DateTime`
+        Since when the voice channel is engaged with.
     
     Class Attributes
     ----------------
     order_group: `int` = `2`
         The channel's order group used when sorting channels.
     """
-    __slots__ = ('bitrate', 'region', 'user_limit')
+    __slots__ = ('bitrate', 'region', 'user_limit', 'voice_engaged_since')
     
     order_group = 2
     
@@ -55,6 +65,7 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
         position = ...,
         region = ...,
         user_limit = ...,
+        voice_engaged_since = ...,
     ):
         """
         Creates a new guild voice base channel metadata from the given parameters.
@@ -63,18 +74,27 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
         ----------
         bitrate : `int`, Optional (Keyword only)
             The bitrate (in bits) of the voice channel.
+        
         name : `str`, Optional (Keyword only)
             The channel's name.
-        parent_id : `int`, ``Channel``, Optional (Keyword only)
+        
+        parent_id : ``None | int | Channel``, Optional (Keyword only)
             The channel's parent's identifier.
-        permission_overwrites : `None`, `iterable` of ``PermissionOverwrite``, Optional (Keyword only)
+        
+        permission_overwrites : ``None | iterable<PermissionOverwrite>``, Optional (Keyword only)
             The channel's permission overwrites.
+        
         position : `int`, Optional (Keyword only)
             The channel's position.
-        region : ``VoiceRegion``, `str`, Optional (Keyword only)
+        
+        region : ``None | str | VoiceRegion``, Optional (Keyword only)
             The voice region of the channel.
+        
         user_limit : `int`, Optional (Keyword only)
             The maximal amount of users, who can join the voice channel, or `0` if unlimited.
+        
+        voice_engaged_since : `None | DateTime`, Optional (Keyword only)
+            Since when the voice channel is engaged with.
         
         Raises
         ------
@@ -101,6 +121,12 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
         else:
             user_limit = validate_user_limit(user_limit)
         
+        # voice_engaged_since
+        if voice_engaged_since is ...:
+            voice_engaged_since = None
+        else:
+            voice_engaged_since = validate_voice_engaged_since(voice_engaged_since)
+        
         # Construct
         self = ChannelMetadataGuildMainBase.__new__(
             cls,
@@ -112,6 +138,7 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
         self.bitrate = bitrate
         self.region = region
         self.user_limit = user_limit
+        self.voice_engaged_since = voice_engaged_since
         return self
     
     
@@ -126,6 +153,7 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
             position = keyword_parameters.pop('position', ...),
             region = keyword_parameters.pop('region', ...),
             user_limit = keyword_parameters.pop('user_limit', ...),
+            voice_engaged_since = keyword_parameters.pop('voice_engaged_since', ...)
         )
     
     
@@ -141,6 +169,11 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
         
         # user_limit
         hash_value ^= self.user_limit << 15
+        
+        # voice_engaged_since
+        voice_engaged_since = self.voice_engaged_since
+        if (voice_engaged_since is not None):
+            hash_value ^= hash(voice_engaged_since)
         
         return hash_value
     
@@ -162,6 +195,10 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
         if self.user_limit != other.user_limit:
             return False
         
+        # voice_engaged_since
+        if self.voice_engaged_since != other.voice_engaged_since:
+            return False
+        
         return True
     
     
@@ -173,6 +210,7 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
         self.bitrate = BITRATE_DEFAULT
         self.region = VoiceRegion.unknown
         self.user_limit = USER_LIMIT_DEFAULT
+        self.voice_engaged_since = None
         
         return self
     
@@ -183,6 +221,7 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
         new.bitrate = self.bitrate
         new.region = self.region
         new.user_limit = self.user_limit
+        new.voice_engaged_since = self.voice_engaged_since
         return new
     
     
@@ -196,6 +235,7 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
         position = ...,
         region = ...,
         user_limit = ...,
+        voice_engaged_since = ...,
     ):
         """
         Copies the guild voice base channel metadata with the given fields.
@@ -204,18 +244,27 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
         ----------
         bitrate : `int`, Optional (Keyword only)
             The bitrate (in bits) of the voice channel.
+        
         name : `str`, Optional (Keyword only)
             The channel's name.
-        parent_id : `int`, ``Channel``, Optional (Keyword only)
+        
+        parent_id : ``None | int | Channel``, Optional (Keyword only)
             The channel's parent's identifier.
-        permission_overwrites : `None`, `iterable` of ``PermissionOverwrite``, Optional (Keyword only)
+        
+        permission_overwrites : ``None | iterable<PermissionOverwrite>``, Optional (Keyword only)
             The channel's permission overwrites.
+        
         position : `int`, Optional (Keyword only)
             The channel's position.
-        region : ``VoiceRegion``, `str`, Optional (Keyword only)
+        
+        region : ``None | str | VoiceRegion``, Optional (Keyword only)
             The voice region of the channel.
+        
         user_limit : `int`, Optional (Keyword only)
             The maximal amount of users, who can join the voice channel, or `0` if unlimited.
+        
+        voice_engaged_since : `None | DateTime`, Optional (Keyword only)
+            Since when the voice channel is engaged with.
         
         Returns
         -------
@@ -246,6 +295,12 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
         else:
             user_limit = validate_user_limit(user_limit)
         
+        # voice_engaged_since
+        if voice_engaged_since is ...:
+            voice_engaged_since = self.voice_engaged_since
+        else:
+            voice_engaged_since = validate_voice_engaged_since(voice_engaged_since)
+        
         # Construct
         new = ChannelMetadataGuildMainBase.copy_with(
             self,
@@ -257,6 +312,7 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
         new.bitrate = bitrate
         new.region = region
         new.user_limit = user_limit
+        new.voice_engaged_since = voice_engaged_since
         return new
     
     
@@ -270,6 +326,7 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
             position = keyword_parameters.pop('position', ...),
             region = keyword_parameters.pop('region', ...),
             user_limit = keyword_parameters.pop('user_limit', ...),
+            voice_engaged_since = keyword_parameters.pop('voice_engaged_since', ...),
         )
     
     
@@ -312,6 +369,37 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
         return old_attributes
     
     
+    @copy_docs(ChannelMetadataGuildMainBase._update_voice_engaged_since)
+    def _update_voice_engaged_since(self, data):
+        
+        # voice_engaged_since
+        self.voice_engaged_since = parse_voice_engaged_since(data)
+    
+    
+    @copy_docs(ChannelMetadataGuildMainBase._difference_update_voice_engaged_since)
+    def _difference_update_voice_engaged_since(self, data):
+        old_attributes = {}
+
+        # voice_engaged_since
+        voice_engaged_since = parse_voice_engaged_since(data)
+        if self.voice_engaged_since != voice_engaged_since:
+            old_attributes['voice_engaged_since'] = self.voice_engaged_since
+            self.voice_engaged_since = voice_engaged_since
+        
+        return old_attributes
+    
+    
+    @classmethod
+    @copy_docs(ChannelMetadataGuildMainBase.from_data)
+    def from_data(cls, data):
+        self = super(ChannelMetadataGuildVoiceBase, cls).from_data(data)
+        
+        # voice_engaged_since | Its only received with the initial channel payload.
+        self.voice_engaged_since = parse_voice_engaged_since(data)
+        
+        return self
+    
+    
     @copy_docs(ChannelMetadataGuildMainBase.to_data)
     def to_data(self, *, defaults = False, include_internals = False):
         data = ChannelMetadataGuildMainBase.to_data(self, defaults = defaults, include_internals = include_internals)
@@ -324,5 +412,8 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
         
         # user_limit
         put_user_limit(self.user_limit, data, defaults)
+        
+        # voice_engaged_since
+        put_voice_engaged_since(self.voice_engaged_since, data, defaults)
         
         return data

@@ -1766,6 +1766,43 @@ def test__Guild__iter_channels(guild, type_checker):
     return {*guild.iter_channels(type_checker)}
 
 
+def test__Guild__iter_clients():
+    """
+    Tests whether ``Guild.iter_clients`` works as intended.
+    """
+    guild_id = 202509240000
+    user_id_0 = 202509240001
+    user_id_1 = 202509240002
+    
+    client_0 = Client(
+        token = f'token_{user_id_0}',
+        client_id = user_id_0,
+    )
+    try:
+        client_1 = Client(
+            token = f'token_{user_id_1}',
+            client_id = user_id_1,
+        )
+        
+        try:
+            guild = Guild.precreate(guild_id, users = [client_0, client_1])
+            guild.clients.append(client_0)
+            guild.clients.append(client_1)
+            
+            output = {*guild.iter_clients()}
+            vampytest.assert_eq(output, {client_0, client_1})
+        
+        # Cleanup
+        finally:
+            client_1._delete()
+            client_1 = None
+        
+    # Cleanup
+    finally:
+        client_0._delete()
+        client_0 = None
+
+
 def _iter_options__iter_scheduled_events():
     scheduled_event_0 = ScheduledEvent.precreate(202306270007)
     scheduled_event_1 = ScheduledEvent.precreate(202306270008)

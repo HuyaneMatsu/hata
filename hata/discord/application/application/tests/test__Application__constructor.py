@@ -19,7 +19,7 @@ from ..preinstanced import (
     ApplicationDiscoverabilityState, ApplicationEventWebhookEventType, ApplicationEventWebhookState,
     ApplicationExplicitContentFilterLevel, ApplicationIntegrationType, ApplicationInteractionEventType,
     ApplicationInteractionVersion, ApplicationInternalGuildRestriction, ApplicationMonetizationState,
-    ApplicationRPCState, ApplicationStoreState, ApplicationType, ApplicationVerificationState
+    ApplicationRPCState, ApplicationStoreState, ApplicationTheme, ApplicationType, ApplicationVerificationState
 )
 
 def _assert_fields_set(application):
@@ -91,6 +91,7 @@ def _assert_fields_set(application):
     vampytest.assert_instance(application.store_state, ApplicationStoreState)
     vampytest.assert_instance(application.tags, tuple, nullable = True)
     vampytest.assert_instance(application.terms_of_service_url, str, nullable = True)
+    vampytest.assert_instance(application.themes, tuple, nullable = True)
     vampytest.assert_instance(application.third_party_skus, tuple, nullable = True)
     vampytest.assert_instance(application.type, ApplicationType)
     vampytest.assert_instance(application.verification_state, ApplicationVerificationState)
@@ -178,6 +179,7 @@ def test__Application__new__all_fields():
     store_state = ApplicationStoreState.approved
     tags = ['cat']
     terms_of_service_url = 'https://orindance.party/'
+    themes = [ApplicationTheme.action]
     third_party_skus = [ThirdPartySKU(distributor = 'Dead')]
     application_type = ApplicationType.game
     verification_state = ApplicationVerificationState.approved
@@ -239,6 +241,7 @@ def test__Application__new__all_fields():
         store_state = store_state,
         tags = tags,
         terms_of_service_url = terms_of_service_url,
+        themes = themes,
         third_party_skus = third_party_skus,
         application_type = application_type,
         verification_state = verification_state,
@@ -301,6 +304,7 @@ def test__Application__new__all_fields():
     vampytest.assert_is(application.store_state, store_state)
     vampytest.assert_eq(application.tags, tuple(tags))
     vampytest.assert_eq(application.terms_of_service_url, terms_of_service_url)
+    vampytest.assert_eq(application.themes, tuple(themes))
     vampytest.assert_eq(application.third_party_skus, tuple(third_party_skus))
     vampytest.assert_is(application.type, application_type)
     vampytest.assert_is(application.verification_state, verification_state)
@@ -392,6 +396,7 @@ def test__Application__precreate__all_fields():
     store_state = ApplicationStoreState.approved
     tags = ['cat']
     terms_of_service_url = 'https://orindance.party/'
+    themes = [ApplicationTheme.action]
     third_party_skus = [ThirdPartySKU(distributor = 'Dead')]
     application_type = ApplicationType.game
     verification_state = ApplicationVerificationState.approved
@@ -454,6 +459,7 @@ def test__Application__precreate__all_fields():
         store_state = store_state,
         tags = tags,
         terms_of_service_url = terms_of_service_url,
+        themes = themes,
         third_party_skus = third_party_skus,
         application_type = application_type,
         verification_state = verification_state,
@@ -517,6 +523,7 @@ def test__Application__precreate__all_fields():
     vampytest.assert_is(application.store_state, store_state)
     vampytest.assert_eq(application.tags, tuple(tags))
     vampytest.assert_eq(application.terms_of_service_url, terms_of_service_url)
+    vampytest.assert_eq(application.themes, tuple(themes))
     vampytest.assert_eq(application.third_party_skus, tuple(third_party_skus))
     vampytest.assert_is(application.type, application_type)
     vampytest.assert_is(application.verification_state, verification_state)

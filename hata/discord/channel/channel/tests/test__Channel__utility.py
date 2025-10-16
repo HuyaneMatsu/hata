@@ -1168,3 +1168,30 @@ def test__Channel__icon_url_as(channel_id, channel_type, create_with_icon, icon,
     output = channel.icon_url_as(**keyword_parameters)
     vampytest.assert_instance(output, str, nullable = True)
     return (output is not None)
+
+
+def test__Channel__iter_clients__private():
+    """
+    Tests whether ``Channel.iter_clients`` works as intended.
+    
+    Case: private.
+    """
+    client_id = 202509240010
+    client = Client(
+        token = f'token_{client_id}',
+        client_id = client_id
+    )
+    
+    try:
+        channel_id = 202509240011
+        
+        channel = Channel.precreate(channel_id, channel_type = ChannelType.private, users = [client])
+            
+        clients = {*channel.iter_clients()}
+        vampytest.assert_eq(clients, {client})
+    
+    # Cleanup
+    finally:
+        client._delete()
+        client = None
+        clients = None

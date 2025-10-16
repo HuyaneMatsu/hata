@@ -44,7 +44,7 @@ from .preinstanced import (
     ApplicationDiscoverabilityState, ApplicationEventWebhookEventType, ApplicationEventWebhookState,
     ApplicationExplicitContentFilterLevel, ApplicationIntegrationType, ApplicationInteractionEventType,
     ApplicationInteractionVersion, ApplicationInternalGuildRestriction, ApplicationMonetizationState,
-    ApplicationRPCState, ApplicationStoreState, ApplicationType, ApplicationVerificationState
+    ApplicationRPCState, ApplicationStoreState, ApplicationTheme, ApplicationType, ApplicationVerificationState
 )
 
 # aliases
@@ -714,11 +714,20 @@ parse_tags = nullable_array_parser_factory('tags')
 put_tags = nullable_string_array_optional_putter_factory('tags')
 validate_tags = nullable_string_array_validator_factory('tags')
 
+
 # terms_of_service_url
 
 parse_terms_of_service_url = nullable_string_parser_factory('terms_of_service_url')
 put_terms_of_service_url = url_optional_putter_factory('terms_of_service_url')
 validate_terms_of_service_url = url_optional_validator_factory('terms_of_service_url')
+
+# themes
+
+parse_themes = preinstanced_array_parser_factory('themes', ApplicationTheme)
+put_themes = preinstanced_array_putter_factory('themes')
+validate_themes = preinstanced_array_validator_factory('themes', ApplicationTheme)
+
+
 
 # third_party_skus
 

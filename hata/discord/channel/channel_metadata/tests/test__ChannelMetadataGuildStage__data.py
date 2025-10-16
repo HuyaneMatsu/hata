@@ -1,4 +1,8 @@
+from datetime import datetime as DateTime, timezone as TimeZone
+
 import vampytest
+
+from ....utils import datetime_to_unix_time
 
 from ...permission_overwrite import PermissionOverwrite, PermissionOverwriteTargetType
 
@@ -22,6 +26,7 @@ def test__ChannelMetadataGuildStage__from_data():
     region = VoiceRegion.brazil
     user_limit = 4
     topic = 'crimson'
+    voice_engaged_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     channel_metadata = ChannelMetadataGuildStage.from_data({
         'parent_id': str(parent_id),
@@ -35,6 +40,7 @@ def test__ChannelMetadataGuildStage__from_data():
         'rtc_region': region.value,
         'user_limit': user_limit,
         'topic': topic,
+        'voice_start_time': datetime_to_unix_time(voice_engaged_since),
     })
     _assert_fields_set(channel_metadata)
     
@@ -49,6 +55,7 @@ def test__ChannelMetadataGuildStage__from_data():
     vampytest.assert_eq(channel_metadata.region, region)
     vampytest.assert_eq(channel_metadata.user_limit, user_limit)
     vampytest.assert_eq(channel_metadata.topic, topic)
+    vampytest.assert_eq(channel_metadata.voice_engaged_since, voice_engaged_since)
 
 
 def test__ChannelMetadataGuildStage__to_data():
@@ -67,6 +74,7 @@ def test__ChannelMetadataGuildStage__to_data():
     region = VoiceRegion.brazil
     user_limit = 4
     topic = 'crimson'
+    voice_engaged_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     channel_metadata = ChannelMetadataGuildStage(
         parent_id = parent_id,
@@ -77,6 +85,7 @@ def test__ChannelMetadataGuildStage__to_data():
         region = region,
         user_limit = user_limit,
         topic = topic,
+        voice_engaged_since = voice_engaged_since,
     )
     
     data = channel_metadata.to_data(defaults = True, include_internals = True)
@@ -95,6 +104,7 @@ def test__ChannelMetadataGuildStage__to_data():
             'rtc_region': region.value,
             'user_limit': user_limit,
             'topic': topic,
+            'voice_start_time': datetime_to_unix_time(voice_engaged_since),
         },
     )
 
@@ -168,24 +178,25 @@ def test__ChannelMetadataGuildStage__difference_update_attributes():
     Tests whether ``ChannelMetadataGuildStage._difference_update_attributes`` works as intended.
     """
     old_parent_id = 202209170181
-    new_parent_id = 202209170182
     old_name = 'Armelyrics'
-    new_name = 'Okuu'
     old_permission_overwrites = [
         PermissionOverwrite(202209170183, target_type = PermissionOverwriteTargetType.user)
     ]
+    old_position = 7
+    old_bitrate = 50000
+    old_region = VoiceRegion.brazil
+    old_user_limit = 4
+    old_topic = 'crimson'
+    
+    new_parent_id = 202209170182
+    new_name = 'Okuu'
     new_permission_overwrites = [
         PermissionOverwrite(202209170184, target_type = PermissionOverwriteTargetType.role)
     ]
-    old_position = 7
     new_position = 5
-    old_bitrate = 50000
     new_bitrate = 60000
-    old_region = VoiceRegion.brazil
     new_region = VoiceRegion.india
-    old_user_limit = 4
     new_user_limit = 5
-    old_topic = 'crimson'
     new_topic = 'sky'
     
     channel_metadata = ChannelMetadataGuildStage(

@@ -72,3 +72,22 @@ def test__ChannelMetadataBase__difference_update_status():
     
     old_attributes = channel_metadata._difference_update_status({})
     vampytest.assert_eq(old_attributes, {})
+
+
+def test__ChannelMetadataBase__update_voice_engaged_since():
+    """
+    Tests whether ``ChannelMetadataBase._update_voice_engaged_since`` works as intended.
+    """
+    channel_metadata = ChannelMetadataBase()
+    
+    channel_metadata._update_voice_engaged_since({})
+
+
+def test__ChannelMetadataBase__difference_update_voice_engaged_since():
+    """
+    Tests whether ``ChannelMetadataBase._difference_update_voice_engaged_since`` works as intended.
+    """
+    channel_metadata = ChannelMetadataBase()
+    
+    old_attributes = channel_metadata._difference_update_voice_engaged_since({})
+    vampytest.assert_eq(old_attributes, {})

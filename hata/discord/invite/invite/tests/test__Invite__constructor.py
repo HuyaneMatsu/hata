@@ -5,6 +5,7 @@ import vampytest
 from ....application import Application
 from ....channel import Channel
 from ....guild import Guild, GuildActivityOverview
+from ....permission import Permission
 from ....user import ClientUserBase, User
 
 from ..flags import InviteFlag
@@ -40,6 +41,7 @@ def _assert_fields_set(invite):
     vampytest.assert_instance(invite.target_user, ClientUserBase, nullable = True)
     vampytest.assert_instance(invite.temporary, bool)
     vampytest.assert_instance(invite.type, InviteType)
+    vampytest.assert_instance(invite.user_permissions, Permission)
     vampytest.assert_instance(invite.uses, int, nullable = True)
 
 
@@ -148,6 +150,9 @@ def test__Invite__precreate__all_fields():
     target_user = User.precreate(202308060076)
     temporary = True
     invite_type = InviteType.guild
+    user_permissions = Permission().update_by_keys(
+        change_nickname = True,
+    )
     uses = 69
     
     invite = Invite.precreate(
@@ -167,6 +172,7 @@ def test__Invite__precreate__all_fields():
         target_user = target_user,
         temporary = temporary,
         invite_type = invite_type,
+        user_permissions = user_permissions,
         uses = uses,
     )
     _assert_fields_set(invite)
@@ -187,4 +193,5 @@ def test__Invite__precreate__all_fields():
     vampytest.assert_is(invite.target_user, target_user)
     vampytest.assert_eq(invite.temporary, temporary)
     vampytest.assert_is(invite.type, invite_type)
+    vampytest.assert_eq(invite.user_permissions, user_permissions)
     vampytest.assert_eq(invite.uses, uses)

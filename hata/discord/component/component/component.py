@@ -6,8 +6,8 @@ from ..component_metadata import ComponentMetadataBase
 from ..component_metadata.fields import (
     validate_button_style, validate_channel_types, validate_color, validate_component__label, validate_content,
     validate_default_values, validate_description, validate_divider, validate_enabled, validate_items, validate_label,
-    validate_max_length, validate_max_values, validate_media, validate_min_length, validate_min_values,
-    validate_options, validate_placeholder, validate_required, validate_sku_id, validate_spacing_size,
+    validate_max_length, validate_max_values, validate_media, validate_min_length, validate_min_values, validate_name,
+    validate_options, validate_placeholder, validate_required, validate_size, validate_sku_id, validate_spacing_size,
     validate_spoiler, validate_text_input_style, validate_thumbnail, validate_url, validate_value
 )
 from ..shared_fields import validate_components, validate_custom_id, validate_emoji
@@ -110,7 +110,7 @@ class Component(RichAttributeErrorBaseType):
         placeholder : `None | str`, Optional (Keyword only)
             Placeholder of the select.
         
-        required : `bool`, Optional (Keyword only)
+        required : `None | bool`, Optional (Keyword only)
             Whether the field is required to be fulfilled.
         
         sku_id : ``int | SKU``, Optional (keyword only)
@@ -389,7 +389,7 @@ class Component(RichAttributeErrorBaseType):
         placeholder : `None | str`, Optional (Keyword only)
             Placeholder of the select.
         
-        required : `bool`, Optional (Keyword only)
+        required : `None | bool`, Optional (Keyword only)
             Whether the field is required to be fulfilled.
         
         sku_id : ``int | SKU``, Optional (keyword only)
@@ -660,6 +660,17 @@ class Component(RichAttributeErrorBaseType):
         self.metadata.min_values = validate_min_values(min_values)
     
     
+    # name
+    @property
+    @copy_docs(ComponentMetadataBase.name)
+    def name(self):
+        return self.metadata.name
+    
+    @name.setter
+    def name(self, name):
+        self.metadata.name = validate_name(name)
+    
+    
     # options
     @property
     @copy_docs(ComponentMetadataBase.options)
@@ -691,6 +702,17 @@ class Component(RichAttributeErrorBaseType):
     @required.setter
     def required(self, required):
         self.metadata.required = validate_required(required)
+    
+    
+    # size
+    @property
+    @copy_docs(ComponentMetadataBase.size)
+    def size(self):
+        return self.metadata.size
+    
+    @size.setter
+    def size(self, size):
+        self.metadata.size = validate_size(size)
     
     
     # sku_id

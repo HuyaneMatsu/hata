@@ -108,6 +108,7 @@ def create_string_select(
     placeholder = ...,
     max_values = ...,
     min_values = ...,
+    required = ...,
 ):
     """
     Creates a new string select.
@@ -132,6 +133,9 @@ def create_string_select(
     min_values : `int`, Optional (Keyword only)
         The minimal amount of options to select.
     
+    required : `None | bool`, Optional (Keyword only)
+        Whether the field is required to be fulfilled.
+    
     Returns
     -------
     string_select : ``Component``
@@ -150,7 +154,7 @@ def create_string_select(
         options = options,
         max_values = max_values,
         min_values = min_values,
-        placeholder = placeholder,
+        placeholder = placeholder,required = required,
     )
 
 
@@ -185,7 +189,7 @@ def create_text_input(
         The minimal length of the inputted text.
     
     placeholder : `None | str`, Optional (Keyword only)
-        Placeholder text of the select.
+        Placeholder text of the input.
     
     required : `None | bool`, Optional (Keyword only)
         Whether the field is required to be fulfilled.
@@ -230,6 +234,7 @@ def create_user_select(
     placeholder = ...,
     max_values = ...,
     min_values = ...,
+    required = ...,
 ):
     """
     Creates a new user select.
@@ -254,6 +259,9 @@ def create_user_select(
     min_values : `int`, Optional (Keyword only)
         The minimal amount of options to select.
     
+    required : `None | bool`, Optional (Keyword only)
+        Whether the field is required to be fulfilled.
+    
     Returns
     -------
     user_select : ``Component``
@@ -273,6 +281,7 @@ def create_user_select(
         max_values = max_values,
         min_values = min_values,
         placeholder = placeholder,
+        required = required,
     )
 
 
@@ -284,6 +293,7 @@ def create_role_select(
     placeholder = ...,
     max_values = ...,
     min_values = ...,
+    required = ...,
 ):
     """
     Creates a new role select.
@@ -308,6 +318,9 @@ def create_role_select(
     min_values : `int`, Optional (Keyword only)
         The minimal amount of options to select.
     
+    required : `None | bool`, Optional (Keyword only)
+        Whether the field is required to be fulfilled.
+    
     Returns
     -------
     role_select : ``Component``
@@ -327,6 +340,7 @@ def create_role_select(
         max_values = max_values,
         min_values = min_values,
         placeholder = placeholder,
+        required = required,
     )
 
 
@@ -338,6 +352,7 @@ def create_mentionable_select(
     placeholder = ...,
     max_values = ...,
     min_values = ...,
+    required = ...,
 ):
     """
     Creates a new mentionable (user & role) select.
@@ -363,6 +378,9 @@ def create_mentionable_select(
     min_values : `int`, Optional (Keyword only)
         The minimal amount of options to select.
     
+    required : `None | bool`, Optional (Keyword only)
+        Whether the field is required to be fulfilled.
+    
     Returns
     -------
     mentionable_select : ``Component``
@@ -382,6 +400,7 @@ def create_mentionable_select(
         max_values = max_values,
         min_values = min_values,
         placeholder = placeholder,
+        required = required,
     )
 
 
@@ -394,6 +413,7 @@ def create_channel_select(
     placeholder = ...,
     max_values = ...,
     min_values = ...,
+    required = ...,
 ):
     """
     Creates a new channel select.
@@ -422,6 +442,9 @@ def create_channel_select(
     min_values : `int`, Optional (Keyword only)
         The minimal amount of options to select.
     
+    required : `None | bool`, Optional (Keyword only)
+        Whether the field is required to be fulfilled.
+    
     Returns
     -------
     channel_select : ``Component``
@@ -442,6 +465,7 @@ def create_channel_select(
         max_values = max_values,
         min_values = min_values,
         placeholder = placeholder,
+        required = required,
     )
 
 

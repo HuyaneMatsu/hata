@@ -377,6 +377,9 @@ class WebhookBase(UserBase):
         if emoji.is_unicode_emoji():
             return True
         
+        if not emoji.available:
+            return False
+        
         role_ids = emoji.role_ids
         if (role_ids is not None):
             return False
@@ -389,7 +392,7 @@ class WebhookBase(UserBase):
         if (default_role is None):
             return False
         
-        if (default_role & PERMISSION_MASK_USE_EXTERNAL_EMOJIS):
-            return True
+        if not (default_role.permissions & PERMISSION_MASK_USE_EXTERNAL_EMOJIS):
+            return False
         
-        return False
+        return True

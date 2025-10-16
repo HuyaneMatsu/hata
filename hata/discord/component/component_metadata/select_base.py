@@ -7,9 +7,9 @@ from ..shared_helpers import create_auto_custom_id
 from .base import ComponentMetadataBase
 from .constants import MAX_VALUES_DEFAULT, MIN_VALUES_DEFAULT
 from .fields import (
-    parse_custom_id, parse_enabled, parse_max_values, parse_min_values, parse_placeholder, put_custom_id, put_enabled,
-    put_max_values, put_min_values, put_placeholder, validate_custom_id, validate_enabled, validate_max_values,
-    validate_min_values, validate_placeholder
+    parse_custom_id, parse_enabled, parse_max_values, parse_min_values, parse_placeholder, parse_required,
+    put_custom_id, put_enabled, put_max_values, put_min_values, put_placeholder, put_required, validate_custom_id,
+    validate_enabled, validate_max_values, validate_min_values, validate_placeholder, validate_required
 )
 
 
@@ -19,7 +19,7 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
     
     Attributes
     ----------
-    custom_id : `None`, `str`
+    custom_id : `None | str`
         Custom identifier to detect which component was used by the user.
     
     enabled : `bool`
@@ -31,19 +31,31 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
     min_values : `int`
         The minimal amount of options to select.
     
-    placeholder : `None`, `str`
+    placeholder : `None | str`
         Placeholder text of the select.
+    
+    required : `bool`
+        Whether the field is required to be fulfilled.
     """
-    __slots__ = ('custom_id', 'enabled', 'max_values', 'min_values', 'placeholder')
+    __slots__ = ('custom_id', 'enabled', 'max_values', 'min_values', 'placeholder', 'required')
     
     
-    def __new__(cls, *, custom_id = ..., enabled = ..., max_values = ..., min_values = ..., placeholder = ...):
+    def __new__(
+        cls,
+        *,
+        custom_id = ...,
+        enabled = ...,
+        max_values = ...,
+        min_values = ...,
+        placeholder = ...,
+        required = ...,
+    ):
         """
         Creates a new base select component metadata with the given parameters.
         
         Parameters
         ----------
-        custom_id : `None`, `str`, Optional (Keyword only)
+        custom_id : `None | str`, Optional (Keyword only)
             Custom identifier to detect which component was used by the user.
         
         enabled : `bool`, Optional (Keyword only)
@@ -55,8 +67,11 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
         min_values : `int`, Optional (Keyword only)
             The minimal amount of options to select.
         
-        placeholder : `None`, `str`, Optional (Keyword only)
+        placeholder : `None | str`, Optional (Keyword only)
             Placeholder text of the select.
+        
+        required : `None | bool`, Optional (Keyword only)
+            Whether the field is required to be fulfilled.
         
         Raises
         ------
@@ -95,6 +110,21 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
         else:
             placeholder = validate_placeholder(placeholder)
         
+        # required
+        if required is ...:
+            required = None
+        else:
+            if (required is not None):
+                required = validate_required(required)
+        
+        # Auto detect required if not-given / None
+        
+        if (required is None):
+            if min_values > 0:
+                required = True
+            else:
+                required = False
+        
         # Extra checks
         
         if custom_id is None:
@@ -107,6 +137,7 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
         self.max_values = max_values
         self.min_values = min_values
         self.placeholder = placeholder
+        self.required = required
         return self
     
     
@@ -119,6 +150,7 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
             max_values = keyword_parameters.pop('max_values', ...),
             min_values = keyword_parameters.pop('min_values', ...),
             placeholder = keyword_parameters.pop('placeholder', ...),
+            required = keyword_parameters.pop('required', ...),
         )
     
     
@@ -143,7 +175,7 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
             repr_parts.append(', placeholder = ')
             repr_parts.append(repr(placeholder))
         
-        # Optional descriptive fields: min_values & max_values & enabled
+        # Optional descriptive fields: min_values & max_values & required & enabled
         
         # min_values
         min_values = self.min_values
@@ -156,6 +188,12 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
         if max_values != MAX_VALUES_DEFAULT:
             repr_parts.append(', max_values = ')
             repr_parts.append(repr(max_values))
+        
+        # required (relation with `min_values`)
+        required = self.required
+        if (min_values > 0) ^ required:
+            repr_parts.append(', required = ')
+            repr_parts.append(repr(required))
         
         # enabled
         enabled = self.enabled
@@ -206,6 +244,10 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
         if (placeholder is not None):
             hash_value ^= hash(placeholder)
         
+        # required
+        if self.required:
+            hash_value ^= (1 << 28)
+        
         return hash_value
     
     
@@ -231,6 +273,10 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
         if self.placeholder != other.placeholder:
             return False
         
+        # required
+        if self.required != other.required:
+            return False
+        
         return True
     
     
@@ -243,6 +289,7 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
         self.max_values = parse_max_values(data)
         self.min_values = parse_min_values(data)
         self.placeholder = parse_placeholder(data)
+        self.required = parse_required(data)
         return self
     
     
@@ -255,6 +302,7 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
         put_max_values(self.max_values, data, defaults)
         put_min_values(self.min_values, data, defaults)
         put_placeholder(self.placeholder, data, defaults)
+        put_required(self.required, data, defaults)
         
         return data
     
@@ -278,6 +326,9 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
         # min_values
         new.min_values = self.min_values
         
+        # required
+        new.required = self.required
+        
         return new
     
     
@@ -300,25 +351,28 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
         # min_values
         new.min_values = self.min_values
         
+        # required
+        new.required = self.required
+        
         return new
     
     
     def copy_with(
         self,
         *,
-        channel_types = ...,
         custom_id = ...,
         enabled = ...,
         max_values = ...,
         min_values = ...,
         placeholder = ...,
+        required = ...,
     ):
         """
         Copies the base select component metadata with the given fields.
         
         Parameters
         ----------
-        custom_id : `None`, `str`, Optional (Keyword only)
+        custom_id : `None | str`, Optional (Keyword only)
             Custom identifier to detect which component was used by the user.
         
         enabled : `bool`, Optional (Keyword only)
@@ -330,8 +384,11 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
         min_values : `int`, Optional (Keyword only)
             The minimal amount of options to select.
         
-        placeholder : `None`, `str`, Optional (Keyword only)
+        placeholder : `None | str`, Optional (Keyword only)
             Placeholder text of the select.
+        
+        required : `None | bool`, Optional (Keyword only)
+            Whether the field is required to be fulfilled.
         
         Returns
         -------
@@ -374,6 +431,12 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
         else:
             placeholder = validate_placeholder(placeholder)
         
+        # required
+        if required is ...:
+            required = self.required
+        else:
+            required = validate_required(required)
+        
         # Extra checks
         
         if custom_id is None:
@@ -386,6 +449,7 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
         new.max_values = max_values
         new.min_values = min_values
         new.placeholder = placeholder
+        new.required = required
         return new
     
     
@@ -397,4 +461,5 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
             max_values = keyword_parameters.pop('max_values', ...),
             min_values = keyword_parameters.pop('min_values', ...),
             placeholder = keyword_parameters.pop('placeholder', ...),
+            required = keyword_parameters.pop('required', ...),
         )

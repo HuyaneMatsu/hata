@@ -1,3 +1,5 @@
+from datetime import datetime as DateTime, timezone as TimeZone
+
 import vampytest
 
 from ...permission_overwrite import PermissionOverwrite, PermissionOverwriteTargetType
@@ -18,9 +20,20 @@ def _assert_fields_set(channel_metadata):
     vampytest.assert_instance(channel_metadata.region, VoiceRegion, nullable = True)
     vampytest.assert_instance(channel_metadata.user_limit, int)
     vampytest.assert_instance(channel_metadata.topic, str, nullable = True)
+    vampytest.assert_instance(channel_metadata.voice_engaged_since, DateTime, nullable = True)
 
 
-def test__ChannelMetadataGuildStage__new__0():
+def test__ChannelMetadataGuildStage__new__no_fields():
+    """
+    Tests whether ``ChannelMetadataGuildStage.__new__`` works as intended.
+    
+    Case: no fields given.
+    """
+    channel_metadata = ChannelMetadataGuildStage()
+    _assert_fields_set(channel_metadata)
+
+
+def test__ChannelMetadataGuildStage__new__all_fields():
     """
     Tests whether ``ChannelMetadataGuildStage.__new__`` works as intended.
     
@@ -36,6 +49,7 @@ def test__ChannelMetadataGuildStage__new__0():
     region = VoiceRegion.brazil
     user_limit = 4
     topic = 'crimson'
+    voice_engaged_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     channel_metadata = ChannelMetadataGuildStage(
         parent_id = parent_id,
@@ -46,6 +60,7 @@ def test__ChannelMetadataGuildStage__new__0():
         region = region,
         user_limit = user_limit,
         topic = topic,
+        voice_engaged_since = voice_engaged_since,
     )
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
@@ -59,19 +74,23 @@ def test__ChannelMetadataGuildStage__new__0():
     vampytest.assert_eq(channel_metadata.region, region)
     vampytest.assert_eq(channel_metadata.user_limit, user_limit)
     vampytest.assert_eq(channel_metadata.topic, topic)
+    vampytest.assert_eq(channel_metadata.voice_engaged_since, voice_engaged_since)
 
 
-def test__ChannelMetadataGuildStage__new__1():
+def test__ChannelMetadataGuildStage__from_keyword_parameters__no_fields():
     """
-    Tests whether ``ChannelMetadataGuildStage.__new__`` works as intended.
+    Tests whether ``ChannelMetadataGuildStage.from_keyword_parameters`` works as intended.
     
     Case: no fields given.
     """
-    channel_metadata = ChannelMetadataGuildStage()
+    keyword_parameters = {}
+    
+    channel_metadata = ChannelMetadataGuildStage.from_keyword_parameters(keyword_parameters)
     _assert_fields_set(channel_metadata)
+    vampytest.assert_eq(keyword_parameters, {})
 
 
-def test__ChannelMetadataGuildStage__from_keyword_parameters__0():
+def test__ChannelMetadataGuildStage__from_keyword_parameters__all_fields():
     """
     Tests whether ``ChannelMetadataGuildStage.from_keyword_parameters`` works as intended.
     
@@ -87,6 +106,7 @@ def test__ChannelMetadataGuildStage__from_keyword_parameters__0():
     region = VoiceRegion.brazil
     user_limit = 4
     topic = 'crimson'
+    voice_engaged_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     keyword_parameters = {
         'parent_id': parent_id,
@@ -97,6 +117,7 @@ def test__ChannelMetadataGuildStage__from_keyword_parameters__0():
         'region': region,
         'user_limit': user_limit,
         'topic': topic,
+        'voice_engaged_since': voice_engaged_since,
     }
     channel_metadata = ChannelMetadataGuildStage.from_keyword_parameters(keyword_parameters)
     _assert_fields_set(channel_metadata)
@@ -113,19 +134,7 @@ def test__ChannelMetadataGuildStage__from_keyword_parameters__0():
     vampytest.assert_eq(channel_metadata.region, region)
     vampytest.assert_eq(channel_metadata.user_limit, user_limit)
     vampytest.assert_eq(channel_metadata.topic, topic)
-
-
-def test__ChannelMetadataGuildStage__from_keyword_parameters__1():
-    """
-    Tests whether ``ChannelMetadataGuildStage.from_keyword_parameters`` works as intended.
-    
-    Case: no fields given.
-    """
-    keyword_parameters = {}
-    
-    channel_metadata = ChannelMetadataGuildStage.from_keyword_parameters(keyword_parameters)
-    _assert_fields_set(channel_metadata)
-    vampytest.assert_eq(keyword_parameters, {})
+    vampytest.assert_eq(channel_metadata.voice_engaged_since, voice_engaged_since)
 
 
 def test__ChannelMetadataGuildStage__create_empty():

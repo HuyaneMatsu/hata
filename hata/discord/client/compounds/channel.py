@@ -606,7 +606,7 @@ class ClientCompoundChannelEndpoints(Compound):
         position : `int`, Optional (Keyword only)
             The channel's position.
         
-        region : `None`, ``VoiceRegion``, `str`, Optional (Keyword only)
+        region : ``None | str | VoiceRegion``, Optional (Keyword only)
             The channel's voice region.
         
         slowmode : `int`, Optional (Keyword only)
@@ -738,7 +738,7 @@ class ClientCompoundChannelEndpoints(Compound):
         position : `int`, Optional (Keyword only)
             The channel's position.
         
-        region : `None`, ``VoiceRegion``, `str`, Optional (Keyword only)
+        region : ``None | str | VoiceRegion``, Optional (Keyword only)
             The channel's voice region.
         
         slowmode : `int`, Optional (Keyword only)

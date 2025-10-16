@@ -498,6 +498,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +---------------------------------------+-----------------------------------------------------------+
         | video_quality_mode                    | ``VideoQualityMode``                                      |
         +---------------------------------------+-----------------------------------------------------------+
+        | voice_engaged_since                   | `None | DateTime`                                         |
+        +---------------------------------------+-----------------------------------------------------------+
     
     channel_group_user_add(client: ``Client``, channel: ``Channel``, user: ``ClientUserBase``):
         Called when a user is added to a group channel.

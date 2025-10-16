@@ -42,9 +42,11 @@ def test__Component__proxies__reading_defaults():
     vampytest.assert_instance(component.media, MediaInfo, nullable = True)
     vampytest.assert_instance(component.min_length, int)
     vampytest.assert_instance(component.min_values, int)
+    vampytest.assert_instance(component.name, str)
     vampytest.assert_instance(component.options, tuple, nullable = True)
     vampytest.assert_instance(component.placeholder, str, nullable = True)
     vampytest.assert_instance(component.required, bool)
+    vampytest.assert_instance(component.size, int)
     vampytest.assert_instance(component.sku_id, int)
     vampytest.assert_instance(component.spacing_size, SeparatorSpacingSize)
     vampytest.assert_instance(component.spoiler, bool)
@@ -106,6 +108,7 @@ def test__Component__proxies__read_channel_select():
     min_values = 9
     placeholder = 'gear'
     default_values = [EntitySelectDefaultValue(EntitySelectDefaultValueType.channel, 202310130050)]
+    required = True
     
     component = Component(
         ComponentType.channel_select,
@@ -115,6 +118,7 @@ def test__Component__proxies__read_channel_select():
         max_values = max_values,
         min_values = min_values,
         placeholder = placeholder,
+        required = required,
     )
     
     vampytest.assert_eq(component.channel_types, tuple(channel_types))
@@ -123,6 +127,7 @@ def test__Component__proxies__read_channel_select():
     vampytest.assert_eq(component.max_values, max_values)
     vampytest.assert_eq(component.min_values, min_values)
     vampytest.assert_eq(component.placeholder, placeholder)
+    vampytest.assert_eq(component.required, required)
 
 
 def test__Component__proxies__read_row():
@@ -199,13 +204,16 @@ def test__Component__proxies__read_string_select():
     Case: reading string select fields.
     """
     options = [StringSelectOption('yume')]
+    required = True
     
     component = Component(
         ComponentType.string_select,
         options = options,
+        required = required,
     )
     
     vampytest.assert_eq(component.options, tuple(options))
+    vampytest.assert_eq(component.required, required)
 
 
 def test__Component__proxies__read_button_style():
@@ -285,6 +293,8 @@ def test__Component__proxies__read_attachment_media():
     Case: reading attachment media.
     """
     media = MediaInfo('attachment://big_braids_orin.png')
+    name = 'big_braids_orin.png'
+    size = 89999
     spoiler = True
     
     component = Component(
@@ -292,8 +302,12 @@ def test__Component__proxies__read_attachment_media():
         media = media,
         spoiler = spoiler,
     )
+    component.metadata.name = name
+    component.metadata.size = size
     
     vampytest.assert_eq(component.media, media)
+    vampytest.assert_eq(component.name, name)
+    vampytest.assert_eq(component.size, size)
     vampytest.assert_eq(component.spoiler, spoiler)
 
 
@@ -413,6 +427,7 @@ def test__Component__proxies__write_channel_select():
     min_values = 9
     placeholder = 'gear'
     default_values = [EntitySelectDefaultValue(EntitySelectDefaultValueType.channel, 202310130050)]
+    required = True
     
     component = Component(ComponentType.channel_select)
     
@@ -422,6 +437,7 @@ def test__Component__proxies__write_channel_select():
     component.min_values = min_values
     component.placeholder = placeholder
     component.default_values = default_values
+    component.required = required
     
     vampytest.assert_eq(component.channel_types, tuple(channel_types))
     vampytest.assert_eq(component.custom_id, custom_id)
@@ -429,6 +445,7 @@ def test__Component__proxies__write_channel_select():
     vampytest.assert_eq(component.max_values, max_values)
     vampytest.assert_eq(component.min_values, min_values)
     vampytest.assert_eq(component.placeholder, placeholder)
+    vampytest.assert_eq(component.required, required)
 
 
 def test__Component__proxies__write_section():
@@ -502,12 +519,15 @@ def test__Component__proxies__write_string_select():
     Case: writing string select fields.
     """
     options = [StringSelectOption('yume')]
+    required = True
     
     component = Component(ComponentType.string_select)
     
     component.options = options
+    component.required = required
     
     vampytest.assert_eq(component.options, tuple(options))
+    vampytest.assert_eq(component.required, required)
 
 
 def test__Component__proxies__write_button_style():
@@ -585,6 +605,8 @@ def test__Component__proxies__write_attachment_media():
     Case: reading attachment media.
     """
     media = MediaInfo('attachment://big_braids_orin.png')
+    name = 'big_braids_orin.png'
+    size = 89999
     spoiler = True
     
     component = Component(
@@ -592,9 +614,13 @@ def test__Component__proxies__write_attachment_media():
     )
     
     component.media = media
+    component.name = name
+    component.size = size
     component.spoiler = spoiler
     
     vampytest.assert_eq(component.media, media)
+    vampytest.assert_eq(component.name, name)
+    vampytest.assert_eq(component.size, size)
     vampytest.assert_eq(component.spoiler, spoiler)
 
 

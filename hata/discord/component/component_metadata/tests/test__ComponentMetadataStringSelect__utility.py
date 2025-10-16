@@ -20,16 +20,18 @@ def test__ComponentMetadataStringSelect__clean_copy():
     enabled = False
     max_values = 10
     min_values = 9
-    placeholder = 'swing'
     options = [StringSelectOption('yume')]
+    placeholder = 'swing'
+    required = True
     
     component_metadata = ComponentMetadataStringSelect(
         custom_id = custom_id,
         enabled = enabled,
         max_values = max_values,
         min_values = min_values,
-        placeholder = placeholder,
         options = options,
+        placeholder = placeholder,
+        required = required,
     )
     copy = component_metadata.clean_copy(guild)
     
@@ -46,30 +48,27 @@ def test__ComponentMetadataStringSelect__copy():
     enabled = False
     max_values = 10
     min_values = 9
-    placeholder = 'swing'
     options = [StringSelectOption('yume')]
+    placeholder = 'swing'
+    required = True
     
     component_metadata = ComponentMetadataStringSelect(
         custom_id = custom_id,
         enabled = enabled,
         max_values = max_values,
         min_values = min_values,
-        placeholder = placeholder,
         options = options,
+        placeholder = placeholder,
+        required = required,
     )
     copy = component_metadata.copy()
     
     _assert_fields_set(copy)
-    vampytest.assert_is_not(component_metadata, copy)
-    vampytest.assert_eq(copy.custom_id, custom_id)
-    vampytest.assert_eq(copy.enabled, enabled)
-    vampytest.assert_eq(copy.max_values, max_values)
-    vampytest.assert_eq(copy.min_values, min_values)
-    vampytest.assert_eq(copy.placeholder, placeholder)
-    vampytest.assert_eq(copy.options, tuple(options))
+    vampytest.assert_is_not(copy, component_metadata)
+    vampytest.assert_eq(copy, component_metadata)
 
 
-def test__ComponentMetadataStringSelect__copy_with__0():
+def test__ComponentMetadataStringSelect__copy_with__no_fields():
     """
     Tests whether ``ComponentMetadataStringSelect.copy_with`` works as intended.
     
@@ -79,30 +78,27 @@ def test__ComponentMetadataStringSelect__copy_with__0():
     enabled = False
     max_values = 10
     min_values = 9
-    placeholder = 'swing'
     options = [StringSelectOption('yume')]
+    placeholder = 'swing'
+    required = True
     
     component_metadata = ComponentMetadataStringSelect(
         custom_id = custom_id,
         enabled = enabled,
         max_values = max_values,
         min_values = min_values,
-        placeholder = placeholder,
         options = options,
+        placeholder = placeholder,
+        required = required,
     )
     copy = component_metadata.copy_with()
     
     _assert_fields_set(copy)
-    vampytest.assert_is_not(component_metadata, copy)
-    vampytest.assert_eq(copy.custom_id, custom_id)
-    vampytest.assert_eq(copy.enabled, enabled)
-    vampytest.assert_eq(copy.max_values, max_values)
-    vampytest.assert_eq(copy.min_values, min_values)
-    vampytest.assert_eq(copy.placeholder, placeholder)
-    vampytest.assert_eq(copy.options, tuple(options))
+    vampytest.assert_is_not(copy, component_metadata)
+    vampytest.assert_eq(copy, component_metadata)
 
 
-def test__ComponentMetadataStringSelect__copy_with__1():
+def test__ComponentMetadataStringSelect__copy_with__all_fields():
     """
     Tests whether ``ComponentMetadataStringSelect.copy_with`` works as intended.
     
@@ -112,31 +108,35 @@ def test__ComponentMetadataStringSelect__copy_with__1():
     old_enabled = False
     old_max_values = 10
     old_min_values = 9
-    old_placeholder = 'swing'
     old_options = [StringSelectOption('yume')]
+    old_placeholder = 'swing'
+    old_required = True
     
     new_custom_id = 'uta'
     new_enabled = True
     new_max_values = 11
     new_min_values = 8
-    new_placeholder = 'kotoba'
     new_options = [StringSelectOption('shinjite'), StringSelectOption('boku')]
+    new_placeholder = 'kotoba'
+    new_required = False
     
     component_metadata = ComponentMetadataStringSelect(
         custom_id = old_custom_id,
         enabled = old_enabled,
         max_values = old_max_values,
         min_values = old_min_values,
-        placeholder = old_placeholder,
         options = old_options,
+        placeholder = old_placeholder,
+        required = old_required,
     )
     copy = component_metadata.copy_with(
         custom_id = new_custom_id,
         enabled = new_enabled,
         max_values = new_max_values,
         min_values = new_min_values,
-        placeholder = new_placeholder,
         options = new_options,
+        placeholder = new_placeholder,
+        required = new_required,
     )
     
     _assert_fields_set(copy)
@@ -145,11 +145,12 @@ def test__ComponentMetadataStringSelect__copy_with__1():
     vampytest.assert_eq(copy.enabled, new_enabled)
     vampytest.assert_eq(copy.max_values, new_max_values)
     vampytest.assert_eq(copy.min_values, new_min_values)
-    vampytest.assert_eq(copy.placeholder, new_placeholder)
     vampytest.assert_eq(copy.options, tuple(new_options))
+    vampytest.assert_eq(copy.placeholder, new_placeholder)
+    vampytest.assert_eq(copy.required, new_required)
 
 
-def test__ComponentMetadataStringSelect__copy_with_keyword_parameters__0():
+def test__ComponentMetadataStringSelect__copy_with_keyword_parameters__no_fields():
     """
     Tests whether ``ComponentMetadataStringSelect.copy_with_keyword_parameters`` works as intended.
     
@@ -159,30 +160,27 @@ def test__ComponentMetadataStringSelect__copy_with_keyword_parameters__0():
     enabled = False
     max_values = 10
     min_values = 9
-    placeholder = 'swing'
     options = [StringSelectOption('yume')]
+    placeholder = 'swing'
+    required = True
     
     component_metadata = ComponentMetadataStringSelect(
         custom_id = custom_id,
         enabled = enabled,
         max_values = max_values,
         min_values = min_values,
-        placeholder = placeholder,
         options = options,
+        placeholder = placeholder,
+        required = required,
     )
     copy = component_metadata.copy_with_keyword_parameters({})
     
     _assert_fields_set(copy)
-    vampytest.assert_is_not(component_metadata, copy)
-    vampytest.assert_eq(copy.custom_id, custom_id)
-    vampytest.assert_eq(copy.enabled, enabled)
-    vampytest.assert_eq(copy.max_values, max_values)
-    vampytest.assert_eq(copy.min_values, min_values)
-    vampytest.assert_eq(copy.placeholder, placeholder)
-    vampytest.assert_eq(copy.options, tuple(options))
+    vampytest.assert_is_not(copy, component_metadata)
+    vampytest.assert_eq(copy, component_metadata)
 
 
-def test__ComponentMetadataStringSelect__copy_with_keyword_parameters__1():
+def test__ComponentMetadataStringSelect__copy_with_keyword_parameters__all_fields():
     """
     Tests whether ``ComponentMetadataStringSelect.copy_with_keyword_parameters`` works as intended.
     
@@ -192,31 +190,35 @@ def test__ComponentMetadataStringSelect__copy_with_keyword_parameters__1():
     old_enabled = False
     old_max_values = 10
     old_min_values = 9
-    old_placeholder = 'swing'
     old_options = [StringSelectOption('yume')]
+    old_placeholder = 'swing'
+    old_required = True
     
     new_custom_id = 'uta'
     new_enabled = True
     new_max_values = 11
     new_min_values = 8
-    new_placeholder = 'kotoba'
     new_options = [StringSelectOption('shinjite'), StringSelectOption('boku')]
+    new_placeholder = 'kotoba'
+    new_required = False
     
     component_metadata = ComponentMetadataStringSelect(
         custom_id = old_custom_id,
         enabled = old_enabled,
         max_values = old_max_values,
         min_values = old_min_values,
-        placeholder = old_placeholder,
         options = old_options,
+        placeholder = old_placeholder,
+        required = old_required,
     )
     copy = component_metadata.copy_with_keyword_parameters({
         'custom_id': new_custom_id,
         'enabled': new_enabled,
         'max_values': new_max_values,
         'min_values': new_min_values,
-        'placeholder': new_placeholder,
         'options': new_options,
+        'placeholder': new_placeholder,
+        'required': new_required,
     })
     
     _assert_fields_set(copy)
@@ -225,8 +227,9 @@ def test__ComponentMetadataStringSelect__copy_with_keyword_parameters__1():
     vampytest.assert_eq(copy.enabled, new_enabled)
     vampytest.assert_eq(copy.max_values, new_max_values)
     vampytest.assert_eq(copy.min_values, new_min_values)
-    vampytest.assert_eq(copy.placeholder, new_placeholder)
     vampytest.assert_eq(copy.options, tuple(new_options))
+    vampytest.assert_eq(copy.placeholder, new_placeholder)
+    vampytest.assert_eq(copy.required, new_required)
 
 
 def _iter_options__iter_contents():
@@ -234,8 +237,9 @@ def _iter_options__iter_contents():
     enabled = False
     max_values = 10
     min_values = 9
-    placeholder = 'swing'
     options = [StringSelectOption('yume')]
+    placeholder = 'swing'
+    required = True
     
     yield (
         {},
@@ -248,8 +252,9 @@ def _iter_options__iter_contents():
             'enabled': enabled,
             'max_values': max_values,
             'min_values': min_values,
-            'placeholder': placeholder,
             'options': options,
+            'placeholder': placeholder,
+            'required': required,
         },
         [],
     )

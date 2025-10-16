@@ -19,7 +19,7 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
     
     Attributes
     ----------
-    _cache_permission : `None`, `dict` of (`int`, ``Permission``) items
+    _cache_permission : ``None | dict<int, Permission>``
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     name : `str`
         The channel's name.
@@ -47,7 +47,7 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
         ----------
         name : `str`, Optional (Keyword only)
             The channel's name.
-        parent_id : `int`, ``Channel``, Optional (Keyword only)
+        parent_id : ``None | int | Channel``, Optional (Keyword only)
             The channel's parent's identifier.
         
         Raises
@@ -219,7 +219,7 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
         ----------
         name : `str`, Optional (Keyword only)
             The channel's name.
-        parent_id : `int`, ``Channel``, Optional (Keyword only)
+        parent_id : ``None | int | Channel``, Optional (Keyword only)
             The channel's parent's identifier.
         
         Returns
@@ -275,13 +275,13 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
                     yield user
     
     
-    @copy_docs(ChannelMetadataBase._get_clients)
-    def _get_clients(self, channel_entity):
+    @copy_docs(ChannelMetadataBase._iter_clients)
+    def _iter_clients(self, channel_entity):
         guild = channel_entity.guild
-        if guild is None:
-            return []
-        
-        return [client for client in guild.clients if self._get_cached_permissions_for(channel_entity, client)]
+        if (guild is not None):
+            for client in guild.clients:
+                if self._get_cached_permissions_for(channel_entity, client) & PERMISSION_MASK_VIEW_CHANNEL:
+                    yield client
     
     
     @copy_docs(ChannelMetadataBase._get_partial)

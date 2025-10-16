@@ -18,29 +18,44 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
     
     Attributes
     ----------
-    _cache_permission : `None`, `dict` of (`int`, ``Permission``) items
+    _cache_permission : ``None | dict<int, Permission>``
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
+    
     bitrate : `int`
         The bitrate (in bits) of the voice channel.
+    
     name : `str`
         The channel's name.
+    
     parent_id : `int`
         The channel's parent's identifier.
-    permission_overwrites :`None`,  `dict` of (`int`, ``PermissionOverwrite``) items
+    
+    permission_overwrites : ``None | dict<int, PermissionOverwrite>``
         The channel's permission overwrites.
+    
     position : `int`
         The channel's position.
+    
     region : ``VoiceRegion``
         The voice region of the channel.
-    topic : `None`, `str`
+    
+    topic : `None | str`
         The channel's topic.
+    
     user_limit : `int`
         The maximal amount of users, who can join the voice channel, or `0` if unlimited.
+    
+    voice_engaged_since : `None | DateTime`
+        Since when the voice channel is engaged with.
+    
     
     Class Attributes
     ----------------
     order_group: `int` = `2`
         The channel's order group used when sorting channels.
+    
+    voice_engaged_since : `None | DateTime`
+        Since when the voice channel is engaged with.
     """
     __slots__ = ('topic',)
     
@@ -54,8 +69,9 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
         permission_overwrites = ...,
         position = ...,
         region = ...,
-        user_limit = ...,
         topic = ...,
+        user_limit = ...,
+        voice_engaged_since = ...,
     ):
         """
         Creates a new guild voice channel metadata from the given parameters.
@@ -64,21 +80,31 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
         ----------
         bitrate : `int`, Optional (Keyword only)
             The bitrate (in bits) of the voice channel.
+        
         name : `str`, Optional (Keyword only)
             The channel's name.
-        parent_id : `int`, ``Channel``, Optional (Keyword only)
+        
+        parent_id : ``None | int | Channel``, Optional (Keyword only)
             The channel's parent's identifier.
-        permission_overwrites : `None`, `iterable` of ``PermissionOverwrite``, Optional (Keyword only)
+        
+        permission_overwrites : ``None | iterable<PermissionOverwrite>``, Optional (Keyword only)
             The channel's permission overwrites.
+        
         position : `int`, Optional (Keyword only)
             The channel's position.
-        region : ``VoiceRegion``, `str`, Optional (Keyword only)
+        
+        region : ``None | str | VoiceRegion``, Optional (Keyword only)
             The voice region of the channel.
+        
+        topic : `None | str`, Optional (Keyword only)
+            The channel's topic.
+        
         user_limit : `int`, Optional (Keyword only)
             The maximal amount of users, who can join the voice channel, or `0` if unlimited.
-        topic : `None`, `str`, Optional (Keyword only)
-            The channel's topic.
-            
+        
+        voice_engaged_since : `None | DateTime`, Optional (Keyword only)
+            Since when the voice channel is engaged with.
+        
         Raises
         ------
         TypeError
@@ -102,6 +128,7 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
             position = position,
             region = region,
             user_limit = user_limit,
+            voice_engaged_since = voice_engaged_since,
         )
         self.topic = topic
         return self
@@ -117,8 +144,9 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
             permission_overwrites = keyword_parameters.pop('permission_overwrites', ...),
             position = keyword_parameters.pop('position', ...),
             region = keyword_parameters.pop('region', ...),
-            user_limit = keyword_parameters.pop('user_limit', ...),
             topic = keyword_parameters.pop('topic', ...),
+            user_limit = keyword_parameters.pop('user_limit', ...),
+            voice_engaged_since = keyword_parameters.pop('voice_engaged_since', ...),
         )
     
     
@@ -177,8 +205,9 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
         permission_overwrites = ...,
         position = ...,
         region = ...,
-        user_limit = ...,
         topic = ...,
+        user_limit = ...,
+        voice_engaged_since = ...,
     ):
         """
         Copies the guild voice channel metadata with the given fields.
@@ -187,20 +216,30 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
         ----------
         bitrate : `int`, Optional (Keyword only)
             The bitrate (in bits) of the voice channel.
+        
         name : `str`, Optional (Keyword only)
             The channel's name.
-        parent_id : `int`, ``Channel``, Optional (Keyword only)
+        
+        parent_id : ``None | int | Channel``, Optional (Keyword only)
             The channel's parent's identifier.
-        permission_overwrites : `None`, `iterable` of ``PermissionOverwrite``, Optional (Keyword only)
+        
+        permission_overwrites : ``None | iterable<PermissionOverwrite>``, Optional (Keyword only)
             The channel's permission overwrites.
+        
         position : `int`, Optional (Keyword only)
             The channel's position.
-        region : ``VoiceRegion``, `str`, Optional (Keyword only)
-            The voice region of the channel.
+        
         user_limit : `int`, Optional (Keyword only)
             The maximal amount of users, who can join the voice channel, or `0` if unlimited.
-        topic : `None`, `str`, Optional (Keyword only)
+        
+        region : ``None | str | VoiceRegion``, Optional (Keyword only)
+            The voice region of the channel.
+        
+        topic : `None | str`, Optional (Keyword only)
             The channel's topic.
+        
+        voice_engaged_since : `None | DateTime`, Optional (Keyword only)
+            Since when the voice channel is engaged with.
         
         Returns
         -------
@@ -229,6 +268,7 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
             position = position,
             region = region,
             user_limit = user_limit,
+            voice_engaged_since = voice_engaged_since,
         )
         new.topic = topic
         return new
@@ -243,8 +283,9 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
             permission_overwrites = keyword_parameters.pop('permission_overwrites', ...),
             position = keyword_parameters.pop('position', ...),
             region = keyword_parameters.pop('region', ...),
-            user_limit = keyword_parameters.pop('user_limit', ...),
             topic = keyword_parameters.pop('topic', ...),
+            user_limit = keyword_parameters.pop('user_limit', ...),
+            voice_engaged_since = keyword_parameters.pop('voice_engaged_since', ...),
         )
     
     

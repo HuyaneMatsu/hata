@@ -7,12 +7,14 @@ from ...emoji import Emoji, create_emoji_from_exclusive_inline_data, put_exclusi
 from ...field_parsers import (
     bool_parser_factory, entity_id_array_parser_factory, entity_id_parser_factory, flag_parser_factory,
     force_string_parser_factory, int_parser_factory, int_postprocess_parser_factory,
-    nullable_entity_array_parser_factory, nullable_string_parser_factory, preinstanced_parser_factory
+    nullable_entity_array_parser_factory, nullable_string_parser_factory, nullable_unix_time_parser_factory,
+    preinstanced_parser_factory
 )
 from ...field_putters import (
     bool_optional_putter_factory, entity_id_optional_putter_factory, flag_optional_putter_factory,
     force_string_putter_factory, int_optional_postprocess_putter_factory, int_putter_factory,
-    nullable_entity_array_optional_putter_factory, nullable_string_putter_factory, nulled_int_optional_putter_factory,
+    nullable_entity_array_optional_putter_factory, nullable_string_putter_factory,
+    nullable_unix_time_optional_putter_factory, nulled_int_optional_putter_factory,
     optional_entity_id_array_optional_putter_factory, preinstanced_optional_putter_factory, url_optional_putter_factory
 )
 from ...field_validators import (
@@ -636,7 +638,7 @@ def validate_permission_overwrites(permission_overwrites):
     
     Returns
     -------
-    permission_overwrites :`None`,  `dict` of (`int`, ``PermissionOverwrite``) items
+    permission_overwrites : ``None | dict<int, PermissionOverwrite>``
     """
     if permission_overwrites is None:
         return None
@@ -697,6 +699,14 @@ validate_slowmode = int_conditional_validator_factory(
     ),
     f'>= {SLOWMODE_MIN} and <= {SLOWMODE_MAX}',
 )
+
+
+# voice_engaged_since
+
+parse_voice_engaged_since = nullable_unix_time_parser_factory('voice_start_time')
+put_voice_engaged_since = nullable_unix_time_optional_putter_factory('voice_start_time')
+validate_voice_engaged_since = nullable_date_time_validator_factory('voice_engaged_since')
+
 
 # status
 
@@ -817,6 +827,7 @@ def validate_users(users):
         users_processed.add(user)
     
     return sorted(users_processed)
+
 
 # video_quality_mode
 

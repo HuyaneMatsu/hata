@@ -313,11 +313,11 @@ class ClientCompoundInviteEndpoints(Compound):
         
         else:
             raise TypeError(
-                f'`invite`` can be `{Invite.__name__}`, `str`, got {invite.__class__.__name__}; '
+                f'`invite`` can be `{Invite.__name__}`, `str`, got {type(invite).__name__}; '
                 f'{invite!r}.'
             )
         
-        invite_data = await self.api.invite_get(invite_code, {'with_counts': True})
+        invite_data = await self.api.invite_get(invite_code, {'with_counts': True, 'with_permissions': True})
         
         if invite is None:
             invite = Invite.from_data(invite_data)

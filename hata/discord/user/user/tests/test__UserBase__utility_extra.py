@@ -224,17 +224,34 @@ def test__UserBase__top_role_at():
     vampytest.assert_is(user.top_role_at(guild_id, default = default), default)
 
 
-def test__UserBase__can_use_emoji():
+def test__UserBase__can_use_emoji__unicode():
     """
     Tests whether ``Userbase.can_use_emoji`` works as intended.
+    
+    Case: unicode.
     """
+    emoji = BUILTIN_EMOJIS['heart']
+    
     user = UserBase()
     
-    emoji_0 = BUILTIN_EMOJIS['x']
-    emoji_1 = Emoji.precreate(202302040011)
+    output = user.can_use_emoji(emoji)
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, True)
+
+
+def test__UserBase__can_use_emoji__custom():
+    """
+    Tests whether ``Userbase.can_use_emoji`` works as intended.
     
-    vampytest.assert_true(user.can_use_emoji(emoji_0))
-    vampytest.assert_false(user.can_use_emoji(emoji_1))
+    Case: custom.
+    """
+    emoji = Emoji.precreate(202510010020)
+    
+    user = UserBase()
+    
+    output = user.can_use_emoji(emoji)
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, False)
 
 
 def test__UserBase__has_higher_role_than():

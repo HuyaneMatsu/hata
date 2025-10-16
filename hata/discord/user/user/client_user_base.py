@@ -632,6 +632,9 @@ class ClientUserBase(OrinUserBase):
         if emoji.is_unicode_emoji():
             return True
         
+        if not emoji.available:
+            return False
+        
         guild_id = emoji.guild_id
         
         try:
@@ -648,17 +651,15 @@ class ClientUserBase(OrinUserBase):
                 return True
         
         emoji_role_ids = emoji.role_ids
-        if (emoji_role_ids is None):
-            return True
+        if (emoji_role_ids is not None):
+            guild_profile_role_ids = guild_profile.role_ids
+            if (guild_profile_role_ids is None):
+                return False
+            
+            if not {*emoji_role_ids} & {*guild_profile_role_ids}:
+                return False
         
-        guild_profile_role_ids = guild_profile.role_ids
-        if (guild_profile_role_ids is None):
-            return False
-        
-        if {*emoji_role_ids} & {*guild_profile_role_ids}:
-            return True
-        
-        return False
+        return True
     
     
     @copy_docs(OrinUserBase.has_higher_role_than)

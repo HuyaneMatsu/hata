@@ -437,6 +437,16 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         """
     )
     
+    name = PlaceHolder(
+        '',
+        """
+        The name of the component's attachment media.
+        
+        Returns
+        -------
+        name : `str`
+        """
+    )
     
     options = PlaceHolder(
         None,
@@ -470,6 +480,17 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         Returns
         -------
         required : `bool`
+        """
+    )
+    
+    size = PlaceHolder(
+        0,
+        """
+        The size of the component's attachment media.
+        
+        Returns
+        -------
+        size : `int`
         """
     )
     

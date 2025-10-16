@@ -15,7 +15,7 @@ class ChannelMetadataGuildThreadPrivate(ChannelMetadataGuildThreadBase):
     ----------
     _created_at : `None | DateTime`
         When the channel was created.
-    _cache_permission : `None`, `dict` of (`int`, ``Permission``) items
+    _cache_permission : ``None | dict<int, Permission>``
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     archived : `bool`
         Whether the thread s archived.
@@ -79,7 +79,7 @@ class ChannelMetadataGuildThreadPrivate(ChannelMetadataGuildThreadBase):
             Whether non-moderators can invite other non-moderators to the threads.
         name : `str`, Optional (Keyword only)
             The channel's name.
-        parent_id : `int`, ``Channel``, Optional (Keyword only)
+        parent_id : ``None | int | Channel``, Optional (Keyword only)
             The channel's parent's identifier.
         open : `bool`, Optional (Keyword only)
             Whether the thread channel is open.
@@ -205,7 +205,7 @@ class ChannelMetadataGuildThreadPrivate(ChannelMetadataGuildThreadBase):
             Whether non-moderators can invite other non-moderators to the threads.
         name : `str`, Optional (Keyword only)
             The channel's name.
-        parent_id : `int`, ``Channel``, Optional (Keyword only)
+        parent_id : ``None | int | Channel``, Optional (Keyword only)
             The channel's parent's identifier.
         open : `bool`, Optional (Keyword only)
             Whether the thread channel is open.

@@ -5,12 +5,34 @@ from ..preinstanced import ApplicationIntegrationType
 
 
 def _iter_options():
-    yield {}, None
-    yield {'integration_types': None}, None
-    yield {'integration_types': []}, None
     yield (
-        {'integration_types': [ApplicationIntegrationType.user_install.value]},
-        (ApplicationIntegrationType.user_install,),
+        {},
+        None,
+    )
+    
+    yield (
+        {
+            'integration_types': None,
+        },
+        None,
+    )
+    
+    yield (
+        {
+            'integration_types': [],
+        },
+        None,
+    )
+    
+    yield (
+        {
+            'integration_types': [
+                ApplicationIntegrationType.user_install.value,
+            ],
+        },
+        (
+            ApplicationIntegrationType.user_install,
+        ),
     )
     yield (
         {
@@ -19,7 +41,10 @@ def _iter_options():
                 ApplicationIntegrationType.guild_install.value
             ],
         },
-        (ApplicationIntegrationType.guild_install, ApplicationIntegrationType.user_install,),
+        (
+            ApplicationIntegrationType.guild_install,
+            ApplicationIntegrationType.user_install,
+        ),
     )
 
 
@@ -35,6 +60,13 @@ def test__parse_integration_types(input_data):
     
     Returns
     -------
-    output : `None | tuple<ApplicationIntegrationType>`
+    output : ``None | tuple<ApplicationIntegrationType>``
     """
-    return parse_integration_types(input_data)
+    output = parse_integration_types(input_data)
+    vampytest.assert_instance(output, tuple, nullable = True)
+    
+    if (output is not None):
+        for element in output:
+            vampytest.assert_instance(element, ApplicationIntegrationType)
+    
+    return output

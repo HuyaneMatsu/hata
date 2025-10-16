@@ -1,4 +1,8 @@
+from datetime import datetime as DateTime, timezone as TimeZone
+
 import vampytest
+
+from ....utils import datetime_to_unix_time
 
 from ...permission_overwrite import PermissionOverwrite, PermissionOverwriteTargetType
 
@@ -21,6 +25,7 @@ def test__ChannelMetadataGuildVoiceBase__from_data():
     bitrate = 50000
     region = VoiceRegion.brazil
     user_limit = 4
+    voice_engaged_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     channel_metadata = ChannelMetadataGuildVoiceBase.from_data({
         'parent_id': str(parent_id),
@@ -33,6 +38,7 @@ def test__ChannelMetadataGuildVoiceBase__from_data():
         'bitrate': bitrate,
         'rtc_region': region.value,
         'user_limit': user_limit,
+        'voice_start_time': datetime_to_unix_time(voice_engaged_since),
     })
     _assert_fields_set(channel_metadata)
     
@@ -46,6 +52,7 @@ def test__ChannelMetadataGuildVoiceBase__from_data():
     vampytest.assert_eq(channel_metadata.bitrate, bitrate)
     vampytest.assert_eq(channel_metadata.region, region)
     vampytest.assert_eq(channel_metadata.user_limit, user_limit)
+    vampytest.assert_eq(channel_metadata.voice_engaged_since, voice_engaged_since)
 
 
 def test__ChannelMetadataGuildVoiceBase__to_data():
@@ -63,6 +70,7 @@ def test__ChannelMetadataGuildVoiceBase__to_data():
     bitrate = 50000
     region = VoiceRegion.brazil
     user_limit = 4
+    voice_engaged_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     channel_metadata = ChannelMetadataGuildVoiceBase(
         parent_id = parent_id,
@@ -72,6 +80,7 @@ def test__ChannelMetadataGuildVoiceBase__to_data():
         bitrate = bitrate,
         region = region,
         user_limit = user_limit,
+        voice_engaged_since = voice_engaged_since,
     )
     
     data = channel_metadata.to_data(defaults = True, include_internals = True)
@@ -89,6 +98,7 @@ def test__ChannelMetadataGuildVoiceBase__to_data():
             'bitrate': bitrate,
             'rtc_region': region.value,
             'user_limit': user_limit,
+            'voice_start_time': datetime_to_unix_time(voice_engaged_since),
         },
     )
 
@@ -158,22 +168,23 @@ def test__ChannelMetadataGuildVoiceBase__difference_update_attributes():
     Tests whether ``ChannelMetadataGuildVoiceBase._difference_update_attributes`` works as intended.
     """
     old_parent_id = 202209170136
-    new_parent_id = 202209170137
     old_name = 'Armelyrics'
-    new_name = 'Okuu'
     old_permission_overwrites = [
         PermissionOverwrite(202209170138, target_type = PermissionOverwriteTargetType.user)
     ]
+    old_position = 7
+    old_bitrate = 50000
+    old_region = VoiceRegion.brazil
+    old_user_limit = 4
+    
+    new_parent_id = 202209170137
+    new_name = 'Okuu'
     new_permission_overwrites = [
         PermissionOverwrite(202209170139, target_type = PermissionOverwriteTargetType.role)
     ]
-    old_position = 7
     new_position = 5
-    old_bitrate = 50000
     new_bitrate = 60000
-    old_region = VoiceRegion.brazil
     new_region = VoiceRegion.india
-    old_user_limit = 4
     new_user_limit = 5
     
     channel_metadata = ChannelMetadataGuildVoiceBase(
@@ -242,3 +253,45 @@ def test__ChannelMetadataGuildVoiceBase__from_partial_data():
     _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.name, name)
+
+
+def test__ChannelMetadataGuildVoiceBase__update_voice_engaged_since():
+    """
+    Tests whether ``ChannelMetadataGuildVoiceBase._update_voice_engaged_since`` works as intended.
+    """
+    voice_engaged_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    
+    channel_metadata = ChannelMetadataGuildVoiceBase()
+    
+    channel_metadata._update_voice_engaged_since({
+        'voice_start_time': datetime_to_unix_time(voice_engaged_since),
+    })
+    
+    vampytest.assert_eq(channel_metadata.voice_engaged_since, voice_engaged_since)
+
+
+def test__ChannelMetadataGuildVoiceBase__difference_update_voice_engaged_since():
+    """
+    Tests whether ``ChannelMetadataGuildVoiceBase._difference_update_voice_engaged_since`` works as intended.
+    """
+    old_voice_engaged_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    
+    new_voice_engaged_since = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
+    
+    channel_metadata = ChannelMetadataGuildVoiceBase(
+        voice_engaged_since = old_voice_engaged_since,
+    )
+    
+    old_attributes = channel_metadata._difference_update_voice_engaged_since({
+        'voice_start_time': datetime_to_unix_time(new_voice_engaged_since),
+    })
+    
+    
+    vampytest.assert_eq(channel_metadata.voice_engaged_since, new_voice_engaged_since)
+    
+    vampytest.assert_eq(
+        old_attributes,
+        {
+            'voice_engaged_since': old_voice_engaged_since,
+        },
+    )

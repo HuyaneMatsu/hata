@@ -14,6 +14,7 @@ def test__ComponentMetadataSelectBase__from_data():
     max_values = 10
     min_values = 9
     placeholder = 'swing'
+    required = True
     
     data = {
         'custom_id': custom_id,
@@ -21,6 +22,7 @@ def test__ComponentMetadataSelectBase__from_data():
         'max_values': max_values,
         'min_values': min_values,
         'placeholder': placeholder,
+        'required': required,
     }
     
     component_metadata = ComponentMetadataSelectBase.from_data(data)
@@ -30,6 +32,7 @@ def test__ComponentMetadataSelectBase__from_data():
     vampytest.assert_eq(component_metadata.max_values, max_values)
     vampytest.assert_eq(component_metadata.min_values, min_values)
     vampytest.assert_eq(component_metadata.placeholder, placeholder)
+    vampytest.assert_eq(component_metadata.required, required)
 
 
 def test__ComponentMetadataSelectBase__to_data():
@@ -43,6 +46,7 @@ def test__ComponentMetadataSelectBase__to_data():
     max_values = 10
     min_values = 9
     placeholder = 'swing'
+    required = True
     
     component_metadata = ComponentMetadataSelectBase(
         custom_id = custom_id,
@@ -50,6 +54,7 @@ def test__ComponentMetadataSelectBase__to_data():
         max_values = max_values,
         min_values = min_values,
         placeholder = placeholder,
+        required = required,
     )
     
     vampytest.assert_eq(
@@ -63,5 +68,6 @@ def test__ComponentMetadataSelectBase__to_data():
             'max_values': max_values,
             'min_values': min_values,
             'placeholder': placeholder,
+            'required': required,
         },
     )

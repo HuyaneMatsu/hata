@@ -1,16 +1,19 @@
+from datetime import datetime as DateTime, timezone as TimeZone
+
 import vampytest
 
 from ....client import Client
 from ....core import CHANNELS
 from ....guild import Guild
 from ....user import User
+from ....utils import datetime_to_unix_time
 
 from ..channel import Channel
 from ..preinstanced import ChannelType
 from ..utils import create_partial_channel_from_id
 
 
-def test__Channel__from_data__0():
+def test__Channel__from_data__default():
     """
     Tests whether ``Channel.from_data`` works as intended.
     
@@ -40,7 +43,7 @@ def test__Channel__from_data__0():
     vampytest.assert_eq(channel.name, name)
 
 
-def test__Channel__from_data__1():
+def test__Channel__from_data__exists():
     """
     Tests whether ``Channel.from_data`` works as intended.
     
@@ -65,7 +68,7 @@ def test__Channel__from_data__1():
     vampytest.assert_is(channel, existing_channel)
 
 
-def test__Channel__from_data__2():
+def test__Channel__from_data__guild_channel():
     """
     Tests whether ``Channel.from_data`` works as intended.
     
@@ -89,7 +92,7 @@ def test__Channel__from_data__2():
     vampytest.assert_eq(guild.channels, {channel_id: channel})
 
 
-def test__Channel__from_data__3():
+def test__Channel__from_data__guild_channel_no_string_cache():
     """
     Tests whether ``Channel.from_data`` works as intended.
     
@@ -113,7 +116,7 @@ def test__Channel__from_data__3():
     vampytest.assert_eq(guild.channels, {})
 
 
-def test__Channel__from_data__4():
+def test__Channel__from_data__guild_thread():
     """
     Tests whether ``Channel.from_data`` works as intended.
     
@@ -137,7 +140,7 @@ def test__Channel__from_data__4():
     vampytest.assert_eq(guild.threads, {channel_id: channel})
 
 
-def test__Channel__from_data__5():
+def test__Channel__from_data__guild_thread_no_strong_cache():
     """
     Tests whether ``Channel.from_data`` works as intended.
     
@@ -161,7 +164,7 @@ def test__Channel__from_data__5():
     vampytest.assert_eq(guild.threads, None)
 
 
-def test__Channel__from_data__6():
+def test__Channel__from_data__private():
     """
     Tests whether ``Channel.from_data`` works as intended.
     
@@ -199,7 +202,7 @@ def test__Channel__from_data__6():
         client = None
 
 
-def test__Channel__from_data__7():
+def test__Channel__from_data__private_no_string_cache():
     """
     Tests whether ``Channel.from_data`` works as intended.
     
@@ -237,7 +240,7 @@ def test__Channel__from_data__7():
         client = None
 
 
-def test__Channel__from_data__8():
+def test__Channel__from_data__private_group():
     """
     Tests whether ``Channel.from_data`` works as intended.
     
@@ -271,7 +274,7 @@ def test__Channel__from_data__8():
         client = None
 
 
-def test__Channel__from_data__9():
+def test__Channel__from_data__private_group_no_strong_cache():
     """
     Tests whether ``Channel.from_data`` works as intended.
     
@@ -305,7 +308,7 @@ def test__Channel__from_data__9():
         client = None
 
 
-def test__Channel__to_data__0():
+def test__Channel__to_data__default():
     """
     Tests whether ``Channel.to_data`` works as intended.
     
@@ -335,10 +338,12 @@ def test__Channel__update_attributes():
     """
     Tests whether ``Channel._update_attributes`` works as intended.
     """
-    channel_id = 202209180143
-    guild_id = 202209180144
-    channel_type = ChannelType.guild_text
+    channel_id = 202509230000
+    guild_id = 202509230001
+    channel_type = ChannelType.guild_voice
+    
     old_name = 'BURNING'
+    
     new_name = 'RED'
     
     channel = Channel.precreate(channel_id, channel_type = channel_type, name = old_name, guild_id = guild_id)
@@ -355,10 +360,12 @@ def test__Channel__difference_update_attributes():
     """
     Tests whether ``Channel._difference_update_attributes`` works as intended.
     """
-    channel_id = 202209180143
-    guild_id = 202209180144
+    channel_id = 202509230002
+    guild_id = 202509230003
     channel_type = ChannelType.guild_text
+    
     old_name = 'BURNING'
+    
     new_name = 'RED'
     
     channel = Channel.precreate(channel_id, channel_type = channel_type, name = old_name, guild_id = guild_id)
@@ -404,3 +411,109 @@ def test__Channel__from_partial_data():
     
     # This method should not cache
     vampytest.assert_not_in(channel_id, CHANNELS)
+
+
+def test__Channel__update_status():
+    """
+    Tests whether ``Channel._update_status`` works as intended.
+    """
+    channel_id = 202209180143
+    guild_id = 202209180144
+    channel_type = ChannelType.guild_voice
+    
+    old_status = 'blaze'
+    
+    new_status = 'rollin'
+    
+    channel = Channel.precreate(channel_id, channel_type = channel_type, status = old_status, guild_id = guild_id)
+    
+    channel._update_status({
+        'status': new_status,
+        'type': channel_type.value,
+    })
+    
+    vampytest.assert_eq(channel.status, new_status)
+
+
+def test__Channel__difference_update_status():
+    """
+    Tests whether ``Channel._difference_update_status`` works as intended.
+    """
+    channel_id = 202209180143
+    guild_id = 202209180144
+    channel_type = ChannelType.guild_voice
+    
+    old_status = 'blaze'
+    
+    new_status = 'rollin'
+    
+    channel = Channel.precreate(channel_id, channel_type = channel_type, status = old_status, guild_id = guild_id)
+    
+    old_attributes = channel._difference_update_status({
+        'status': new_status,
+        'type': channel_type.value,
+    })
+    
+    vampytest.assert_eq(channel.status, new_status)
+    
+    vampytest.assert_eq(
+        old_attributes,
+        {
+            'status': old_status,
+        },
+    )
+
+
+def test__Channel__update_voice_engaged_since():
+    """
+    Tests whether ``Channel._update_voice_engaged_since`` works as intended.
+    """
+    channel_id = 202209180143
+    guild_id = 202209180144
+    channel_type = ChannelType.guild_voice
+    
+    old_voice_engaged_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    
+    new_voice_engaged_since = DateTime(2016, 5, 17, tzinfo = TimeZone.utc)
+    
+    channel = Channel.precreate(
+        channel_id, channel_type = channel_type, voice_engaged_since = old_voice_engaged_since, guild_id = guild_id
+    )
+    
+    channel._update_voice_engaged_since({
+        'voice_start_time': datetime_to_unix_time(new_voice_engaged_since),
+        'type': channel_type.value,
+    })
+    
+    vampytest.assert_eq(channel.voice_engaged_since, new_voice_engaged_since)
+
+
+def test__Channel__difference_update_voice_engaged_since():
+    """
+    Tests whether ``Channel._difference_update_voice_engaged_since`` works as intended.
+    """
+    channel_id = 202209180143
+    guild_id = 202209180144
+    channel_type = ChannelType.guild_voice
+    
+    old_voice_engaged_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    
+    new_voice_engaged_since = DateTime(2016, 5, 17, tzinfo = TimeZone.utc)
+    
+    channel = Channel.precreate(
+        channel_id, channel_type = channel_type, voice_engaged_since = old_voice_engaged_since, guild_id = guild_id
+    )
+    
+    old_attributes = channel._difference_update_voice_engaged_since({
+        'voice_start_time': datetime_to_unix_time(new_voice_engaged_since),
+        'type': channel_type.value,
+    })
+    
+    vampytest.assert_eq(channel.voice_engaged_since, new_voice_engaged_since)
+    
+    vampytest.assert_eq(
+        old_attributes,
+        {
+            'voice_engaged_since': old_voice_engaged_since,
+        },
+    )

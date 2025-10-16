@@ -1,10 +1,13 @@
+from datetime import datetime as DateTime, timezone as TimeZone
+
 import vampytest
+
+from ....utils import datetime_to_unix_time
 
 from ...permission_overwrite import PermissionOverwrite, PermissionOverwriteTargetType
 
-from ..preinstanced import VideoQualityMode, VoiceRegion
-
 from ..guild_voice import ChannelMetadataGuildVoice
+from ..preinstanced import VideoQualityMode, VoiceRegion
 
 from .test__ChannelMetadataGuildVoice__constructor import _assert_fields_set
 
@@ -25,6 +28,7 @@ def test__ChannelMetadataGuildVoice__from_data():
     user_limit = 4
     nsfw = True
     video_quality_mode = VideoQualityMode.auto
+    voice_engaged_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     channel_metadata = ChannelMetadataGuildVoice.from_data({
         'parent_id': str(parent_id),
@@ -40,6 +44,7 @@ def test__ChannelMetadataGuildVoice__from_data():
         'user_limit': user_limit,
         'nsfw': nsfw,
         'video_quality_mode': video_quality_mode.value,
+        'voice_start_time': datetime_to_unix_time(voice_engaged_since),
     })
     _assert_fields_set(channel_metadata)
     
@@ -55,7 +60,8 @@ def test__ChannelMetadataGuildVoice__from_data():
     vampytest.assert_eq(channel_metadata.status, status)
     vampytest.assert_eq(channel_metadata.user_limit, user_limit)
     vampytest.assert_eq(channel_metadata.nsfw, nsfw)
-    vampytest.assert_eq(channel_metadata.video_quality_mode, video_quality_mode)
+    vampytest.assert_is(channel_metadata.video_quality_mode, video_quality_mode)
+    vampytest.assert_eq(channel_metadata.voice_engaged_since, voice_engaged_since)
 
 
 def test__ChannelMetadataGuildVoice__to_data():
@@ -76,6 +82,7 @@ def test__ChannelMetadataGuildVoice__to_data():
     user_limit = 4
     nsfw = True
     video_quality_mode = VideoQualityMode.auto
+    voice_engaged_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     channel_metadata = ChannelMetadataGuildVoice(
         parent_id = parent_id,
@@ -88,6 +95,7 @@ def test__ChannelMetadataGuildVoice__to_data():
         user_limit = user_limit,
         nsfw = nsfw,
         video_quality_mode = video_quality_mode,
+        voice_engaged_since = voice_engaged_since,
     )
     
     data = channel_metadata.to_data(defaults = True, include_internals = True)
@@ -108,6 +116,7 @@ def test__ChannelMetadataGuildVoice__to_data():
             'user_limit': user_limit,
             'nsfw': nsfw,
             'video_quality_mode': video_quality_mode.value,
+            'voice_start_time': datetime_to_unix_time(voice_engaged_since),
         },
     )
 
@@ -117,26 +126,27 @@ def test__ChannelMetadataGuildVoice__update_attributes():
     Tests whether ``ChannelMetadataGuildVoice._update_attributes`` works as intended.
     """
     old_parent_id = 202209170155
-    new_parent_id = 202209170156
     old_name = 'Armelyrics'
-    new_name = 'Okuu'
     old_permission_overwrites = [
         PermissionOverwrite(202209170157, target_type = PermissionOverwriteTargetType.user)
     ]
+    old_position = 7
+    old_bitrate = 50000
+    old_region = VoiceRegion.brazil
+    old_user_limit = 4
+    old_nsfw = True
+    old_video_quality_mode = VideoQualityMode.auto
+    
+    new_parent_id = 202209170156
+    new_name = 'Okuu'
     new_permission_overwrites = [
         PermissionOverwrite(202209170158, target_type = PermissionOverwriteTargetType.role)
     ]
-    old_position = 7
     new_position = 5
-    old_bitrate = 50000
     new_bitrate = 60000
-    old_region = VoiceRegion.brazil
     new_region = VoiceRegion.india
-    old_user_limit = 4
     new_user_limit = 5
-    old_nsfw = True
     new_nsfw = False
-    old_video_quality_mode = VideoQualityMode.auto
     new_video_quality_mode = VideoQualityMode.full
     
     channel_metadata = ChannelMetadataGuildVoice(
@@ -186,26 +196,27 @@ def test__ChannelMetadataGuildVoice__difference_update_attributes():
     Tests whether ``ChannelMetadataGuildVoice._difference_update_attributes`` works as intended.
     """
     old_parent_id = 202209170159
-    new_parent_id = 202209170160
     old_name = 'Armelyrics'
-    new_name = 'Okuu'
     old_permission_overwrites = [
         PermissionOverwrite(202209170161, target_type = PermissionOverwriteTargetType.user)
     ]
+    old_position = 7
+    old_bitrate = 50000
+    old_region = VoiceRegion.brazil
+    old_user_limit = 4
+    old_nsfw = True
+    old_video_quality_mode = VideoQualityMode.auto
+    
+    new_parent_id = 202209170160
+    new_name = 'Okuu'
     new_permission_overwrites = [
         PermissionOverwrite(202209170162, target_type = PermissionOverwriteTargetType.role)
     ]
-    old_position = 7
     new_position = 5
-    old_bitrate = 50000
     new_bitrate = 60000
-    old_region = VoiceRegion.brazil
     new_region = VoiceRegion.india
-    old_user_limit = 4
     new_user_limit = 5
-    old_nsfw = True
     new_nsfw = False
-    old_video_quality_mode = VideoQualityMode.auto
     new_video_quality_mode = VideoQualityMode.full
     
     channel_metadata = ChannelMetadataGuildVoice(

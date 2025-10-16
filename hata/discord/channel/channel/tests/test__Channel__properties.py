@@ -6,7 +6,9 @@ from ....client import Client
 from ....core import BUILTIN_EMOJIS
 from ....bases import Icon, IconType
 from ....guild import Guild, create_partial_guild_from_id
-from ....user import ClientUserBase, User, ZEROUSER, create_partial_user_from_id
+from ....permission import Permission
+from ....role import Role
+from ....user import ClientUserBase, GuildProfile, User, ZEROUSER, create_partial_user_from_id
 
 from ...forum_tag import ForumTag
 from ...channel_metadata import ChannelFlag, ForumLayout, SortOrder, VideoQualityMode, VoiceRegion
@@ -16,7 +18,7 @@ from ..preinstanced import ChannelType
 from ..channel import Channel
 
 
-def test__Channel__thread_users__0():
+def test__Channel__thread_users__default():
     """
     Tests whether ``Channel.thread_users`` works as intended.
     
@@ -34,7 +36,7 @@ def test__Channel__thread_users__0():
     vampytest.assert_is(channel.thread_users, None)
 
 
-def _iter_options__general_properties():
+def _iter_options__proxy_properties():
     yield (ChannelType.private_group, 'application_id', 202301210011)
     yield (ChannelType.guild_thread_public, 'applied_tag_ids', (202209180147, 202209180148))
     yield (ChannelType.guild_thread_public, 'archived', True)
@@ -61,23 +63,51 @@ def _iter_options__general_properties():
     yield (ChannelType.guild_voice, 'video_quality_mode', VideoQualityMode.full)
     yield (ChannelType.guild_forum, 'default_sort_order', SortOrder.creation_date)
     yield (ChannelType.guild_forum, 'default_forum_layout', ForumLayout.list)
+    yield (ChannelType.guild_voice, 'voice_engaged_since', DateTime(2016, 5, 14, tzinfo = TimeZone.utc))
 
 
-@vampytest.call_from(_iter_options__general_properties())
-def test__Channel__general_properties(channel_type, field_name, field_value):
+@vampytest.call_from(_iter_options__proxy_properties())
+def test__Channel__proxy_properties__read(channel_type, field_name, field_value):
     """
     Checks whether the general proxy properties of the ``Channel`` work as intended.
+    
+    Case: read.
     
     Parameters
     ----------
     channel_type : ``ChannelType``
         Channel type to create channel with.
+    
     field_name : `str`
         The field's name to test.
+    
     field_value : `object`
         The field's value.
     """
     channel = Channel(channel_type = channel_type, **{field_name: field_value})
+    vampytest.assert_eq(getattr(channel, field_name), field_value)
+
+
+@vampytest.call_from(_iter_options__proxy_properties())
+def test__Channel__proxy_properties__write(channel_type, field_name, field_value):
+    """
+    Checks whether the general proxy properties of the ``Channel`` work as intended.
+    
+    Case: write.
+    
+    Parameters
+    ----------
+    channel_type : ``ChannelType``
+        Channel type to create channel with.
+    
+    field_name : `str`
+        The field's name to test.
+    
+    field_value : `object`
+        The field's value.
+    """
+    channel = Channel(channel_type = channel_type)
+    setattr(channel, field_name, field_value)
     vampytest.assert_eq(getattr(channel, field_name), field_value)
 
 
@@ -395,7 +425,7 @@ def test__Channel__partial__partial_guild():
     vampytest.assert_true(partial)
 
 
-def test__Channel__clients__0():
+def test__Channel__clients__no_client():
     """
     Tests whether ``Channel.clients`` works as intended.
     
@@ -410,21 +440,23 @@ def test__Channel__clients__0():
     vampytest.assert_eq(clients, [])
 
 
-def test__Channel__clients__1():
+def test__Channel__clients__private():
     """
     Tests whether ``Channel.clients`` works as intended.
     
     Case: private.
     """
+    client_id = 202209090002
     client = Client(
-        token = 'token_20220909_0002',
+        token = f'token_{client_id}',
+        client_id = client_id
     )
     
     try:
         channel_id = 202209200018
         
         channel = Channel.precreate(channel_id, channel_type = ChannelType.private, users = [client])
-            
+        
         clients = channel.clients
         vampytest.assert_instance(clients, list)
         vampytest.assert_eq(clients, [client])
@@ -436,24 +468,92 @@ def test__Channel__clients__1():
         clients = None
 
 
-def test__Channel__clients__2():
+def test__Channel__clients__guild__with_permissions():
     """
     Tests whether ``Channel.clients`` works as intended.
     
-    Case: guild.
+    Case: guild & with permissions.
     """
+    client_id = 202509240003
     client = Client(
-        token = 'token_20220909_0002',
+        token = f'token_{client_id}',
+        client_id = client_id
     )
     
     try:
-        channel_id = 202209200018
+        channel_id = 202509240004
+        guild_id = 202509240005
         
-        channel = Channel.precreate(channel_id, channel_type = ChannelType.private, users = [client])
-            
+        client.guild_profiles[guild_id] = GuildProfile()
+        role = Role.precreate(
+            guild_id,
+            guild_id = guild_id,
+            permissions = Permission().update_by_keys(administrator = True),
+        )
+        channel = Channel.precreate(
+            channel_id,
+            channel_type = ChannelType.guild_text,
+            guild_id = guild_id,
+        )
+        
+        guild = Guild.precreate(
+            guild_id,
+            users = [client],
+            channels = [channel],
+            roles = [role],
+        )
+        guild.clients.append(client)
+        
         clients = channel.clients
         vampytest.assert_instance(clients, list)
         vampytest.assert_eq(clients, [client])
+    
+    # Cleanup
+    finally:
+        client._delete()
+        client = None
+        clients = None
+
+
+def test__Channel__clients__guild__no_permissions():
+    """
+    Tests whether ``Channel.clients`` works as intended.
+    
+    Case: guild & no permissions.
+    """
+    client_id = 202509240006
+    client = Client(
+        token = f'token_{client_id}',
+        client_id = client_id
+    )
+    
+    try:
+        channel_id = 202509240007
+        guild_id = 202509240008
+        
+        client.guild_profiles[guild_id] = GuildProfile()
+        role = Role.precreate(
+            guild_id,
+            guild_id = guild_id,
+            permissions = Permission(),
+        )
+        channel = Channel.precreate(
+            channel_id,
+            channel_type = ChannelType.guild_text,
+            guild_id = guild_id,
+        )
+        
+        guild = Guild.precreate(
+            guild_id,
+            users = [client],
+            channels = [channel],
+            roles = [role],
+        )
+        guild.clients.append(client)
+        
+        clients = channel.clients
+        vampytest.assert_instance(clients, list)
+        vampytest.assert_eq(clients, [])
     
     # Cleanup
     finally:

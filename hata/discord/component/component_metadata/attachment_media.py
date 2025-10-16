@@ -6,8 +6,8 @@ from ..media_info import MediaInfo
 
 from .base import ComponentMetadataBase
 from .fields import (
-    parse_media__attachment_only, parse_spoiler, put_media__attachment_only, put_spoiler, validate_media,
-    validate_spoiler
+    parse_media__attachment_only, parse_name, parse_size, parse_spoiler, put_media__attachment_only, put_name, put_size,
+    put_spoiler, validate_media, validate_spoiler
 )
 
 
@@ -21,10 +21,16 @@ class ComponentMetadataAttachmentMedia(ComponentMetadataBase):
         The media of the component.
         When sending it supports only attachments using the `attachment://<file_name>` url format.
     
+    name : `str`
+        The name of the attachment media.
+    
+    size : `int`
+        The size of the attachment media.
+    
     spoiler : `bool`
         Whether the media should be spoilered.
     """
-    __slots__ = ('media', 'spoiler')
+    __slots__ = ('media', 'name', 'size', 'spoiler')
     
     def __new__(cls, *, media = ..., spoiler = ...):
         """
@@ -60,6 +66,8 @@ class ComponentMetadataAttachmentMedia(ComponentMetadataBase):
         # Construct
         self = object.__new__(cls)
         self.media = media
+        self.name = ''
+        self.size = 0
         self.spoiler = spoiler
         return self
     
@@ -81,6 +89,16 @@ class ComponentMetadataAttachmentMedia(ComponentMetadataBase):
         repr_parts.append(' media = ')
         repr_parts.append(repr(self.media))
         
+        # name, size
+        name = self.name
+        size = self.size
+        if name or size:
+            repr_parts.append(', name = ')
+            repr_parts.append(repr(name))
+            
+            repr_parts.append(', size = ')
+            repr_parts.append(repr(size))
+        
         # spoiler
         spoiler = self.spoiler
         if spoiler:
@@ -98,6 +116,14 @@ class ComponentMetadataAttachmentMedia(ComponentMetadataBase):
         # media
         hash_value ^= hash(self.media)
         
+        # name
+        name = self.name
+        if name:
+            hash_value ^= hash(name)
+        
+        # size
+        hash_value ^= self.size
+        
         # spoiler
         hash_value ^= self.spoiler << 22
         
@@ -109,6 +135,18 @@ class ComponentMetadataAttachmentMedia(ComponentMetadataBase):
         # media
         if self.media != other.media:
             return False
+        
+        # name, size
+        self_name = self.name
+        self_size = self.size
+        other_name = other.name
+        other_size = other.size
+        if (self_name or self_size) and (other_name or other_size):
+            if self_name != other_name:
+                return False
+            
+            if self_size != other_size:
+                return False
         
         # spoiler
         if self.spoiler != other.spoiler:
@@ -122,6 +160,8 @@ class ComponentMetadataAttachmentMedia(ComponentMetadataBase):
     def from_data(cls, data):
         self = object.__new__(cls)
         self.media = parse_media__attachment_only(data)
+        self.name = parse_name(data)
+        self.size = parse_size(data)
         self.spoiler = parse_spoiler(data)
         return self
     
@@ -133,6 +173,10 @@ class ComponentMetadataAttachmentMedia(ComponentMetadataBase):
         put_media__attachment_only(self.media, data, defaults, include_internals = include_internals)
         put_spoiler(self.spoiler, data, defaults)
         
+        if include_internals:
+            put_name(self.name, data, defaults)
+            put_size(self.size, data, defaults)
+        
         return data
     
     
@@ -141,6 +185,8 @@ class ComponentMetadataAttachmentMedia(ComponentMetadataBase):
         new = object.__new__(type(self))
         
         new.media = self.media.copy()
+        new.name = ''
+        new.size = 0
         new.spoiler = self.spoiler
         
         return new
@@ -151,6 +197,8 @@ class ComponentMetadataAttachmentMedia(ComponentMetadataBase):
         new = object.__new__(type(self))
         
         new.media = self.media.copy()
+        new.name = ''
+        new.size = 0
         new.spoiler = self.spoiler
         
         return new
@@ -199,6 +247,8 @@ class ComponentMetadataAttachmentMedia(ComponentMetadataBase):
         # Construct
         new = object.__new__(type(self))
         new.media = media
+        new.name = ''
+        new.size = 0
         new.spoiler = spoiler
         return new
     

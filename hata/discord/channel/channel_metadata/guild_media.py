@@ -9,7 +9,7 @@ class ChannelMetadataGuildMedia(ChannelMetadataGuildForumBase):
     
     Attributes
     ----------
-    _cache_permission : `None`, `dict` of (`int`, ``Permission``) items
+    _cache_permission : ``None | dict<int, Permission>``
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     available_tags : `None`, `tuple` of ``ForumTag``
         The available tags to assign to the child-thread channels.
@@ -30,7 +30,7 @@ class ChannelMetadataGuildMedia(ChannelMetadataGuildForumBase):
         The channel's name.
     parent_id : `int`
         The channel's parent's identifier.
-    permission_overwrites :`None`,  `dict` of (`int`, ``PermissionOverwrite``) items
+    permission_overwrites : ``None | dict<int, PermissionOverwrite>``
         The channel's permission overwrites.
     position : `int`
         The channel's position.

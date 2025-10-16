@@ -2,7 +2,8 @@ __all__ = (
     'ApplicationDiscoverabilityState', 'ApplicationEventWebhookEventType', 'ApplicationEventWebhookState',
     'ApplicationExplicitContentFilterLevel', 'ApplicationIntegrationType', 'ApplicationInteractionEventType',
     'ApplicationInteractionVersion', 'ApplicationInternalGuildRestriction', 'ApplicationMonetizationState',
-    'ApplicationRPCState', 'ApplicationStoreState', 'ApplicationType', 'ApplicationVerificationState'
+    'ApplicationRPCState', 'ApplicationStoreState', 'ApplicationTheme', 'ApplicationType',
+    'ApplicationVerificationState'
 )
 
 from ...bases import Preinstance as P, PreinstancedBase
@@ -439,6 +440,100 @@ class ApplicationStoreState(PreinstancedBase, value_type = int):
     submitted = P(3, 'submitted')
     approved = P(4, 'approved')
     rejected = P(5, 'rejected')
+
+
+class ApplicationTheme(PreinstancedBase, value_type = str):
+    """
+    Represents an application's theme.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the application theme.
+    
+    value : `str`
+        The Discord side identifier value of the application theme.
+        
+    Type Attributes
+    ---------------
+    Every predefined application theme can be accessed as type attribute as well:
+    
+    +---------------------------------------+---------------------------------------+---------------------------------------------------+
+    | Type attribute name                   | name                                  | value                                             |
+    +=======================================+=======================================+===================================================+
+    | action                                | action                                | 'Action'                                          |
+    +---------------------------------------+---------------------------------------+---------------------------------------------------+
+    | business                              | business                              | 'Business'                                        |
+    +---------------------------------------+---------------------------------------+---------------------------------------------------+
+    | comedy                                | comedy                                | 'Comedy'                                          |
+    +---------------------------------------+---------------------------------------+---------------------------------------------------+
+    | drama                                 | drama                                 | 'Drama'                                           |
+    +---------------------------------------+---------------------------------------+---------------------------------------------------+
+    | educational                           | educational                           | 'Educational'                                     |
+    +---------------------------------------+---------------------------------------+---------------------------------------------------+
+    | erotic                                | erotic                                | 'Erotic'                                          |
+    +---------------------------------------+---------------------------------------+---------------------------------------------------+
+    | explore_expand_exploit_exterminate    | explore expand exploit exterminate    | '4X (explore, expand, exploit, and exterminate)'  |
+    +---------------------------------------+---------------------------------------+---------------------------------------------------+
+    | fantasy                               | fantasy                               | 'Fantasy'                                         |
+    +---------------------------------------+---------------------------------------+---------------------------------------------------+
+    | historical                            | historical                            | 'Historical'                                      |
+    +---------------------------------------+---------------------------------------+---------------------------------------------------+
+    | horror                                | horror                                | 'Horror'                                          |
+    +---------------------------------------+---------------------------------------+---------------------------------------------------+
+    | kids                                  | kids                                  | 'Kids'                                            |
+    +---------------------------------------+---------------------------------------+---------------------------------------------------+
+    | mistery                               | mistery                               | 'Mistery'                                         |
+    +---------------------------------------+---------------------------------------+---------------------------------------------------+
+    | non_fiction                           | non-fiction                           | 'Non-fiction'                                     |
+    +---------------------------------------+---------------------------------------+---------------------------------------------------+
+    | open_world                            | open world                            | 'Open world'                                      |
+    +---------------------------------------+---------------------------------------+---------------------------------------------------+
+    | party                                 | party                                 | 'Party'                                           |
+    +---------------------------------------+---------------------------------------+---------------------------------------------------+
+    | romance                               | romance                               | 'Romance'                                         |
+    +---------------------------------------+---------------------------------------+---------------------------------------------------+
+    | sandbox                               | sandbox                               | 'Sandbox'                                         |
+    +---------------------------------------+---------------------------------------+---------------------------------------------------+
+    | science_fiction                       | science fiction                       | 'Science fiction'                                 |
+    +---------------------------------------+---------------------------------------+---------------------------------------------------+
+    | stealth                               | stealth                               | 'Stealth'                                         |
+    +---------------------------------------+---------------------------------------+---------------------------------------------------+
+    | survival                              | survival                              | 'Survival'                                        |
+    +---------------------------------------+---------------------------------------+---------------------------------------------------+
+    | thriller                              | thriller                              | 'Thriller'                                        |
+    +---------------------------------------+---------------------------------------+---------------------------------------------------+
+    | warfare                               | warfare                               | 'Warfare'                                         |
+    +---------------------------------------+---------------------------------------+---------------------------------------------------+
+    """
+    __slots__ = ()
+    
+    # predefined
+    action = P('Action', 'action')
+    business = P('Business', 'business')
+    comedy = P('Comedy', 'comedy')
+    drama = P('Drama', 'drama')
+    educational = P('Educational', 'educational')
+    erotic = P('Erotic', 'erotic')
+    explore_expand_exploit_exterminate = P(
+        '4X (explore, expand, exploit, and exterminate)',
+        'explore expand exploit exterminate',
+    )
+    fantasy = P('Fantasy', 'fantasy')
+    historical = P('Historical', 'historical')
+    horror = P('Horror', 'horror')
+    kids = P('Kids', 'kids')
+    mistery = P('Mistery', 'mistery')
+    non_fiction = P('Non-fiction', 'non-fiction')
+    open_world = P('Open-world', 'open world')
+    party = P('Party', 'party')
+    romance = P('Romance', 'romance')
+    sandbox = P('Sandbox', 'sandbox')
+    science_fiction = P('Science fiction', 'science fiction')
+    stealth = P('Stealth', 'Stealth')
+    survival = P('Survival', 'survival')
+    thriller = P('Thriller', 'thriller')
+    warfare = P('Warfare', 'warfare')
 
 
 class ApplicationType(PreinstancedBase, value_type = int):

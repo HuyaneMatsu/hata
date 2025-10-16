@@ -13,9 +13,10 @@ def _assert_fields_set(component_metadata):
     vampytest.assert_instance(component_metadata.max_values, int)
     vampytest.assert_instance(component_metadata.min_values, int)
     vampytest.assert_instance(component_metadata.placeholder, str, nullable = True)
+    vampytest.assert_instance(component_metadata.required, bool)
 
 
-def test__ComponentMetadataSelectBase__new__0():
+def test__ComponentMetadataSelectBase__new__no_fields():
     """
     Tests whether ``ComponentMetadataSelectBase.__new__`` works as intended.
     
@@ -25,7 +26,7 @@ def test__ComponentMetadataSelectBase__new__0():
     _assert_fields_set(component_metadata)
 
 
-def test__ComponentMetadataSelectBase__new__1():
+def test__ComponentMetadataSelectBase__new__all_fields():
     """
     Tests whether ``ComponentMetadataSelectBase.__new__`` works as intended.
     
@@ -36,6 +37,7 @@ def test__ComponentMetadataSelectBase__new__1():
     max_values = 10
     min_values = 9
     placeholder = 'swing'
+    required = True
     
     component_metadata = ComponentMetadataSelectBase(
         custom_id = custom_id,
@@ -43,6 +45,7 @@ def test__ComponentMetadataSelectBase__new__1():
         max_values = max_values,
         min_values = min_values,
         placeholder = placeholder,
+        required = required,
     )
     _assert_fields_set(component_metadata)
     vampytest.assert_eq(component_metadata.custom_id, custom_id)
@@ -50,9 +53,10 @@ def test__ComponentMetadataSelectBase__new__1():
     vampytest.assert_eq(component_metadata.max_values, max_values)
     vampytest.assert_eq(component_metadata.min_values, min_values)
     vampytest.assert_eq(component_metadata.placeholder, placeholder)
+    vampytest.assert_eq(component_metadata.required, required)
 
 
-def test__ComponentMetadataSelectBase__from_keyword_parameters__0():
+def test__ComponentMetadataSelectBase__from_keyword_parameters__no_fields():
     """
     Tests whether ``ComponentMetadataSelectBase.from_keyword_parameters`` works as intended.
     
@@ -64,7 +68,7 @@ def test__ComponentMetadataSelectBase__from_keyword_parameters__0():
     _assert_fields_set(component_metadata)
 
 
-def test__ComponentMetadataSelectBase__from_keyword_parameters__1():
+def test__ComponentMetadataSelectBase__from_keyword_parameters__all_fields():
     """
     Tests whether ``ComponentMetadataSelectBase.from_keyword_parameters`` works as intended.
     
@@ -75,6 +79,7 @@ def test__ComponentMetadataSelectBase__from_keyword_parameters__1():
     max_values = 10
     min_values = 9
     placeholder = 'swing'
+    required = True
     
     keyword_parameters = {
         'custom_id': custom_id,
@@ -82,6 +87,7 @@ def test__ComponentMetadataSelectBase__from_keyword_parameters__1():
         'max_values': max_values,
         'min_values': min_values,
         'placeholder': placeholder,
+        'required': required,
     }
     
     component_metadata = ComponentMetadataSelectBase.from_keyword_parameters(keyword_parameters)
@@ -91,3 +97,4 @@ def test__ComponentMetadataSelectBase__from_keyword_parameters__1():
     vampytest.assert_eq(component_metadata.max_values, max_values)
     vampytest.assert_eq(component_metadata.min_values, min_values)
     vampytest.assert_eq(component_metadata.placeholder, placeholder)
+    vampytest.assert_eq(component_metadata.required, required)

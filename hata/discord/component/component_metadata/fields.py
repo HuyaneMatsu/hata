@@ -6,21 +6,23 @@ from ...application import SKU
 from ...channel import Channel, ChannelType
 from ...color import Color
 from ...field_parsers import (
-    bool_parser_factory, default_entity_parser_factory, entity_id_parser_factory, int_parser_factory,
-    negated_bool_parser_factory, nullable_entity_parser_factory, nullable_flag_parser_factory,
+    bool_parser_factory, default_entity_parser_factory, entity_id_parser_factory, force_string_parser_factory,
+    int_parser_factory, negated_bool_parser_factory, nullable_entity_parser_factory, nullable_flag_parser_factory,
     nullable_object_array_parser_factory, nullable_string_parser_factory, preinstanced_array_parser_factory,
     preinstanced_parser_factory
 )
 from ...field_putters import (
-    bool_optional_putter_factory, entity_id_optional_putter_factory, entity_putter_factory, int_optional_putter_factory,
-    negated_bool_optional_putter_factory, nullable_entity_array_putter_factory, nullable_entity_optional_putter_factory,
+    bool_optional_putter_factory, entity_id_optional_putter_factory, entity_putter_factory, force_string_putter_factory,
+    int_optional_putter_factory, int_putter_factory, negated_bool_optional_putter_factory,
+    nullable_entity_array_putter_factory, nullable_entity_optional_putter_factory,
     nullable_flag_optional_putter_factory, nullable_string_optional_putter_factory, nullable_string_putter_factory,
     preinstanced_array_putter_factory, preinstanced_putter_factory, url_optional_putter_factory
 )
 from ...field_validators import (
-    bool_validator_factory, entity_id_validator_factory, int_conditional_validator_factory,
-    nullable_flag_validator_factory, nullable_object_array_validator_factory, nullable_string_validator_factory,
-    preinstanced_array_validator_factory, preinstanced_validator_factory, url_optional_validator_factory
+    bool_validator_factory, entity_id_validator_factory, force_string_validator_factory,
+    int_conditional_validator_factory, nullable_flag_validator_factory, nullable_object_array_validator_factory,
+    nullable_string_validator_factory, preinstanced_array_validator_factory, preinstanced_validator_factory,
+    url_optional_validator_factory
 )
 from ...role import Role
 from ...user import ClientUserBase
@@ -524,6 +526,14 @@ validate_min_values = int_conditional_validator_factory(
     f'>= {MIN_VALUES_MIN} and <= {MIN_VALUES_MAX},'
 )
 
+
+# name
+
+parse_name = force_string_parser_factory('name')
+put_name = force_string_putter_factory('name')
+validate_name = force_string_validator_factory('name', 0, 1024)
+
+
 # options
 
 parse_options = nullable_object_array_parser_factory('options', StringSelectOption)
@@ -541,6 +551,18 @@ validate_placeholder = nullable_string_validator_factory('placeholder', 0, PLACE
 parse_required = bool_parser_factory('required', True)
 put_required = bool_optional_putter_factory('required', True)
 validate_required = bool_validator_factory('required', True)
+
+
+# size
+
+parse_size = int_parser_factory('size', 0)
+put_size = int_putter_factory('size')
+validate_size = int_conditional_validator_factory(
+    'size',
+    0,
+    lambda size : size >= 0,
+    '>= 0',
+)
 
 # sku_id
 

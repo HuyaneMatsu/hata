@@ -101,9 +101,6 @@ class ClientCompoundClientEndpoints(Compound):
         
         Other Parameters
         ----------------
-        nick : `None`, `str`, Optional (Keyword only)
-            The client's new nickname. Pass it as `None` to remove it. Empty strings are interpreted as `None`.
-        
         avatar : `None`, `bytes-like`, Optional (Keyword only)
             The client's new guild specific avatar.
             
@@ -118,6 +115,12 @@ class ClientCompoundClientEndpoints(Compound):
             
             Can be a `'jpg'`, `'png'`, `'webp'` and `'gif'`image's raw data.
             By passing `None` you can remove the client's current banner.
+        
+        bio : `None | str`, Optional (Keyword only)
+            The client's new guild specific bio.
+        
+        nick : `None`, `str`, Optional (Keyword only)
+            The client's new nickname. Pass it as `None` to remove it. Empty strings are interpreted as `None`.
         
         Raises
         ------

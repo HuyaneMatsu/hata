@@ -83,6 +83,7 @@ INTENT_SHIFT_EVENTS = {
         'GUILD_POWERUP_ENTITLEMENTS_CREATE',
         'GUILD_POWERUP_ENTITLEMENTS_DELETE',
         'GUILD_APPLIED_BOOSTS_UPDATE',
+        'VOICE_CHANNEL_START_TIME_UPDATE',
     ),
     INTENT_SHIFT_GUILD_USERS: (
         'GUILD_MEMBER_ADD',
@@ -284,7 +285,8 @@ class IntentFlag(FlagBase):
     |                                               |       |                               | VOICE_CHANNEL_STATUS_UPDATE,                |
     |                                               |       |                               | GUILD_POWERUP_ENTITLEMENTS_CREATE,          |
     |                                               |       |                               | GUILD_POWERUP_ENTITLEMENTS_DELETE,          |
-    |                                               |       |                               | GUILD_APPLIED_BOOSTS_UPDATE                 |
+    |                                               |       |                               | GUILD_APPLIED_BOOSTS_UPDATE,                |
+    |                                               |       |                               | VOICE_CHANNEL_START_TIME_UPDATE             |
     +-----------------------------------------------+-------+-------------------------------+---------------------------------------------+
     | INTENT_SHIFT_GUILD_USERS                      | 1     | guild_users                   | GUILD_MEMBER_ADD,                           |
     |                                               |       |                               | GUILD_MEMBER_UPDATE,                        |

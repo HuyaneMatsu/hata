@@ -29,6 +29,9 @@ class ComponentMetadataEntitySelectBase(ComponentMetadataSelectBase):
     
     placeholder : `None | str`
         Placeholder text of the select.
+    
+    required : `bool`
+        Whether the field is required to be fulfilled.
     """
     __slots__ = ('default_values',)
     
@@ -42,6 +45,7 @@ class ComponentMetadataEntitySelectBase(ComponentMetadataSelectBase):
         max_values = ...,
         min_values = ...,
         placeholder = ...,
+        required = ...,
     ):
         """
         Creates a new channel select component metadata with the given parameters.
@@ -67,6 +71,9 @@ class ComponentMetadataEntitySelectBase(ComponentMetadataSelectBase):
         placeholder : `None | str`, Optional (Keyword only)
             Placeholder text of the select.
         
+        required : `None | bool`, Optional (Keyword only)
+            Whether the field is required to be fulfilled.
+        
         Raises
         ------
         TypeError
@@ -88,6 +95,7 @@ class ComponentMetadataEntitySelectBase(ComponentMetadataSelectBase):
             max_values = max_values,
             min_values = min_values,
             placeholder = placeholder,
+            required = required,
         )
         self.default_values = default_values
         
@@ -104,6 +112,7 @@ class ComponentMetadataEntitySelectBase(ComponentMetadataSelectBase):
             max_values = keyword_parameters.pop('max_values', ...),
             min_values = keyword_parameters.pop('min_values', ...),
             placeholder = keyword_parameters.pop('placeholder', ...),
+            required = keyword_parameters.pop('required', ...),
         )
     
     
@@ -211,6 +220,7 @@ class ComponentMetadataEntitySelectBase(ComponentMetadataSelectBase):
         max_values = ...,
         min_values = ...,
         placeholder = ...,
+        required = ...,
     ):
         """
         Copies the channel select component metadata with the given fields.
@@ -235,6 +245,9 @@ class ComponentMetadataEntitySelectBase(ComponentMetadataSelectBase):
         
         placeholder : `None | str`, Optional (Keyword only)
             Placeholder text of the select.
+        
+        required : `None | bool`, Optional (Keyword only)
+            Whether the field is required to be fulfilled.
         
         Returns
         -------
@@ -264,6 +277,7 @@ class ComponentMetadataEntitySelectBase(ComponentMetadataSelectBase):
             max_values = max_values,
             min_values = min_values,
             placeholder = placeholder,
+            required = required,
         )
         new.default_values = default_values
         return new
@@ -278,4 +292,5 @@ class ComponentMetadataEntitySelectBase(ComponentMetadataSelectBase):
             max_values = keyword_parameters.pop('max_values', ...),
             min_values = keyword_parameters.pop('min_values', ...),
             placeholder = keyword_parameters.pop('placeholder', ...),
+            required = keyword_parameters.pop('required', ...),
         )

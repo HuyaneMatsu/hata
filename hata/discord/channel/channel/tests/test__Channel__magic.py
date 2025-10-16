@@ -17,7 +17,7 @@ def test__Channel__repr():
     vampytest.assert_instance(repr(channel), str)
 
 
-def test__Channel__hash__0():
+def test__Channel__hash__full():
     """
     Tests whether ``Channel.__hash__` works as intended.
     
@@ -32,7 +32,7 @@ def test__Channel__hash__0():
     vampytest.assert_instance(hash(channel), int)
 
 
-def test__Channel__hash__1():
+def test__Channel__hash__partial():
     """
     Tests whether ``Channel.__hash__` works as intended.
     

@@ -23,6 +23,16 @@ from ...user.user.matching import (
 from ...utils import DATETIME_FORMAT_CODE
 
 from ..channel_metadata import ChannelMetadataBase, ChannelMetadataGuildMainBase
+from ..channel_metadata.fields import (
+    validate_application_id, validate_applied_tag_ids, validate_archived, validate_archived_at,
+    validate_auto_archive_after, validate_available_tags, validate_bitrate, validate_default_forum_layout,
+    validate_default_sort_order, validate_default_thread_auto_archive_after, validate_default_thread_reaction_emoji,
+    validate_default_thread_slowmode, validate_flags, validate_invitable, validate_name, validate_nsfw, validate_open,
+    validate_owner_id, validate_parent_id, validate_permission_overwrites, validate_position, validate_region,
+    validate_slowmode, validate_topic, validate_status, validate_user_limit, validate_video_quality_mode,
+    validate_voice_engaged_since
+)
+from ..channel_metadata.private_group import CHANNEL_METADATA_ICON
 from ..forum_tag import create_partial_forum_tag_from_id
 from ..message_history import MessageHistory, MessageHistoryCollector, message_relative_index
 
@@ -157,7 +167,7 @@ class Channel(DiscordEntity, immortal = True):
         position : `int`, Optional (Keyword only)
             The channel's position.
         
-        region : `None`, ``VoiceRegion``, `str`, Optional (Keyword only)
+        region : ``None | str | VoiceRegion``, Optional (Keyword only)
             The channel's voice region.
         
         slowmode : `int`, Optional (Keyword only)
@@ -177,6 +187,9 @@ class Channel(DiscordEntity, immortal = True):
             
         video_quality_mode : ``VideoQualityMode``, Optional (Keyword only)
             The video quality of the voice channel.
+        
+        voice_engaged_since : `None | DateTime`
+            Since when the voice channel is engaged with.
         
         Raises
         ------
@@ -458,7 +471,20 @@ class Channel(DiscordEntity, immortal = True):
         """
         return (self.id == 0) or self.metadata._get_partial(self)
     
-
+    
+    def iter_clients(self):
+        """
+        Iterates over the clients how can access this channel.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        client : ``Client``
+        """
+        yield from self.metadata._iter_clients(self)
+    
+    
     @property
     def clients(self):
         """
@@ -468,7 +494,7 @@ class Channel(DiscordEntity, immortal = True):
         -------
         clients : ``list<Client>``
         """
-        return self.metadata._get_clients(self)
+        return [*self.metadata._iter_clients(self)]
     
     
     def get_user(self, name, default = None):
@@ -1037,7 +1063,6 @@ class Channel(DiscordEntity, immortal = True):
         return old_attributes
     
     
-    
     def _update_status(self, data):
         """
         Updates the channel's status.
@@ -1074,7 +1099,45 @@ class Channel(DiscordEntity, immortal = True):
             +-----------+---------------+
         """
         return self.metadata._difference_update_status(data)
+    
+    
+    def _update_voice_engaged_since(self, data):
+        """
+        Updates the channel's voice engaged since.
         
+        Parameters
+        ----------
+        data : `dict<str, object>`
+            Channel voice_engaged_since update data received from Discord.
+        """
+        self.metadata._update_voice_engaged_since(data)
+    
+    
+    def _difference_update_voice_engaged_since(self, data):
+        """
+        Updates the channel's voice engaged since and if changed returns it in a `dict` with a
+        `attribute-name` - `old-value` relation.
+        
+        Parameters
+        ----------
+        data : `dict<str, object>`
+            Channel voice_engaged_since update data received from Discord.
+        
+        Returns
+        -------
+        old_attributes : `dict<str, object>`
+            All item in the returned dict is optional.
+            
+            Might contain the following items:
+            
+            +-----------------------+-------------------+
+            | Keys                  | Values            |
+            +=======================+===================+
+            | voice_engaged_since   | `None | DateTime` |
+            +-----------------------+-------------------+
+        """
+        return self.metadata._difference_update_voice_engaged_since(data)
+    
     
     def _delete(self, client):
         """
@@ -1274,7 +1337,7 @@ class Channel(DiscordEntity, immortal = True):
         position : `int`, Optional (Keyword only)
             The channel's position.
         
-        region : `None`, ``VoiceRegion``, `str`, Optional (Keyword only)
+        region : ``None | str | VoiceRegion``, Optional (Keyword only)
             The channel's voice region.
         
         slowmode : `int`, Optional (Keyword only)
@@ -1294,6 +1357,9 @@ class Channel(DiscordEntity, immortal = True):
         
         video_quality_mode : ``VideoQualityMode``, Optional (Keyword only)
             The video quality of the voice channel.
+        
+        voice_engaged_since : `None | DateTime`, Optional (Keyword only)
+            Since when the voice channel is engaged with.
         
         Returns
         -------
@@ -1583,10 +1649,21 @@ class Channel(DiscordEntity, immortal = True):
     def application_id(self):
         return self.metadata.application_id
     
+    
+    @application_id.setter
+    def application_id(self, application_id):
+        self.metadata.application_id = validate_application_id(application_id)
+    
+    
     @property
     @copy_docs(ChannelMetadataBase.applied_tag_ids)
     def applied_tag_ids(self):
         return self.metadata.applied_tag_ids
+    
+    
+    @applied_tag_ids.setter
+    def applied_tag_ids(self, applied_tag_ids):
+        self.metadata.applied_tag_ids = validate_applied_tag_ids(applied_tag_ids)
     
     
     @property
@@ -1595,10 +1672,20 @@ class Channel(DiscordEntity, immortal = True):
         return self.metadata.archived
     
     
+    @archived.setter
+    def archived(self, archived):
+        self.metadata.archived = validate_archived(archived)
+    
+    
     @property
     @copy_docs(ChannelMetadataBase.archived_at)
     def archived_at(self):
         return self.metadata.archived_at
+    
+    
+    @archived_at.setter
+    def archived_at(self, archived_at):
+        self.metadata.archived_at = validate_archived_at(archived_at)
     
     
     @property
@@ -1607,10 +1694,20 @@ class Channel(DiscordEntity, immortal = True):
         return self.metadata.auto_archive_after
     
     
+    @auto_archive_after.setter
+    def auto_archive_after(self, auto_archive_after):
+        self.metadata.auto_archive_after = validate_auto_archive_after(auto_archive_after)
+    
+    
     @property
     @copy_docs(ChannelMetadataBase.available_tags)
     def available_tags(self):
         return self.metadata.available_tags
+    
+    
+    @available_tags.setter
+    def available_tags(self, available_tags):
+        self.metadata.available_tags = validate_available_tags(available_tags)
     
     
     @property
@@ -1619,10 +1716,20 @@ class Channel(DiscordEntity, immortal = True):
         return self.metadata.bitrate
     
     
+    @bitrate.setter
+    def bitrate(self, bitrate):
+        self.metadata.bitrate = validate_bitrate(bitrate)
+    
+    
     @property
     @copy_docs(ChannelMetadataBase.default_forum_layout)
     def default_forum_layout(self):
         return self.metadata.default_forum_layout
+    
+    
+    @default_forum_layout.setter
+    def default_forum_layout(self, default_forum_layout):
+        self.metadata.default_forum_layout = validate_default_forum_layout(default_forum_layout)
     
     
     @property
@@ -1631,10 +1738,20 @@ class Channel(DiscordEntity, immortal = True):
         return self.metadata.default_sort_order
     
     
+    @default_sort_order.setter
+    def default_sort_order(self, default_sort_order):
+        self.metadata.default_sort_order = validate_default_sort_order(default_sort_order)
+    
+    
     @property
     @copy_docs(ChannelMetadataBase.default_thread_auto_archive_after)
     def default_thread_auto_archive_after(self):
         return self.metadata.default_thread_auto_archive_after
+    
+    
+    @default_thread_auto_archive_after.setter
+    def default_thread_auto_archive_after(self, default_thread_auto_archive_after):
+        self.metadata.default_thread_auto_archive_after = validate_default_thread_auto_archive_after(default_thread_auto_archive_after)
     
     
     @property
@@ -1643,10 +1760,20 @@ class Channel(DiscordEntity, immortal = True):
         return self.metadata.default_thread_reaction_emoji
     
     
+    @default_thread_reaction_emoji.setter
+    def default_thread_reaction_emoji(self, default_thread_reaction_emoji):
+        self.metadata.default_thread_reaction_emoji = validate_default_thread_reaction_emoji(default_thread_reaction_emoji)
+    
+    
     @property
     @copy_docs(ChannelMetadataBase.default_thread_slowmode)
     def default_thread_slowmode(self):
         return self.metadata.default_thread_slowmode
+    
+    
+    @default_thread_slowmode.setter
+    def default_thread_slowmode(self, default_thread_slowmode):
+        self.metadata.default_thread_slowmode = validate_default_thread_slowmode(default_thread_slowmode)
     
     
     @property
@@ -1655,10 +1782,20 @@ class Channel(DiscordEntity, immortal = True):
         return self.metadata.flags
     
     
+    @flags.setter
+    def flags(self, flags):
+        self.metadata.flags = validate_flags(flags)
+    
+    
     @property
     @copy_docs(ChannelMetadataBase.icon)
     def icon(self):
         return self.metadata.icon
+    
+    
+    @icon.setter
+    def icon(self, icon):
+        self.metadata.icon = CHANNEL_METADATA_ICON.validate_icon(icon, allow_data = True)
     
     
     @property
@@ -1679,10 +1816,20 @@ class Channel(DiscordEntity, immortal = True):
         return self.metadata.invitable
     
     
+    @invitable.setter
+    def invitable(self, invitable):
+        self.metadata.invitable = validate_invitable(invitable)
+    
+    
     @property
     @copy_docs(ChannelMetadataBase.name)
     def name(self):
         return self.metadata.name
+    
+    
+    @name.setter
+    def name(self, name):
+        self.metadata.name = validate_name(name)
     
     
     @property
@@ -1691,10 +1838,20 @@ class Channel(DiscordEntity, immortal = True):
         return self.metadata.nsfw
     
     
+    @nsfw.setter
+    def nsfw(self, nsfw):
+        self.metadata.nsfw = validate_nsfw(nsfw)
+    
+    
     @property
     @copy_docs(ChannelMetadataBase.open)
     def open(self):
         return self.metadata.open
+    
+    
+    @open.setter
+    def open(self, open):
+        self.metadata.open = validate_open(open)
     
     
     @property
@@ -1703,10 +1860,20 @@ class Channel(DiscordEntity, immortal = True):
         return self.metadata.owner_id
     
     
+    @owner_id.setter
+    def owner_id(self, owner_id):
+        self.metadata.owner_id = validate_owner_id(owner_id)
+    
+    
     @property
     @copy_docs(ChannelMetadataBase.parent_id)
     def parent_id(self):
         return self.metadata.parent_id
+    
+    
+    @parent_id.setter
+    def parent_id(self, parent_id):
+        self.metadata.parent_id = validate_parent_id(parent_id)
     
     
     @property
@@ -1715,10 +1882,20 @@ class Channel(DiscordEntity, immortal = True):
         return self.metadata.permission_overwrites
     
     
+    @permission_overwrites.setter
+    def permission_overwrites(self, permission_overwrites):
+        self.metadata.permission_overwrites = validate_permission_overwrites(permission_overwrites)
+    
+    
     @property
     @copy_docs(ChannelMetadataBase.position)
     def position(self):
         return self.metadata.position
+    
+    
+    @position.setter
+    def position(self, position):
+        self.metadata.position = validate_position(position)
     
     
     @property
@@ -1727,10 +1904,20 @@ class Channel(DiscordEntity, immortal = True):
         return self.metadata.region
     
     
+    @region.setter
+    def region(self, region):
+        self.metadata.region = validate_region(region)
+    
+    
     @property
     @copy_docs(ChannelMetadataBase.slowmode)
     def slowmode(self):
         return self.metadata.slowmode
+    
+    
+    @slowmode.setter
+    def slowmode(self, slowmode):
+        self.metadata.slowmode = validate_slowmode(slowmode)
     
     
     @property
@@ -1739,10 +1926,20 @@ class Channel(DiscordEntity, immortal = True):
         return self.metadata.topic
     
     
+    @topic.setter
+    def topic(self, topic):
+        self.metadata.topic = validate_topic(topic)
+    
+    
     @property
     @copy_docs(ChannelMetadataBase.status)
     def status(self):
         return self.metadata.status
+    
+    
+    @status.setter
+    def status(self, status):
+        self.metadata.status = validate_status(status)
     
     
     @property
@@ -1762,10 +1959,32 @@ class Channel(DiscordEntity, immortal = True):
         return self.metadata.user_limit
     
     
+    @user_limit.setter
+    def user_limit(self, user_limit):
+        self.metadata.user_limit = validate_user_limit(user_limit)
+    
+    
     @property
     @copy_docs(ChannelMetadataBase.video_quality_mode)
     def video_quality_mode(self):
         return self.metadata.video_quality_mode
+    
+    
+    @video_quality_mode.setter
+    def video_quality_mode(self, video_quality_mode):
+        self.metadata.video_quality_mode = validate_video_quality_mode(video_quality_mode)
+    
+    
+    @property
+    @copy_docs(ChannelMetadataBase.voice_engaged_since)
+    def voice_engaged_since(self):
+        return self.metadata.voice_engaged_since
+    
+    
+    @voice_engaged_since.setter
+    def voice_engaged_since(self, voice_engaged_since):
+        self.metadata.voice_engaged_since = validate_voice_engaged_since(voice_engaged_since)
+    
     
     # Utility
     
@@ -2156,7 +2375,7 @@ class Channel(DiscordEntity, immortal = True):
         position : `int`, Optional (Keyword only)
             The channel's position.
         
-        region : `None`, ``VoiceRegion``, `str`, Optional (Keyword only)
+        region : ``None | str | VoiceRegion``, Optional (Keyword only)
             The channel's voice region.
         
         slowmode : `int`, Optional (Keyword only)
@@ -2173,6 +2392,9 @@ class Channel(DiscordEntity, immortal = True):
             
         video_quality_mode : ``VideoQualityMode``, Optional (Keyword only)
             The video quality of the voice channel.
+        
+        voice_engaged_since : `None | DateTime`, Optional (Keyword only)
+            Since when the voice channel is engaged with.
         
         Returns
         -------

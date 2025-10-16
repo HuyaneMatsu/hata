@@ -200,7 +200,7 @@ class Guild(DiscordEntity, immortal = True):
     _cache_boosters : ``None | list<ClientUserBase>``
         Cached slot for the boosters of the guild.
     
-    _cache_permission : `None`, `dict` of (`int`, ``Permission``) items
+    _cache_permission : ``None | dict<int, Permission>``
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     
     _state : `int`
@@ -4478,6 +4478,19 @@ class Guild(DiscordEntity, immortal = True):
         for channel in self.channels.values():
             if type_checker(channel):
                 yield channel
+    
+    
+    def iter_clients(self):
+        """
+        Iterates over the clients of the guild.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        client : ``Client``
+        """
+        yield from self.clients
     
     
     def iter_embedded_activities(self):

@@ -1,4 +1,6 @@
 __all__ = ()
 
+BIO_LENGTH_MAX = 190
+
 NICK_LENGTH_MIN = 1
 NICK_LENGTH_MAX = 32

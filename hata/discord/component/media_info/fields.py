@@ -1,11 +1,24 @@
 __all__ = ()
 
-from ...field_parsers import force_string_parser_factory, int_parser_factory,  nullable_string_parser_factory
-from ...field_putters import int_putter_factory, nullable_string_putter_factory, url_optional_putter_factory
-from ...field_validators import (
-    force_string_validator_factory, int_conditional_validator_factory, nullable_string_validator_factory,
-    url_optional_validator_factory
+from ...field_parsers import (
+    entity_id_parser_factory, force_string_parser_factory, int_parser_factory, nullable_string_parser_factory
 )
+from ...field_putters import (
+    entity_id_putter_factory, int_putter_factory, nullable_string_putter_factory, url_optional_putter_factory
+)
+from ...field_validators import (
+    entity_id_validator_factory, force_string_validator_factory, int_conditional_validator_factory,
+    nullable_string_validator_factory, url_optional_validator_factory
+)
+
+from ...message import Attachment
+
+# attachment_id
+
+parse_attachment_id = entity_id_parser_factory('attachment_id')
+put_attachment_id = entity_id_putter_factory('attachment_id')
+validate_attachment_id = entity_id_validator_factory('attachment_id', Attachment)
+
 
 # content_type
 

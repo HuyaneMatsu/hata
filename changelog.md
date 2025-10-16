@@ -1,3 +1,35 @@
+## 1.3.85 *\[2025-10-16\]*
+
+### Improvements
+
+- Add `MediaInfo.attachment_id`.
+- Add `ComponentMetadataBase.name`.
+- Add `ComponentMetadataBase.size`.
+- Add `Component.name`.
+- Add `Component.size`.
+- Add `Invite.user_permissions`.
+- Add `ChannelMetadataBase.voice_engaged_since`.
+- Add `Channel.voice_engaged_since`.
+- Allow setting `Channel`'s proxies.
+- Add parser for the `VOICE_CHANNEL_START_TIME_UPDATE` dispatch event. 
+- Add `Guild.iter_clients`.
+- Add `Channel.iter_clients`.
+- Update `Application.from_data_detectable` and `Application.to_data_detectable`  to use the incorrect key to set 
+    `.icon`.
+- Add `ApplicationTheme`.
+- Add `Application.themes`.
+- Add `Application.iter_themes`.
+- Add `Guild.iter_clients`.
+- Add `Channel.iter_clients`.
+- Add `bio` parameter to `Client.guild_profile_edit`.
+- Add `required` parameter and auto detection to select components.
+
+### Bug fixes
+
+- Fix `ClientUserBase.can_use_emoji` and `WebhookBase.can_use_emoji` did not check whether teh emoji is actually
+    available.
+- Fix `client.events.channel_update` may not trigger if no client sees it (since previous update).
+
 ## 1.3.84 *\[2025-09-20\]*
 
 ### Improvements

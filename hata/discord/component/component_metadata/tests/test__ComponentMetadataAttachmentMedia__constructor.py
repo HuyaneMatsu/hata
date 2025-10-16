@@ -16,6 +16,8 @@ def _assert_fields_set(component_metadata):
     """
     vampytest.assert_instance(component_metadata, ComponentMetadataAttachmentMedia)
     vampytest.assert_instance(component_metadata.media, MediaInfo)
+    vampytest.assert_instance(component_metadata.name, str)
+    vampytest.assert_instance(component_metadata.size, int)
     vampytest.assert_instance(component_metadata.spoiler, bool)
 
 

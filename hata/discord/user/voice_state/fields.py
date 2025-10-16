@@ -12,7 +12,7 @@ from ...field_validators import (
     bool_validator_factory, entity_id_validator_factory, force_string_validator_factory,
     nullable_date_time_validator_factory
 )
-from ..user import ClientUserBase, User, ZEROUSER
+from ..user import ClientUserBase, User
 
 # channel_id
 

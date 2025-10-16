@@ -19,7 +19,7 @@ from ..preinstanced import (
     ApplicationDiscoverabilityState, ApplicationEventWebhookEventType, ApplicationEventWebhookState,
     ApplicationExplicitContentFilterLevel, ApplicationIntegrationType, ApplicationInteractionEventType,
     ApplicationInteractionVersion, ApplicationInternalGuildRestriction, ApplicationMonetizationState,
-    ApplicationRPCState, ApplicationStoreState, ApplicationType, ApplicationVerificationState
+    ApplicationRPCState, ApplicationStoreState, ApplicationTheme, ApplicationType, ApplicationVerificationState
 )
 
 
@@ -94,6 +94,7 @@ def test__Application__repr():
     store_state = ApplicationStoreState.approved
     tags = ['cat']
     terms_of_service_url = 'https://orindance.party/'
+    themes = [ApplicationTheme.action]
     third_party_skus = [ThirdPartySKU(distributor = 'Dead')]
     application_type = ApplicationType.game
     verification_state = ApplicationVerificationState.approved
@@ -156,6 +157,7 @@ def test__Application__repr():
         store_state = store_state,
         tags = tags,
         terms_of_service_url = terms_of_service_url,
+        themes = themes,
         third_party_skus = third_party_skus,
         application_type = application_type,
         verification_state = verification_state,
@@ -220,6 +222,7 @@ def test__Application__repr():
         store_state = store_state,
         tags = tags,
         terms_of_service_url = terms_of_service_url,
+        themes = themes,
         third_party_skus = third_party_skus,
         application_type = application_type,
         verification_state = verification_state,
@@ -300,6 +303,7 @@ def test__Application__hash():
     store_state = ApplicationStoreState.approved
     tags = ['cat']
     terms_of_service_url = 'https://orindance.party/'
+    themes = [ApplicationTheme.action]
     third_party_skus = [ThirdPartySKU(distributor = 'Dead')]
     application_type = ApplicationType.game
     verification_state = ApplicationVerificationState.approved
@@ -362,6 +366,7 @@ def test__Application__hash():
         store_state = store_state,
         tags = tags,
         terms_of_service_url = terms_of_service_url,
+        themes = themes,
         third_party_skus = third_party_skus,
         application_type = application_type,
         verification_state = verification_state,
@@ -426,6 +431,7 @@ def test__Application__hash():
         store_state = store_state,
         tags = tags,
         terms_of_service_url = terms_of_service_url,
+        themes = themes,
         third_party_skus = third_party_skus,
         application_type = application_type,
         verification_state = verification_state,
@@ -502,6 +508,7 @@ def _iter_options__eq():
     store_state = ApplicationStoreState.approved
     tags = ['cat']
     terms_of_service_url = 'https://orindance.party/'
+    themes = [ApplicationTheme.action]
     third_party_skus = [ThirdPartySKU(distributor = 'Dead')]
     application_type = ApplicationType.game
     verification_state = ApplicationVerificationState.approved
@@ -563,6 +570,7 @@ def _iter_options__eq():
         'store_state': store_state,
         'tags': tags,
         'terms_of_service_url': terms_of_service_url,
+        'themes': themes,
         'third_party_skus': third_party_skus,
         'application_type': application_type,
         'verification_state': verification_state,
@@ -1072,6 +1080,15 @@ def _iter_options__eq():
         {
             **keyword_parameters,
             'terms_of_service_url': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'themes': None,
         },
         False,
     )

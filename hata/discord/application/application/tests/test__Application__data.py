@@ -22,7 +22,7 @@ from ..preinstanced import (
     ApplicationDiscoverabilityState, ApplicationEventWebhookEventType, ApplicationEventWebhookState,
     ApplicationExplicitContentFilterLevel, ApplicationIntegrationType, ApplicationInteractionEventType,
     ApplicationInteractionVersion, ApplicationInternalGuildRestriction, ApplicationMonetizationState,
-    ApplicationRPCState, ApplicationStoreState, ApplicationType, ApplicationVerificationState
+    ApplicationRPCState, ApplicationStoreState, ApplicationTheme, ApplicationType, ApplicationVerificationState
 )
 
 from .test__Application__constructor import _assert_fields_set
@@ -514,6 +514,7 @@ def test__Application__from_data_detectable__attributes():
     primary_sku_id = 202211290036
     publishers = [ApplicationEntity.precreate(202211290037, name = 'Brain')]
     slug = 'https://orindance.party/'
+    themes = [ApplicationTheme.action]
     third_party_skus = [ThirdPartySKU(distributor = 'Dead')]
     
     data = {
@@ -524,7 +525,7 @@ def test__Application__from_data_detectable__attributes():
         'description': description,
         'flags': int(flags),
         'hook': hook,
-        'icon': icon.as_base_16_hash,
+        'icon_hash': icon.as_base_16_hash,
         'name': name,
         'privacy_policy_url': privacy_policy_url,
         'rpc_origins': rpc_origins,
@@ -546,6 +547,7 @@ def test__Application__from_data_detectable__attributes():
         'primary_sku_id': str(primary_sku_id),
         'publishers': [publisher.to_data(defaults = True, include_internals = True) for publisher in publishers],
         'slug': slug,
+        'themes': [theme.value for theme in themes],
         'third_party_skus': [third_party_sku.to_data(defaults = True) for third_party_sku in third_party_skus]
     }
     
@@ -578,6 +580,7 @@ def test__Application__from_data_detectable__attributes():
     vampytest.assert_eq(application.splash, splash)
     vampytest.assert_eq(application.tags, tuple(tags))
     vampytest.assert_eq(application.terms_of_service_url, terms_of_service_url)
+    vampytest.assert_eq(application.themes, tuple(themes))
     vampytest.assert_eq(application.third_party_skus, tuple(third_party_skus))
     vampytest.assert_is(application.type, application_type)
     vampytest.assert_eq(application.verify_key, verify_key)
@@ -1009,6 +1012,7 @@ def test__Application__to_data_detectable():
     primary_sku_id = 202211290050
     publishers = [ApplicationEntity.precreate(202211290051, name = 'Brain')]
     slug = 'https://orindance.party/'
+    themes = [ApplicationTheme.action]
     third_party_skus = [ThirdPartySKU(distributor = 'Dead')]
     application_id = 202211290052
     flags = ApplicationFlag(96)
@@ -1040,6 +1044,7 @@ def test__Application__to_data_detectable():
         splash = splash,
         tags = tags,
         terms_of_service_url = terms_of_service_url,
+        themes = themes,
         third_party_skus = third_party_skus,
         application_type = application_type,
         verify_key = verify_key,
@@ -1053,7 +1058,7 @@ def test__Application__to_data_detectable():
         'description': description,
         'flags': int(flags),
         'hook': hook,
-        'icon': icon.as_base_16_hash,
+        'icon_hash': icon.as_base_16_hash,
         'name': name,
         'privacy_policy_url': privacy_policy_url,
         'rpc_origins': rpc_origins,
@@ -1075,6 +1080,7 @@ def test__Application__to_data_detectable():
         'primary_sku_id': str(primary_sku_id),
         'publishers': [publisher.to_data(defaults = True, include_internals = True) for publisher in publishers],
         'slug': slug,
+        'themes': [theme.value for theme in themes],
         'third_party_skus': [third_party_sku.to_data(defaults = True) for third_party_sku in third_party_skus]
     }
     

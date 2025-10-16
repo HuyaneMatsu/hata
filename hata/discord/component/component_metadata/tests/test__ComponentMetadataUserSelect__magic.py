@@ -10,19 +10,21 @@ def test__ComponentMetadataUserSelect__repr():
     Tests whether ``ComponentMetadataUserSelect.__repr__`` works as intended.
     """
     custom_id = 'oriental'
+    default_values = [EntitySelectDefaultValue(EntitySelectDefaultValueType.user, 202310140020)]
     enabled = False
     max_values = 10
     min_values = 9
     placeholder = 'swing'
-    default_values = [EntitySelectDefaultValue(EntitySelectDefaultValueType.user, 202310140020)]
+    required = True
     
     component_metadata = ComponentMetadataUserSelect(
         custom_id = custom_id,
+        default_values = default_values,
         enabled = enabled,
         max_values = max_values,
         min_values = min_values,
         placeholder = placeholder,
-        default_values = default_values,
+        required = required,
     )
     
     vampytest.assert_instance(repr(component_metadata), str)
@@ -33,56 +35,134 @@ def test__ComponentMetadataUserSelect__hash():
     Tests whether ``ComponentMetadataUserSelect.__hash__`` works as intended.
     """
     custom_id = 'oriental'
+    default_values = [EntitySelectDefaultValue(EntitySelectDefaultValueType.user, 202310140018)]
     enabled = False
     max_values = 10
     min_values = 9
     placeholder = 'swing'
-    default_values = [EntitySelectDefaultValue(EntitySelectDefaultValueType.user, 202310140018)]
+    required = True
     
     component_metadata = ComponentMetadataUserSelect(
         custom_id = custom_id,
+        default_values = default_values,
         enabled = enabled,
         max_values = max_values,
         min_values = min_values,
         placeholder = placeholder,
-        default_values = default_values,
+        required = required,
     )
     
     vampytest.assert_instance(hash(component_metadata), int)
 
 
-def test__ComponentMetadataUserSelect__eq():
-    """
-    Tests whether ``ComponentMetadataUserSelect.__eq__`` works as intended.
-    """
+def _iter_options__eq():
     custom_id = 'oriental'
+    default_values = [EntitySelectDefaultValue(EntitySelectDefaultValueType.user, 202310140019)]
     enabled = False
     max_values = 10
     min_values = 9
     placeholder = 'swing'
-    default_values = [EntitySelectDefaultValue(EntitySelectDefaultValueType.user, 202310140019)]
+    required = True
     
     keyword_parameters = {
         'custom_id': custom_id,
+        'default_values': default_values,
         'enabled': enabled,
         'max_values': max_values,
         'min_values': min_values,
         'placeholder': placeholder,
-        'default_values': default_values,
+        'required': required,
     }
     
-    component_metadata = ComponentMetadataUserSelect(**keyword_parameters)
+    yield (
+        keyword_parameters,
+        keyword_parameters,
+        True,
+    )
     
-    vampytest.assert_eq(component_metadata, component_metadata)
-    vampytest.assert_ne(component_metadata, object())
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'custom_id': 'distopia',
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'default_values': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'enabled': True,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'max_values': 11,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'min_values': 8,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'placeholder': 'kokoro',
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'required': False,
+        },
+        False,
+    )
 
-    for field_name, field_value in (
-        ('custom_id', 'distopia'),
-        ('enabled', True),
-        ('max_values', 11),
-        ('min_values', 8),
-        ('placeholder', 'kokoro'),
-        ('default_values', None),
-    ):
-        test_component_metadata = ComponentMetadataUserSelect(**{**keyword_parameters, field_name: field_value})
-        vampytest.assert_ne(component_metadata, test_component_metadata)
+@vampytest._(vampytest.call_from(_iter_options__eq()).returning_last())
+def test__ComponentMetadataUserSelect__eq(keyword_parameters_0, keyword_parameters_1):
+    """
+    Tests whether ``ComponentMetadataUserSelect.__eq__`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters_0 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    keyword_parameters_1 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    component_metadata_0 = ComponentMetadataUserSelect(**keyword_parameters_0)
+    component_metadata_1 = ComponentMetadataUserSelect(**keyword_parameters_1)
+    
+    output = component_metadata_0 == component_metadata_1
+    vampytest.assert_instance(output, bool)
+    return output

@@ -22,28 +22,41 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
     
     Attributes
     ----------
-    _cache_permission : `None`, `dict` of (`int`, ``Permission``) items
+    _cache_permission : ``None | dict<int, Permission>``
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
+    
     bitrate : `int`
         The bitrate (in bits) of the voice channel.
+    
     name : `str`
         The channel's name.
+    
     nsfw : `bool`
         Whether the channel is marked as non safe for work.
+    
     parent_id : `int`
         The channel's parent's identifier.
-    permission_overwrites :`None`,  `dict` of (`int`, ``PermissionOverwrite``) items
+    
+    permission_overwrites : ``None | dict<int, PermissionOverwrite>``
         The channel's permission overwrites.
+    
     position : `int`
         The channel's position.
+    
     region : ``VoiceRegion``
         The voice region of the channel.
-    status : `None`, `str`
+    
+    status : `None | str`
         The voice channel's status.
+    
     user_limit : `int`
         The maximal amount of users, who can join the voice channel, or `0` if unlimited.
+    
     video_quality_mode : ``VideoQualityMode``
         The video quality of the voice channel.
+    
+    voice_engaged_since : `None | DateTime`
+        Since when the voice channel is engaged with.
     
     Class Attributes
     ----------------
@@ -66,6 +79,7 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
         status = ...,
         user_limit = ...,
         video_quality_mode = ...,
+        voice_engaged_since = ...,
     ):
         """
         Creates a new guild voice channel metadata from the given parameters.
@@ -74,24 +88,36 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
         ----------
         bitrate : `int`, Optional (Keyword only)
             The bitrate (in bits) of the voice channel.
+        
         name : `str`, Optional (Keyword only)
             The channel's name.
+        
         nsfw : `bool`, Optional (Keyword only)
             Whether the channel is marked as non safe for work.
-        parent_id : `int`, ``Channel``, Optional (Keyword only)
+        
+        parent_id : ``None | int | Channel``, Optional (Keyword only)
             The channel's parent's identifier.
-        permission_overwrites : `None`, `iterable` of ``PermissionOverwrite``, Optional (Keyword only)
+        
+        permission_overwrites : ``None | iterable<PermissionOverwrite>``, Optional (Keyword only)
             The channel's permission overwrites.
+        
         position : `int`, Optional (Keyword only)
             The channel's position.
-        region : ``VoiceRegion``, `str`, Optional (Keyword only)
+        
+        region : ``None | str | VoiceRegion``, Optional (Keyword only)
             The voice region of the channel.
-        status : `None`, `str`, Optional (Keyword only)
+        
+        status : `None | str`, Optional (Keyword only)
             The voice channel's status.
+        
         user_limit : `int`, Optional (Keyword only)
             The maximal amount of users, who can join the voice channel, or `0` if unlimited.
-        video_quality_mode : ``VideoQualityMode``, `int`, Optional (Keyword only)
+        
+        video_quality_mode : ``None | int | VideoQualityMode``, Optional (Keyword only)
             The video quality of the voice channel.
+        
+        voice_engaged_since : `None | DateTime`, Optional (Keyword only)
+            Since when the voice channel is engaged with.
             
         Raises
         ------
@@ -128,6 +154,7 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
             position = position,
             region = region,
             user_limit = user_limit,
+            voice_engaged_since = voice_engaged_since,
         )
         self.nsfw = nsfw
         self.status = status
@@ -149,6 +176,7 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
             status = keyword_parameters.pop('status', ...),
             user_limit = keyword_parameters.pop('user_limit', ...),
             video_quality_mode = keyword_parameters.pop('video_quality_mode', ...),
+            voice_engaged_since = keyword_parameters.pop('voice_engaged_since', ...),
         )
     
     
@@ -168,17 +196,6 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
         hash_value ^= self.video_quality_mode.value << 11
         
         return hash_value
-    
-    
-    @classmethod
-    @copy_docs(ChannelMetadataGuildVoiceBase.from_data)
-    def from_data(cls, data):
-        self = super(ChannelMetadataGuildVoice, cls).from_data(data)
-        
-        # status | Its only received with the initial channel payload.
-        self.status = parse_status(data)
-        
-        return self
     
     
     @copy_docs(ChannelMetadataGuildVoiceBase._is_equal_same_type)
@@ -240,6 +257,7 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
         status = ...,
         user_limit = ...,
         video_quality_mode = ...,
+        voice_engaged_since = ...,
     ):
         """
         Copies the guild voice channel metadata from the given fields.
@@ -248,24 +266,36 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
         ----------
         bitrate : `int`, Optional (Keyword only)
             The bitrate (in bits) of the voice channel.
+        
         name : `str`, Optional (Keyword only)
             The channel's name.
+        
         nsfw : `bool`, Optional (Keyword only)
             Whether the channel is marked as non safe for work.
-        parent_id : `int`, ``Channel``, Optional (Keyword only)
+        
+        parent_id : ``None | int | Channel``, Optional (Keyword only)
             The channel's parent's identifier.
-        permission_overwrites : `None`, `iterable` of ``PermissionOverwrite``, Optional (Keyword only)
+        
+        permission_overwrites : ``None | iterable<PermissionOverwrite>``, Optional (Keyword only)
             The channel's permission overwrites.
+        
         position : `int`, Optional (Keyword only)
             The channel's position.
-        region : ``VoiceRegion``, `str`, Optional (Keyword only)
+        
+        region : ``None | str | VoiceRegion``, Optional (Keyword only)
             The voice region of the channel.
-        status : `None`, `str`, Optional (Keyword only)
+        
+        status : `None | str`, Optional (Keyword only)
             The voice channel's status.
+        
         user_limit : `int`, Optional (Keyword only)
             The maximal amount of users, who can join the voice channel, or `0` if unlimited.
-        video_quality_mode : ``VideoQualityMode``, `int`, Optional (Keyword only)
+        
+        video_quality_mode : ``None | int | VideoQualityMode``, Optional (Keyword only)
             The video quality of the voice channel.
+        
+        voice_engaged_since : `None | DateTime`, Optional (Keyword only)
+            Since when the voice channel is engaged with.
         
         Returns
         -------
@@ -306,6 +336,7 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
             position = position,
             region = region,
             user_limit = user_limit,
+            voice_engaged_since = voice_engaged_since,
         )
         new.nsfw = nsfw
         new.status = status
@@ -326,6 +357,7 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
             status = keyword_parameters.pop('status', ...),
             user_limit = keyword_parameters.pop('user_limit', ...),
             video_quality_mode = keyword_parameters.pop('video_quality_mode', ...),
+            voice_engaged_since = keyword_parameters.pop('voice_engaged_since', ...),
         )
     
     
@@ -377,6 +409,17 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
             self.status = status
         
         return old_attributes
+    
+    
+    @classmethod
+    @copy_docs(ChannelMetadataGuildVoiceBase.from_data)
+    def from_data(cls, data):
+        self = super(ChannelMetadataGuildVoice, cls).from_data(data)
+        
+        # status | Its only received with the initial channel payload.
+        self.status = parse_status(data)
+        
+        return self
     
     
     @copy_docs(ChannelMetadataGuildVoiceBase.to_data)

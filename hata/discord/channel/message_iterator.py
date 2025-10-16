@@ -165,7 +165,7 @@ class MessageIterator:
     def __repr__(self):
         """Returns the representation of the message iterator."""
         repr_parts = [
-            '<', self.__class__.__name__,
+            '<', type(self).__name__,
             ' of client ', self.client.full_name,
         ]
         

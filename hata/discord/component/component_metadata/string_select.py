@@ -12,7 +12,7 @@ class ComponentMetadataStringSelect(ComponentMetadataSelectBase):
     
     Attributes
     ----------
-    custom_id : `None`, `str`
+    custom_id : `None | str`
         Custom identifier to detect which component was used by the user.
     
     enabled : `bool`
@@ -27,8 +27,11 @@ class ComponentMetadataStringSelect(ComponentMetadataSelectBase):
     options : ``None | tuple<StringSelectOption>``
         Options of the select.
     
-    placeholder : `None`, `str`
+    placeholder : `None | str`
         Placeholder text of the select.
+    
+    required : `bool`
+        Whether the field is required to be fulfilled.
     """
     __slots__ = ('options', )
     
@@ -42,13 +45,14 @@ class ComponentMetadataStringSelect(ComponentMetadataSelectBase):
         min_values = ...,
         options = ...,
         placeholder = ...,
+        required = ...,
     ):
         """
         Creates a new string select component metadata with the given parameters.
         
         Parameters
         ----------
-        custom_id : `None`, `str`, Optional (Keyword only)
+        custom_id : `None | str`, Optional (Keyword only)
             Custom identifier to detect which component was used by the user.
         
         enabled : `bool`, Optional (Keyword only)
@@ -63,8 +67,11 @@ class ComponentMetadataStringSelect(ComponentMetadataSelectBase):
         options : `None`, `iterable` of ``StringSelectOption``, Optional (Keyword only)
             Options of the select.
         
-        placeholder : `None`, `str`, Optional (Keyword only)
+        placeholder : `None | str`, Optional (Keyword only)
             Placeholder text of the select.
+        
+        required : `None | bool`, Optional (Keyword only)
+            Whether the field is required to be fulfilled.
         
         Raises
         ------
@@ -87,6 +94,7 @@ class ComponentMetadataStringSelect(ComponentMetadataSelectBase):
             max_values = max_values,
             min_values = min_values,
             placeholder = placeholder,
+            required = required,
         )
         self.options = options
         
@@ -103,6 +111,7 @@ class ComponentMetadataStringSelect(ComponentMetadataSelectBase):
             min_values = keyword_parameters.pop('min_values', ...),
             options = keyword_parameters.pop('options', ...),
             placeholder = keyword_parameters.pop('placeholder', ...),
+            required = keyword_parameters.pop('required', ...),
         )
     
     
@@ -212,13 +221,14 @@ class ComponentMetadataStringSelect(ComponentMetadataSelectBase):
         min_values = ...,
         options = ...,
         placeholder = ...,
+        required = ...,
     ):
         """
         Copies the channel select component metadata with the given fields.
         
         Parameters
         ----------
-        custom_id : `None`, `str`, Optional (Keyword only)
+        custom_id : `None | str`, Optional (Keyword only)
             Custom identifier to detect which component was used by the user.
         
         enabled : `bool`, Optional (Keyword only)
@@ -233,8 +243,11 @@ class ComponentMetadataStringSelect(ComponentMetadataSelectBase):
         options : `None`, `iterable` of ``StringSelectOption``, Optional (Keyword only)
             Options of the select.
         
-        placeholder : `None`, `str`, Optional (Keyword only)
+        placeholder : `None | str`, Optional (Keyword only)
             Placeholder text of the select.
+        
+        required : `None | bool`, Optional (Keyword only)
+            Whether the field is required to be fulfilled.
         
         Returns
         -------
@@ -263,6 +276,7 @@ class ComponentMetadataStringSelect(ComponentMetadataSelectBase):
             max_values = max_values,
             min_values = min_values,
             placeholder = placeholder,
+            required = required,
         )
         new.options = options
         return new
@@ -277,4 +291,5 @@ class ComponentMetadataStringSelect(ComponentMetadataSelectBase):
             min_values = keyword_parameters.pop('min_values', ...),
             options = keyword_parameters.pop('options', ...),
             placeholder = keyword_parameters.pop('placeholder', ...),
+            required = keyword_parameters.pop('required', ...),
         )

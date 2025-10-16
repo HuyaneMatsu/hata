@@ -60,8 +60,10 @@ def put_activities(activities, data, defaults):
     ----------
     activities : ``None | list<Activity>``
         Activities.
+    
     data : `dict<str, object>`
         Json serializable dictionary.
+    
     defaults : `bool`
         Whether default values should be included as well.
     

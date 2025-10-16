@@ -17,6 +17,7 @@ def test__create_channel_select():
     max_values = 8
     min_values = 7
     channel_types = [ChannelType.private]
+    required = True
     
     component = create_channel_select(
         custom_id = custom_id,
@@ -25,6 +26,7 @@ def test__create_channel_select():
         max_values = max_values,
         min_values = min_values,
         channel_types = channel_types,
+        required = required,
     )
     
     vampytest.assert_instance(component, Component)
@@ -35,3 +37,4 @@ def test__create_channel_select():
     vampytest.assert_eq(component.max_values, max_values)
     vampytest.assert_eq(component.min_values, min_values)
     vampytest.assert_eq(component.channel_types, tuple(channel_types))
+    vampytest.assert_eq(component.required, required)

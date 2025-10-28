@@ -20,6 +20,7 @@ from ...message_call import MessageCall
 from ...message_interaction import MessageInteraction
 from ...message_role_subscription import MessageRoleSubscription
 from ...message_snapshot import MessageSnapshot
+from ...shared_client_theme import SharedClientTheme
 
 from ..flags import MessageFlag
 from ..message import Message
@@ -73,6 +74,7 @@ def test__Message__repr():
     referenced_message = Message.precreate(202305040032, content = 'Patchouli')
     resolved = Resolved(attachments = [Attachment.precreate(202310110030)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
+    shared_client_theme = SharedClientTheme(intensity = 6)
     snapshots = [
         MessageSnapshot(content = 'Kazami'),
         MessageSnapshot(content = 'Yuuka'),
@@ -113,6 +115,7 @@ def test__Message__repr():
         'referenced_message': referenced_message,
         'resolved': resolved,
         'role_subscription': role_subscription,
+        'shared_client_theme': shared_client_theme,
         'snapshots': snapshots,
         'soundboard_sounds': soundboard_sounds,
         'stickers': stickers,
@@ -187,6 +190,7 @@ def test__Message__hash():
     referenced_message = Message.precreate(202305040050, content = 'Patchouli')
     resolved = Resolved(attachments = [Attachment.precreate(202310110031)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
+    shared_client_theme = SharedClientTheme(intensity = 6)
     snapshots = [
         MessageSnapshot(content = 'Kazami'),
         MessageSnapshot(content = 'Yuuka'),
@@ -227,6 +231,7 @@ def test__Message__hash():
         'referenced_message': referenced_message,
         'resolved': resolved,
         'role_subscription': role_subscription,
+        'shared_client_theme': shared_client_theme,
         'snapshots': snapshots,
         'soundboard_sounds': soundboard_sounds,
         'stickers': stickers,
@@ -398,6 +403,7 @@ def _iter_options__eq__same_type():
     referenced_message = Message.precreate(202305040072, content = 'Patchouli')
     resolved = Resolved(attachments = [Attachment.precreate(202310110032)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
+    shared_client_theme = SharedClientTheme(intensity = 6)
     snapshots = [
         MessageSnapshot(content = 'Kazami'),
         MessageSnapshot(content = 'Yuuka'),
@@ -438,6 +444,7 @@ def _iter_options__eq__same_type():
         'referenced_message': referenced_message,
         'resolved': resolved,
         'role_subscription': role_subscription,
+        'shared_client_theme': shared_client_theme,
         'snapshots': snapshots,
         'soundboard_sounds': soundboard_sounds,
         'stickers': stickers,
@@ -682,6 +689,15 @@ def _iter_options__eq__same_type():
         {
             **keyword_parameters,
             'role_subscription': MessageRoleSubscription(tier_name = 'Big brain'),
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'shared_client_theme': SharedClientTheme(intensity = 4),
         },
         False,
     )

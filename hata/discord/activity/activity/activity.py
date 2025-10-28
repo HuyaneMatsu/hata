@@ -870,6 +870,7 @@ class Activity(RichAttributeErrorBaseType):
         
         return build_activity_asset_image_large_url_as(application_id, image_large, ext, size)
     
+    
     @property
     def image_small_url(self):
         """

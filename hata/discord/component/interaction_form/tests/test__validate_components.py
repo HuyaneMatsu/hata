@@ -43,6 +43,26 @@ def _iter_options__passing():
         content = 'Orin',
     )
     
+    component_user_select = Component(
+        ComponentType.user_select,
+    )
+    
+    component_role_select = Component(
+        ComponentType.role_select,
+    )
+    
+    component_mentionable_select = Component(
+        ComponentType.mentionable_select,
+    )
+    
+    component_channel_select = Component(
+        ComponentType.channel_select,
+    )
+    
+    component_attachment_input = Component(
+        ComponentType.attachment_input,
+    )
+    
     yield (
         None,
         None,
@@ -103,6 +123,66 @@ def _iter_options__passing():
             component_text_display,
         ),
     )
+    
+    yield (
+        [
+            component_user_select,
+        ],
+        (
+            Component(
+                ComponentType.label,
+                component = component_user_select,
+            ),
+        ),
+    )
+    
+    yield (
+        [
+            component_role_select,
+        ],
+        (
+            Component(
+                ComponentType.label,
+                component = component_role_select,
+            ),
+        ),
+    )
+    
+    yield (
+        [
+            component_mentionable_select,
+        ],
+        (
+            Component(
+                ComponentType.label,
+                component = component_mentionable_select,
+            ),
+        ),
+    )
+    
+    yield (
+        [
+            component_channel_select,
+        ],
+        (
+            Component(
+                ComponentType.label,
+                component = component_channel_select,
+            ),
+        ),
+    )
+    
+    yield (
+        [
+            component_attachment_input,
+        ],
+        (
+            Component(
+                ComponentType.label,
+                component = component_attachment_input,
+            ),
+        ),
+    )
 
 
 def _iter_options__type_error():
@@ -122,22 +202,6 @@ def _iter_options__value_error():
     component_thumbnail_media = Component(
         ComponentType.thumbnail_media,
         media = MediaInfo('attachment://orin.png'),
-    )
-    
-    component_user_select = Component(
-        ComponentType.user_select,
-    )
-    
-    component_role_select = Component(
-        ComponentType.role_select,
-    )
-    
-    component_mentionable_select = Component(
-        ComponentType.mentionable_select,
-    )
-    
-    component_channel_select = Component(
-        ComponentType.channel_select,
     )
     
     component_attachment_media = Component(
@@ -169,22 +233,6 @@ def _iter_options__value_error():
     
     yield [
         component_thumbnail_media,
-    ]
-    
-    yield [
-        component_user_select,
-    ]
-    
-    yield [
-        component_role_select,
-    ]
-    
-    yield [
-        component_mentionable_select,
-    ]
-    
-    yield [
-        component_channel_select,
     ]
     
     yield [

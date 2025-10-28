@@ -3,7 +3,7 @@ __all__ = ('DeviceType', 'ShortcutKeyType', 'VoiceConnectionState', 'VoiceSettin
 from ...discord.bases import Preinstance as P, PreinstancedBase
 
 
-class DeviceType(PreinstancedBase):
+class DeviceType(PreinstancedBase, value_type = str):
     """
     Represents a device's type.
     
@@ -47,7 +47,7 @@ class DeviceType(PreinstancedBase):
     video_input = P('videoinput', 'video_input')
 
 
-class ShortcutKeyType(PreinstancedBase):
+class ShortcutKeyType(PreinstancedBase, value_type = int):
     """
     Represents an key' type.
     
@@ -95,7 +95,7 @@ class ShortcutKeyType(PreinstancedBase):
 
 
 
-class VoiceSettingsModeType(PreinstancedBase):
+class VoiceSettingsModeType(PreinstancedBase, value_type = str):
     """
     Represents a voice setting mode's type.
     
@@ -136,7 +136,7 @@ class VoiceSettingsModeType(PreinstancedBase):
     audio_output = P('VOICE_ACTIVITY', 'audio_output')
 
 
-class VoiceConnectionState(PreinstancedBase):
+class VoiceConnectionState(PreinstancedBase, value_type = str):
     """
     Represents a voice connection's state.
     

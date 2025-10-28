@@ -375,11 +375,11 @@ class SKUProductFamily(PreinstancedBase, value_type = int):
     none = P(0, 'none')
     premium = P(1, 'premium')
     boost = P(2, 'boost')
-    activity_iap = P(2, 'activity iap')
-    guild_role = P(3, 'guild role')
-    guild_product = P(4, 'guild product')
-    application = P(5, 'application')
-    collectibles = P(6, 'collectibles')
+    activity_iap = P(3, 'activity iap')
+    guild_role = P(4, 'guild role')
+    guild_product = P(5, 'guild product')
+    application = P(6, 'application')
+    collectibles = P(7, 'collectibles')
 
 
 class SKUType(PreinstancedBase, value_type = int):

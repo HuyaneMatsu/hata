@@ -4,19 +4,19 @@ from scarletio import export
 
 from ...bases import Preinstance as P, PreinstancedBase
 from ...resolved.resolver.resolvers import (
-    RESOLVER_CHANNEL, RESOLVER_MENTIONABLE, RESOLVER_ROLE, RESOLVER_STRING, RESOLVER_USER
+    RESOLVER_ATTACHMENT, RESOLVER_CHANNEL, RESOLVER_MENTIONABLE, RESOLVER_ROLE, RESOLVER_STRING, RESOLVER_USER
 )
 
 from ..component_metadata import (
-    ComponentMetadataAttachmentMedia, ComponentMetadataBase, ComponentMetadataButton, ComponentMetadataChannelSelect,
-    ComponentMetadataContainer, ComponentMetadataLabel, ComponentMetadataMediaGallery,
+    ComponentMetadataAttachmentInput, ComponentMetadataAttachmentMedia, ComponentMetadataBase, ComponentMetadataButton,
+    ComponentMetadataChannelSelect, ComponentMetadataContainer, ComponentMetadataLabel, ComponentMetadataMediaGallery,
     ComponentMetadataMentionableSelect, ComponentMetadataRoleSelect, ComponentMetadataRow, ComponentMetadataSection,
     ComponentMetadataSeparator, ComponentMetadataStringSelect, ComponentMetadataTextDisplay, ComponentMetadataTextInput,
     ComponentMetadataThumbnailMedia, ComponentMetadataUserSelect
 )
 from ..interaction_component_metadata import (
-    InteractionComponentMetadataBase, InteractionComponentMetadataButton, InteractionComponentMetadataChannelSelect,
-    InteractionComponentMetadataContainer, InteractionComponentMetadataLabel,
+    InteractionComponentMetadataAttachmentInput, InteractionComponentMetadataBase, InteractionComponentMetadataButton,
+    InteractionComponentMetadataChannelSelect, InteractionComponentMetadataContainer, InteractionComponentMetadataLabel,
     InteractionComponentMetadataMentionableSelect, InteractionComponentMetadataRoleSelect,
     InteractionComponentMetadataRow, InteractionComponentMetadataSection, InteractionComponentMetadataStringSelect,
     InteractionComponentMetadataTextInput, InteractionComponentMetadataUserSelect
@@ -118,6 +118,8 @@ class ComponentType(PreinstancedBase, value_type = int):
     | container             | container                     | 17    |
     +-----------------------+-------------------------------+-------+
     | label                 | label                         | 18    |
+    +-----------------------+-------------------------------+-------+
+    | attachment_input      | attachment input              | 19    |
     +-----------------------+-------------------------------+-------+
     """
     __slots__ = ('layout_flags', 'interaction_metadata_type', 'iter_resolve', 'metadata_type', 'resolve', 'resolver')
@@ -265,6 +267,7 @@ class ComponentType(PreinstancedBase, value_type = int):
         interaction_metadata_type = InteractionComponentMetadataUserSelect,
         layout_flags = ComponentTypeLayoutFlag().update_by_keys(
             allowed_in_message = True,
+            allowed_in_form = True,
             nestable_into_row = True,
             version_1 = True,
             nestable_into_label = True,
@@ -280,6 +283,7 @@ class ComponentType(PreinstancedBase, value_type = int):
         interaction_metadata_type = InteractionComponentMetadataRoleSelect,
         layout_flags = ComponentTypeLayoutFlag().update_by_keys(
             allowed_in_message = True,
+            allowed_in_form = True,
             nestable_into_row = True,
             version_1 = True,
             nestable_into_label = True,
@@ -295,6 +299,7 @@ class ComponentType(PreinstancedBase, value_type = int):
         interaction_metadata_type = InteractionComponentMetadataMentionableSelect,
         layout_flags = ComponentTypeLayoutFlag().update_by_keys(
             allowed_in_message = True,
+            allowed_in_form = True,
             nestable_into_row = True,
             version_1 = True,
             nestable_into_label = True,
@@ -310,6 +315,7 @@ class ComponentType(PreinstancedBase, value_type = int):
         interaction_metadata_type = InteractionComponentMetadataChannelSelect,
         layout_flags = ComponentTypeLayoutFlag().update_by_keys(
             allowed_in_message = True,
+            allowed_in_form = True,
             nestable_into_row = True,
             version_1 = True,
             nestable_into_label = True,
@@ -419,4 +425,18 @@ class ComponentType(PreinstancedBase, value_type = int):
             version_2 = True,
         ),
         metadata_type = ComponentMetadataLabel,
+    )
+    
+    attachment_input = P(
+        19,
+        'attachment input',
+        interaction_metadata_type = InteractionComponentMetadataAttachmentInput,
+        layout_flags = ComponentTypeLayoutFlag().update_by_keys(
+            allowed_in_form = True,
+            version_2 = True,
+            nestable_into_label = True,
+            holds_value_multiple = True,
+        ),
+        metadata_type = ComponentMetadataAttachmentInput,
+        resolver = RESOLVER_ATTACHMENT,
     )

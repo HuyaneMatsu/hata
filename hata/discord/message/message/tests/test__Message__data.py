@@ -24,6 +24,7 @@ from ...message_role_subscription import MessageRoleSubscription
 from ...message_snapshot import MessageSnapshot
 from ...poll_change import PollChange
 from ...poll_update import PollUpdate
+from ...shared_client_theme import SharedClientTheme
 
 from ..flags import MessageFlag
 from ..message import Message
@@ -81,6 +82,7 @@ def test__Message__from_data__all_fields():
     referenced_message = Message.precreate(202305030051, content = 'Patchouli')
     resolved = Resolved(attachments = [Attachment.precreate(202310110008)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
+    shared_client_theme = SharedClientTheme(intensity = 6)
     snapshots = [
         MessageSnapshot(content = 'Kazami'),
         MessageSnapshot(content = 'Yuuka'),
@@ -124,6 +126,7 @@ def test__Message__from_data__all_fields():
         'message_reference': referenced_message.to_message_reference_data(),
         'resolved': resolved.to_data(),
         'role_subscription_data': role_subscription.to_data(),
+        'shared_client_theme': shared_client_theme.to_data(),
         'message_snapshots': [snapshot.to_data(guild_id = guild_id) for snapshot in snapshots],
         'soundboard_sounds': [
             soundboard_sound.to_data(include_internals = True) for soundboard_sound in soundboard_sounds
@@ -166,6 +169,7 @@ def test__Message__from_data__all_fields():
     vampytest.assert_eq(message.referenced_message, referenced_message)
     vampytest.assert_eq(message.resolved, resolved)
     vampytest.assert_eq(message.role_subscription, role_subscription)
+    vampytest.assert_eq(message.shared_client_theme, shared_client_theme)
     vampytest.assert_eq(message.snapshots, tuple(snapshots))
     vampytest.assert_eq(message.soundboard_sounds, tuple(soundboard_sounds))
     vampytest.assert_eq(message.stickers, tuple(stickers))
@@ -336,6 +340,7 @@ def test__Message__to_data():
     referenced_message = Message.precreate(202310110022, content = 'Patchouli')
     resolved = Resolved(attachments = [Attachment.precreate(202310110023)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
+    shared_client_theme = SharedClientTheme(intensity = 6)
     snapshots = [
         MessageSnapshot(content = 'Kazami'),
         MessageSnapshot(content = 'Yuuka'),
@@ -380,6 +385,7 @@ def test__Message__to_data():
         'message_reference': referenced_message.to_message_reference_data(),
         'resolved': resolved.to_data(defaults = True),
         'role_subscription_data': role_subscription.to_data(defaults = True),
+        'shared_client_theme': shared_client_theme.to_data(defaults = True),
         'message_snapshots': [snapshots.to_data(defaults = True, guild_id = guild_id) for snapshots in snapshots],
         'soundboard_sounds': [
             soundboard_sound.to_data(defaults = True, include_internals = True)
@@ -426,6 +432,7 @@ def test__Message__to_data():
         referenced_message = referenced_message,
         resolved = resolved,
         role_subscription = role_subscription,
+        shared_client_theme = shared_client_theme,
         snapshots = snapshots,
         soundboard_sounds = soundboard_sounds,
         stickers = stickers,

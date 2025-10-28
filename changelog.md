@@ -1,3 +1,19 @@
+## 1.3.86 *\[2025-10-28\]*
+
+### Improvements
+
+- Add `InteractionComponentMetadataAttachmentInput`.
+- Add `ComponentMetadataAttachmentInput`.
+- Add `create_attachment_input`.
+- Add `ComponentType.file_upload`.
+- Add `Theme.darker`.
+- Add `Theme.midnight`.
+- Add `SharedClientThemeBaseTheme`.
+- Add `SharedClientTheme`.
+- Add `Message.shared_client_theme`.
+- Add `Message.has_shared_client_theme`.
+- Add 3 new allowed icon size ranges.
+
 ## 1.3.85 *\[2025-10-16\]*
 
 ### Improvements
@@ -11,10 +27,10 @@
 - Add `ChannelMetadataBase.voice_engaged_since`.
 - Add `Channel.voice_engaged_since`.
 - Allow setting `Channel`'s proxies.
-- Add parser for the `VOICE_CHANNEL_START_TIME_UPDATE` dispatch event. 
+- Add parser for the `VOICE_CHANNEL_START_TIME_UPDATE` dispatch event.
 - Add `Guild.iter_clients`.
 - Add `Channel.iter_clients`.
-- Update `Application.from_data_detectable` and `Application.to_data_detectable`  to use the incorrect key to set 
+- Update `Application.from_data_detectable` and `Application.to_data_detectable`  to use the incorrect key to set
     `.icon`.
 - Add `ApplicationTheme`.
 - Add `Application.themes`.

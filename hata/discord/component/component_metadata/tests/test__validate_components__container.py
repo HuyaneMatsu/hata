@@ -255,6 +255,10 @@ def _iter_options__value_error():
         ),
     )
     
+    component_attachment_input = Component(
+        ComponentType.attachment_input,
+    )
+    
     yield [
         component_text_input,
     ]
@@ -277,6 +281,10 @@ def _iter_options__value_error():
             [component_text_display],
         ],
     )
+    
+    yield [
+        component_attachment_input,
+    ]
 
 
 @vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())

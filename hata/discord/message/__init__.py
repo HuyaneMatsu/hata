@@ -9,6 +9,7 @@ from .message_role_subscription import *
 from .message_snapshot import *
 from .poll_change import *
 from .poll_update import *
+from .shared_client_theme import *
 from .voice_attachment import *
 
 
@@ -24,5 +25,6 @@ __all__ = (
     *message_snapshot.__all__,
     *poll_change.__all__,
     *poll_update.__all__,
+    *shared_client_theme.__all__,
     *voice_attachment.__all__,
 )

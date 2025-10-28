@@ -100,8 +100,3 @@ register_setup_function(
     None,
     None,
 )
-
-
-from ...utils.module_deprecation import deprecated_import
-# Remove at 2025 Apirl
-deprecated_import(PlayerWebSocketClosedEvent, 'PlayerWebsocketClosedEvent')

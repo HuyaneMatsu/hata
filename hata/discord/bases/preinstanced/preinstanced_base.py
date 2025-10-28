@@ -1,7 +1,5 @@
 __all__ = ('PreinstancedBase',)
 
-from warnings import warn
-
 from scarletio import RichAttributeErrorBaseType
 
 from .preinstanced_meta import PreinstancedMeta
@@ -44,33 +42,6 @@ class PreinstancedBase(RichAttributeErrorBaseType, metaclass = PreinstancedMeta,
         self.value = value
         self.name = name
         return self
-    
-    
-    @classmethod
-    def get(cls, value):
-        """
-        Returns the value's representation. If the value is already preinstanced, returns that, else creates a new
-        object.
-        
-        Parameters
-        ----------
-        value : `None`, ``.VALUE_TYPE``
-            The value to get it's representation.
-        
-        Returns
-        -------
-        self : `type<cls>`
-        """
-        warn(
-            (
-                f'`{cls.__name__}` is deprecated and will be removed in 2025 September.'
-                f'Please use `{cls.__name__}(value)` instead.',
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return cls(value)
     
     
     def __lt__(self, other):

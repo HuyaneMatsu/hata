@@ -41,6 +41,7 @@ from ..message_interaction import MessageInteraction
 from ..message_role_subscription import MessageRoleSubscription
 from ..poll_change import PollChange
 from ..poll_update import PollUpdate
+from ..shared_client_theme import SharedClientTheme
 
 from .constants import CONTENT_LENGTH_MAX, NONCE_LENGTH_MAX
 from .flags import MessageFlag
@@ -788,6 +789,15 @@ put_role_subscription = nullable_entity_optional_putter_factory(
     'role_subscription_data', MessageRoleSubscription
 )
 validate_role_subscription = nullable_entity_validator_factory('role_subscription', MessageRoleSubscription)
+
+
+# shared_client_theme
+
+parse_shared_client_theme = nullable_entity_parser_factory('shared_client_theme', SharedClientTheme)
+put_shared_client_theme = nullable_entity_optional_putter_factory(
+    'shared_client_theme', SharedClientTheme
+)
+validate_shared_client_theme = nullable_entity_validator_factory('shared_client_theme', SharedClientTheme)
 
 
 # snapshots

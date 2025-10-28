@@ -1,7 +1,5 @@
 __all__ = ('SlashCommand',)
 
-from warnings import warn
-
 from scarletio import copy_docs, export
 
 from .....discord.application import ApplicationIntegrationType
@@ -148,7 +146,6 @@ class SlashCommand(
         guild = ...,
         integration_context_types = ...,
         integration_types = ...,
-        is_default = ...,
         is_global = ...,
         nsfw = ...,
         required_permissions = ...,
@@ -217,18 +214,6 @@ class SlashCommand(
         ValueError
             If a parameter's value is incorrect.
         """
-        # Deprecation
-        if (is_default is not ...):
-            warn(
-                (
-                    f'`{cls.__name__}.__new__`\'s `is_default` parameter is deprecated and will be removed in 2025 June. '
-                    f'Please use `default` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 3,
-            )
-            default = is_default
-        
         if (function is not None) and isinstance(function, CommandWrapper):
             command_function, wrappers = function.fetch_function_and_wrappers_back()
         else:

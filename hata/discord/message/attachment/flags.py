@@ -7,7 +7,7 @@ from ...bases import FlagBase, FlagDescriptor as F, FlagDeprecation as FD
 
 class AttachmentFlag(FlagBase):
     """
-    Represents a attachment's flags.
+    Represents an attachment's flags.
     
     The implemented user flags are the following:
     

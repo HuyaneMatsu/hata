@@ -1,3 +1,4 @@
+from .attachment_input import *
 from .base import *
 from .button import *
 from .channel_select import *
@@ -14,6 +15,7 @@ from .user_select import *
 
 
 __all__ = (
+    *attachment_input.__all__,
     *base.__all__,
     *button.__all__,
     *channel_select.__all__,

@@ -1,7 +1,5 @@
 __all__ = ('CommandBaseApplicationCommand',)
 
-from warnings import warn
-
 from scarletio import copy_docs
 
 from .....discord.application_command import (
@@ -313,38 +311,6 @@ class CommandBaseApplicationCommand(CommandBase):
     @target_type.setter
     def target_type(self, value):
         pass
-    
-    
-    @property
-    def target(self):
-        """
-        Deprecated and will be removed in 2025 Jun. Use `.target_type` instead.
-        """
-        warn(
-            (
-                f'`{type(self).__name__}.target` is deprecated and will be removed in 2025 Jun. '
-                f'Use `.target_type` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return ApplicationCommandTargetType.none
-    
-    
-    @target.setter
-    def target(self, value):
-        """
-        Deprecated and will be removed in 2025 Jun. Use `.target_type` instead.
-        """
-        warn(
-            (
-                f'`{type(self).__name__}.target` is deprecated and will be removed in 2025 Jun. '
-                f'Use `.target_type` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        self.target_type = value
     
     
     @property

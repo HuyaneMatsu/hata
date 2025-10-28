@@ -45,12 +45,13 @@ MESSAGE_SERIALIZER_CREATE = create_serializer(
             MessageBuilderCreate.message_reference_configuration,
             MessageBuilderCreate.nonce,
             MessageBuilderCreate.poll,
+            MessageBuilderCreate.shared_client_theme,
             MessageBuilderCreate.sticker_ids,
             MessageBuilderCreate.tts,
             MessageBuilderCreate.voice_attachment,
         ],
         False,
-    )
+    ),
 )
 
 
@@ -66,7 +67,7 @@ MESSAGE_SERIALIZER_EDIT = create_serializer(
             MessageBuilderEdit.flags,
         ],
         True,
-    )
+    ),
 )
 
 class ClientCompoundMessageEndpoints(Compound):
@@ -349,6 +350,9 @@ class ClientCompoundMessageEndpoints(Compound):
             Which message should the created message be reply to.
             
             Can also be given by passing `channel` as a ``Message``.
+        
+        shared_client_theme : ``SharedClientTheme``, Optional (Keyword only)
+            Configured client theme to be shared with the message.
         
         silent : `bool` = `False`, Optional (Keyword only)
             Whether the message should be delivered silently.

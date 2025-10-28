@@ -366,9 +366,15 @@ class Theme(PreinstancedBase, value_type = str):
     +-----------------------+-----------+
     | light                 | light     |
     +-----------------------+-----------+
+    | darker                | darker    |
+    +-----------------------+-----------+
+    | midnight              | midnight  |
+    +-----------------------+-----------+
     """
     __slots__ = ()
     
     # predefined
     dark = P('dark', 'dark')
     light = P('light', 'light')
+    darker = P('darker', 'darker')
+    midnight = P('midnight', 'midnight')

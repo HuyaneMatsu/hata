@@ -4,7 +4,8 @@ __all__ = (
     'VALID_IMAGE_MEDIA_TYPES_ALL', 'VALID_STICKER_IMAGE_MEDIA_TYPES', 'is_media_url', 'parse_message_jump_url'
 )
 
-import re
+from itertools import chain
+from re import compile as re_compile
 
 from scarletio import export, include
 
@@ -28,9 +29,11 @@ INVITE_ENDPOINT = 'https://discord.gg' if (CUSTOM_INVITE_ENDPOINT is None) else 
 del CUSTOM_API_ENDPOINT, CUSTOM_CDN_ENDPOINT, CUSTOM_DISCORD_ENDPOINT, CUSTOM_STATUS_ENDPOINT, API_VERSION
 
 VALID_ICON_SIZES = frozenset((
-    *( 1 << x      for x in range(4, 13)),
-    *((1 << x) * 3 for x in range(9, 11)),
-    *((1 << x) * 5 for x in range(2,  9)),
+    *( 1 << x       for x in       range(4, 13)               ),
+    *((1 << x) *  3 for x in chain(range(3,  6), range(9, 11))),
+    *((1 << x) *  5 for x in       range(2,  9)               ),
+    *((1 << x) *  7 for x in       range(2,  4)               ),
+    *((1 << x) * 11 for x in       range(1,  3)               ),
 ))
 
 VALID_ICON_FORMATS = frozenset(('jpg', 'jpeg', 'png', 'webp'))
@@ -43,15 +46,15 @@ VALID_STICKER_IMAGE_MEDIA_TYPES = frozenset(('image/gif', 'image/png', 'applicat
 VALID_IMAGE_MEDIA_TYPES_ALL = frozenset((*VALID_ICON_MEDIA_TYPES_EXTENDED, *VALID_STICKER_IMAGE_MEDIA_TYPES))
 
 
-WIDGET_STYLE_RP = re.compile('shield|banner[1-4]')
+WIDGET_STYLE_RP = re_compile('shield|banner[1-4]')
 
-MESSAGE_JUMP_URL_RP = re.compile(
+MESSAGE_JUMP_URL_RP = re_compile(
     '(?:https://)?(?:(?:canary|ptb)\\.)?discord(?:app)?.com/channels/(?:(\\d{7,21})|@me)/(\\d{7,21})/(\\d{7,21})'
 )
 export(MESSAGE_JUMP_URL_RP, 'MESSAGE_JUMP_URL_RP')
 
 
-CDN_RP = re.compile(
+CDN_RP = re_compile(
     'https://(?:'
         'cdn\\.discordapp\\.com|'
         '(?:(?:canary|ptb)\\.)?discord\\.com|'
@@ -63,11 +66,11 @@ CDN_RP = re.compile(
 )
 
 
-WEBHOOK_URL_PATTERN = re.compile(
+WEBHOOK_URL_PATTERN = re_compile(
     '(?:https://)?discord(?:app)?.com/api/(?:v\\d+/)?webhooks/([0-9]{17,21})/([a-zA-Z0-9.\\-_%]{60,68})(?:/.*)?'
 )
 
-INVITE_URL_RP = re.compile('(?:https?://)?discord(?:\\.gg|(?:app)?\\.com/invite)/([a-zA-Z0-9-]+)')
+INVITE_URL_RP = re_compile('(?:https?://)?discord(?:\\.gg|(?:app)?\\.com/invite)/([a-zA-Z0-9-]+)')
 
 
 def _validate_extension(icon_type, ext):

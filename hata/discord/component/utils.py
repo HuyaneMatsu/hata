@@ -1,8 +1,8 @@
 __all__ = (
-    'create_attachment_media', 'create_button', 'create_channel_select', 'create_container', 'create_label',
-    'create_media_gallery', 'create_mentionable_select', 'create_role_select', 'create_row', 'create_section',
-    'create_separator', 'create_string_select', 'create_text_display', 'create_text_input', 'create_thumbnail_media',
-    'create_user_select'
+    'create_attachment_input', 'create_attachment_media', 'create_button', 'create_channel_select', 'create_container',
+    'create_label', 'create_media_gallery', 'create_mentionable_select', 'create_role_select', 'create_row',
+    'create_section', 'create_separator', 'create_string_select', 'create_text_display', 'create_text_input',
+    'create_thumbnail_media', 'create_user_select'
 )
 
 from .component import Component, ComponentType
@@ -736,4 +736,48 @@ def create_label(
         label = label,
         description = description,
         component = component,
+    )
+
+
+def create_attachment_input(
+    custom_id = ...,
+    *,
+    max_values = ...,
+    min_values = ...,
+    required = ...,
+):
+    """
+    Creates a new attachment input.
+    
+    Parameters
+    ----------
+    custom_id : `None | str`, Optional
+        Custom identifier to detect which component was used by the file.
+    
+    max_values : `int`, Optional (Keyword only)
+        The maximal amount of options to upload.
+        
+    min_values : `int`, Optional (Keyword only)
+        The minimal amount of options to upload.
+    
+    required : `None | bool`, Optional (Keyword only)
+        Whether the field is required to be fulfilled.
+    
+    Returns
+    -------
+    attachment_input : ``Component``
+    
+    Raises
+    ------
+    TypeError
+        - If a parameter's type is incorrect.
+    ValueError
+        - If a parameter's value is incorrect.
+    """
+    return Component(
+        ComponentType.attachment_input,
+        custom_id = custom_id,
+        max_values = max_values,
+        min_values = min_values,
+        required = required,
     )

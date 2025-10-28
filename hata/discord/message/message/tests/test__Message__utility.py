@@ -22,6 +22,7 @@ from ...message_call import MessageCall
 from ...message_interaction import MessageInteraction
 from ...message_role_subscription import MessageRoleSubscription
 from ...message_snapshot import MessageSnapshot
+from ...shared_client_theme import SharedClientTheme
 
 from ..flags import MessageFlag
 from ..message import Message
@@ -290,6 +291,7 @@ def test__Message__copy():
     referenced_message = Message.precreate(202305040107, content = 'Patchouli')
     resolved = Resolved(attachments = [Attachment.precreate(202310110034)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
+    shared_client_theme = SharedClientTheme(intensity = 6)
     snapshots = [
         MessageSnapshot(content = 'Kazami'),
         MessageSnapshot(content = 'Yuuka'),
@@ -331,6 +333,7 @@ def test__Message__copy():
         referenced_message = referenced_message,
         resolved = resolved,
         role_subscription = role_subscription,
+        shared_client_theme = shared_client_theme,
         snapshots = snapshots,
         soundboard_sounds = soundboard_sounds,
         stickers = stickers,
@@ -394,6 +397,7 @@ def test__Message__copy_with__no_fields():
     referenced_message = Message.precreate(202305040133, content = 'Patchouli')
     resolved = Resolved(attachments = [Attachment.precreate(202310110035)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
+    shared_client_theme = SharedClientTheme(intensity = 6)
     snapshots = [
         MessageSnapshot(content = 'Kazami'),
         MessageSnapshot(content = 'Yuuka'),
@@ -435,6 +439,7 @@ def test__Message__copy_with__no_fields():
         referenced_message = referenced_message,
         resolved = resolved,
         role_subscription = role_subscription,
+        shared_client_theme = shared_client_theme,
         snapshots = snapshots,
         soundboard_sounds = soundboard_sounds,
         stickers = stickers,
@@ -498,6 +503,7 @@ def test__Message__copy_with__all_fields():
     old_referenced_message = Message.precreate(202305040149, content = 'Patchouli')
     old_resolved = Resolved(attachments = [Attachment.precreate(202310110036)])
     old_role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
+    old_shared_client_theme = SharedClientTheme(intensity = 6)
     old_snapshots = [
         MessageSnapshot(content = 'Kazami'),
         MessageSnapshot(content = 'Yuuka'),
@@ -556,6 +562,7 @@ def test__Message__copy_with__all_fields():
     new_referenced_message = Message.precreate(202305040164, content = 'Book')
     new_resolved = Resolved(attachments = [Attachment.precreate(202310110036)])
     new_role_subscription = MessageRoleSubscription(tier_name = 'Big brain')
+    new_shared_client_theme = SharedClientTheme(intensity = 5)
     new_snapshots = [
         MessageSnapshot(content = 'Mushroom'),
         MessageSnapshot(content = 'Soup'),
@@ -596,6 +603,7 @@ def test__Message__copy_with__all_fields():
         referenced_message = old_referenced_message,
         resolved = old_resolved,
         role_subscription = old_role_subscription,
+        shared_client_theme = old_shared_client_theme,
         snapshots = old_snapshots,
         soundboard_sounds = old_soundboard_sounds,
         stickers = old_stickers,
@@ -628,6 +636,7 @@ def test__Message__copy_with__all_fields():
         referenced_message = new_referenced_message,
         resolved = new_resolved,
         role_subscription = new_role_subscription,
+        shared_client_theme = new_shared_client_theme,
         snapshots = new_snapshots,
         soundboard_sounds = new_soundboard_sounds,
         stickers = new_stickers,
@@ -662,6 +671,7 @@ def test__Message__copy_with__all_fields():
     vampytest.assert_eq(copy.referenced_message, new_referenced_message)
     vampytest.assert_eq(copy.resolved, new_resolved)
     vampytest.assert_eq(copy.role_subscription, new_role_subscription)
+    vampytest.assert_eq(copy.shared_client_theme, new_shared_client_theme)
     vampytest.assert_eq(copy.snapshots, tuple(new_snapshots))
     vampytest.assert_eq(copy.soundboard_sounds, tuple(new_soundboard_sounds))
     vampytest.assert_eq(copy.stickers, tuple(new_stickers))
@@ -2160,7 +2170,7 @@ def test__Message__has_role_subscription(input_value):
     
     Parameters
     ----------
-    input_value : `None | MessageRoleSubscription`
+    input_value : ``None | MessageRoleSubscription``
         Value to test with.
     
     Returns
@@ -2169,6 +2179,33 @@ def test__Message__has_role_subscription(input_value):
     """
     message = Message(role_subscription = input_value)
     output = message.has_role_subscription()
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__has_shared_client_theme():
+    shared_client_theme = SharedClientTheme(intensity = 6)
+    
+    yield None, False
+    yield shared_client_theme, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__has_shared_client_theme()).returning_last())
+def test__Message__has_shared_client_theme(input_value):
+    """
+    Tests whether ``Message.has_shared_client_theme`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : ``None | SharedClientTheme``
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    message = Message(shared_client_theme = input_value)
+    output = message.has_shared_client_theme()
     vampytest.assert_instance(output, bool)
     return output
 

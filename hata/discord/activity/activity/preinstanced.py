@@ -1,9 +1,5 @@
 __all__ = ('ActivityType',)
 
-from warnings import warn
-
-from scarletio import class_property
-
 from ...bases import Preinstance as P, PreinstancedBase
 
 from ..activity_metadata import (
@@ -84,21 +80,3 @@ class ActivityType(PreinstancedBase, value_type = int):
     custom = P(4, 'custom', ActivityMetadataCustom)
     competing = P(5, 'competing', ActivityMetadataRich)
     hanging = P(6, 'hanging', ActivityMetadataHanging)
-    
-    
-    @class_property
-    def game(cls):
-        """
-        Deprecated and will be removed n 2025 September.
-        Please use `.playing` instead.
-        """
-        warn(
-            (
-                f'`{cls.__name__}.game` is deprecated and will be removed in 2025 September. '
-                f'Please use `.playing` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 3,
-        )
-        
-        return cls.playing

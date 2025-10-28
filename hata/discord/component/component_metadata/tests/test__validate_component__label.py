@@ -36,6 +36,10 @@ def _iter_options__passing():
         ComponentType.channel_select,
     )
     
+    component_attachment_input = Component(
+        ComponentType.attachment_input,
+    )
+    
     yield (
         None,
         None,
@@ -69,6 +73,11 @@ def _iter_options__passing():
     yield (
         component_channel_select,
         component_channel_select,
+    )
+    
+    yield (
+        component_attachment_input,
+        component_attachment_input,
     )
 
 

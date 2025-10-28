@@ -176,6 +176,10 @@ def _iter_options__value_error():
         ),
     )
     
+    component_attachment_input = Component(
+        ComponentType.attachment_input,
+    )
+    
     yield [
         component_none,
     ]
@@ -206,6 +210,10 @@ def _iter_options__value_error():
     
     yield [
         component_label,
+    ]
+    
+    yield [
+        component_attachment_input,
     ]
     
     # double nesting | cannot nest row into row

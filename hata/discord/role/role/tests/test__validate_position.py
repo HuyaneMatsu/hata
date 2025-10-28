@@ -4,9 +4,20 @@ from ..fields import validate_position
 
 
 def _iter_options__passing():
-    yield None, 0
-    yield 0, 0
-    yield 1, 1
+    yield (
+        None,
+        0,
+    )
+    
+    yield (
+        0,
+        0,
+    )
+    
+    yield (
+        1,
+        1,
+    )
 
 
 def _iter_options__type_error():

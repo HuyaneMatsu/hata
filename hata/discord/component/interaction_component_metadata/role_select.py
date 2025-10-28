@@ -17,7 +17,7 @@ class InteractionComponentMetadataRoleSelect(InteractionComponentMetadataStringS
     custom_id : `None | str`
         Custom identifier to detect which component was clicked (or used) by the user.
     
-    values : `None | str`
+    values : `None | tuple<str>`
         The component's values defined by the user.
     """
     __slots__ = ()

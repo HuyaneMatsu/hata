@@ -181,6 +181,10 @@ def _iter_options__value_error():
         ],
     )
     
+    interaction_component__attachment_input = InteractionComponent(
+        ComponentType.attachment_input,
+    )
+    
     yield [interaction_component__none]
     yield [interaction_component__row]
     yield [interaction_component__label]
@@ -191,6 +195,7 @@ def _iter_options__value_error():
     yield [interaction_component__attachment_media]
     yield [interaction_component__separator]
     yield [interaction_component__container]
+    yield [interaction_component__attachment_input]
 
 
 @vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())

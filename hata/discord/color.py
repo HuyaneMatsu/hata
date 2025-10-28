@@ -73,7 +73,7 @@ class Color(int):
     
     def __repr__(self):
         """Returns the color's representation."""
-        return f'<{self.__class__.__name__} #{self:06X}>'
+        return f'<{type(self).__name__} #{self:06X}>'
     
     
     def __str__(self):

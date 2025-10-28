@@ -591,6 +591,30 @@ async def handle(event, *, users, items, reason):
 
 ![](assets/forms_0006.gif)
 
+### Attachment input
+
+You may also input attachments with attachment input components.
+
+```
+from hata import create_attachment_input
+
+component = create_attachment_input(
+    custom_id = CUSTOM_ID,
+)
+```
+
+This component is familiar to selects in the sense that they supports multiple "options to be selected",
+or at this case, input multiple attachments.
+Therefore when capturing an attachment component in a handler function,
+it is always passed to it as a nullable tuple of attachments.
+
+```
+component = create_attachment_input(
+    custom_id = CUSTOM_ID,
+    min_values = 0,
+    max_values = 10,
+)
+```
 
 ----
 

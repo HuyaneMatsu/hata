@@ -18,7 +18,7 @@ class InteractionComponentMetadataStringSelect(InteractionComponentMetadataBase)
     custom_id : `None | str`
         Custom identifier to detect which component was clicked (or used) by the user.
     
-    values : `None | str`
+    values : `None | tuple<str>`
         The component's values defined by the user.
     """
     __slots__ = ('custom_id', 'values',)
@@ -32,7 +32,7 @@ class InteractionComponentMetadataStringSelect(InteractionComponentMetadataBase)
         custom_id : `None | str`, Optional (Keyword only)
             Custom identifier to detect which component was clicked (or used) by the user.
         
-        values : `None | str`, Optional (Keyword only)
+        values : `None | tuple<str>`, Optional (Keyword only)
             The component's values defined by the user.
         
         Raises
@@ -71,7 +71,7 @@ class InteractionComponentMetadataStringSelect(InteractionComponentMetadataBase)
         keyword_parameters : `dict<str, object>`
             Keyword parameters to build the metadata from.
         
-        values : `None | str`, Optional (Keyword only)
+        values : `None | tuple<str>`, Optional (Keyword only)
             The component's values defined by the user.
         
         Returns
@@ -191,7 +191,7 @@ class InteractionComponentMetadataStringSelect(InteractionComponentMetadataBase)
         custom_id : `None | str`, Optional (Keyword only)
             Custom identifier to detect which component was clicked (or used) by the user.
         
-        values : `None | str`, Optional (Keyword only)
+        values : `None | tuple<str>`, Optional (Keyword only)
             The component's values defined by the user.
         
         Returns

@@ -4,10 +4,37 @@ from ..fields import put_location
 
 
 def _iter_options():
-    yield None, False, {'location': ''}
-    yield None, True, {'location': ''}
-    yield 'a', False, {'location': 'a'}
-    yield 'a', True, {'location': 'a'}
+    yield (
+        None,
+        False,
+        {
+            'location': '',
+        },
+    )
+    
+    yield (
+        None,
+        True,
+        {
+            'location': '',
+        },
+    )
+    
+    yield (
+        'a',
+        False,
+        {
+            'location': 'a',
+        },
+    )
+    
+    yield (
+        'a',
+        True,
+        {
+            'location': 'a',
+        },
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

@@ -376,6 +376,31 @@ def test__Component__proxies__read_label():
     vampytest.assert_eq(component.label, label)
 
 
+def test__Component__proxies__read_attachment_input():
+    """
+    Tests whether ``Component`` field proxies work as intended.
+    
+    Case: reading channel select fields.
+    """
+    custom_id = 'kaguya'
+    max_values = 10
+    min_values = 9
+    required = True
+    
+    component = Component(
+        ComponentType.attachment_input,
+        custom_id = custom_id,
+        max_values = max_values,
+        min_values = min_values,
+        required = required,
+    )
+    
+    vampytest.assert_eq(component.custom_id, custom_id)
+    vampytest.assert_eq(component.max_values, max_values)
+    vampytest.assert_eq(component.min_values, min_values)
+    vampytest.assert_eq(component.required, required)
+
+
 def test__Component__proxies__write_button__generic():
     """
     Tests whether ``Component`` field proxies work as intended.
@@ -688,3 +713,27 @@ def test__Component__proxies__write_label():
     vampytest.assert_eq(component.component, sub_component)
     vampytest.assert_eq(component.description, description)
     vampytest.assert_eq(component.label, label)
+
+
+def test__Component__proxies__write_attachment_input():
+    """
+    Tests whether ``Component`` field proxies work as intended.
+    
+    Case: writing channel select fields.
+    """
+    custom_id = 'kaguya'
+    max_values = 10
+    min_values = 9
+    required = True
+    
+    component = Component(ComponentType.attachment_input)
+    
+    component.custom_id = custom_id
+    component.max_values = max_values
+    component.min_values = min_values
+    component.required = required
+    
+    vampytest.assert_eq(component.custom_id, custom_id)
+    vampytest.assert_eq(component.max_values, max_values)
+    vampytest.assert_eq(component.min_values, min_values)
+    vampytest.assert_eq(component.required, required)

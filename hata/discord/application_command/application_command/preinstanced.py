@@ -3,10 +3,6 @@ __all__ = (
     'ApplicationCommandIntegrationContextType', 'ApplicationCommandTargetType',
 )
 
-from warnings import warn
-
-from scarletio import class_property
-
 from ...bases import Preinstance as P, PreinstancedBase
 
 
@@ -121,21 +117,6 @@ class ApplicationCommandTargetType(PreinstancedBase, value_type = int):
     message = P(3, 'message',)
     embedded_activity_launch = P(4, 'embedded activity launch')
     channel = P(1004, 'channel')
-    
-    @class_property
-    def activity_start(cls):
-        """
-        Deprecated and will be removed in 2025 Jun. Use `.embedded_activity_launch` instead.
-        """
-        warn(
-            (
-                f'`{cls.__name__}.activity_start` is deprecated and will be removed in 2025 Jun. '
-                f'Use `.embedded_activity_launch` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 3,
-        )
-        return cls.embedded_activity_launch
 
 
 CONTEXT_TARGET_TYPES = frozenset((

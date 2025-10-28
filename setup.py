@@ -184,6 +184,7 @@ setup(
         'hata.discord.message.message_snapshot',
         'hata.discord.message.poll_change',
         'hata.discord.message.poll_update',
+        'hata.discord.message.shared_client_theme',
         'hata.discord.message.voice_attachment',
         'hata.discord.oauth2',
         'hata.discord.oauth2.connection',

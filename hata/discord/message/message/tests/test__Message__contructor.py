@@ -20,6 +20,7 @@ from ...message_call import MessageCall
 from ...message_interaction import MessageInteraction
 from ...message_role_subscription import MessageRoleSubscription
 from ...message_snapshot import MessageSnapshot
+from ...shared_client_theme import SharedClientTheme
 
 from ..flags import MessageFlag
 from ..message import Message
@@ -65,6 +66,7 @@ def _assert_fields_set(message):
     vampytest.assert_instance(message.referenced_message, Message, nullable = True)
     vampytest.assert_instance(message.resolved, Resolved, nullable = True)
     vampytest.assert_instance(message.role_subscription, MessageRoleSubscription, nullable = True)
+    vampytest.assert_instance(message.shared_client_theme, SharedClientTheme, nullable = True)
     vampytest.assert_instance(message.snapshots, tuple, nullable = True)
     vampytest.assert_instance(message.soundboard_sounds, tuple, nullable = True)
     vampytest.assert_instance(message.stickers, tuple, nullable = True)
@@ -132,6 +134,7 @@ def test__Message__new__all_fields():
     referenced_message = Message.precreate(202305030012, content = 'Patchouli')
     resolved = Resolved(attachments = [Attachment.precreate(202310110006)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
+    shared_client_theme = SharedClientTheme(intensity = 6)
     snapshots = [
         MessageSnapshot(content = 'Kazami'),
         MessageSnapshot(content = 'Yuuka'),
@@ -173,6 +176,7 @@ def test__Message__new__all_fields():
         referenced_message = referenced_message,
         resolved = resolved,
         role_subscription = role_subscription,
+        shared_client_theme = shared_client_theme,
         snapshots = snapshots,
         soundboard_sounds = soundboard_sounds,
         stickers = stickers,
@@ -205,6 +209,7 @@ def test__Message__new__all_fields():
     vampytest.assert_eq(message.referenced_message, referenced_message)
     vampytest.assert_eq(message.resolved, resolved)
     vampytest.assert_eq(message.role_subscription, role_subscription)
+    vampytest.assert_eq(message.shared_client_theme, shared_client_theme)
     vampytest.assert_eq(message.snapshots, tuple(snapshots))
     vampytest.assert_eq(message.soundboard_sounds, tuple(soundboard_sounds))
     vampytest.assert_eq(message.stickers, tuple(stickers))
@@ -294,6 +299,7 @@ def test__Message__precreate__all_fields():
     referenced_message = Message.precreate(202305030032, content = 'Patchouli')
     resolved = Resolved(attachments = [Attachment.precreate(202310110007)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
+    shared_client_theme = SharedClientTheme(intensity = 6)
     snapshots = [
         MessageSnapshot(content = 'Kazami'),
         MessageSnapshot(content = 'Yuuka'),
@@ -342,6 +348,7 @@ def test__Message__precreate__all_fields():
         referenced_message = referenced_message,
         resolved = resolved,
         role_subscription = role_subscription,
+        shared_client_theme = shared_client_theme,
         snapshots = snapshots,
         soundboard_sounds = soundboard_sounds,
         stickers = stickers,
@@ -374,6 +381,7 @@ def test__Message__precreate__all_fields():
     vampytest.assert_eq(message.referenced_message, referenced_message)
     vampytest.assert_eq(message.resolved, resolved)
     vampytest.assert_eq(message.role_subscription, role_subscription)
+    vampytest.assert_eq(message.shared_client_theme, shared_client_theme)
     vampytest.assert_eq(message.snapshots, tuple(snapshots))
     vampytest.assert_eq(message.soundboard_sounds, tuple(soundboard_sounds))
     vampytest.assert_eq(message.stickers, tuple(stickers))

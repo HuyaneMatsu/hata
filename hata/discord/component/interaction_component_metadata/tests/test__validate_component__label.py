@@ -37,6 +37,10 @@ def _iter_options__passing():
         custom_id = 'koishi',
     )
     
+    interaction_component__attachment_input = InteractionComponent(
+        ComponentType.attachment_input,
+    )
+    
     yield (
         None,
         None,
@@ -70,6 +74,11 @@ def _iter_options__passing():
     yield (
         interaction_component__mentionable_select,
         interaction_component__mentionable_select,
+    )
+    
+    yield (
+        interaction_component__attachment_input,
+        interaction_component__attachment_input,
     )
 
 

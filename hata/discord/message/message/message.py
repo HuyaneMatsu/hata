@@ -24,20 +24,19 @@ from .fields import (
     parse_id, parse_interaction, parse_mentioned_channels_cross_guild, parse_mentioned_everyone,
     parse_mentioned_role_ids, parse_mentioned_users, parse_message_id, parse_nonce, parse_pinned, parse_poll,
     parse_poll_and_change, parse_reactions, parse_referenced_message, parse_resolved, parse_role_subscription,
-    parse_snapshots, parse_soundboard_sounds, parse_stickers, parse_thread, parse_tts, parse_type, put_activity,
-    put_application_id, put_application, put_attachments, put_author, put_call,
-    put_channel_id, put_components, put_content, put_edited_at, put_embeds, put_flags,
-    put_guild_id, put_id, put_interaction, put_mentioned_channels_cross_guild,
-    put_mentioned_everyone, put_mentioned_role_ids, put_mentioned_users, put_message_id,
-    put_nonce, put_pinned, put_poll, put_reactions, put_referenced_message_into, put_resolved,
-    put_role_subscription, put_snapshots, put_soundboard_sounds, put_stickers, put_thread,
-    put_tts, put_type, validate_activity, validate_application, validate_application_id, validate_attachments,
-    validate_author, validate_call, validate_channel_id, validate_components, validate_content, validate_edited_at,
-    validate_embeds, validate_flags, validate_guild_id, validate_id, validate_interaction,
+    parse_shared_client_theme, parse_snapshots, parse_soundboard_sounds, parse_stickers, parse_thread, parse_tts,
+    parse_type, put_activity, put_application, put_application_id, put_attachments, put_author, put_call,
+    put_channel_id, put_components, put_content, put_edited_at, put_embeds, put_flags, put_guild_id, put_id,
+    put_interaction, put_mentioned_channels_cross_guild, put_mentioned_everyone, put_mentioned_role_ids,
+    put_mentioned_users, put_message_id, put_nonce, put_pinned, put_poll, put_reactions, put_referenced_message_into,
+    put_resolved, put_role_subscription, put_shared_client_theme, put_snapshots, put_soundboard_sounds, put_stickers,
+    put_thread, put_tts, put_type, validate_activity, validate_application, validate_application_id,
+    validate_attachments, validate_author, validate_call, validate_channel_id, validate_components, validate_content,
+    validate_edited_at, validate_embeds, validate_flags, validate_guild_id, validate_id, validate_interaction,
     validate_mentioned_channels_cross_guild, validate_mentioned_everyone, validate_mentioned_role_ids,
     validate_mentioned_users, validate_nonce, validate_pinned, validate_poll, validate_reactions,
-    validate_referenced_message, validate_resolved, validate_role_subscription, validate_snapshots,
-    validate_soundboard_sounds, validate_stickers, validate_thread, validate_tts, validate_type
+    validate_referenced_message, validate_resolved, validate_role_subscription, validate_shared_client_theme,
+    validate_snapshots, validate_soundboard_sounds, validate_stickers, validate_thread, validate_tts, validate_type
 )
 from .flags import MessageFlag
 from .preinstanced import MESSAGE_DEFAULT_CONVERTER, MessageType
@@ -84,6 +83,7 @@ PRECREATE_FIELDS = {
     'referenced_message': ('referenced_message', validate_referenced_message),
     'resolved': ('resolved', validate_resolved),
     'role_subscription': ('role_subscription', validate_role_subscription),
+    'shared_client_theme': ('shared_client_theme', validate_shared_client_theme),
     'snapshots': ('snapshots', validate_snapshots),
     'pinned': ('pinned', validate_pinned),
     'soundboard_sounds': ('soundboard_sounds', validate_soundboard_sounds),
@@ -204,6 +204,9 @@ class Message(DiscordEntity, immortal = True):
     role_subscription : ``None | MessageRoleSubscription``
         Additional role subscription information attached to the message. Defaults to `None`.
     
+    shared_client_theme : ``None | SharedClientTheme``
+        Configured client side theme shared with the message. Defaults to `None`.
+    
     snapshots : ``None | tuple<MessageSnapshot>``
         Forwarded snapshots of other messages.
     
@@ -232,8 +235,8 @@ class Message(DiscordEntity, immortal = True):
         '_cache_mentioned_channels', '_state', 'activity', 'application', 'application_id', 'attachments', 'author',
         'call', 'channel_id', 'components', 'content', 'edited_at', 'embeds', 'flags', 'guild_id', 'interaction',
         'mentioned_channels_cross_guild', 'mentioned_everyone', 'mentioned_role_ids', 'mentioned_users', 'nonce',
-        'pinned', 'poll', 'reactions', 'referenced_message', 'resolved', 'role_subscription', 'snapshots',
-        'soundboard_sounds', 'stickers', 'thread', 'tts', 'type'
+        'pinned', 'poll', 'reactions', 'referenced_message', 'resolved', 'role_subscription', 'shared_client_theme',
+        'snapshots', 'soundboard_sounds', 'stickers', 'thread', 'tts', 'type'
     )
     
     
@@ -264,6 +267,7 @@ class Message(DiscordEntity, immortal = True):
         referenced_message = ...,
         resolved = ...,
         role_subscription = ...,
+        shared_client_theme = ...,
         snapshots = ...,
         soundboard_sounds = ...,
         stickers = ...,
@@ -347,6 +351,9 @@ class Message(DiscordEntity, immortal = True):
         
         role_subscription : ``None | MessageRoleSubscription``, Optional (Keyword only)
             Additional role subscription information attached to the message.
+        
+        shared_client_theme : ``None | SharedClientTheme``, Optional (Keyword only)
+            Configured client side theme shared with the message.
         
         snapshots : `None`, `iterable` of ``MessageSnapshot`, Optional (Keyword only)
             Forwarded snapshots of other messages.
@@ -508,6 +515,12 @@ class Message(DiscordEntity, immortal = True):
         else:
             role_subscription = validate_role_subscription(role_subscription)
         
+        # shared_client_theme
+        if shared_client_theme is ...:
+            shared_client_theme = None
+        else:
+            shared_client_theme = validate_shared_client_theme(shared_client_theme)
+        
         # snapshots
         if snapshots is ...:
             snapshots = None
@@ -575,6 +588,7 @@ class Message(DiscordEntity, immortal = True):
         self.referenced_message = referenced_message
         self.resolved = resolved
         self.role_subscription = role_subscription
+        self.shared_client_theme = shared_client_theme
         self.snapshots = snapshots
         self.soundboard_sounds = soundboard_sounds
         self.stickers = stickers
@@ -822,6 +836,7 @@ class Message(DiscordEntity, immortal = True):
         self.referenced_message = parse_referenced_message(data)
         self.resolved = parse_resolved(data, guild_id = guild_id)
         self.role_subscription = parse_role_subscription(data)
+        self.shared_client_theme = parse_shared_client_theme(data)
         self.snapshots = parse_snapshots(data, guild_id)
         self.soundboard_sounds = parse_soundboard_sounds(data)
         self.stickers = parse_stickers(data)
@@ -1084,6 +1099,10 @@ class Message(DiscordEntity, immortal = True):
         if self.role_subscription != other.role_subscription:
             return False
         
+        # shared_client_theme
+        if self.shared_client_theme != other.shared_client_theme:
+            return False
+        
         # snapshots
         if self.snapshots != other.snapshots:
             return False
@@ -1252,6 +1271,11 @@ class Message(DiscordEntity, immortal = True):
         role_subscription = self.role_subscription
         if (role_subscription is not None):
             hash_value ^= hash(role_subscription)
+        
+        # shared_client_theme
+        shared_client_theme = self.shared_client_theme
+        if (shared_client_theme is not None):
+            hash_value ^= hash(shared_client_theme)
         
         # snapshots
         snapshots = self.snapshots
@@ -1777,6 +1801,7 @@ class Message(DiscordEntity, immortal = True):
             )
             put_resolved(self.resolved, data, defaults, guild_id = self.guild_id)
             put_role_subscription(self.role_subscription, data, defaults)
+            put_shared_client_theme(self.shared_client_theme, data, defaults)
             put_snapshots(self.snapshots, data, defaults, guild_id = self.guild_id)
             put_soundboard_sounds(self.soundboard_sounds, data, defaults)
             put_stickers(self.stickers, data, defaults)
@@ -1856,6 +1881,7 @@ class Message(DiscordEntity, immortal = True):
         self.referenced_message = None
         self.resolved = None
         self.role_subscription = None
+        self.shared_client_theme = None
         self.snapshots = None
         self.soundboard_sounds = None
         self.stickers = None
@@ -1972,6 +1998,9 @@ class Message(DiscordEntity, immortal = True):
         
         role_subscription : ``None | MessageRoleSubscription``, Optional (Keyword only)
             Additional role subscription information attached to the message.
+        
+        shared_client_theme : ``None | SharedClientTheme``, Optional (Keyword only)
+            Configured client theme shared in the message.
         
         snapshots : `None`, `iterable` of ``MessageSnapshot`, Optional (Keyword only)
             Forwarded snapshots of other messages.
@@ -2125,6 +2154,11 @@ class Message(DiscordEntity, immortal = True):
             role_subscription = role_subscription.copy()
         new.role_subscription = role_subscription
         
+        shared_client_theme = self.shared_client_theme
+        if (shared_client_theme is not None):
+            shared_client_theme = shared_client_theme.copy()
+        new.shared_client_theme = shared_client_theme
+        
         snapshots = self.snapshots
         if (snapshots is not None):
             snapshots = (*(snapshot.copy() for snapshot in snapshots),)
@@ -2174,6 +2208,7 @@ class Message(DiscordEntity, immortal = True):
         referenced_message = ...,
         resolved = ...,
         role_subscription = ...,
+        shared_client_theme = ...,
         snapshots = ...,
         soundboard_sounds = ...,
         stickers = ...,
@@ -2257,6 +2292,9 @@ class Message(DiscordEntity, immortal = True):
         
         role_subscription : ``None | MessageRoleSubscription``, Optional (Keyword only)
             Additional role subscription information attached to the message.
+        
+        shared_client_theme : ``None | SharedClientTheme``, Optional (Keyword only)
+            Configured client theme shared in the message.
         
         snapshots : `None`, `iterable` of ``MessageSnapshot`, Optional (Keyword only)
             Forwarded snapshots of other messages.
@@ -2450,6 +2488,14 @@ class Message(DiscordEntity, immortal = True):
         else:
             role_subscription = validate_role_subscription(role_subscription)
         
+        # shared_client_theme
+        if shared_client_theme is ...:
+            shared_client_theme = self.shared_client_theme
+            if (shared_client_theme is not None):
+                shared_client_theme = shared_client_theme.copy()
+        else:
+            shared_client_theme = validate_shared_client_theme(shared_client_theme)
+        
         # snapshots
         if snapshots is ...:
             snapshots = self.snapshots
@@ -2523,6 +2569,7 @@ class Message(DiscordEntity, immortal = True):
         new.referenced_message = referenced_message
         new.resolved = resolved
         new.role_subscription = role_subscription
+        new.shared_client_theme = shared_client_theme
         new.snapshots = snapshots
         new.soundboard_sounds = soundboard_sounds
         new.stickers = stickers
@@ -3383,6 +3430,17 @@ class Message(DiscordEntity, immortal = True):
         has_role_subscription : `bool`
         """
         return self.role_subscription is not None
+    
+    
+    def has_shared_client_theme(self):
+        """
+        Returns whether the message has ``.shared_client_theme`` set as its non-default value.
+        
+        Returns
+        -------
+        hash_shared_client_theme : `bool`
+        """
+        return self.shared_client_theme is not None
     
     
     def has_snapshots(self):

@@ -857,7 +857,7 @@ def nullable_date_time_putter_factory(field_key):
         
         Parameters
         ----------
-        field_value : `DateTime`
+        field_value : `None | DateTime`
             Date time field value.
         
         data : `dict<str, object>`
@@ -904,7 +904,7 @@ def nullable_date_time_optional_putter_factory(field_key):
         
         Parameters
         ----------
-        field_value : `DateTime`
+        field_value : `None | DateTime`
             Date time field value.
         
         data : `dict<str, object>`
@@ -926,6 +926,47 @@ def nullable_date_time_optional_putter_factory(field_key):
                 timestamp = datetime_to_timestamp(field_value)
             data[field_key] = timestamp
         
+        return data
+    
+    return putter
+
+
+def force_date_time_putter_factory(field_key):
+    """
+    Returns a new force date time optional putter.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    
+    Returns
+    -------
+    putter : `FunctionType`
+    """
+    def putter(field_value, data, defaults):
+        """
+        Puts the given `DateTime` into the given `data` json serializable object.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        field_value : `DateTime`
+            Date time field value.
+        
+        data : `dict<str, object>`
+            Json serializable dictionary.
+        
+        defaults : `bool`
+            Whether default values should be included as well.
+        
+        Returns
+        -------
+        data : `dict<str, object>`
+        """
+        nonlocal field_key
+        data[field_key] = datetime_to_timestamp(field_value)
         return data
     
     return putter

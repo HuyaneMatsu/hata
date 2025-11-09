@@ -9,7 +9,7 @@ from .constants import MAX_VALUES_DEFAULT, MIN_VALUES_DEFAULT
 from .fields import (
     parse_custom_id, parse_enabled, parse_max_values, parse_min_values, parse_placeholder, parse_required,
     put_custom_id, put_enabled, put_max_values, put_min_values, put_placeholder, put_required, validate_custom_id,
-    validate_enabled, validate_max_values, validate_min_values, validate_placeholder, validate_required
+    validate_enabled, validate_max_values__select, validate_min_values__select, validate_placeholder, validate_required
 )
 
 
@@ -96,13 +96,13 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
         if max_values is ...:
             max_values = MAX_VALUES_DEFAULT
         else:
-            max_values = validate_max_values(max_values)
+            max_values = validate_max_values__select(max_values)
         
         # min_values
         if min_values is ...:
             min_values = MIN_VALUES_DEFAULT
         else:
-            min_values = validate_min_values(min_values)
+            min_values = validate_min_values__select(min_values)
         
         # placeholder
         if placeholder is ...:
@@ -417,13 +417,13 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
         if max_values is ...:
             max_values = self.max_values
         else:
-            max_values = validate_max_values(max_values)
+            max_values = validate_max_values__select(max_values)
         
         # min_values
         if min_values is ...:
             min_values = self.min_values
         else:
-            min_values = validate_min_values(min_values)
+            min_values = validate_min_values__select(min_values)
         
         # placeholder
         if placeholder is ...:

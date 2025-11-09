@@ -222,7 +222,7 @@ def put_message(message, data, defaults):
     
     Parameters
     ----------
-    message : `None`, ``Message``
+    message : ``None | Message``
         The message to put into the given `data`.
     data : `dict<str, object>`
         Json serializable dictionary.

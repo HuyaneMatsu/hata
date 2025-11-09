@@ -662,28 +662,14 @@ class DiscordApiClient(RichAttributeErrorBaseType):
             f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}/crosspost',
         )
     
+    # pin
     
-    async def message_pin(self, channel_id, message_id):
+    async def channel_pin_get_chunk(self, channel_id, query):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.message_pin, channel_id),
-            METHOD_PUT,
-            f'{API_ENDPOINT}/channels/{channel_id}/pins/{message_id}',
-        )
-    
-    
-    async def message_unpin(self, channel_id, message_id):
-        return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.message_unpin, channel_id),
-            METHOD_DELETE,
-            f'{API_ENDPOINT}/channels/{channel_id}/pins/{message_id}',
-        )
-    
-    
-    async def channel_pin_get_all(self, channel_id):
-        return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.channel_pin_get_all, channel_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.channel_pin_get_chunk, channel_id),
             METHOD_GET,
-            f'{API_ENDPOINT}/channels/{channel_id}/pins',
+            f'{API_ENDPOINT}/channels/{channel_id}/messages/pins',
+            query = query,
         )
     
     # hooman only
@@ -691,8 +677,26 @@ class DiscordApiClient(RichAttributeErrorBaseType):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.channel_pin_ack, channel_id),
             METHOD_POST,
-            f'{API_ENDPOINT}/channels/{channel_id}/pins/ack',
+            f'{API_ENDPOINT}/channels/{channel_id}/messages/pins/ack',
         )
+    
+    async def message_pin(self, channel_id, message_id, reason):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.message_pin, channel_id),
+            METHOD_PUT,
+            f'{API_ENDPOINT}/channels/{channel_id}/messages/pins/{message_id}',
+            reason = reason,
+        )
+    
+    
+    async def message_unpin(self, channel_id, message_id, reason):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.message_unpin, channel_id),
+            METHOD_DELETE,
+            f'{API_ENDPOINT}/channels/{channel_id}/messages/pins/{message_id}',
+            reason = reason,
+        )
+    
     
     # poll
     

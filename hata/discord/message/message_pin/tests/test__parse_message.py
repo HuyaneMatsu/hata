@@ -6,8 +6,8 @@ from ..fields import parse_message
 
 
 def _iter_options():
-    message_id = 202210280005
-    channel_id = 202210280016
+    message_id = 202511070000
+    channel_id = 202511070001
     
     message = Message.precreate(message_id, channel_id = channel_id)
     

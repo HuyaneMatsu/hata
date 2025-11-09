@@ -1,3 +1,19 @@
+## 1.3.87 *\[2025-11-09\]*
+
+### Improvements
+
+- Add `MessagePing`.
+- Add `Client.channel_pin_get_chunk`.
+- `Client.channel_pin_get_all` now returns `MessagePin` elements instead of `Message` ones.
+- `DiscordApiClient.message_pin` and `.message_unpin` now has an additional `reason` parameter.
+- Use separate `label` validator for `button` and for `label` components.
+- Use separate `max_values` & `min_values` validator for `select` and for `attachment input` components.
+
+### Renames, Deprecations & Removals
+
+- Rename `RATE_LIMIT_GROUPS.channel_pin_get_all` to `.channel_pin_get_chunk`.
+- Rename `DiscordApiClient.channel_pin_get_all` to `.channel_pin_get_chunk`.
+
 ## 1.3.86 *\[2025-10-28\]*
 
 ### Improvements

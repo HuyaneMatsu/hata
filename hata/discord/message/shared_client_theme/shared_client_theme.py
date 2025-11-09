@@ -13,7 +13,7 @@ from .preinstanced import SharedClientThemeBaseTheme
 
 class SharedClientTheme(RichAttributeErrorBaseType):
     """
-    Represents a member of a ``Team``.
+    Represents a shared client theme through a message.
     
     Attributes
     ----------
@@ -33,7 +33,7 @@ class SharedClientTheme(RichAttributeErrorBaseType):
     
     def __new__(cls, *, base_theme = ..., colors = ..., gradient_angle = ..., intensity = ...):
         """
-        Creates a new team member from the given parameters.
+        Creates a new shared client theme with the given parameters.
         
         Parameters
         ----------
@@ -41,7 +41,7 @@ class SharedClientTheme(RichAttributeErrorBaseType):
             The base theme to build upon.
         
         colors : ``None | iterable<Color>``, Optional (Keyword only)
-            The colors of the team member.
+            The colors of the theme.
         
         gradient_angle : `None | int`, Optional (Keyword only)
             The angle of the theme's colors.
@@ -96,12 +96,12 @@ class SharedClientTheme(RichAttributeErrorBaseType):
     @classmethod
     def from_data(cls, data):
         """
-        Creates a `SharedClientTheme` object from the data sent by Discord.
+        Creates a shared client theme from the given data.
         
         Parameters
         ----------
         data : `dict<str, object>`
-            Team member data received from Discord.
+            Shared client theme data.
         """
         self = object.__new__(cls)
         self.base_theme = parse_base_theme(data)
@@ -113,7 +113,7 @@ class SharedClientTheme(RichAttributeErrorBaseType):
     
     def to_data(self, *, defaults = False):
         """
-        Converts the team member to a json serializable object.
+        Converts the shared client theme to a json serializable object.
         
         Parameters
         ----------
@@ -206,7 +206,7 @@ class SharedClientTheme(RichAttributeErrorBaseType):
     
     def copy(self):
         """
-        Copies the team member.
+        Copies the shared client theme.
         
         Returns
         -------
@@ -227,7 +227,7 @@ class SharedClientTheme(RichAttributeErrorBaseType):
     
     def copy_with(self, *, base_theme = ..., colors = ..., gradient_angle = ..., intensity = ...):
         """
-        Copies the team member with the the defined fields.
+        Copies the shared client theme with the the defined fields.
         
         Parameters
         ----------
@@ -235,7 +235,7 @@ class SharedClientTheme(RichAttributeErrorBaseType):
             The base theme to build upon.
         
         colors : ``None | iterable<Color>``, Optional (Keyword only)
-            The colors of the team member.
+        The colors of the theme.
         
         gradient_angle : `None | int`, Optional (Keyword only)
             The angle of the theme's colors.

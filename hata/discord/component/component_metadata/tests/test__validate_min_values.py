@@ -1,5 +1,6 @@
 import vampytest
 
+from ..constants import MIN_VALUES_MAX__ATTACHMENT_INPUT, MIN_VALUES_MAX__SELECT
 from ..fields import validate_min_values
 
 
@@ -13,6 +14,7 @@ def _iter_options__type_error():
 
 def _iter_options__value_error():
     yield -1
+    yield max(MIN_VALUES_MAX__ATTACHMENT_INPUT, MIN_VALUES_MAX__SELECT) + 1
 
 
 @vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())

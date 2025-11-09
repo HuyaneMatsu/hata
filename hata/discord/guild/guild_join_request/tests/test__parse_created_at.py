@@ -10,9 +10,24 @@ from ..fields import parse_created_at
 def _iter_options():
     created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
-    yield {}, None
-    yield {'created_at': None}, None
-    yield {'created_at': datetime_to_timestamp(created_at)}, created_at
+    yield (
+        {},
+        None,
+    )
+    
+    yield (
+        {
+            'created_at': None,
+        },
+        None,
+    )
+    
+    yield (
+        {
+            'created_at': datetime_to_timestamp(created_at),
+        },
+        created_at,
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
@@ -32,4 +47,3 @@ def test__parse_created_at(input_data):
     output = parse_created_at(input_data)
     vampytest.assert_instance(output, DateTime, nullable = True)
     return output
-

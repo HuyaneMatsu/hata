@@ -11,7 +11,7 @@ from .constants import BUTTON_STYLE_DEFAULT
 from .fields import (
     parse_button_style, parse_custom_id, parse_emoji, parse_enabled, parse_label, parse_sku_id, parse_url,
     put_button_style, put_custom_id, put_emoji, put_enabled, put_label, put_sku_id, put_url, validate_button_style,
-    validate_custom_id, validate_emoji, validate_enabled, validate_label, validate_sku_id, validate_url
+    validate_custom_id, validate_emoji, validate_enabled, validate_label__button, validate_sku_id, validate_url
 )
 from .preinstanced import ButtonStyle
 
@@ -130,7 +130,7 @@ class ComponentMetadataButton(ComponentMetadataBase):
         if label is ...:
             label = None
         else:
-            label = validate_label(label)
+            label = validate_label__button(label)
         
         # sku
         if sku_id is ...:
@@ -462,7 +462,7 @@ class ComponentMetadataButton(ComponentMetadataBase):
         if label is ...:
             label = self.label
         else:
-            label = validate_label(label)
+            label = validate_label__button(label)
         
         # sku_id
         if sku_id is ...:

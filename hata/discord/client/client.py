@@ -58,7 +58,7 @@ class Client(
     metaclass = CompoundMetaType.with_(ClientUserPBase),
 ):
     """
-    Discord client class used to interact with the Discord API.
+    Discord client type used to interact with the Discord API.
     
     Attributes
     ----------
@@ -239,11 +239,11 @@ class Client(
     
     See Also
     --------
-    - ``UserBase`` : The superclass of ``Client`` and of other user types.
+    - ``UserBase`` : The parent type of ``Client`` and of other user types.
     - ``User`` : The default type of Discord users.
     - ``Webhook`` : Discord webhook entity.
     - ``WebhookRepr`` : Discord webhook's user representation.
-    - ``Oauth2User`` : A user class with extended oauth2 attributes.
+    - ``Oauth2User`` : A user type with extended oauth2 attributes.
     
     Notes
     -----

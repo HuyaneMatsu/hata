@@ -38,8 +38,9 @@ from ..string_select_option import StringSelectOption
 
 from .constants import (
     BUTTON_STYLE_DEFAULT, CONTENT_LENGTH_MAX, CONTENT_LENGTH_MIN, DESCRIPTION_LENGTH_MAX, DESCRIPTION_LENGTH_MIN,
-    LABEL_LENGTH_MAX, MAX_LENGTH_DEFAULT, MAX_LENGTH_MAX, MAX_LENGTH_MIN, MAX_VALUES_DEFAULT, MAX_VALUES_MAX,
-    MAX_VALUES_MIN, MIN_LENGTH_DEFAULT, MIN_LENGTH_MAX, MIN_LENGTH_MIN, MIN_VALUES_DEFAULT, MIN_VALUES_MAX,
+    LABEL_LENGTH_MAX__BUTTON, LABEL_LENGTH_MAX__LABEL, MAX_LENGTH_DEFAULT, MAX_LENGTH_MAX, MAX_LENGTH_MIN,
+    MAX_VALUES_DEFAULT, MAX_VALUES_MAX__ATTACHMENT_INPUT, MAX_VALUES_MAX__SELECT, MAX_VALUES_MIN, MIN_LENGTH_DEFAULT,
+    MIN_LENGTH_MAX, MIN_LENGTH_MIN, MIN_VALUES_DEFAULT, MIN_VALUES_MAX__ATTACHMENT_INPUT, MIN_VALUES_MAX__SELECT,
     MIN_VALUES_MIN, PLACEHOLDER_LENGTH_MAX, SEPARATOR_SPACING_SIZE_DEFAULT, TEXT_INPUT_STYLE_DEFAULT, URL_LENGTH_MAX,
     VALUE_LENGTH_MAX
 )
@@ -439,7 +440,9 @@ def validate_items(items):
 
 parse_label = nullable_string_parser_factory('label')
 put_label = nullable_string_optional_putter_factory('label')
-validate_label = nullable_string_validator_factory('label', 0, LABEL_LENGTH_MAX)
+validate_label = nullable_string_validator_factory('label', 0, max(LABEL_LENGTH_MAX__BUTTON, LABEL_LENGTH_MAX__LABEL))
+validate_label__button = nullable_string_validator_factory('label', 0, LABEL_LENGTH_MAX__BUTTON)
+validate_label__label = nullable_string_validator_factory('label', 0, LABEL_LENGTH_MAX__LABEL)
 
 
 # max_length
@@ -449,7 +452,7 @@ put_max_length = int_optional_putter_factory('max_length', MAX_LENGTH_DEFAULT)
 validate_max_length = int_conditional_validator_factory(
     'max_length',
     MAX_LENGTH_MIN,
-    (lambda user_limit: user_limit >= MAX_LENGTH_MIN and user_limit <= MAX_LENGTH_MAX),
+    (lambda max_length: max_length >= MAX_LENGTH_MIN and max_length <= MAX_LENGTH_MAX),
     f'>= {MAX_LENGTH_MIN} and <= {MAX_LENGTH_MAX},'
 )
 
@@ -461,10 +464,26 @@ put_max_values = int_optional_putter_factory('max_values', MAX_VALUES_DEFAULT)
 validate_max_values = int_conditional_validator_factory(
     'max_values',
     MAX_VALUES_MIN,
-    (lambda user_limit: user_limit >= MAX_VALUES_MIN and user_limit <= MAX_VALUES_MAX),
-    f'>= {MAX_VALUES_MIN} and <= {MAX_VALUES_MAX},'
+    (
+        lambda max_values: (
+            max_values >= MAX_VALUES_MIN and
+            max_values <= max(MAX_VALUES_MAX__ATTACHMENT_INPUT, MAX_VALUES_MAX__SELECT)
+        )
+    ),
+    f'>= {MAX_VALUES_MIN} and <= {max(MAX_VALUES_MAX__ATTACHMENT_INPUT, MAX_VALUES_MAX__SELECT)},'
 )
-
+validate_max_values__attachment_input = int_conditional_validator_factory(
+    'max_values',
+    MAX_VALUES_MIN,
+    (lambda max_values: max_values >= MAX_VALUES_MIN and max_values <= MAX_VALUES_MAX__ATTACHMENT_INPUT),
+    f'>= {MAX_VALUES_MIN} and <= {MAX_VALUES_MAX__ATTACHMENT_INPUT},'
+)
+validate_max_values__select = int_conditional_validator_factory(
+    'max_values',
+    MAX_VALUES_MIN,
+    (lambda max_values: max_values >= MAX_VALUES_MIN and max_values <= MAX_VALUES_MAX__SELECT),
+    f'>= {MAX_VALUES_MIN} and <= {MAX_VALUES_MAX__SELECT},'
+)
 
 # media
 
@@ -511,7 +530,7 @@ put_min_length = int_optional_putter_factory('min_length', MIN_LENGTH_DEFAULT)
 validate_min_length = int_conditional_validator_factory(
     'min_length',
     MIN_LENGTH_MIN,
-    (lambda user_limit: user_limit >= MIN_LENGTH_MIN and user_limit <= MIN_LENGTH_MAX),
+    (lambda min_length: min_length >= MIN_LENGTH_MIN and min_length <= MIN_LENGTH_MAX),
     f'>= {MIN_LENGTH_MIN} and <= {MIN_LENGTH_MAX},'
 )
 
@@ -522,8 +541,25 @@ put_min_values = int_optional_putter_factory('min_values', MIN_VALUES_DEFAULT)
 validate_min_values = int_conditional_validator_factory(
     'min_values',
     MIN_VALUES_MIN,
-    (lambda user_limit: user_limit >= MIN_VALUES_MIN and user_limit <= MIN_VALUES_MAX),
-    f'>= {MIN_VALUES_MIN} and <= {MIN_VALUES_MAX},'
+    (
+        lambda min_values: (
+            min_values >= MIN_VALUES_MIN and
+            min_values <= max(MIN_VALUES_MAX__ATTACHMENT_INPUT, MIN_VALUES_MAX__SELECT)
+        )
+    ),
+    f'>= {MIN_VALUES_MIN} and <= {max(MIN_VALUES_MAX__ATTACHMENT_INPUT, MIN_VALUES_MAX__SELECT)},'
+)
+validate_min_values__attachment_input = int_conditional_validator_factory(
+    'min_values',
+    MIN_VALUES_MIN,
+    (lambda min_values: min_values >= MIN_VALUES_MIN and min_values <= MIN_VALUES_MAX__ATTACHMENT_INPUT),
+    f'>= {MIN_VALUES_MIN} and <= {MIN_VALUES_MAX__ATTACHMENT_INPUT},'
+)
+validate_min_values__select = int_conditional_validator_factory(
+    'min_values',
+    MIN_VALUES_MIN,
+    (lambda min_values: min_values >= MIN_VALUES_MIN and min_values <= MIN_VALUES_MAX__SELECT),
+    f'>= {MIN_VALUES_MIN} and <= {MIN_VALUES_MAX__SELECT},'
 )
 
 

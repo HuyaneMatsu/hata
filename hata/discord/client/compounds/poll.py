@@ -23,7 +23,7 @@ class ClientCompoundPollEndpoints(Compound):
     async def message_get(self, message, *, force_update = False): ...
     
     
-    async def poll_result_user_get_chunk(self, message, poll_answer, *, limit = ..., after = ...):
+    async def poll_result_user_get_chunk(self, message, poll_answer, *, after = ..., limit = ...):
         """
         Requests the users, who voted on the given message with the given answer.
         
@@ -34,14 +34,17 @@ class ClientCompoundPollEndpoints(Compound):
         
         Parameters
         ----------
-        message : ``Message``, `tuple` (`int`, `int`)
+        message : ``(int, int) | Message``
             The message whats voters should be requested.
+        
         poll_answer : ``PollAnswer``, `int`
             The poll answer to request the users for.
-        limit : `None | int`, Optional (Keyword only)
-            The amount of users to request. Can be in range [1:100].
+        
         after : ``None | int | DiscordEntity | DateTime``, Optional (Keyword only)
             The timestamp after the voters were created.
+        
+        limit : `int`, Optional (Keyword only)
+            The amount of users to request. Can be in range [1:100].
         
         Returns
         -------
@@ -142,7 +145,7 @@ class ClientCompoundPollEndpoints(Compound):
         
         Parameters
         ----------
-        message : ``Message``, `tuple` (`int`, `int`)
+        message : ``(int, int) | Message``
             The message whats voters should be requested.
         poll_answer : ``PollAnswer``, `int`
             The poll answer to request the users for.
@@ -227,7 +230,7 @@ class ClientCompoundPollEndpoints(Compound):
         
         Parameters
         ----------
-        message : ``Message``, `tuple` (`int`, `int`)
+        message : ``(int, int) | Message``
             The message, what's voters should be requested.
         
         Returns
@@ -289,7 +292,7 @@ class ClientCompoundPollEndpoints(Compound):
         
         Parameters
         ----------
-        message : ``Message``, `tuple` (`int`, `int`)
+        message : ``(int, int) | Message``
             The message, to finalize the poll on it.
         
         Raises

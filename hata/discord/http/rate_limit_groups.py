@@ -741,16 +741,16 @@ Group Details
     - Limit : `10`
     - Resets after : `15.0`
 
-- channel_pin_get_all
-    - Endpoint : `/channels/{channel_id}/pins`
+- channel_pin_get_chunk
+    - Endpoint : `/channels/{channel_id}/messages/pins`
     - Method : `GET`
     - Required auth : `bot`
     - Limiter : `GLOBAL`
-    - Limit : `1`
+    - Limit : `6`
     - Resets after : `5`
 
 - channel_pin_ack
-    - Endpoint : `/channels/{channel_id}/pins/ack`
+    - Endpoint : `/channels/{channel_id}/pins/messages/ack`
     - Method : `POST`
     - Required auth : `user`
     - Limiter : `GLOBAL`
@@ -759,6 +759,39 @@ Group Details
     - Notes : Untested.
 
 - message_unpin
+    - Endpoint : `/channels/{channel_id}/messages/pins/{message_id}`
+    - Method : `DELETE`
+    - Required auth : `bot`
+    - Limiter : `channel_id`
+    - Limit : `5`
+    - Resets after : `5`
+
+- message_pin
+    - Endpoint : `/channels/{channel_id}/messages/pins/{message_id}`
+    - Method : `PUT`
+    - Required auth : `bot`
+    - Limiter : `channel_id`
+    - Limit : `5`
+    - Resets after : `5`
+
+- channel_pin_get_all (old)
+    - Endpoint : `/channels/{channel_id}/pins`
+    - Method : `GET`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `1`
+    - Resets after : `5`
+
+- channel_pin_ack (old)
+    - Endpoint : `/channels/{channel_id}/pins/ack`
+    - Method : `POST`
+    - Required auth : `user`
+    - Limiter : `GLOBAL`
+    - Limit : `OPT`
+    - Resets after : `OPT`
+    - Notes : Untested.
+
+- message_unpin (old)
     - Endpoint : `/channels/{channel_id}/pins/{message_id}`
     - Method : `DELETE`
     - Required auth : `bot`
@@ -766,7 +799,7 @@ Group Details
     - Limit : `5`
     - Resets after : `4`
 
-- message_pin
+- message_pin (old)
     - Endpoint : `/channels/{channel_id}/pins/{message_id}`
     - Method : `PUT`
     - Required auth : `bot`
@@ -2377,7 +2410,7 @@ message_suppress_embeds = RateLimitGroup()
 thread_create_from_message = GROUP_THREAD_CREATE
 permission_overwrite_delete = GROUP_PERMISSION_OVERWRITE_MODIFY
 permission_overwrite_create = GROUP_PERMISSION_OVERWRITE_MODIFY
-channel_pin_get_all = RateLimitGroup()
+channel_pin_get_chunk = RateLimitGroup(LIMITER_CHANNEL)
 channel_pin_ack = RateLimitGroup(optimistic = True) # untested
 message_unpin = GROUP_PIN_MODIFY
 message_pin = GROUP_PIN_MODIFY

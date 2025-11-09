@@ -5,7 +5,7 @@ from scarletio import copy_docs
 from .base import ComponentMetadataBase
 from .fields import (
     parse_component__label, parse_description, parse_label, put_component__label, put_description, put_label,
-    validate_component__label, validate_description, validate_label
+    validate_component__label, validate_description, validate_label__label
 )
 
 
@@ -65,7 +65,7 @@ class ComponentMetadataLabel(ComponentMetadataBase):
         if label is ...:
             label = None
         else:
-            label = validate_label(label)
+            label = validate_label__label(label)
         
         # Construct
         self = object.__new__(cls)
@@ -270,7 +270,7 @@ class ComponentMetadataLabel(ComponentMetadataBase):
         if label is ...:
             label = self.label
         else:
-            label = validate_label(label)
+            label = validate_label__label(label)
         
         # Construct
         new = object.__new__(type(self))

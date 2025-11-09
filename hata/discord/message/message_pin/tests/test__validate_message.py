@@ -6,7 +6,7 @@ from ..fields import validate_message
 
 
 def _iter_options__passing():
-    message = Message.precreate(202210280007)
+    message = Message.precreate(202511070005)
     
     yield None, None
     yield message, message

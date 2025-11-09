@@ -12,11 +12,13 @@ from ...channel import Channel, MessageIterator, message_relative_index
 from ...core import CHANNELS, KOKORO, MESSAGES
 from ...exceptions import DiscordException, ERROR_CODES
 from ...http import DiscordApiClient
-from ...message import Message, MessageFlag
+from ...message import Message, MessageFlag, MessagePin
 from ...message.message.utils import process_message_chunk
 from ...message.message_builder import MessageBuilderCreate, MessageBuilderEdit
 from ...permission.permission import PERMISSION_MASK_MANAGE_MESSAGES, PERMISSION_MASK_READ_MESSAGE_HISTORY
-from ...utils import DISCORD_EPOCH, log_time_converter, now_as_id
+from ...utils import (
+    DISCORD_EPOCH, DISCORD_EPOCH_START, datetime_to_timestamp, id_to_datetime, log_time_converter, now_as_id
+)
 
 from ..functionality_helpers import (
     MultiClientMessageDeleteSequenceSharder, _message_delete_multiple_private_task, _message_delete_multiple_task
@@ -87,7 +89,7 @@ class ClientCompoundMessageEndpoints(Compound):
         
         Parameters
         ----------
-        channel : ``Channel``, `int`
+        channel : ``int | Channel``
             The channel from where we want to request the messages.
         limit : `int` = `100`, Optional
             The amount of messages to request. Can be between 1 and 100.
@@ -176,7 +178,7 @@ class ClientCompoundMessageEndpoints(Compound):
         
         Returns
         -------
-        messages : `list` of ``Message`` objects
+        messages : ``list<Message>``
         
         Raises
         ------
@@ -193,7 +195,7 @@ class ClientCompoundMessageEndpoints(Compound):
         
         if not isinstance(limit, int):
             raise TypeError(
-                f'`limit` can be `int`, got {limit.__class__.__name__}; {limit!r}.'
+                f'`limit` can be `int`, got {type(limit).__name__}; {limit!r}.'
             )
         
         if (limit < 1) or (limit > 100):
@@ -229,7 +231,7 @@ class ClientCompoundMessageEndpoints(Compound):
         
         Parameters
         ----------
-        message : ``Message``, `tuple` (`int`, `int`)
+        message : ``(int, int) | Message``
             The message to get, or a `channel-id`, `message-id` tuple representing it.
         force_update : `bool` = `False`, Optional (Keyword only)
             Whether the scheduled event should be requested even if it supposed to be up to date.
@@ -289,7 +291,7 @@ class ClientCompoundMessageEndpoints(Compound):
         
         Parameters
         ----------
-        channel : ``Channel``, `int`, ``Message``, `tuple` (`int`, `int`)
+        channel : ``int | Channel``, ``(int, int) | Message``
             The text channel where the message will be sent, or the message on what you want to reply.
         
         *positional_parameters : Positional parameters
@@ -456,7 +458,7 @@ class ClientCompoundMessageEndpoints(Compound):
         
         Parameters
         ----------
-        message : ``Message``, `tuple` (`int`, `int`)
+        message : ``(int, int) | Message``
             The message to edit.
         
         *positional_parameters : Positional parameters
@@ -536,15 +538,16 @@ class ClientCompoundMessageEndpoints(Compound):
         
         Parameters
         ----------
-        message : ``Message``, `tuple` (`int`, `int`)
+        message : ``(int, int) | Message``
             The message to delete.
+        
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
         ------
         TypeError
-            If message was not given neither as ``Message``, `tuple` (`int`, `int`).
+            If message was not given neither as ``(int, int) | Message``.
         ConnectionError
             No internet connection.
         DiscordException
@@ -555,7 +558,6 @@ class ClientCompoundMessageEndpoints(Compound):
         The rate limit group is different for own or for messages newer than 2 weeks than for message's of others,
         which are older than 2 weeks.
         """
-        
         channel_id, message_id, message = validate_message_to_delete(message)
         
         if (message is None):
@@ -587,7 +589,7 @@ class ClientCompoundMessageEndpoints(Compound):
         Parameters
         ----------
         messages : (`list`, `set`, `tuple`) of \
-                (``Message``, `tuple` (`int`, `int`))
+                (``(int, int) | Message``)
             The messages to delete.
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
@@ -595,7 +597,7 @@ class ClientCompoundMessageEndpoints(Compound):
         Raises
         ------
         TypeError
-            If a message was not given neither as ``Message``, `tuple` (`int`, `int`).
+            If a message was not given neither as ``(int, int) | Message``.
         ConnectionError
             No internet connection.
         DiscordException
@@ -1462,7 +1464,7 @@ class ClientCompoundMessageEndpoints(Compound):
         
         Parameters
         ----------
-        message : ``Message``, `tuple` (`int`, `int`)
+        message : ``(int, int) | Message``
             The message, what's embeds will be (un)suppressed.
         suppress_embeds : `bool` = `True`, Optional
             Whether the message's embeds would be suppressed or unsuppressed.
@@ -1470,7 +1472,7 @@ class ClientCompoundMessageEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `message` was not given neither as ``Message``, `tuple` (`int`, `int`).
+            - If `message` was not given neither as ``(int, int) | Message``.
             - If `suppress` was not given as `bool`.
         ConnectionError
             No internet connection.
@@ -1505,13 +1507,13 @@ class ClientCompoundMessageEndpoints(Compound):
         
         Parameters
         ----------
-        message : ``Message``, `tuple` (`int`, `int`)
+        message : ``(int, int) | Message``
             The message to crosspost.
         
         Raises
         ------
         TypeError
-            If `message` was not given neither as ``Message``, `tuple` (`int`, `int`).
+            If `message` was not given neither as ``(int, int) | Message``.
         ConnectionError
             No internet connection.
         DiscordException
@@ -1522,7 +1524,7 @@ class ClientCompoundMessageEndpoints(Compound):
         await self.api.message_crosspost(channel_id, message_id)
     
     
-    async def message_pin(self, message):
+    async def message_pin(self, message, *, reason = None):
         """
         Pins the given message.
         
@@ -1530,13 +1532,16 @@ class ClientCompoundMessageEndpoints(Compound):
         
         Parameters
         ----------
-        message : ``Message``, `tuple` (`int`, `int`)
+        message : ``(int, int) | Message``
             The message to pin.
+        
+        reason : `None`, `str` = `None`, Optional (Keyword only)
+            Shows up at the respective guild's audit logs.
         
         Raises
         ------
         TypeError
-            If `message` was not given neither as ``Message``, `tuple` (`int`, `int`).
+            If `message` was not given neither as ``(int, int) | Message``.
         ConnectionError
             No internet connection.
         DiscordException
@@ -1544,10 +1549,10 @@ class ClientCompoundMessageEndpoints(Compound):
         """
         channel_id, message_id = get_channel_id_and_message_id(message)
         
-        await self.api.message_pin(channel_id, message_id)
+        await self.api.message_pin(channel_id, message_id, reason)
     
     
-    async def message_unpin(self, message):
+    async def message_unpin(self, message, *, reason = None):
         """
         Unpins the given message.
         
@@ -1555,13 +1560,16 @@ class ClientCompoundMessageEndpoints(Compound):
         
         Parameters
         ----------
-        message : ``Message``, `tuple` (`int`, `int`)
+        message : ``(int, int) | Message``
             The message to unpin.
+        
+        reason : `None`, `str` = `None`, Optional (Keyword only)
+            Shows up at the respective guild's audit logs.
         
         Raises
         ------
         TypeError
-            If `message` was not given neither as ``Message``, `tuple` (`int`, `int`).
+            If `message` was not given neither as ``(int, int) | Message``.
         ConnectionError
             No internet connection.
         DiscordException
@@ -1569,23 +1577,32 @@ class ClientCompoundMessageEndpoints(Compound):
         """
         channel_id, message_id = get_channel_id_and_message_id(message)
         
-        await self.api.message_unpin(channel_id, message_id)
+        await self.api.message_unpin(channel_id, message_id, reason)
     
     
-    async def channel_pin_get_all(self, channel):
+    async def channel_pin_get_chunk(self, channel, *, after = None, before = None, limit = ...):
         """
-        Returns the pinned messages at the given channel.
+        Returns a chunk of the pinned messages in the channel.
         
         This method is a coroutine.
         
         Parameters
         ----------
-        channel : ``Channel``, `int`
+        channel : ``int | Channel``
             The channel from were the pinned messages will be requested.
+        
+        after : ``None | int | DiscordEntity | DateTime``, Optional (Keyword only)
+            The timestamp after the messages were pinned.
+        
+        before : ``None | int | DiscordEntity | DateTime``, Optional (Keyword only)
+            The timestamp before the messages were pinned.
+        
+        limit : `int`, Optional (Keyword only)
+            The amount of pins to request. Can be in range [1:50].
         
         Returns
         -------
-        messages : `list` of ``Message`` objects
+        messages : ``list<MessagePin>``
             The pinned messages at the given channel.
         
         Raises
@@ -1599,9 +1616,82 @@ class ClientCompoundMessageEndpoints(Compound):
         """
         channel_id = get_channel_id(channel, Channel.is_in_group_textual)
         
-        data = await self.api.channel_pin_get_all(channel_id)
+        query_parameters = {}
         
-        return [Message.from_data(message_data) for message_data in data]
+        # after
+        if (after is not ...):
+            query_parameters['after'] = datetime_to_timestamp(id_to_datetime(log_time_converter(after)))
+        
+        # before
+        if (before is not ...):
+            query_parameters['before'] = datetime_to_timestamp(id_to_datetime(log_time_converter(before)))
+        
+        # limit
+        if limit is ...:
+            limit = 50
+        
+        elif not isinstance(limit, int):
+            raise TypeError(
+                f'`limit` can be `int`, got {type(limit).__name__}; {limit!r}.'
+            )
+        
+        elif (limit < 1) or (limit > 50):
+            raise ValueError(
+                f'`limit` is out from the expected [1:50] range, got {limit!r}.'
+            )
+        
+        if limit != 50:
+            query_parameters['limit'] = limit
+        
+        # Request
+        data = await self.api.channel_pin_get_chunk(channel_id, query_parameters)
+        
+        # Produce output
+        return [MessagePin.from_data(message_pin_data) for message_pin_data in data['items']]
+    
+    
+    async def channel_pin_get_all(self, channel):
+        """
+        Returns the pinned messages at the given channel.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel : ``int | Channel``
+            The channel from were the pinned messages will be requested.
+        
+        Returns
+        -------
+        messages : ``list<MessagePin>``
+            The pinned messages at the given channel.
+        
+        Raises
+        ------
+        TypeError
+            If `channel` was not given neither as ``Channel`` nor `int`.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        channel_id = get_channel_id(channel, Channel.is_in_group_textual)
+        
+        query_parameters = {
+            'after': datetime_to_timestamp(DISCORD_EPOCH_START),
+        }
+        message_pins = []
+        
+        while True:
+            data = await self.api.channel_pin_get_chunk(channel_id, query_parameters)
+            message_pins.extend(MessagePin.from_data(message_pin_data) for message_pin_data in data['items'])
+            if (not data['has_more']) or (not message_pins):
+                break
+            
+            query_parameters['after'] = datetime_to_timestamp(message_pins[-1].pinned_at)
+            continue
+        
+        return message_pins
     
     
     async def _load_messages_till(self, channel, index):
@@ -1682,7 +1772,7 @@ class ClientCompoundMessageEndpoints(Compound):
         
         Parameters
         ----------
-        channel : ``Channel``, `int`.
+        channel : ``int | Channel``
             The channel from were the messages will be requested.
         index : `int`
             The index of the target message.
@@ -1751,7 +1841,7 @@ class ClientCompoundMessageEndpoints(Compound):
         
         Parameters
         ----------
-        channel : ``Channel``, `int`
+        channel : ``int | Channel``
             The channel from were the messages will be requested.
         start : `int` = `0`, Optional
             The first message's index at the channel to be requested. Defaults to `0`.
@@ -1760,7 +1850,7 @@ class ClientCompoundMessageEndpoints(Compound):
         
         Returns
         -------
-        messages : `list` of ``Message`` objects
+        messages : ``list<Message>``
         
         Raises
         ------

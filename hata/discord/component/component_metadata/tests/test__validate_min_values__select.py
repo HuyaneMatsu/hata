@@ -1,29 +1,28 @@
 import vampytest
 
-from ..constants import LABEL_LENGTH_MAX__BUTTON, LABEL_LENGTH_MAX__LABEL
-from ..fields import validate_label
+from ..constants import MIN_VALUES_MAX__SELECT
+from ..fields import validate_min_values__select
 
 
 def _iter_options__passing():
-    yield None, None
-    yield '', None
-    yield 'a', 'a'
+    yield 1, 1
 
 
 def _iter_options__type_error():
-    yield 12.6
+    yield ''
 
 
 def _iter_options__value_error():
-    yield 'a' * (max(LABEL_LENGTH_MAX__BUTTON, LABEL_LENGTH_MAX__LABEL) + 1)
+    yield -1
+    yield MIN_VALUES_MAX__SELECT + 1
 
 
 @vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
 @vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
 @vampytest._(vampytest.call_from(_iter_options__value_error()).raising(ValueError))
-def test__validate_label(input_value):
+def test__validate_min_values__select(input_value):
     """
-    Tests whether `validate_label` works as intended.
+    Validates whether ``validate_min_values__select`` works as intended.
     
     Parameters
     ----------
@@ -32,13 +31,13 @@ def test__validate_label(input_value):
     
     Returns
     -------
-    output : `None | str`
+    output : `int`
     
     Raises
     ------
     TypeError
     ValueError
     """
-    output = validate_label(input_value)
-    vampytest.assert_instance(output, str, nullable = True)
+    output = validate_min_values__select(input_value)
+    vampytest.assert_instance(output, int)
     return output

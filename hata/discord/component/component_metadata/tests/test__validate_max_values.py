@@ -1,6 +1,7 @@
 import vampytest
 
 from ..fields import validate_max_values
+from ..constants import MAX_VALUES_MAX__ATTACHMENT_INPUT, MAX_VALUES_MAX__SELECT
 
 
 def _iter_options__passing():
@@ -13,6 +14,7 @@ def _iter_options__type_error():
 
 def _iter_options__value_error():
     yield -1
+    yield max(MAX_VALUES_MAX__ATTACHMENT_INPUT, MAX_VALUES_MAX__SELECT) + 1
 
 
 @vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())

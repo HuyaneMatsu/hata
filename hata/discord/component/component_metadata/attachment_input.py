@@ -8,7 +8,8 @@ from .base import ComponentMetadataBase
 from .constants import MAX_VALUES_DEFAULT, MIN_VALUES_DEFAULT
 from .fields import (
     parse_custom_id, parse_max_values, parse_min_values, parse_required, put_custom_id, put_max_values, put_min_values,
-    put_required, validate_custom_id, validate_max_values, validate_min_values, validate_required
+    put_required, validate_custom_id, validate_max_values__attachment_input, validate_min_values__attachment_input,
+    validate_required
 )
 
 
@@ -75,13 +76,13 @@ class ComponentMetadataAttachmentInput(ComponentMetadataBase):
         if max_values is ...:
             max_values = MAX_VALUES_DEFAULT
         else:
-            max_values = validate_max_values(max_values)
+            max_values = validate_max_values__attachment_input(max_values)
         
         # min_values
         if min_values is ...:
             min_values = MIN_VALUES_DEFAULT
         else:
-            min_values = validate_min_values(min_values)
+            min_values = validate_min_values__attachment_input(min_values)
         
         # required
         if required is ...:
@@ -311,13 +312,13 @@ class ComponentMetadataAttachmentInput(ComponentMetadataBase):
         if max_values is ...:
             max_values = self.max_values
         else:
-            max_values = validate_max_values(max_values)
+            max_values = validate_max_values__attachment_input(max_values)
         
         # min_values
         if min_values is ...:
             min_values = self.min_values
         else:
-            min_values = validate_min_values(min_values)
+            min_values = validate_min_values__attachment_input(min_values)
         
         # required
         if required is ...:

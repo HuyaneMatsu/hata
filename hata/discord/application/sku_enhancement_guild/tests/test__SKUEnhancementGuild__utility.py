@@ -14,7 +14,7 @@ def test__SKUEnhancementGuild__copy():
     additional_emoji_slots = 12
     additional_soundboard_sound_slots = 13
     additional_sticker_slots = 14
-    features = [GuildFeature.animated_icon]
+    features = [GuildFeature.icon_animated]
     
     
     sku_enhancement_guild = SKUEnhancementGuild(
@@ -39,7 +39,7 @@ def test__SKUEnhancementGuild__copy_with__no_fields():
     additional_emoji_slots = 12
     additional_soundboard_sound_slots = 13
     additional_sticker_slots = 14
-    features = [GuildFeature.animated_icon]
+    features = [GuildFeature.icon_animated]
     
     
     sku_enhancement_guild = SKUEnhancementGuild(
@@ -64,12 +64,12 @@ def test__SKUEnhancementGuild__copy_with__all_fields():
     old_additional_emoji_slots = 12
     old_additional_soundboard_sound_slots = 13
     old_additional_sticker_slots = 14
-    old_features = [GuildFeature.animated_icon]
+    old_features = [GuildFeature.icon_animated]
     
     new_additional_emoji_slots = 20
     new_additional_soundboard_sound_slots = 21
     new_additional_sticker_slots = 22
-    new_features = [GuildFeature.animated_banner]
+    new_features = [GuildFeature.banner_animated]
     
     sku_enhancement_guild = SKUEnhancementGuild(
         additional_emoji_slots = old_additional_emoji_slots,

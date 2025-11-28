@@ -5,10 +5,10 @@ from scarletio import copy_docs
 from ..activity_field_base import ActivityFieldBase
 
 from .fields import (
-    parse_image_large, parse_image_small, parse_text_large, parse_text_small, parse_url_large, parse_url_small,
-    put_image_large, put_image_small, put_text_large, put_text_small, put_url_large, put_url_small,
-    validate_image_large, validate_image_small, validate_text_large, validate_text_small, validate_url_large,
-    validate_url_small
+    parse_image_invite_cover, parse_image_large, parse_image_small, parse_text_large, parse_text_small, parse_url_large,
+    parse_url_small, put_image_invite_cover, put_image_large, put_image_small, put_text_large, put_text_small,
+    put_url_large, put_url_small, validate_image_invite_cover, validate_image_large, validate_image_small,
+    validate_text_large, validate_text_small, validate_url_large, validate_url_small
 )
 
 
@@ -18,11 +18,14 @@ class ActivityAssets(ActivityFieldBase):
     
     Attributes
     ----------
+    image_invite_cover : `None | str`
+        The identifier of the activity's invite cover to display.
+    
     image_large : `None | str`
-        The id of the activity's large asset to display.
+        The identifier of the activity's large asset to display.
     
     image_small : `None | str`
-        The id of the activity's small asset to display.
+        The identifier of the activity's small asset to display.
     
     text_large : `None | str`
         The hover text of the large asset.
@@ -36,11 +39,14 @@ class ActivityAssets(ActivityFieldBase):
     url_small : `None | str`
         Url to open when the user clicks on the small asset image.
     """
-    __slots__ = ('image_large', 'image_small', 'text_large', 'text_small', 'url_large', 'url_small',)
+    __slots__ = (
+        'image_invite_cover', 'image_large', 'image_small', 'text_large', 'text_small', 'url_large', 'url_small'
+    )
     
     def __new__(
         cls,
         *,
+        image_invite_cover = ...,
         image_large = ...,
         image_small = ...,
         text_large = ...,
@@ -53,11 +59,14 @@ class ActivityAssets(ActivityFieldBase):
         
         Parameters
         ----------
+        image_invite_cover : `None | str`, Optional (Keyword only)
+            The identifier of the activity's invite cover to display.
+        
         image_large : `None | str`, Optional (Keyword only)
-            The id of the activity's large asset to display.
+            The identifier of the activity's large asset to display.
         
         image_small : `None | str`, Optional (Keyword only)
-            The id of the activity's small asset to display.
+            The identifier of the activity's small asset to display.
         
         text_large : `None | str`, Optional (Keyword only)
             The hover text of the large asset
@@ -78,6 +87,12 @@ class ActivityAssets(ActivityFieldBase):
         ValueError
             - If a parameter's value is incorrect.
         """
+        # image_invite_cover
+        if image_invite_cover is ...:
+            image_invite_cover = None
+        else:
+            image_invite_cover = validate_image_invite_cover(image_invite_cover)
+        
         # image_large
         if image_large is ...:
             image_large = None
@@ -116,6 +131,7 @@ class ActivityAssets(ActivityFieldBase):
         
         # Construct
         self = object.__new__(cls)
+        self.image_invite_cover = image_invite_cover
         self.image_large = image_large
         self.image_small = image_small
         self.text_large = text_large
@@ -129,6 +145,7 @@ class ActivityAssets(ActivityFieldBase):
     @copy_docs(ActivityFieldBase.from_data)
     def from_data(cls, data):
         self = object.__new__(cls)
+        self.image_invite_cover = parse_image_invite_cover(data)
         self.image_large = parse_image_large(data)
         self.image_small = parse_image_small(data)
         self.text_large = parse_text_large(data)
@@ -141,6 +158,7 @@ class ActivityAssets(ActivityFieldBase):
     @copy_docs(ActivityFieldBase.to_data)
     def to_data(self, *, defaults = False):
         data = {}
+        put_image_invite_cover(self.image_invite_cover, data, defaults)
         put_image_large(self.image_large, data, defaults)
         put_image_small(self.image_small, data, defaults)
         put_text_large(self.text_large, data, defaults)
@@ -157,13 +175,22 @@ class ActivityAssets(ActivityFieldBase):
             type(self).__name__,
         ]
         
-        image_large = self.image_large
-        if (image_large is not None):
-            repr_parts.append(' image_large = ')
-            repr_parts.append(repr(image_large))
+        image_invite_cover = self.image_invite_cover
+        if (image_invite_cover is not None):
+            repr_parts.append(' image_invite_cover = ')
+            repr_parts.append(repr(image_invite_cover))
             field_added = True
         else:
             field_added = False
+        
+        image_large = self.image_large
+        if (image_large is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            repr_parts.append(' image_large = ')
+            repr_parts.append(repr(image_large))
         
         image_small = self.image_small
         if (image_small is not None):
@@ -215,6 +242,9 @@ class ActivityAssets(ActivityFieldBase):
         if type(self) is not type(other):
             return NotImplemented
         
+        if self.image_invite_cover != other.image_invite_cover:
+            return False
+        
         if self.image_large != other.image_large:
             return False
         
@@ -239,6 +269,11 @@ class ActivityAssets(ActivityFieldBase):
     @copy_docs(ActivityFieldBase.__hash__)
     def __hash__(self):
         hash_value = 0
+        
+        image_invite_cover = self.image_invite_cover
+        if (image_invite_cover is not None):
+            hash_value ^= hash(image_invite_cover)
+            hash_value ^= (1 << 24)
         
         image_large = self.image_large
         if (image_large is not None):
@@ -275,6 +310,10 @@ class ActivityAssets(ActivityFieldBase):
     
     @copy_docs(ActivityFieldBase.__bool__)
     def __bool__(self):
+        image_invite_cover = self.image_invite_cover
+        if (image_invite_cover is not None):
+            return True
+        
         image_large = self.image_large
         if (image_large is not None):
             return True
@@ -305,6 +344,7 @@ class ActivityAssets(ActivityFieldBase):
     @copy_docs(ActivityFieldBase.copy)
     def copy(self):
         new = object.__new__(type(self))
+        new.image_invite_cover = self.image_invite_cover
         new.image_large = self.image_large
         new.image_small = self.image_small
         new.text_large = self.text_large
@@ -317,6 +357,7 @@ class ActivityAssets(ActivityFieldBase):
     def copy_with(
         self,
         *,
+        image_invite_cover = ...,
         image_large = ...,
         image_small = ...,
         text_large = ...,
@@ -329,11 +370,14 @@ class ActivityAssets(ActivityFieldBase):
         
         Parameters
         ----------
+        image_invite_cover : `None | str`, Optional (Keyword only)
+            The identifier of the activity's invite cover to display.
+        
         image_large : `None | str`, Optional (Keyword only)
-            The id of the activity's large asset to display.
+            The identifier of the activity's large asset to display.
         
         image_small : `None | str`, Optional (Keyword only)
-            The id of the activity's small asset to display.
+            The identifier of the activity's small asset to display.
         
         text_large : `None | str`, Optional (Keyword only)
             The hover text of the large asset
@@ -358,6 +402,12 @@ class ActivityAssets(ActivityFieldBase):
         ValueError
             - If a parameter's value is incorrect.
         """
+        # image_invite_cover
+        if image_invite_cover is ...:
+            image_invite_cover = self.image_invite_cover
+        else:
+            image_invite_cover = validate_image_invite_cover(image_invite_cover)
+        
         # image_large
         if image_large is ...:
             image_large = self.image_large
@@ -396,6 +446,7 @@ class ActivityAssets(ActivityFieldBase):
         
         # Construct
         new = object.__new__(type(self))
+        new.image_invite_cover = image_invite_cover
         new.image_large = image_large
         new.image_small = image_small
         new.text_large = text_large

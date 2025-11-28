@@ -43,7 +43,7 @@ def test__Guild__copy():
     explicit_content_filter_level = ExplicitContentFilterLevel.no_role
     description = 'Koishi'
     discovery_splash = Icon(IconType.animated, 14)
-    features = [GuildFeature.animated_icon]
+    features = [GuildFeature.icon_animated]
     home_splash = Icon(IconType.animated, 36)
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
@@ -113,7 +113,7 @@ def test__Guild__copy_with__0():
     explicit_content_filter_level = ExplicitContentFilterLevel.no_role
     description = 'Koishi'
     discovery_splash = Icon(IconType.animated, 14)
-    features = [GuildFeature.animated_icon]
+    features = [GuildFeature.icon_animated]
     home_splash = Icon(IconType.animated, 36)
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
@@ -183,7 +183,7 @@ def test__Guild__copy_with__1():
     old_explicit_content_filter_level = ExplicitContentFilterLevel.no_role
     old_description = 'Koishi'
     old_discovery_splash = Icon(IconType.animated, 14)
-    old_features = [GuildFeature.animated_icon]
+    old_features = [GuildFeature.icon_animated]
     old_home_splash = Icon(IconType.animated, 36)
     old_hub_type = HubType.college
     old_icon = Icon(IconType.animated, 16)
@@ -211,7 +211,7 @@ def test__Guild__copy_with__1():
     new_explicit_content_filter_level = ExplicitContentFilterLevel.everyone
     new_description = 'Okuu'
     new_discovery_splash = Icon(IconType.animated, 114)
-    new_features = [GuildFeature.animated_banner]
+    new_features = [GuildFeature.banner_animated]
     new_home_splash = Icon(IconType.animated, 37)
     new_hub_type = HubType.high_school
     new_icon = Icon(IconType.animated, 116)
@@ -470,8 +470,8 @@ def test__Guild__nsfw__explicit():
 
 
 def _iter_options__iter_features():
-    feature_0 = GuildFeature.animated_icon
-    feature_1 = GuildFeature.animated_banner
+    feature_0 = GuildFeature.icon_animated
+    feature_1 = GuildFeature.banner_animated
     
     yield 202305290002, None, set()
     yield 202305290003, [feature_0], {feature_0}
@@ -505,12 +505,12 @@ def test__Guild__iter_features(guild_id, features):
 
 
 def _iter_options__has_feature():
-    feature = GuildFeature.animated_icon
+    feature = GuildFeature.icon_animated
 
     yield 202212190038, None, feature, False
-    yield 202212200020, [GuildFeature.animated_banner], feature, False
+    yield 202212200020, [GuildFeature.banner_animated], feature, False
     yield 202212200021, [feature], feature, True
-    yield 202212200022, [GuildFeature.animated_banner, feature], feature, True
+    yield 202212200022, [GuildFeature.banner_animated, feature], feature, True
 
 
 @vampytest._(vampytest.call_from(_iter_options__has_feature()).returning_last())
@@ -582,6 +582,39 @@ def test__Guild__emoji_limit(guild_id, boost_level, features):
     emoji_limit = guild.emoji_limit
     vampytest.assert_instance(emoji_limit, int)
     return emoji_limit
+
+
+def _iter_options__soundboard_sound_limit():
+    yield 202511240000, 0, None, LEVEL_0.soundboard_sound_limit
+    yield 202511240001, LEVEL_MAX.level, None, LEVEL_MAX.soundboard_sound_limit
+    yield 202511240002, 1, [GuildFeature.more_soundboard_sound], 36
+    yield 202511240003, LEVEL_MAX.level, [GuildFeature.more_soundboard_sound], LEVEL_MAX.soundboard_sound_limit
+
+
+@vampytest._(vampytest.call_from(_iter_options__soundboard_sound_limit()).returning_last())
+def test__Guild__soundboard_sound_limit(guild_id, boost_level, features):
+    """
+    Tests whether ``Guild.soundboard_sound_limit`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Guild identifier to create the guild with.
+    
+    boost_level : `int`
+        The boost level of the guild.
+    
+    features : `None | list<GuildFeature>`
+        Features to create the guild with.
+    
+    Returns
+    -------
+    output : `int`
+    """
+    guild = Guild.precreate(guild_id, boost_level = boost_level, features = features)
+    soundboard_sound_limit = guild.soundboard_sound_limit
+    vampytest.assert_instance(soundboard_sound_limit, int)
+    return soundboard_sound_limit
 
 
 def _iter_options__bitrate_limit():

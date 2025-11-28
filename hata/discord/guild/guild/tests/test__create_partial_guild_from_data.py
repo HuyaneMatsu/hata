@@ -18,7 +18,7 @@ def test__create_partial_guild_from_data__new():
     banner = Icon(IconType.animated, 144)
     description = 'Koishi'
     discovery_splash = Icon(IconType.animated, 14)
-    features = [GuildFeature.animated_icon]
+    features = [GuildFeature.icon_animated]
     icon = Icon(IconType.animated, 16)
     invite_splash = Icon(IconType.animated, 18)
     name = 'Komeiji'

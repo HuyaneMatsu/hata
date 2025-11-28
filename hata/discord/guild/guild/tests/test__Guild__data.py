@@ -83,7 +83,7 @@ def test__Guild__from_data__all_fields():
         Emoji.precreate(202306210042),
         Emoji.precreate(202306210043),
     ]
-    features = [GuildFeature.animated_icon]
+    features = [GuildFeature.icon_animated]
     home_splash = Icon(IconType.animated, 36)
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
@@ -346,7 +346,7 @@ def test__Guild__to_data():
         Emoji.precreate(202306220004),
         Emoji.precreate(202306220005),
     ]
-    features = [GuildFeature.animated_icon]
+    features = [GuildFeature.icon_animated]
     home_splash = Icon(IconType.animated, 36)
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
@@ -572,7 +572,7 @@ def test__Guild__set_attributes__create():
         Emoji.precreate(202306220042),
         Emoji.precreate(202306220043),
     ]
-    features = [GuildFeature.animated_icon]
+    features = [GuildFeature.icon_animated]
     home_splash = Icon(IconType.animated, 36)
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
@@ -791,7 +791,7 @@ def test__Guild__set_attributes__existing():
         Emoji.precreate(202306220074),
         Emoji.precreate(202306220075),
     ]
-    features = [GuildFeature.animated_icon]
+    features = [GuildFeature.icon_animated]
     home_splash = Icon(IconType.animated, 36)
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
@@ -997,7 +997,7 @@ def test__Guild__update_attributes():
     old_explicit_content_filter_level = ExplicitContentFilterLevel.no_role
     old_description = 'Koishi'
     old_discovery_splash = Icon(IconType.animated, 14)
-    old_features = [GuildFeature.animated_icon]
+    old_features = [GuildFeature.icon_animated]
     old_home_splash = Icon(IconType.animated, 36)
     old_hub_type = HubType.college
     old_icon = Icon(IconType.animated, 16)
@@ -1036,7 +1036,7 @@ def test__Guild__update_attributes():
     new_explicit_content_filter_level = ExplicitContentFilterLevel.everyone
     new_description = 'Orin'
     new_discovery_splash = Icon(IconType.animated, 114)
-    new_features = [GuildFeature.animated_banner]
+    new_features = [GuildFeature.banner_animated]
     new_home_splash = Icon(IconType.animated, 37)
     new_hub_type = HubType.high_school
     new_icon = Icon(IconType.animated, 116)
@@ -1238,7 +1238,7 @@ def test__Guild__difference_update_attributes():
     old_explicit_content_filter_level = ExplicitContentFilterLevel.no_role
     old_description = 'Koishi'
     old_discovery_splash = Icon(IconType.animated, 14)
-    old_features = [GuildFeature.animated_icon]
+    old_features = [GuildFeature.icon_animated]
     old_home_splash = Icon(IconType.animated, 36)
     old_hub_type = HubType.college
     old_icon = Icon(IconType.animated, 16)
@@ -1277,7 +1277,7 @@ def test__Guild__difference_update_attributes():
     new_explicit_content_filter_level = ExplicitContentFilterLevel.everyone
     new_description = 'Orin'
     new_discovery_splash = Icon(IconType.animated, 114)
-    new_features = [GuildFeature.animated_banner]
+    new_features = [GuildFeature.banner_animated]
     new_home_splash = Icon(IconType.animated, 37)
     new_hub_type = HubType.high_school
     new_icon = Icon(IconType.animated, 116)
@@ -1830,7 +1830,7 @@ def test__Guild__sync__default():
     explicit_content_filter_level = ExplicitContentFilterLevel.no_role
     description = 'Koishi'
     discovery_splash = Icon(IconType.animated, 14)
-    features = [GuildFeature.animated_icon]
+    features = [GuildFeature.icon_animated]
     home_splash = Icon(IconType.animated, 36)
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)

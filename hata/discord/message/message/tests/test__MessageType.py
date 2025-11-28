@@ -5,7 +5,9 @@ import vampytest
 
 from ....embed import Embed, EmbedType
 from ....emoji import Emoji
-from ....user import User
+from ....guild import Guild
+from ....role import Role
+from ....user import GuildProfile, User
 
 from ..message import Message
 from ..preinstanced import MESSAGE_DEFAULT_CONVERTER, MessageType
@@ -178,22 +180,69 @@ def test__MessageType__poll_result(message):
 
 
 def _iter_options__emoji_added_notification():
-    emoji_0 = Emoji.precreate(1410560101093347422, animated = True, name = 'MomijiAwoo')
+    guild_id = 202511140000
+    emoji_id_0 = 202511140001
+    emoji_id_1 = 202511140002
+    role_id_0 = 202511140003
+    emoji_0 = Emoji.precreate(
+        emoji_id_0,
+        animated = False,
+        name = 'MomijiAwoo',
+        guild_id = guild_id,
+    )
+    emoji_1 = Emoji.precreate(
+        emoji_id_1,
+        animated = True,
+        name = 'MomijiAwoo',
+        guild_id = guild_id,
+        role_ids = [role_id_0],
+    )
     user_0 = User.precreate(202508300000, name = 'Koishi')
+    user_0.guild_profiles[guild_id] = GuildProfile()
     
-    yield Message(), None
+    role_0 = Role.precreate(
+        role_id = role_id_0,
+        guild_id = guild_id,
+    )
+    
+    guild = Guild.precreate(
+        guild_id,
+        emojis = [emoji_0, emoji_1],
+        roles = [role_0],
+        users = [user_0],
+    )
+    
+    yield (
+        Message(),
+        [],
+        None,
+    )
     
     yield (
         Message(
             author = user_0,
-            content = emoji_0.as_emoji
+            content = emoji_0.as_emoji,
         ),
-        f'{user_0.name_at(0)} added a new emoji, {emoji_0.as_emoji} :{emoji_0.name}:',
+        [
+            guild
+        ],
+        f'{user_0.name_at(guild_id)} added a new emoji, {emoji_0.as_emoji} :{emoji_0.name}:',
+    )
+    
+    yield (
+        Message(
+            author = user_0,
+            content = emoji_1.as_emoji,
+        ),
+        [
+            guild
+        ],
+        f'{user_0.name_at(guild_id)} added a new emoji.',
     )
 
 
 @vampytest._(vampytest.call_from(_iter_options__emoji_added_notification()).returning_last())
-def test__MessageType__emoji_added_notification(message):
+def test__MessageType__emoji_added_notification(message, entity_cache):
     """
     Tests whether ``MessageType.emoji_added_notification`` conversion not fails.
     
@@ -201,6 +250,9 @@ def test__MessageType__emoji_added_notification(message):
     ----------
     message : ``Message``
         Message to test with.
+    
+    entity_cache : `list<object>`
+        Additional entities to keep cached.
     
     Returns
     -------

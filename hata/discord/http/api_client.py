@@ -2575,7 +2575,8 @@ class DiscordApiClient(RichAttributeErrorBaseType):
             METHOD_POST,
             f'{API_ENDPOINT}/applications/{application_id}/entitlements/{entitlement_id}/consume',
         )
-
+    
+    
     async def subscription_get_sku(self, sku_id, subscription_id):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.subscription_get_sku, NO_SPECIFIC_RATE_LIMITER),

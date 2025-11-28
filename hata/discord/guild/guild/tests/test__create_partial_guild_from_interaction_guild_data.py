@@ -15,7 +15,7 @@ def test__create_partial_guild_from_interaction_guild_data__new():
     """
     guild_id = 202310100001
     locale = Locale.dutch
-    features = [GuildFeature.animated_icon]
+    features = [GuildFeature.icon_animated]
     
     data = {
         'id': str(guild_id),

@@ -388,6 +388,10 @@ class WebhookBase(UserBase):
         if guild is None:
             return False
         
+        # Already deleted?
+        if emoji.id not in guild.emojis:
+            return False
+        
         default_role = guild.default_role
         if (default_role is None):
             return False

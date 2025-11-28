@@ -645,10 +645,11 @@ class ClientUserBase(OrinUserBase):
         try:
             guild = GUILDS[guild_id]
         except KeyError:
-            pass
-        else:
-            if guild.owner_id == self.id:
-                return True
+            return False
+        
+        # Already deleted?
+        if emoji.id not in guild.emojis:
+            return False
         
         emoji_role_ids = emoji.role_ids
         if (emoji_role_ids is not None):

@@ -25,25 +25,25 @@ def _iter_options():
     yield (
         {
             'features': [
-                GuildFeature.animated_banner.value,
-                GuildFeature.animated_icon.value,
+                GuildFeature.banner_animated.value,
+                GuildFeature.icon_animated.value,
             ],
         },
         (
-            GuildFeature.animated_banner,
-            GuildFeature.animated_icon,
+            GuildFeature.banner_animated,
+            GuildFeature.icon_animated,
         ),
     )
     yield (
         {
             'features': [
-                GuildFeature.animated_icon.value,
-                GuildFeature.animated_banner.value,
+                GuildFeature.icon_animated.value,
+                GuildFeature.banner_animated.value,
             ],
         },
         (
-            GuildFeature.animated_banner,
-            GuildFeature.animated_icon,
+            GuildFeature.banner_animated,
+            GuildFeature.icon_animated,
         ),
     )
     

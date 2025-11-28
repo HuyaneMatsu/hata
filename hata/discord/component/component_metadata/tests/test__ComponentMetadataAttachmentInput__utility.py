@@ -78,7 +78,7 @@ def test__ComponentMetadataAttachmentInput__copy_with__no_fields():
     vampytest.assert_eq(copy, component_metadata)
 
 
-def test__ComponentMetadataAttachmentInput__copy_with__1():
+def test__ComponentMetadataAttachmentInput__copy_with__all_fields():
     """
     Tests whether ``ComponentMetadataAttachmentInput.copy_with`` works as intended.
     
@@ -90,7 +90,7 @@ def test__ComponentMetadataAttachmentInput__copy_with__1():
     old_required = True
     
     new_custom_id = 'uta'
-    new_max_values = 11
+    new_max_values = 9
     new_min_values = 8
     new_required = False
     
@@ -151,7 +151,7 @@ def test__ComponentMetadataAttachmentInput__copy_with_keyword_parameters__all_fi
     old_required = True
     
     new_custom_id = 'uta'
-    new_max_values = 11
+    new_max_values = 9
     new_min_values = 8
     new_required = False
     

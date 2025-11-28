@@ -73,7 +73,7 @@ def _iter_options__eq():
         keyword_parameters,
         {
             **keyword_parameters,
-            'max_values': 11,
+            'max_values': 9,
         },
         False,
     )

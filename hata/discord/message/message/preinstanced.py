@@ -497,8 +497,12 @@ def convert_emoji_added_notification(self):
     
     emoji_name_encapsulator = ':' if emoji.require_colons else ''
     
+    user_name = self.author.name_at(self.guild_id)
+    if not self.author.can_use_emoji(emoji):
+        return f'{user_name!s} added a new emoji.'
+    
     return (
-        f'{self.author.name_at(self.guild_id)!s} added a new emoji, {emoji.as_emoji!s} '
+        f'{user_name!s} added a new emoji, {emoji.as_emoji!s} '
         f'{emoji_name_encapsulator!s}{emoji.name!s}{emoji_name_encapsulator!s}'
     )
 

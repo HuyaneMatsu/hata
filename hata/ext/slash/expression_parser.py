@@ -1280,7 +1280,19 @@ def evaluate_2_sided_binary_left_shift(token_1, token_2, token_3):
             f'Left shift over {LIMIT_LEFT_SHIFT_MAX} disallowed: {value_1} << {value_2}.'
         )
     
-    value = token_1.value << token_3.value
+    if value_2 < 0:
+        raise EvaluationError(
+            token_2.array,
+            [
+                HighlightGroup(token_1.start, token_1.end, False),
+                HighlightGroup(token_2.start, token_2.end, False),
+                HighlightGroup(token_3.start, token_3.end, True),
+            ],
+            f'Left shift by negative disallowed: {value_1} << {value_2}.'
+        )
+    
+    
+    value = value_1 << value_2
     return merge_2_tokens(token_1, token_3, value)
 
 

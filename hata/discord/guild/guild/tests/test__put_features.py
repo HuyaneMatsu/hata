@@ -23,28 +23,28 @@ def _iter_options():
     
     yield (
         (
-            GuildFeature.animated_banner,
-            GuildFeature.animated_icon,
+            GuildFeature.banner_animated,
+            GuildFeature.icon_animated,
         ),
         False,
         {
             'features': [
-                GuildFeature.animated_banner.value,
-                GuildFeature.animated_icon.value,
+                GuildFeature.banner_animated.value,
+                GuildFeature.icon_animated.value,
             ],
         },
     )
     
     yield (
         (
-            GuildFeature.animated_banner,
-            GuildFeature.animated_icon,
+            GuildFeature.banner_animated,
+            GuildFeature.icon_animated,
         ),
         True,
         {
             'features': [
-                GuildFeature.animated_banner.value,
-                GuildFeature.animated_icon.value,
+                GuildFeature.banner_animated.value,
+                GuildFeature.icon_animated.value,
             ],
         },
     )

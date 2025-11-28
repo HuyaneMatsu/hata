@@ -73,7 +73,7 @@ def _iter_options__eq():
     explicit_content_filter_level = ExplicitContentFilterLevel.no_role
     description = 'Koishi'
     discovery_splash = Icon(IconType.animated, 14)
-    features = [GuildFeature.animated_icon]
+    features = [GuildFeature.icon_animated]
     home_splash = Icon(IconType.animated, 36)
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
@@ -204,7 +204,7 @@ def _iter_options__eq():
         keyword_parameters,
         {
             **keyword_parameters,
-            'features': [GuildFeature.animated_banner],
+            'features': [GuildFeature.banner_animated],
         },
         False,
     )
@@ -441,7 +441,7 @@ def test__Guild__hash():
     explicit_content_filter_level = ExplicitContentFilterLevel.no_role
     description = 'Koishi'
     discovery_splash = Icon(IconType.animated, 14)
-    features = [GuildFeature.animated_icon]
+    features = [GuildFeature.icon_animated]
     home_splash = Icon(IconType.animated, 36)
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)

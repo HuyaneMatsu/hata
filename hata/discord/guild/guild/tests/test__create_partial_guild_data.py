@@ -16,7 +16,7 @@ def test__create_partial_guild_data():
     available = True
     description = 'Koishi'
     discovery_splash = Icon(IconType.animated, 14)
-    features = [GuildFeature.animated_icon]
+    features = [GuildFeature.icon_animated]
     icon = Icon(IconType.animated, 16)
     invite_splash = Icon(IconType.animated, 18)
     name = 'Komeiji'

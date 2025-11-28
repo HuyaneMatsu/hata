@@ -18,15 +18,16 @@ def test__GuildBoostPerks__attributes(perk):
     """
     vampytest.assert_instance(perk, GuildBoostPerks)
     vampytest.assert_instance(perk.attachment_size_limit, int)
+    vampytest.assert_instance(perk.bitrate_limit, int)
     vampytest.assert_instance(perk.concurrent_activities, int)
     vampytest.assert_instance(perk.emoji_limit, int)
     vampytest.assert_instance(perk.features, tuple, nullable = True)
     vampytest.assert_instance(perk.level, int)
     vampytest.assert_instance(perk.screen_share_frame_rate, int)
     vampytest.assert_instance(perk.screen_share_resolution, str)
-    vampytest.assert_instance(perk.sound_limit, int)
+    vampytest.assert_instance(perk.soundboard_sound_limit, int)
+    vampytest.assert_instance(perk.stage_channel_viewer_limit, int)
     vampytest.assert_instance(perk.sticker_limit, int)
-    vampytest.assert_instance(perk.bitrate_limit, int)
 
 
 @vampytest.call_with(LEVEL_0, [])

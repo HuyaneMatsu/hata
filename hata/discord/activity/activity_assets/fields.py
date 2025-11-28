@@ -44,3 +44,10 @@ validate_text_small = nullable_string_validator_factory('text_small', 0, 1024)
 parse_url_small = nullable_string_parser_factory('small_url')
 put_url_small = nullable_string_optional_putter_factory('small_url')
 validate_url_small = nullable_string_validator_factory('url_small', 0, 1024)
+
+
+# image_invite_cover
+
+parse_image_invite_cover = nullable_string_parser_factory('invite_cover_image')
+put_image_invite_cover = nullable_string_optional_putter_factory('invite_cover_image')
+validate_image_invite_cover = nullable_string_validator_factory('image_invite_cover', 0, 1024)

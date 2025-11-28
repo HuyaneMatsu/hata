@@ -5,10 +5,11 @@
     'datetime_to_unix_time', 'elapsed_time', 'escape_markdown', 'filter_content', 'format_datetime', 'format_id',
     'format_loop_time', 'format_unix_time', 'id_difference_to_seconds', 'id_difference_to_timedelta', 'id_to_datetime',
     'id_to_unix_time', 'is_id', 'is_invite_code', 'is_mention', 'is_role_mention', 'is_url', 'is_user_mention',
-    'mention_channel_by_id', 'mention_role_by_id', 'mention_user_by_id', 'mention_user_nick_by_id', 'now_as_id',
-    'parse_message_reference', 'parse_rdelta', 'parse_signed_url', 'parse_tdelta', 'random_id', 'sanitize_content',
-    'sanitize_mentions', 'seconds_to_id_difference', 'seconds_to_elapsed_time', 'timedelta_to_id_difference',
-    'unix_time_to_datetime', 'unix_time_to_id'
+    'mention_channel_and_roles_screen', 'mention_channel_browse_screen', 'mention_channel_by_id',
+    'mention_guild_guide_screen', 'mention_linked_roles_screen', 'mention_role_by_id', 'mention_user_by_id',
+    'mention_user_nick_by_id', 'now_as_id', 'parse_message_reference', 'parse_rdelta', 'parse_signed_url',
+    'parse_tdelta', 'random_id', 'sanitize_content', 'sanitise_links', 'sanitize_mentions', 'seconds_to_elapsed_time',
+    'seconds_to_id_difference', 'timedelta_to_id_difference', 'unix_time_to_datetime', 'unix_time_to_id'
 )
 
 import reprlib, sys
@@ -86,6 +87,8 @@ def get_image_media_type(data):
         media_type = 'image/gif'
     elif data.startswith(b'\x00\x00\x00\x20\x66\x74\x79\x70\x61\x76\x69\x66'):
         media_type = 'image/avif'
+    elif data[0 : 4] == b'RIFF' and data[8 : 12] == b'WEBP':
+        media_type = 'image/webp'
     elif data.startswith(b'{') and data.endswith(b'}'):
         media_type = 'application/json'
     else:
@@ -99,6 +102,7 @@ MEDIA_TYPE_TO_EXTENSION = {
     'image/jpeg': 'jpg',
     'image/gif': 'gif',
     'image/avif': 'avif',
+    'image/webp': 'webp',
     'application/json': 'json',
 }
 
@@ -129,6 +133,8 @@ def image_to_base64(data):
         media_type = 'image/gif'
     elif data.startswith(b'\x00\x00\x00\x20\x66\x74\x79\x70\x61\x76\x69\x66'):
         media_type = 'image/avif'
+    elif data[0 : 4] == b'RIFF' and data[8 : 12] == b'WEBP':
+        media_type = 'image/webp'
     else:
         raise ValueError(f'Unsupported image type given, got {reprlib.repr(data)}.')
     
@@ -611,6 +617,7 @@ EMAIL_MENTION_RP = re_compile(
     '>'
 )
 TELEPHONE_NUMBER_MENTION_RP = re_compile('<(?:(mailto)(?:\\:))?\\+(\\d+)>')
+SCREEN_MENTION_RP = re_compile('\\<id\\:(customize|browse|guide|linked\\-roles(?:\\:\\d{7,21})?)\\>')
 
 EMOJI_RP = re_compile('<(a)?:([a-zA-Z0-9_]{2,32})(?:~[1-9])?:(\\d{7,21})>')
 REACTION_RP = re_compile('([a-zA-Z0-9_]{2,32}):(\\d{7,21})')
@@ -1533,7 +1540,7 @@ EVERY_MENTION_TRANSLATION_TABLE = {
 }
 
 
-def sanitise_mention_escaper(transformations, match):
+def sanitize_mention_escaper(transformations, match):
     """
     used inside of ``sanitize_mentions`` to escape mentions.
     
@@ -1614,8 +1621,22 @@ def sanitize_mentions(content, guild = None):
         
         transformations[f'<{middle}>'] = middle
     
-    content = re_compile('|'.join(transformations)).sub(partial_func(sanitise_mention_escaper, transformations), content)
-    return EVERYONE_MENTION_RP.sub(partial_func(sanitise_mention_escaper, EVERY_MENTION_TRANSLATION_TABLE), content)
+    for screen in SCREEN_MENTION_RP.findall(content):
+        if screen == 'customize':
+            screen_name = 'Channels & Roles'
+        elif screen == 'browse':
+            screen_name = 'Browse Channels'
+        elif screen == 'guide':
+            screen_name = 'Server Guide'
+        elif screen.startswith('linked-roles'):
+            screen_name = 'Linked Roles'
+        else:
+            continue
+        
+        transformations[f'<id:{screen}>'] = screen_name
+    
+    content = re_compile('|'.join(transformations)).sub(partial_func(sanitize_mention_escaper, transformations), content)
+    return EVERYONE_MENTION_RP.sub(partial_func(sanitize_mention_escaper, EVERY_MENTION_TRANSLATION_TABLE), content)
 
 
 def sanitize_content(content, guild = None):
@@ -1634,12 +1655,12 @@ def sanitize_content(content, guild = None):
     content : `None | str`
     """
     content = sanitize_mentions(content, guild = guild)
+    content = sanitise_links(content)
     content = escape_markdown(content)
     return content
 
 
 ESCAPEABLE = frozenset(('\\', '_', '*', '|', '~', '>', ':', '[', ']', '#', '-', '`'))
-
 
 def escape_markdown(content):
     """
@@ -1665,6 +1686,49 @@ def escape_markdown(content):
         characters.append(character)
     
     return ''.join(characters)
+
+
+MARKDOWN_LINK_RP = re_compile('\\[(.+?)\\]\\(https?\\://.+?\\)')
+
+
+def sanitise_links(content):
+    """
+    Escapes links from the given content.
+    
+    Parameters
+    ----------
+    content : `None | str`
+        The content to sanitize.
+    
+    Returns
+    -------
+    content : `None | str`
+    """
+    if (content is None) or (not content):
+        return content
+    
+    parts = None
+    end = 0
+    for match in MARKDOWN_LINK_RP.finditer(content):
+        if parts is None:
+            parts = []
+        
+        start = match.start()
+        if start != end:
+            parts.append(content[end : start])
+        
+        parts.append(match.group(1))
+        end = match.end()
+        continue
+    
+    if parts is None:
+        return content
+    
+    content_length = len(content)
+    if end != content_length:
+        parts.append(content[end : content_length])
+    
+    return ''.join(parts)
 
 
 def parse_date_header_to_datetime(date_data):
@@ -1785,23 +1849,27 @@ class TIMESTAMP_STYLES:
     
     The style formats are the following:
     
-    +-------------------+-------+-----------+
-    | Name              | Value | Note      |
-    +====================+======+===========+
-    | short_time        | `'t'` |           |
-    +-------------------+-------+-----------+
-    | long_time         | `'T'` |           |
-    +-------------------+-------+-----------+
-    | short_date        | `'d'` |           |
-    +-------------------+-------+-----------+
-    | long_date         | `'D'` |           |
-    +-------------------+-------+-----------+
-    | short_date_time   | `'f'` | default   |
-    +-------------------+-------+-----------+
-    | long_date_time    | `'F'` |           |
-    +-------------------+-------+-----------+
-    | relative_time     | `'R'` |           |
-    +-------------------+-------+-----------+
+    +-----------------------+-------+-----------+
+    | Name                  | Value | Note      |
+    +========================+======+===========+
+    | short_time            | `'t'` |           |
+    +-----------------------+-------+-----------+
+    | long_time             | `'T'` |           |
+    +-----------------------+-------+-----------+
+    | short_date            | `'d'` |           |
+    +-----------------------+-------+-----------+
+    | long_date             | `'D'` |           |
+    +-----------------------+-------+-----------+
+    | short_date_time       | `'f'` | default   |
+    +-----------------------+-------+-----------+
+    | long_date_time        | `'F'` |           |
+    +-----------------------+-------+-----------+
+    | relative_time         | `'R'` |           |
+    +-----------------------+-------+-----------+
+    | shortest_date_time    | '`s`' |           |
+    +-----------------------+-------+-----------+
+    | shorter_date_time     | '`S`' |           |
+    +-----------------------+-------+-----------+
     
     Note, that Discord's time formatting is localized and they are all stultus when english language is selected.
     To avoid insanity, I beg you to use
@@ -1836,6 +1904,8 @@ class TIMESTAMP_STYLES:
     short_date_time = 'f'
     long_date_time = 'F'
     relative_time = 'R'
+    shortest_date_time = 's'
+    shorter_date_time = 'S'
 
 
 def format_datetime(date_time, style = None):
@@ -2103,3 +2173,52 @@ def parse_signed_url(signed_url):
                 signature = None
     
     return SignedUrlParseResult(url, signed_at, expires_at, signature)
+
+
+def mention_channel_and_roles_screen():
+    """
+    Builds and returns a channel and roles screen link.
+    
+    Returns
+    -------
+    link : `str`
+    """
+    return '<id:customize>'
+
+
+def mention_channel_browse_screen():
+    """
+    Builds a channel browse screen link.
+    
+    Returns
+    -------
+    link : `str`
+    """
+    return '<id:browse>'
+
+
+def mention_guild_guide_screen():
+    """
+    Builds a guild guide screen link.
+    
+    Returns
+    -------
+    link : `str`
+    """
+    return '<id:guide>'
+
+
+def mention_linked_roles_screen(role_id = 0):
+    """
+    Builds a linked roles screen link.
+    
+    Parameters
+    ----------
+    role_id : `int` = `0`, Optional
+        A specific role to reference.
+    
+    Returns
+    -------
+    link : `str`
+    """
+    return f'<id:linked-roles{(":" if role_id else "")!s}{(str(role_id) if role_id else "")!s}>'

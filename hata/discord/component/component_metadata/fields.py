@@ -470,7 +470,7 @@ validate_max_values = int_conditional_validator_factory(
             max_values <= max(MAX_VALUES_MAX__ATTACHMENT_INPUT, MAX_VALUES_MAX__SELECT)
         )
     ),
-    f'>= {MAX_VALUES_MIN} and <= {max(MAX_VALUES_MAX__ATTACHMENT_INPUT, MAX_VALUES_MAX__SELECT)},'
+    f'>= {MAX_VALUES_MIN} and <= {max(MAX_VALUES_MAX__ATTACHMENT_INPUT, MAX_VALUES_MAX__SELECT)}'
 )
 validate_max_values__attachment_input = int_conditional_validator_factory(
     'max_values',
@@ -547,7 +547,7 @@ validate_min_values = int_conditional_validator_factory(
             min_values <= max(MIN_VALUES_MAX__ATTACHMENT_INPUT, MIN_VALUES_MAX__SELECT)
         )
     ),
-    f'>= {MIN_VALUES_MIN} and <= {max(MIN_VALUES_MAX__ATTACHMENT_INPUT, MIN_VALUES_MAX__SELECT)},'
+    f'>= {MIN_VALUES_MIN} and <= {max(MIN_VALUES_MAX__ATTACHMENT_INPUT, MIN_VALUES_MAX__SELECT)}'
 )
 validate_min_values__attachment_input = int_conditional_validator_factory(
     'min_values',

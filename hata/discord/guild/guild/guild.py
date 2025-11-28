@@ -3151,6 +3151,22 @@ class Guild(DiscordEntity, immortal = True):
     
     
     @property
+    def soundboard_sound_limit(self):
+        """
+        The maximal amount of soundboard sounds, that the guild can have.
+        
+        Returns
+        -------
+        limit : `int`
+        """
+        limit = self.boost_perks.soundboard_sound_limit
+        if limit < 36 and self.has_feature(GuildFeature.more_soundboard_sound):
+            limit = 36
+        
+        return limit
+    
+    
+    @property
     def bitrate_limit(self):
         """
         The maximal bitrate for the guild's voice channels.

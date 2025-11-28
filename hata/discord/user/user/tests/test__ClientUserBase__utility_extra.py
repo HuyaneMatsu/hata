@@ -303,6 +303,7 @@ def test__ClientUserBase__can_use_emoji__custom_allowed():
     
     guild = Guild.precreate(
         guild_id,
+        emojis = [emoji],
         roles = [role],
         users = [user],
     )
@@ -310,6 +311,41 @@ def test__ClientUserBase__can_use_emoji__custom_allowed():
     output = user.can_use_emoji(emoji)
     vampytest.assert_instance(output, bool)
     vampytest.assert_eq(output, True)
+
+
+def test__ClientUserBase__can_use_emoji__custom_emoji_deleted():
+    """
+    Tests whether ``ClientUserBase.can_use_emoji`` works as intended.
+    
+    Case: custom & emoji deleted.
+    """
+    user_id = 202511260010
+    guild_id = 202511260011
+    emoji_id = 202511260012
+    
+    emoji = Emoji.precreate(
+        emoji_id,
+        guild_id = guild_id,
+        name = 'hina',
+    )
+    
+    role = Role.precreate(
+        guild_id,
+        guild_id = guild_id,
+    )
+    
+    user = ClientUserBase._create_empty(user_id)
+    user.guild_profiles[guild_id] = GuildProfile()
+    
+    guild = Guild.precreate(
+        guild_id,
+        roles = [role],
+        users = [user],
+    )
+    
+    output = user.can_use_emoji(emoji)
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, False)
 
 
 def test__ClientUserBase__can_use_emoji__custom_not_available():
@@ -339,6 +375,7 @@ def test__ClientUserBase__can_use_emoji__custom_not_available():
     
     guild = Guild.precreate(
         guild_id,
+        emojis = [emoji],
         roles = [role],
         users = [user],
     )
@@ -373,6 +410,7 @@ def test__ClientUserBase__can_use_emoji__custom_not_in_guild():
     
     guild = Guild.precreate(
         guild_id,
+        emojis = [emoji],
         roles = [role],
     )
     
@@ -410,6 +448,7 @@ def test__ClientUserBase__can_use_emoji__custom_role_bound_guild_owner():
     
     guild = Guild.precreate(
         guild_id,
+        emojis = [emoji],
         roles = [role],
         users = [user],
         owner_id = user_id,
@@ -417,7 +456,7 @@ def test__ClientUserBase__can_use_emoji__custom_role_bound_guild_owner():
     
     output = user.can_use_emoji(emoji)
     vampytest.assert_instance(output, bool)
-    vampytest.assert_eq(output, True)
+    vampytest.assert_eq(output, False)
 
 
 def test__ClientUserBase__can_use_emoji__custom_role_bound_no_role():
@@ -449,6 +488,7 @@ def test__ClientUserBase__can_use_emoji__custom_role_bound_no_role():
     
     guild = Guild.precreate(
         guild_id,
+        emojis = [emoji],
         roles = [role],
         users = [user],
     )
@@ -490,6 +530,7 @@ def test__ClientUserBase__can_use_emoji__custom_role_bound_no_role_intersection(
     
     guild = Guild.precreate(
         guild_id,
+        emojis = [emoji],
         roles = [role],
         users = [user],
     )
@@ -530,6 +571,7 @@ def test__ClientUserBase__can_use_emoji__custom_role_bound_with_role_intersectio
     
     guild = Guild.precreate(
         guild_id,
+        emojis = [emoji],
         roles = [role],
         users = [user],
     )

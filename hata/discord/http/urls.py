@@ -149,6 +149,71 @@ def _build_end(size, add_animated_query_parameter):
     return end
 
 
+def build_activity_asset_image_invite_cover_url(application_id, image_invite_cover):
+    """
+    Returns the activity's invite cover asset image's url.
+    If the activity has no invite cover asset image, then returns `None`.
+    
+    Parameters
+    ----------
+    application_id : `int`
+        The activity's application's identifier.
+    
+    image_invite_cover : `None | str`
+        The activity's asset's invite cover image's value.
+    
+    Returns
+    -------
+    url : `None | str`
+    """
+    if (not application_id) or (image_invite_cover is None) or (not image_invite_cover.isdigit()):
+        return None
+    
+    return f'{CDN_ENDPOINT}/app-assets/{application_id}/{image_invite_cover}.png'
+
+
+def build_activity_asset_image_invite_cover_url_as(application_id, image_invite_cover, ext, size):
+    """
+    Returns the activity's invite cover asset image's url.
+    If the activity has no invite cover asset image, then returns `None`.
+    
+    Parameters
+    ----------
+    application_id : `int`
+        The activity's application's identifier.
+    
+    image_invite_cover : `None | str`
+        The activity's asset's invite cover image's value.
+    
+    ext : `None | str`
+        The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+    
+    size : `None | int`
+        The preferred minimal size of the image's url.
+    
+    Returns
+    -------
+    url : `None | str`
+    
+    Raises
+    ------
+    ValueError
+        If `ext`, `size` was not passed as any of the expected values.
+    """
+    if (not application_id) or (image_invite_cover is None) or (not image_invite_cover.isdigit()):
+        return None
+    
+    end = _build_end(size, False)
+
+    if ext is None:
+        ext = 'png'
+    elif ext not in VALID_ICON_FORMATS:
+        raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
+    
+    return f'{CDN_ENDPOINT}/app-assets/{application_id}/{image_invite_cover}.{ext}{end}'
+
+
+
 def build_activity_asset_image_large_url(application_id, image_large):
     """
     Returns the activity's large asset image's url. If the activity has no large asset image, then returns `None`.

@@ -3,6 +3,7 @@ __all__ = ('ACTIVITY_UNKNOWN', 'Activity')
 from scarletio import RichAttributeErrorBaseType, copy_docs
 
 from ...http.urls import (
+    build_activity_asset_image_invite_cover_url, build_activity_asset_image_invite_cover_url_as,
     build_activity_asset_image_large_url, build_activity_asset_image_large_url_as,
     build_activity_asset_image_small_url, build_activity_asset_image_small_url_as
 )
@@ -817,6 +818,60 @@ class Activity(RichAttributeErrorBaseType):
         spotify_track_id = self.spotify_track_id
         if (spotify_track_id is not None):
             return f'https://open.spotify.com/track/{spotify_track_id}'
+    
+    
+    @property
+    def image_invite_cover_url(self):
+        """
+        Returns the activity's invite cover asset image's url.
+        If the activity has no invite cover asset image, then returns `None`.
+        
+        Returns
+        -------
+        image_invite_cover_url : `None | str`
+        """
+        application_id = self.application_id
+        
+        assets = self.assets
+        if assets is None:
+            image_invite_cover = None
+        else:
+            image_invite_cover = assets.image_invite_cover
+        
+        return build_activity_asset_image_invite_cover_url(application_id, image_invite_cover)
+    
+    
+    def image_invite_cover_url_as(self, ext = None, size = None):
+        """
+        Returns the activity's invite cover asset image's url.
+        If the activity has no invite cover asset image, then returns `None`.
+        
+        Parameters
+        ----------
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        
+        Raises
+        ------
+        ValueError
+            If `ext`, `size` was not passed as any of the expected values.
+        """
+        application_id = self.application_id
+        
+        assets = self.assets
+        if assets is None:
+            image_invite_cover = None
+        else:
+            image_invite_cover = assets.image_invite_cover
+        
+        return build_activity_asset_image_invite_cover_url_as(application_id, image_invite_cover, ext, size)
     
     
     @property

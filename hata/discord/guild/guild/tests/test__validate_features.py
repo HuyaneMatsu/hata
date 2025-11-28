@@ -14,28 +14,28 @@ def _iter_options__passing():
         None,
     )
     yield (
-        GuildFeature.animated_banner,
-        (GuildFeature.animated_banner, ),
+        GuildFeature.banner_animated,
+        (GuildFeature.banner_animated, ),
     )
     yield (
-        GuildFeature.animated_banner.value,
-        (GuildFeature.animated_banner, ),
+        GuildFeature.banner_animated.value,
+        (GuildFeature.banner_animated, ),
     )
     yield (
-        [GuildFeature.animated_banner],
-        (GuildFeature.animated_banner, ),
+        [GuildFeature.banner_animated],
+        (GuildFeature.banner_animated, ),
     )
     yield (
-        [GuildFeature.animated_banner.value],
-        (GuildFeature.animated_banner, ),
+        [GuildFeature.banner_animated.value],
+        (GuildFeature.banner_animated, ),
     )
     yield (
-        [GuildFeature.animated_icon, GuildFeature.animated_banner],
-        (GuildFeature.animated_banner, GuildFeature.animated_icon,),
+        [GuildFeature.icon_animated, GuildFeature.banner_animated],
+        (GuildFeature.banner_animated, GuildFeature.icon_animated,),
     )
     yield (
-        [GuildFeature.animated_banner, GuildFeature.animated_icon],
-        (GuildFeature.animated_banner, GuildFeature.animated_icon,),
+        [GuildFeature.banner_animated, GuildFeature.icon_animated],
+        (GuildFeature.banner_animated, GuildFeature.icon_animated,),
     )
 
 

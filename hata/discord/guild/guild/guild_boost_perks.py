@@ -37,15 +37,19 @@ class GuildBoostPerks(RichAttributeErrorBaseType):
     screen_share_resolution : `str`
         The maximal screen resolution's name when screen sharing.
     
-    sound_limit : `int`
+    soundboard_sound_limit : `int`
         The maximal amount of sound board sounds.
+    
+    stage_channel_viewer_limit : `int`
+        The amount of viewers the stage channels can have in the guild.
     
     sticker_limit : `int`
         The maximal amount of stickers the guild can have.
     """
     __slots__ = (
         'attachment_size_limit', 'bitrate_limit', 'concurrent_activities', 'emoji_limit', 'features', 'level',
-        'screen_share_frame_rate', 'screen_share_resolution', 'sound_limit', 'sticker_limit'
+        'screen_share_frame_rate', 'screen_share_resolution', 'soundboard_sound_limit', 'stage_channel_viewer_limit',
+        'sticker_limit'
     )
     
     def __new__(
@@ -58,7 +62,8 @@ class GuildBoostPerks(RichAttributeErrorBaseType):
         level,
         screen_share_frame_rate,
         screen_share_resolution,
-        sound_limit,
+        soundboard_sound_limit,
+        stage_channel_viewer_limit,
         sticker_limit,
     ):
         """
@@ -90,8 +95,11 @@ class GuildBoostPerks(RichAttributeErrorBaseType):
         screen_share_resolution : `str`
             The maximal screen resolution's name when screen sharing.
         
-        sound_limit : `int`
+        soundboard_sound_limit : `int`
             The maximal amount of sound board sounds.
+        
+        stage_channel_viewer_limit : `int`
+            The amount of viewers the stage channels can have in the guild.
         
         sticker_limit : `int`
             The maximal amount of stickers the guild can have.
@@ -105,7 +113,8 @@ class GuildBoostPerks(RichAttributeErrorBaseType):
         self.level = level
         self.screen_share_frame_rate = screen_share_frame_rate
         self.screen_share_resolution = screen_share_resolution
-        self.sound_limit = sound_limit
+        self.soundboard_sound_limit = soundboard_sound_limit
+        self.stage_channel_viewer_limit = stage_channel_viewer_limit
         self.sticker_limit = sticker_limit
         return self
     
@@ -172,6 +181,7 @@ LEVEL_0 = GuildBoostPerks(
     30,
     '720p',
     8,
+    50,
     5,
 )
 
@@ -182,13 +192,14 @@ LEVEL_1 = GuildBoostPerks(
     3,
     100,
     (
-        GuildFeature.animated_icon,
+        GuildFeature.icon_animated,
         GuildFeature.invite_splash,
     ),
     1,
     60,
     '720p',
     24,
+    50,
     15,
 )
 
@@ -199,8 +210,8 @@ LEVEL_2 = GuildBoostPerks(
     5,
     150,
     (
-        GuildFeature.animated_icon,
         GuildFeature.banner,
+        GuildFeature.icon_animated,
         GuildFeature.invite_splash,
         GuildFeature.role_icons,
     ),
@@ -208,6 +219,7 @@ LEVEL_2 = GuildBoostPerks(
     60,
     '1080p',
     36,
+    150,
     30,
 )
 
@@ -218,17 +230,18 @@ LEVEL_3 = GuildBoostPerks(
     0,
     250,
     (
-        GuildFeature.animated_banner,
-        GuildFeature.animated_icon,
         GuildFeature.banner,
+        GuildFeature.banner_animated,
+        GuildFeature.icon_animated,
         GuildFeature.invite_splash,
+        GuildFeature.invite_vanity_url,
         GuildFeature.role_icons,
-        GuildFeature.vanity_invite,
     ),
     3,
     60,
     '1080p',
     48,
+    300,
     60,
 )
 

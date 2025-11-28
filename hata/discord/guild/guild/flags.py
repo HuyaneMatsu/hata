@@ -1,6 +1,21 @@
-__all__ = ('SystemChannelFlag',)
+__all__ = ('GuildFeatureFlag', 'SystemChannelFlag',)
 
-from ...bases import FlagBaseReversed, FlagDescriptor as F
+from ...bases import FlagBase, FlagBaseReversed, FlagDescriptor as F
+
+
+class GuildFeatureFlag(FlagBase):
+    """
+    The flags of a guild feature representing its properties.
+    
+    The implemented guild feature flags are the following:
+    
+    +---------------------------------------+-------------------+
+    | Respective name                       | Bitwise position  |
+    +=======================================+===================+
+    | boost                                 | 0                 |
+    +---------------------------------------+-------------------+
+    """
+    boost = F(0)
 
 
 class SystemChannelFlag(FlagBaseReversed):

@@ -110,7 +110,7 @@ def test__GuildPreview__copy_with__all_fields():
     new_description = 'Yakumo'
     new_discovery_splash = Icon(IconType.animated, 3)
     new_emojis = [Emoji.precreate(202301080038, name = 'Orin')]
-    new_features = [GuildFeature.animated_icon]
+    new_features = [GuildFeature.icon_animated]
     new_guild_id = 202301080039
     new_icon = Icon(IconType.static, IconType.animated)
     new_invite_splash = Icon(IconType.static, 4)
@@ -168,8 +168,8 @@ def _iter_options__iter_features():
     )
     
     yield (
-        [GuildFeature.animated_banner, GuildFeature.animated_icon],
-        {GuildFeature.animated_banner, GuildFeature.animated_icon},
+        [GuildFeature.banner_animated, GuildFeature.icon_animated],
+        {GuildFeature.banner_animated, GuildFeature.icon_animated},
     )
 
 
@@ -198,10 +198,10 @@ def test__GuildPreview__iter_features(features):
 
 
 def _iter_options__has_feature():
-    yield None, GuildFeature.animated_icon, False
-    yield [GuildFeature.animated_banner], GuildFeature.animated_icon, False
-    yield [GuildFeature.animated_icon], GuildFeature.animated_icon, True
-    yield [GuildFeature.animated_banner, GuildFeature.animated_icon], GuildFeature.animated_icon, True
+    yield None, GuildFeature.icon_animated, False
+    yield [GuildFeature.banner_animated], GuildFeature.icon_animated, False
+    yield [GuildFeature.icon_animated], GuildFeature.icon_animated, True
+    yield [GuildFeature.banner_animated, GuildFeature.icon_animated], GuildFeature.icon_animated, True
 
 
 @vampytest._(vampytest.call_from(_iter_options__has_feature()).returning_last())

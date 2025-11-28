@@ -7,6 +7,7 @@ def test__ActivityAssets__repr():
     """
     Tests whether ``ActivityAssets.__repr__`` works as intended.
     """
+    image_invite_cover = 'last'
     image_large = 'plain'
     image_small = 'asia'
     text_large = 'senya'
@@ -15,6 +16,7 @@ def test__ActivityAssets__repr():
     url_small = 'https://orindance.party/llo.png'
     
     activity_assets = ActivityAssets(
+        image_invite_cover = image_invite_cover,
         image_large = image_large,
         image_small = image_small,
         text_large = text_large,
@@ -28,6 +30,7 @@ def test__ActivityAssets__repr():
 
 
 def _iter_options__eq():
+    image_invite_cover = 'last'
     image_large = 'plain'
     image_small = 'asia'
     text_large = 'senya'
@@ -36,6 +39,7 @@ def _iter_options__eq():
     url_small = 'https://orindance.party/llo.png'
     
     keyword_parameters = {
+        'image_invite_cover': image_invite_cover,
         'image_large': image_large,
         'image_small': image_small,
         'text_large': text_large,
@@ -48,6 +52,15 @@ def _iter_options__eq():
         keyword_parameters,
         keyword_parameters,
         True,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'image_invite_cover': None,
+        },
+        False,
     )
     
     yield (
@@ -134,6 +147,7 @@ def test__ActivityAssets__hash():
     """
     Tests whether ``ActivityAssets.__hash__`` works as intended.
     """
+    image_invite_cover = 'last'
     image_large = 'plain'
     image_small = 'asia'
     text_large = 'senya'
@@ -142,6 +156,7 @@ def test__ActivityAssets__hash():
     url_small = 'https://orindance.party/llo.png'
     
     activity_assets = ActivityAssets(
+        image_invite_cover = image_invite_cover,
         image_large = image_large,
         image_small = image_small,
         text_large = text_large,
@@ -155,6 +170,7 @@ def test__ActivityAssets__hash():
 
 
 def _iter_options__bool():
+    image_invite_cover  = 'last'
     image_large = 'plain'
     image_small = 'asia'
     text_large = 'senya'
@@ -165,6 +181,13 @@ def _iter_options__bool():
     yield (
         {},
         False,
+    )
+    
+    yield (
+        {
+            'image_invite_cover': image_invite_cover,
+        },
+        True,
     )
     
     yield (

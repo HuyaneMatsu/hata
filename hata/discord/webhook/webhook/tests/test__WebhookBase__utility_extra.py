@@ -115,6 +115,7 @@ def test__WebhookBase__can_use_emoji__custom_allowed():
     
     guild = Guild.precreate(
         guild_id,
+        emojis = [emoji],
         channels = [channel],
         roles = [role],
     )
@@ -124,6 +125,45 @@ def test__WebhookBase__can_use_emoji__custom_allowed():
     output = webhook.can_use_emoji(emoji)
     vampytest.assert_instance(output, bool)
     vampytest.assert_eq(output, True)
+
+
+def test__WebhookBase__can_use_emoji__custom_emoji_deleted():
+    """
+    Tests whether ``WebhookBase.can_use_emoji`` works as intended.
+    
+    Case: custom & emoji deleted.
+    """
+    emoji_id = 202511260013
+    channel_id = 202511260014
+    guild_id = 202511260015
+    
+    emoji = Emoji.precreate(
+        emoji_id,
+        name = 'satori',
+        guild_id = guild_id,
+    )
+    
+    channel = Channel.precreate(
+        channel_id,
+        guild_id = guild_id,
+    )
+    
+    role = Role.precreate(
+        guild_id,
+        permissions = Permission().update_by_keys(use_external_emojis = True),
+    )
+    
+    guild = Guild.precreate(
+        guild_id,
+        channels = [channel],
+        roles = [role],
+    )
+    
+    webhook = WebhookBase(channel_id = channel_id)
+    
+    output = webhook.can_use_emoji(emoji)
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, False)
 
 
 def test__WebhookBase__can_use_emoji__custom_not_available():
@@ -155,6 +195,7 @@ def test__WebhookBase__can_use_emoji__custom_not_available():
     
     guild = Guild.precreate(
         guild_id,
+        emojis = [emoji],
         channels = [channel],
         roles = [role],
     )
@@ -197,6 +238,7 @@ def test__WebhookBase__can_use_emoji__custom_role_bound():
     
     guild = Guild.precreate(
         guild_id,
+        emojis = [emoji],
         channels = [channel],
         roles = [role],
     )
@@ -264,6 +306,7 @@ def test__WebhookBase__can_use_emoji__custom_no_guild_default_role():
     
     guild = Guild.precreate(
         guild_id,
+        emojis = [emoji],
         channels = [channel],
         roles = [],
     )
@@ -303,6 +346,7 @@ def test__WebhookBase__can_use_emoji__custom_no_permissions():
     
     guild = Guild.precreate(
         guild_id,
+        emojis = [emoji],
         channels = [channel],
         roles = [role],
     )

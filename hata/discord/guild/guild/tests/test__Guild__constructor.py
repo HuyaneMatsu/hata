@@ -121,7 +121,7 @@ def test__Guild__new__all_fields():
     explicit_content_filter_level = ExplicitContentFilterLevel.no_role
     description = 'Koishi'
     discovery_splash = Icon(IconType.animated, 14)
-    features = [GuildFeature.animated_icon]
+    features = [GuildFeature.icon_animated]
     home_splash = Icon(IconType.animated, 36)
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
@@ -274,7 +274,7 @@ def test__Guild__precreate__all_fields():
         Emoji.precreate(202306210014),
         Emoji.precreate(202306210015),
     ]
-    features = [GuildFeature.animated_icon]
+    features = [GuildFeature.icon_animated]
     home_splash = Icon(IconType.animated, 36)
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)

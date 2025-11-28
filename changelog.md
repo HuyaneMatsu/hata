@@ -1,3 +1,57 @@
+## 1.3.88 *\[2025-11-28\]*
+
+- Add `mention_channel_and_roles_screen`.
+- Add `mention_channel_browse_screen`.
+- Add `mention_guild_guide_screen`.
+- Add `mention_linked_roles_screen`.
+- Escape screen mentions in `sanitize_mentions`.
+- Add `sanitise_links`.
+- Sanitize links in `sanitize_content`.
+- Add `TIMESTAMP_STYLES.shortest_date_time` and `.shorter_date_time`.
+- Add `ActivityAssets.image_invite_cover`.
+- Add `Activity.image_invite_cover_url` and `.image_invite_cover_url_as`.
+- Add support for `webp` media.
+- Add `Guild.soundboard_sound_limit`.
+- Add `GuildFeature.more_soundboard_sound`.
+- Add `GuildFeature.social_layer_store_page`.
+- Add `GuildFeature.summaries_experiment_disableable`.
+- Add `GuildFeature.verification_test`.
+- Add `GuildFeature.forwarding_disabled`.
+- Add `GuildFeature.moderation_pilot_reports`.
+- Add `GuildFeature.badge_pack_flex`.
+- Add `GuildFeature.badge_pack_flex`.
+- Add `GuildFeature.game_servers`.
+- Add `GuildFeature.community_experiment_large_ungated`.
+- Add `GuildFeature.pin_permissions_migrated`.
+- Add `GuildFeature.slowmode_bypass_permissions_migrated`.
+- Add `GuildFeature.discoverable_externally`.
+- Add `GuildFeature.products_archived_file`.
+- Add `GuildFeature.products_purchasable`.
+- Add `GuildFeature.verification_age_utils`.
+- Add `GuildFeatureFlag`.
+- Add `GuildFeature.flags.
+- Add `GuildBoostPerks.stage_channel_viewer_limit`.
+
+### Bug fixes
+
+- Fix `.can_use_emoji` methods not handing being guild owner & emoji being deleted edge cases.
+
+#### ext.slash
+
+- In expression parser ensure left shift second value is non negative.
+
+### Renames, Deprecations & Removals
+
+- Rename and deprecate `GuildFeature.animated_banner` to `.banner_animated`.
+- Rename and deprecate `GuildFeature.animated_icon` to `.icon_animated`.
+- Rename and deprecate `GuildBoostPerks.sound_limit` to `.soundboard_sound_limit`.
+- Rename and deprecate `GuildFeature.threads_enabled_testing` to `.threads_enabled_test`.
+- Rename and deprecate `GuildFeature.new_thread_permissions` to `.thread_permissions_migrated`.
+- Rename and deprecate `GuildFeature.vanity_invite` to `.invite_vanity_url`.
+- Rename and deprecate `GuildFeature.private_threads` to `.threads_private_enabled`.
+- Rename and deprecate `GuildFeature.attachment_size_limit_100_mb` to `.attachment_size_limit_100_MB`.
+- Rename and deprecate `GuildFeature.attachment_size_limit_50_mb` to `.attachment_size_limit_50_MB`.
+
 ## 1.3.87 *\[2025-11-09\]*
 
 ### Improvements
@@ -260,7 +314,7 @@
 - Add `TELEPHONE_NUMBER_MENTION_RP`.
 - `sanitize_mentions` now sanitizes email mentions.
 - `sanitize_mentions` now sanitizes telephone number mentions.
-- `sanitize_mentions` now sanitises `everyone` and `here` as a second step, because they may be produced in by
+- `sanitize_mentions` now sanitizes `everyone` and `here` as a second step, because they may be produced in by
     sanitizing normal mentions.
 - Add `EntitlementSourceType`.
 - Add `Entitlement.source_type`.

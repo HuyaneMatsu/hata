@@ -12,7 +12,7 @@ def test__SKUEnhancementGuild__repr():
     additional_emoji_slots = 12
     additional_soundboard_sound_slots = 13
     additional_sticker_slots = 14
-    features = [GuildFeature.animated_icon]
+    features = [GuildFeature.icon_animated]
     
     sku_enhancement_guild = SKUEnhancementGuild(
         additional_emoji_slots = additional_emoji_slots,
@@ -32,7 +32,7 @@ def test__SKUEnhancementGuild__hash():
     additional_emoji_slots = 12
     additional_soundboard_sound_slots = 13
     additional_sticker_slots = 14
-    features = [GuildFeature.animated_icon]
+    features = [GuildFeature.icon_animated]
     
     sku_enhancement_guild = SKUEnhancementGuild(
         additional_emoji_slots = additional_emoji_slots,
@@ -49,7 +49,7 @@ def _iter_options__eq():
     additional_emoji_slots = 12
     additional_soundboard_sound_slots = 13
     additional_sticker_slots = 14
-    features = [GuildFeature.animated_icon]
+    features = [GuildFeature.icon_animated]
     
     keyword_parameters = {
         'additional_emoji_slots': additional_emoji_slots,
@@ -95,7 +95,7 @@ def _iter_options__eq():
         keyword_parameters,
         {
             **keyword_parameters,
-            'features': [GuildFeature.animated_banner],
+            'features': [GuildFeature.banner_animated],
         },
         False,
     )

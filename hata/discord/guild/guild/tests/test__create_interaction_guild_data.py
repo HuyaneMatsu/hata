@@ -14,7 +14,7 @@ def test__create_interaction_guild_data():
     guild_id = 202310100000
     
     locale = Locale.dutch
-    features = [GuildFeature.animated_icon]
+    features = [GuildFeature.icon_animated]
     
     expected_output = {
         'id': str(guild_id),

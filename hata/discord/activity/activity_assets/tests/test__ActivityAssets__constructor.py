@@ -13,6 +13,7 @@ def _assert_fields_set(activity_assets):
         The field to check.
     """
     vampytest.assert_instance(activity_assets, ActivityAssets)
+    vampytest.assert_instance(activity_assets.image_invite_cover, str, nullable = True)
     vampytest.assert_instance(activity_assets.image_large, str, nullable = True)
     vampytest.assert_instance(activity_assets.image_small, str, nullable = True)
     vampytest.assert_instance(activity_assets.text_large, str, nullable = True)
@@ -37,6 +38,7 @@ def test__ActivityAssets__new__all_fields():
     
     Case: Fields given.
     """
+    image_invite_cover = 'last'
     image_large = 'plain'
     image_small = 'asia'
     text_large = 'senya'
@@ -45,6 +47,7 @@ def test__ActivityAssets__new__all_fields():
     url_small = 'https://orindance.party/llo.png'
     
     activity_assets = ActivityAssets(
+        image_invite_cover = image_invite_cover,
         image_large = image_large,
         image_small = image_small,
         text_large = text_large,
@@ -54,6 +57,7 @@ def test__ActivityAssets__new__all_fields():
     )
     _assert_fields_set(activity_assets)
     
+    vampytest.assert_eq(activity_assets.image_invite_cover, image_invite_cover)
     vampytest.assert_eq(activity_assets.image_large, image_large)
     vampytest.assert_eq(activity_assets.image_small, image_small)
     vampytest.assert_eq(activity_assets.text_large, text_large)

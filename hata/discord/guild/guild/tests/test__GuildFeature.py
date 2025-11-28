@@ -1,5 +1,6 @@
 import vampytest
 
+from ..flags import GuildFeatureFlag
 from ..preinstanced import GuildFeature
 
 
@@ -13,6 +14,7 @@ def _assert_fields_set(guild_feature):
         The instance to test.
     """
     vampytest.assert_instance(guild_feature, GuildFeature)
+    vampytest.assert_instance(guild_feature.flags, GuildFeatureFlag)
     vampytest.assert_instance(guild_feature.name, str)
     vampytest.assert_instance(guild_feature.value, GuildFeature.VALUE_TYPE)
 

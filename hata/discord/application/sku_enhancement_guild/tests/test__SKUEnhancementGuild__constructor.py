@@ -39,7 +39,7 @@ def test__SKUEnhancementGuild__new__all_fields():
     additional_emoji_slots = 12
     additional_soundboard_sound_slots = 13
     additional_sticker_slots = 14
-    features = [GuildFeature.animated_icon]
+    features = [GuildFeature.icon_animated]
     
     sku_enhancement_guild = SKUEnhancementGuild(
         additional_emoji_slots = additional_emoji_slots,

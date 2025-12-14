@@ -1,4 +1,33 @@
+## 1.3.89 *\[2025-12-14\]*
+
+### Improvements
+
+- Add `AuditLogEntryType.permission_migration_pin_completed`.
+- Add `AuditLogEntryType.permission_migration_slowmode_bypass_completed`.
+- Add `Permission.slowmode_bypass`.
+- Add `ERROR_CODES.missing_permissions_for_using_provisional_accounts`.
+- Add `ERROR_CODES.json_web_token_expired`.
+- Add `ERROR_CODES.json_web_token_issuer_configuration_mismatch`.
+- Add `ERROR_CODES.json_web_token_audience_configuration_mismatch`.
+- Add `ERROR_CODES.json_web_token_too_old`.
+- Add `ERROR_CODES.failed_to_generate_unique_name_within_timeout`.
+- Add `ERROR_CODES.invalid_client_secret`.
+
+#### ext.slash
+- Add `SlasherSyncError._repr__` to allow edge cases, such as Discord bugs to have detailed descriptions.
+
+### Bug fixes
+
+- Fix `AuditLogEntryType.user_verification_update` having incorrect value.
+- Fix `AuditLogEntryType.user_self_update` having incorrect value, name and target type.
+    (Previously guild_overview_update)
+
+#### ext.slash
+- Fix incorrect error message when passing integer as a choice parameter name.
+
 ## 1.3.88 *\[2025-11-28\]*
+
+### Improvements
 
 - Add `mention_channel_and_roles_screen`.
 - Add `mention_channel_browse_screen`.
@@ -29,7 +58,7 @@
 - Add `GuildFeature.products_purchasable`.
 - Add `GuildFeature.verification_age_utils`.
 - Add `GuildFeatureFlag`.
-- Add `GuildFeature.flags.
+- Add `GuildFeature.flags`.
 - Add `GuildBoostPerks.stage_channel_viewer_limit`.
 
 ### Bug fixes
@@ -37,7 +66,6 @@
 - Fix `.can_use_emoji` methods not handing being guild owner & emoji being deleted edge cases.
 
 #### ext.slash
-
 - In expression parser ensure left shift second value is non negative.
 
 ### Renames, Deprecations & Removals

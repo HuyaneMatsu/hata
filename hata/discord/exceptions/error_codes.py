@@ -717,10 +717,24 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | dsa_appeal_request_deflection                                     | 522001    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| missing_permissions_for_using_provisional_accounts                | 530000    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| json_web_token_expired                                            | 530001    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| json_web_token_issuer_configuration_mismatch                      | 530002    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| json_web_token_audience_configuration_mismatch                    | 530003    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| json_web_token_too_old                                            | 530004    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| failed_to_generate_unique_name_within_timeout                     | 530006    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| invalid_client_secret                                             | 530007    | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | content_inventory_entry_invalid_permissions                       | 560006    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | account_revert_invalid_token                                      | 620000    | -         |
-+--------------------------------------------'-----------------------+-----------+-----------+
++-------------------------------------------------------------------+-----------+-----------+
 | account_revert_email_used                                         | 620001    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | account_revert_account_not_found                                  | 620002    | -         |
@@ -1097,11 +1111,20 @@ dsa_rsl_limited_time = 521003
 dsa_rsl_report_ineligible = 521004
 dsa_appeal_request_deflection = 522001
 
+missing_permissions_for_using_provisional_accounts = 530000
+json_web_token_expired = 530001
+json_web_token_issuer_configuration_mismatch = 530002
+json_web_token_audience_configuration_mismatch = 530003
+json_web_token_too_old = 530004
+failed_to_generate_unique_name_within_timeout = 530006
+invalid_client_secret = 530007
+
 content_inventory_entry_invalid_permissions = 560006
 
 account_revert_invalid_token = 620000
 account_revert_email_used = 620001
 account_revert_account_not_found = 620002
+
 
 __deprecations__ = {
     'activity_launch_premium_tier': ('activity_launch_boost_level', '2025 November', activity_launch_boost_level),

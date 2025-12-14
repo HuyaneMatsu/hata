@@ -2360,12 +2360,12 @@ class Slasher(
                 except GeneratorExit:
                     raise
                 
-                except BaseException as err:
-                    if not isinstance(err, ConnectionError):
+                except BaseException as exception:
+                    if not isinstance(exception, ConnectionError):
                         await client.events.error(
                             client,
                             f'{self!r}._sync_permissions_task',
-                            SlasherSyncError(command, err),
+                            SlasherSyncError(command, exception),
                         )
                     return False
                 
@@ -2426,18 +2426,18 @@ class Slasher(
         except GeneratorExit:
             raise
         
-        except BaseException as err:
-            if isinstance(err, ConnectionError):
+        except BaseException as exception:
+            if isinstance(exception, ConnectionError):
                 return False
             
-            if isinstance(err, DiscordException) and (err.code == ERROR_CODES.unknown_application_command):
+            if isinstance(exception, DiscordException) and (exception.code == ERROR_CODES.unknown_application_command):
                 # no command, no problem, lol
                 return True
             
             await client.events.error(
                 client,
                 f'{self!r}._edit_guild_command_to_non_global',
-                SlasherSyncError(command, err),
+                SlasherSyncError(command, exception),
             )
             return False
         
@@ -2483,12 +2483,12 @@ class Slasher(
         except GeneratorExit:
             raise
         
-        except BaseException as err:
-            if isinstance(err, ConnectionError):
+        except BaseException as exception:
+            if isinstance(exception, ConnectionError):
                 # No internet connection
                 return False
             
-            if isinstance(err, DiscordException) and err.code == ERROR_CODES.unknown_application_command:
+            if isinstance(exception, DiscordException) and exception.code == ERROR_CODES.unknown_application_command:
                 # Already deleted, lul, add it back!
                 self._unregister_helper(command, command_state, guild_id)
                 return await self._create_command(client, command, command_state, guild_id)
@@ -2496,7 +2496,7 @@ class Slasher(
             await client.events.error(
                 client,
                 f'{self!r}._edit_command',
-                SlasherSyncError(command, err),
+                SlasherSyncError(command, exception),
             )
             return False
         
@@ -2541,19 +2541,19 @@ class Slasher(
         except GeneratorExit:
             raise
         
-        except BaseException as err:
-            if isinstance(err, ConnectionError):
+        except BaseException as exception:
+            if isinstance(exception, ConnectionError):
                 # No internet connection
                 return False
             
-            if isinstance(err, DiscordException) and err.code == ERROR_CODES.unknown_application_command:
+            if isinstance(exception, DiscordException) and exception.code == ERROR_CODES.unknown_application_command:
                 # Already deleted, lul, ok, I guess.
                 pass
             else:
                 await client.events.error(
                     client,
                     f'{self!r}._delete_command',
-                    SlasherSyncError(command, err),
+                    SlasherSyncError(command, exception),
                 )
                 return False
         
@@ -2593,15 +2593,15 @@ class Slasher(
         except GeneratorExit:
             raise
         
-        except BaseException as err:
-            if isinstance(err, ConnectionError):
+        except BaseException as exception:
+            if isinstance(exception, ConnectionError):
                 # No internet connection
                 return False
             
             await client.events.error(
                 client,
                 f'{self!r}._create_command',
-                SlasherSyncError(command, err),
+                SlasherSyncError(command, exception),
             )
             return False
         
@@ -3436,14 +3436,14 @@ class Slasher(
         except GeneratorExit:
             raise
         
-        except BaseException as err:
-            if isinstance(err, ConnectionError):
+        except BaseException as exception:
+            if isinstance(exception, ConnectionError):
                 return None
             
             await client.events.error(
                 client,
                 f'{self!r}._get_owners_access_task',
-                SlasherSyncError(None, err),
+                SlasherSyncError(None, exception),
             )
             return None
         

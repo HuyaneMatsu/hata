@@ -10,8 +10,9 @@ from ...field_putters import (
     bool_optional_putter_factory, entity_id_optional_putter_factory, entity_id_putter_factory,
     flag_optional_putter_factory, force_string_putter_factory, int_optional_postprocess_putter_factory,
     int_putter_factory, nullable_entity_array_putter_factory, nullable_entity_optional_putter_factory,
-    nullable_string_array_optional_putter_factory, nullable_string_putter_factory, preinstanced_array_putter_factory,
-    preinstanced_putter_factory, url_optional_putter_factory
+    nullable_string_array_optional_putter_factory, nullable_string_putter_factory,
+    nullable_value_array_optional_putter_factory, preinstanced_array_putter_factory, preinstanced_putter_factory,
+    url_optional_putter_factory
 )
 from ...field_validators import (
     bool_validator_factory, entity_id_validator_factory, flag_validator_factory, force_string_validator_factory,
@@ -634,6 +635,7 @@ parse_publishers = nullable_entity_array_parser_factory('publishers', Applicatio
 put_publishers = nullable_entity_array_putter_factory('publishers', ApplicationEntity)
 validate_publishers = nullable_entity_array_validator_factory('publishers', ApplicationEntity)
 
+
 # redirect_urls
 
 def parse_redirect_urls(data):
@@ -654,9 +656,11 @@ def parse_redirect_urls(data):
         return None
     
     parsed_values = None
+    add_null = False
     
     for string in string_array:
         if string is None:
+            add_null = True
             continue
         
         if parsed_values is None:
@@ -665,15 +669,73 @@ def parse_redirect_urls(data):
         parsed_values.append(string)
     
     if parsed_values is None:
-        return None
+        return (None,) if add_null else None
     
     parsed_values.sort()
+    if add_null:
+        parsed_values.insert(0, None)
     return tuple(parsed_values)
 
 
-put_redirect_urls = nullable_string_array_optional_putter_factory('redirect_uris')
-validate_redirect_urls = nullable_string_array_validator_factory('redirect_urls')
- 
+put_redirect_urls = nullable_value_array_optional_putter_factory('redirect_uris')
+
+def validate_redirect_urls(redirect_urls):
+    """
+    Validates the given redirect urls value.
+    
+    Parameters
+    ----------
+    put_redirect_urls : `None | str | iterable<None | str>`
+        Value to validate.
+    
+    Returns
+    -------
+    string_array : `None | tuple<str>
+            
+    Raises
+    ------
+    TypeError
+        - If `string_array`'s type is incorrect.
+    """
+    if (redirect_urls is None):
+        return None
+    
+    if isinstance(redirect_urls, str):
+        return (redirect_urls, )
+    
+    if getattr(redirect_urls, '__iter__', None) is None:
+        raise TypeError(
+            f'`redirect_urls` can be `None`, `iterable` of `str`, got '
+            f'{ type(put_redirect_urls).__name__}; {redirect_urls!r}.'
+        )
+    
+    processed_values = None
+    add_null = False
+    
+    for string in redirect_urls:
+        if string is None:
+            add_null = True
+            continue
+        
+        if not isinstance(string, str):
+            raise TypeError(
+                f'`{redirect_urls}` elements can be `None | str`, got '
+                f'{type(string).__name__}; {string!r}; redirect_urls = {redirect_urls!r}.'
+            )
+        
+        if (processed_values is None):
+            processed_values = set()
+        
+        processed_values.add(string)
+    
+    if processed_values is None:
+        return (None,) if add_null else None
+    
+    processed_values = sorted(processed_values)
+    if add_null:
+        processed_values.insert(0, None)
+    return tuple(processed_values)
+
 
 # role_connection_verification_url
 

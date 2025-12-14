@@ -467,7 +467,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         return self
     
     
-    def to_data(self, * , defaults = False, include_internals = False):
+    def to_data(self, * ,defaults = False, include_internals = False):
         """
         Converts the application command to a json serializable object.
         

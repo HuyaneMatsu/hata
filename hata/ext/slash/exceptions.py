@@ -522,6 +522,50 @@ def _iter_exception_handlers(entity):
         entity = parent_reference()
         if entity is None:
             break
+    
+
+
+def _produce_slash_sync_error_representation(exception):
+    """
+    Helper function to produce slash sync error representation.
+    
+    This function is an iterable generator.
+    
+    Parameters
+    ----------
+    exception : ``SlasherSyncError``
+        Exception to produce its representation of.
+    
+    Yields
+    ------
+    part : `str`
+    """
+    yield type(exception).__name__
+    
+    entity = exception.entity
+    if (entity is not None):
+        yield ' while syncing '
+        yield entity.name
+        
+        yield '\nentity = '
+        yield repr(entity)
+    
+    cause = exception.__cause__
+    if (cause is not None):
+        yield '\ncause = '
+        yield type(cause).__name__
+        
+        if isinstance(cause, DiscordException):
+            if (
+                (cause.status == 400) and
+                (cause.code == ERROR_CODES.invalid_form_body) and
+                (cause.message == 'redirect_uris[0].BASE_TYPE_REQUIRED(\'This field is required\')')
+            ):
+                yield (
+                    '\n'
+                    '! This error is due to the application having a null value in its redirect urls !\n'
+                    '! You have to go to Discord Developer Portal and force update the field by changing it !'
+                )
 
 
 class SlasherSyncError(BaseException):
@@ -532,27 +576,35 @@ class SlasherSyncError(BaseException):
     
     Attributes
     ----------
-    entity: ``SlashCommand``
+    entity: ``None | SlashCommand``
         The entity, who's sync failed.
     """
     __slots__ = ('entity',)
     
-    def __new__(cls, entity, err):
+    def __new__(cls, entity, cause):
         """
         Creates a new slasher sync error exception.
         
         Parameters
         ----------
-        entity: ``SlashCommand``
+        entity: ``None | SlashCommand``
             The entity, who's sync failed.
         
-        err : `BaseException`
+        cause : `None |BaseException`
             Source exception.
         """
         self = BaseException.__new__(cls, entity)
         self.entity = entity
-        self.__cause__ = err
+        self.__cause__ = cause
         return self
     
     
     __init__ = object.__init__
+    
+    
+    def __repr__(self):
+        """Returns repr(self)."""
+        return ''.join(_produce_slash_sync_error_representation(self))
+    
+    
+    __str__ = __repr__

@@ -1510,7 +1510,7 @@ def build_sticker_url(sticker_id, sticker_format):
         endpoint = MEDIA_ENDPOINT
     else:
         endpoint = CDN_ENDPOINT
-        
+    
     return f'{endpoint}/stickers/{sticker_id}.{sticker_format.extension}'
 
 

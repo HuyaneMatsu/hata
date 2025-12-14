@@ -55,6 +55,7 @@ PERMISSION_SHIFT_SET_VOICE_CHANNEL_STATUS = 48
 PERMISSION_SHIFT_SEND_POLLS = 49
 PERMISSION_SHIFT_USE_EXTERNAL_APPLICATION_COMMANDS = 50
 PERMISSION_SHIFT_PIN_MESSAGES = 51
+PERMISSION_SHIFT_SLOWMODE_BYPASS = 52
 
 
 PERMISSION_MASK_CREATE_INSTANT_INVITE = 1 << PERMISSION_SHIFT_CREATE_INSTANT_INVITE
@@ -109,6 +110,7 @@ PERMISSION_MASK_SET_VOICE_CHANNEL_STATUS = 1 << PERMISSION_SHIFT_SET_VOICE_CHANN
 PERMISSION_MASK_SEND_POLLS = 1 << PERMISSION_SHIFT_SEND_POLLS
 PERMISSION_MASK_USE_EXTERNAL_APPLICATION_COMMANDS = 1 << PERMISSION_SHIFT_USE_EXTERNAL_APPLICATION_COMMANDS
 PERMISSION_MASK_PIN_MESSAGES = 1 << PERMISSION_SHIFT_PIN_MESSAGES
+PERMISSION_MASK_SLOWMODE_BYPASS = 1 << PERMISSION_SHIFT_SLOWMODE_BYPASS
 
 
 class Permission(FlagBase):
@@ -222,6 +224,8 @@ class Permission(FlagBase):
     +---------------------------------------+-------------------+
     | pin_messages                          | 51                |
     +---------------------------------------+-------------------+
+    | slowmode_bypass                       | 52                |
+    +---------------------------------------+-------------------+
     
     Each permission can be accessed as property with `can_` + it's respective name, meanwhile a new edited permission
     can be created with the `allow_...` and with the `deny_...` methods.
@@ -278,6 +282,7 @@ class Permission(FlagBase):
     send_polls = F(PERMISSION_SHIFT_SEND_POLLS)
     use_external_application_commands = F(PERMISSION_SHIFT_USE_EXTERNAL_APPLICATION_COMMANDS)
     pin_messages = F(PERMISSION_SHIFT_PIN_MESSAGES)
+    slowmode_bypass = F(PERMISSION_SHIFT_SLOWMODE_BYPASS)
 
 
 PERMISSION_ALL = Permission().update_by_keys(
@@ -333,6 +338,7 @@ PERMISSION_ALL = Permission().update_by_keys(
     send_polls = True,
     use_external_application_commands = True,
     pin_messages = True,
+    slowmode_bypass = True,
 )
 
 PERMISSION_NONE = Permission()
@@ -388,6 +394,7 @@ PERMISSION_PRIVATE = Permission().update_by_keys(
     send_polls = True,
     use_external_application_commands = True,
     pin_messages = True,
+    slowmode_bypass = True,
 )
 
 PERMISSION_PRIVATE_BOT = PERMISSION_PRIVATE.update_by_keys(
@@ -455,6 +462,7 @@ PERMISSION_TEXT_ALL = Permission().update_by_keys(
     send_polls = True,
     use_external_application_commands = True,
     pin_messages = True,
+    slowmode_bypass = True,
 )
 
 PERMISSION_TEXT_DENY = Permission(~PERMISSION_TEXT_ALL)
@@ -527,6 +535,7 @@ PERMISSION_VOICE_ONLY = Permission().update_by_keys(
     set_voice_channel_status = False,
     send_polls = False,
     use_external_application_commands = False,
+    slowmode_bypass = False,
 )
 
 PERMISSION_VOICE_DENY = Permission(~PERMISSION_VOICE_ONLY)
@@ -594,6 +603,7 @@ PERMISSION_STAGE_MODERATOR = Permission().update_by_keys(
     set_voice_channel_status = False,
     send_polls = False,
     use_external_application_commands = False,
+    slowmode_bypass = False,
 )
 
 PERMISSION_CAN_SEND_MESSAGES_ALL = Permission().update_by_keys(

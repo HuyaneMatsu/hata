@@ -1,8 +1,10 @@
 __all__ = ('SlashParameter', )
 
+from ctypes import c_ulonglong as UInt64, pointer as Pointer, memmove as move_memory
 from enum import Enum
+from sys import implementation as IMPLEMENTATION, maxsize as MAX_SIZE
 
-from scarletio import CallableAnalyzer, RichAttributeErrorBaseType
+from scarletio import CallableAnalyzer, RichAttributeErrorBaseType, copy_docs
 
 from ...discord.application_command import ApplicationCommandOptionType
 from ...discord.application_command.application_command.constants import (
@@ -46,6 +48,67 @@ from .utils import normalize_description, raw_name_to_display
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
 INTERACTION_TYPE_APPLICATION_COMMAND_AUTOCOMPLETE = InteractionType.application_command_autocomplete
 
+
+def _check_exception_constructor_virginity(exception_type):
+    """
+    Checks whether the given exception type is untouched.
+    
+    Parameters
+    ----------
+    exception_type : `type`
+        The type to check.
+    
+    Returns
+    -------
+    virgin : `bool`
+    """
+    return False
+
+
+if IMPLEMENTATION.name == 'pypy':
+    @copy_docs(_check_exception_constructor_virginity)
+    def _check_exception_constructor_virginity(exception_type):
+        return (
+            (exception_type.__new__ is BaseException.__new__) and
+            (exception_type.__init__ is BaseException.__init__)
+        )
+
+elif IMPLEMENTATION.name == 'cpython':
+    if MAX_SIZE == (1 << 63) - 1:
+        @copy_docs(_check_exception_constructor_virginity)
+        def _check_exception_constructor_virginity(exception_type):
+            original_new = BaseException.__new__
+            given_new = exception_type.__new__
+            if type(original_new) is not type(given_new):
+                return False
+            
+            original_init = BaseException.__init__
+            given_init = exception_type.__init__
+            if type(original_init) is not type(given_init):
+                return False
+            
+            memory_value = UInt64()
+            address_memory = Pointer(memory_value)
+            
+            move_memory(address_memory, id(original_new) + 16, 8)
+            original_new_address = memory_value.value
+            
+            move_memory(address_memory, id(given_new) + 16, 8)
+            given_new_address = memory_value.value
+            
+            if given_new_address != original_new_address:
+                return False
+            
+            move_memory(address_memory, id(original_init) + 48, 8)
+            original_init_address = memory_value.value
+            
+            move_memory(address_memory, id(given_init) + 48, 8)
+            given_init_address = memory_value.value
+            
+            if given_init_address != original_init_address:
+                return False
+            
+            return True
 
 
 async def converter_self_client(client, interaction_event):
@@ -1281,7 +1344,7 @@ def _validate_choice_name(name):
     """
     if not isinstance(name, str):
         raise TypeError(
-            f'`annotation-name` can be `str`, got {name.__class__.__name__}; {name!r}.'
+            f'choice can be only `str`, got {type(name).__name__}; {name!r}.'
         )
 
 
@@ -1302,7 +1365,7 @@ def _validate_choice_value(value):
 
     if not isinstance(value, (str, int, float)):
         raise TypeError(
-            f'`annotation-value` can be `str`, `int`, `float`, got {value.__class__.__name__}; {value!r}.'
+            f'choice values can be `str`, `int`, `float`, got {type(value).__name__}; {value!r}.'
         )
 
 
@@ -2087,10 +2150,19 @@ def create_parameter_converter(parameter, parameter_configurer):
         - If a slash parameter's final description's length is out of the expected range.
     """
     if parameter_configurer is None:
-        (
-            choices, description, name, annotation_type, channel_types, max_value, min_value, autocomplete,
-            choice_enum_type, max_length, min_length
-        ) = parse_annotation(parameter)
+        try:
+            (
+                choices, description, name, annotation_type, channel_types, max_value, min_value, autocomplete,
+                choice_enum_type, max_length, min_length
+            ) = parse_annotation(parameter)
+        except Exception as exception:
+            exception_type = type(exception)
+            # If the exception is not virgin, reraise it
+            if not _check_exception_constructor_virginity(exception_type):
+                raise
+            
+            raise exception_type(f'Failed to convert parameter: {parameter!r}') from exception
+    
     else:
         choice_enum_type = parameter_configurer._choice_enum_type
         choices = parameter_configurer._choices

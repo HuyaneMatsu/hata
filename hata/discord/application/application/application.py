@@ -598,7 +598,7 @@ class Application(DiscordEntity, immortal = True):
         A list of the application's games' publishers.
         Defaults to `None`.
     
-    redirect_urls : `None | tuple<str>`
+    redirect_urls : `None | tuple<None | str>`
         Configured oauth2 redirect urls.
         Defaults to `None`.
     
@@ -2060,7 +2060,7 @@ class Application(DiscordEntity, immortal = True):
         publishers : `None`, `iterable` of ``ApplicationEntity``, Optional (Keyword only)
             A list of the application's games' publishers.
     
-        redirect_urls : `None | str | iterable<str>`, Optional (Keyword only)
+        redirect_urls : `None | str | iterable<None | str>`, Optional (Keyword only)
             Configured oauth2 redirect urls.
         
         role_connection_verification_url : `None`, `str`, Optional (Keyword only)
@@ -2286,7 +2286,7 @@ class Application(DiscordEntity, immortal = True):
         publishers : `None`, `iterable` of ``ApplicationEntity``, Optional (Keyword only)
             A list of the application's games' publishers.
     
-        redirect_urls : `None | str | iterable<str>`, Optional (Keyword only)
+        redirect_urls : `None | str | iterable<None | str>`, Optional (Keyword only)
             Configured oauth2 redirect urls.
         
         role_connection_verification_url : `None`, `str`, Optional (Keyword only)
@@ -2521,7 +2521,7 @@ class Application(DiscordEntity, immortal = True):
         publishers : `None`, `iterable` of ``ApplicationEntity``, Optional (Keyword only)
             A list of the application's games' publishers.
     
-        redirect_urls : `None | str | iterable<str>`, Optional (Keyword only)
+        redirect_urls : `None | str | iterable<None | str>`, Optional (Keyword only)
             Configured oauth2 redirect urls.
         
         role_connection_verification_url : `None`, `str`, Optional (Keyword only)
@@ -2906,7 +2906,7 @@ class Application(DiscordEntity, immortal = True):
         
         Yields
         ------
-        redirect_url : `str`
+        redirect_url : `None | str`
         """
         redirect_urls = self.redirect_urls
         if (redirect_urls is not None):

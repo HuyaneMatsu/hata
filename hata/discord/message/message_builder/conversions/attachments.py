@@ -124,7 +124,7 @@ def _get_or_create_io_name(io):
     
     Returns
     -------
-    mame : `str`
+    name : `str`
     """
     name = getattr(io, 'name', None)
     if (name is not None) and name:

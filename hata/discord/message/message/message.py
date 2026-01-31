@@ -633,11 +633,18 @@ class Message(DiscordEntity, immortal = True):
                     self._set_attributes(data, False)
                     break
                 
-                # If the message has no content fields we update them.
+                # If the message has no content fields, we update them.
+                # It can happen that both this and the one under should be trigger, so we do not jump to return.
                 if not self.has_any_content_field():
                     self._update_content_fields(data)
                     self.referenced_message = parse_referenced_message(data)
-                    break
+                
+                # If the message has no reactions, we update them.
+                # This can happen when a message is originally loaded through message search.
+                if self.reactions is None:
+                    reactions = parse_reactions(data, None)
+                    if (reactions is not None):
+                        self.reactions = reactions
                 
                 # No other cases for now
                 break

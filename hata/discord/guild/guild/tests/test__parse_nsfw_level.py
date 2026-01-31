@@ -5,9 +5,24 @@ from ..preinstanced import NsfwLevel
 
 
 def _iter_options():
-    yield {}, NsfwLevel.none
-    yield {'nsfw_level': None}, NsfwLevel.none
-    yield {'nsfw_level': NsfwLevel.safe.value}, NsfwLevel.safe
+    yield (
+        {},
+        NsfwLevel.none,
+    )
+    
+    yield (
+        {
+            'nsfw_level': None,
+        },
+        NsfwLevel.none,
+    )
+    
+    yield (
+        {
+            'nsfw_level': NsfwLevel.safe.value,
+        },
+        NsfwLevel.safe,
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

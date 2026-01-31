@@ -138,7 +138,7 @@ class IntegrationMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        copy : `instance<type<self>>`
+        new : `instance<type<self>>`
         """
         return object.__new__(type(self))
     
@@ -149,7 +149,7 @@ class IntegrationMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        copy : `instance<type<self>>`
+        new : `instance<type<self>>`
         
         Raises
         ------
@@ -174,7 +174,7 @@ class IntegrationMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        copy : `instance<type<self>>`
+        new : `instance<type<self>>`
         
         Raises
         ------

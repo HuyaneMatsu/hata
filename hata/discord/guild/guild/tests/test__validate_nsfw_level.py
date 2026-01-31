@@ -5,9 +5,20 @@ from ..preinstanced import NsfwLevel
 
 
 def _iter_options__passing():
-    yield None, NsfwLevel.none
-    yield NsfwLevel.safe, NsfwLevel.safe
-    yield NsfwLevel.safe.value, NsfwLevel.safe
+    yield (
+        None,
+        NsfwLevel.none,
+    )
+    
+    yield (
+        NsfwLevel.safe,
+        NsfwLevel.safe,
+    )
+    
+    yield (
+        NsfwLevel.safe.value,
+        NsfwLevel.safe,
+    )
 
 
 def _iter_options__type_error():

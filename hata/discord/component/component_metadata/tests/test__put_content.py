@@ -4,10 +4,37 @@ from ..fields import put_content
 
 
 def _iter_options():
-    yield None, False, {'content': ''}
-    yield None, True, {'content': ''}
-    yield 'a', False, {'content': 'a'}
-    yield 'a', True, {'content': 'a'}
+    yield (
+        None,
+        False,
+        {
+            'content': '',
+        },
+    )
+    
+    yield (
+        None,
+        True,
+        {
+            'content': '',
+        },
+    )
+    
+    yield (
+        'a',
+        False,
+        {
+            'content': 'a',
+        },
+    )
+    
+    yield (
+        'a',
+        True,
+        {
+            'content': 'a',
+        },
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

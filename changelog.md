@@ -1,3 +1,24 @@
+## 1.3.90 *\[2026-01-31\]*
+
+### Improvements
+
+- Add `ERROR_CODES.message_history_not_yet_indexed`.
+- Add `MessageSearchSortByType`.
+- Add `EmbedType.sound`.
+- Add `MessageSearchHasType`.
+- Add `MessageSearchAuthorType`,
+- Add `MessageSearchSortOrderType`.
+- Add `MessageSearchQuery`.
+- Add `MessageSearchResponse`.
+- Add `Client.message_search_channel`.
+- Add `Client.message_search_guild`.
+- Add `RATE_LIMIT_GROUPS.message_search_channel`.
+- Add `RATE_LIMIT_GROUPS.message_search_guild`.
+- Add `DiscordApiClient.message_search_channel`.
+- Add `DiscordApiClient.message_search_guild`.
+- Add `ERROR_CODES.unknown_invite_target_users_job`.
+- Add `ERROR_CODES.unknown_invite_target_users`.
+
 ## 1.3.89 *\[2025-12-14\]*
 
 ### Improvements
@@ -140,7 +161,7 @@
 
 ### Bug fixes
 
-- Fix `ClientUserBase.can_use_emoji` and `WebhookBase.can_use_emoji` did not check whether teh emoji is actually
+- Fix `ClientUserBase.can_use_emoji` and `WebhookBase.can_use_emoji` did not check whether the emoji is actually
     available.
 - Fix `client.events.channel_update` may not trigger if no client sees it (since previous update).
 

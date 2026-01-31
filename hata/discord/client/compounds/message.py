@@ -12,7 +12,7 @@ from ...channel import Channel, MessageIterator, message_relative_index
 from ...core import CHANNELS, KOKORO, MESSAGES
 from ...exceptions import DiscordException, ERROR_CODES
 from ...http import DiscordApiClient
-from ...message import Message, MessageFlag, MessagePin
+from ...message import Message, MessageSearchQuery, MessageSearchResponse, MessageFlag, MessagePin
 from ...message.message.utils import process_message_chunk
 from ...message.message_builder import MessageBuilderCreate, MessageBuilderEdit
 from ...permission.permission import PERMISSION_MASK_MANAGE_MESSAGES, PERMISSION_MASK_READ_MESSAGE_HISTORY
@@ -25,8 +25,8 @@ from ..functionality_helpers import (
 )
 
 from ..request_helpers import (
-    get_channel_and_id, get_channel_id, get_channel_id_and_message_id, get_message_and_channel_id_and_message_id,
-    validate_message_to_delete
+    get_channel_and_id, get_channel_id, get_channel_id_and_message_id, get_guild_id,
+    get_message_and_channel_id_and_message_id, validate_message_to_delete
 )
 
 
@@ -1960,3 +1960,77 @@ class ClientCompoundMessageEndpoints(Compound):
             - If `chunk_size` is out of range [1:].
         """
         return await MessageIterator(self, channel, chunk_size)
+    
+    
+    async def message_search_channel(self, channel, message_search_query):
+        """
+        Searches messages at the given channel.
+        
+        This function is a coroutine.
+        
+        Parameters
+        ----------
+        channel : ``Channel | int``
+            The channel to search the message at.
+        
+        Returns
+        -------
+        response : ``MessageSearchResponse``
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        channel_id = get_channel_id(channel, Channel.is_in_group_private)
+        
+        if not isinstance(message_search_query, MessageSearchQuery):
+            raise TypeError(
+                f'`message_search_query` can be `{MessageSearchQuery.__name__}`, '
+                f'got {type(message_search_query).__name__}; {message_search_query}.'
+            )
+        
+        data = await self.api.message_search_channel(
+            channel_id,
+            message_search_query.to_data(),
+        )
+        return MessageSearchResponse.from_data(data)
+    
+    
+    async def message_search_guild(self, guild, message_search_query):
+        """
+        Searches messages at the given guild.
+        
+        This function is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Channel | int``
+            The guild to search the message at.
+        
+        Returns
+        -------
+        response : ``MessageSearchResponse``
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        guild_id = get_guild_id(guild)
+        
+        if not isinstance(message_search_query, MessageSearchQuery):
+            raise TypeError(
+                f'`message_search_query` can be `{MessageSearchQuery.__name__}`, '
+                f'got {type(message_search_query).__name__}; {message_search_query}.'
+            )
+        
+        data = await self.api.message_search_guild(
+            guild_id,
+            message_search_query.to_data(),
+        )
+        return MessageSearchResponse.from_data(data)

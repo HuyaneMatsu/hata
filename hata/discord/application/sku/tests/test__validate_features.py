@@ -5,15 +5,57 @@ from ..preinstanced import SKUFeature
 
 
 def _iter_options__passing():
-    yield None, None
-    yield [], None
-    yield SKUFeature.single_player, (SKUFeature.single_player, )
-    yield SKUFeature.single_player.value, (SKUFeature.single_player, )
-    yield [SKUFeature.single_player], (SKUFeature.single_player, )
-    yield [SKUFeature.single_player.value], (SKUFeature.single_player, )
     yield (
-        [SKUFeature.single_player, SKUFeature.pvp],
-        (SKUFeature.single_player, SKUFeature.pvp,),
+        None,
+        None,
+    )
+    
+    yield (
+        [],
+        None,
+    )
+    
+    yield (
+        SKUFeature.single_player,
+        (
+            SKUFeature.single_player,
+        ),
+    )
+    
+    yield (
+        SKUFeature.single_player.value,
+        (
+            SKUFeature.single_player,
+        ),
+    )
+    
+    yield (
+        [
+            SKUFeature.single_player
+        ],
+        (
+            SKUFeature.single_player,
+        ),
+    )
+    
+    yield (
+        [
+            SKUFeature.single_player.value,
+        ],
+        (
+            SKUFeature.single_player,
+        ),
+    )
+    
+    yield (
+        [
+            SKUFeature.single_player,
+            SKUFeature.pvp,
+        ],
+        (
+            SKUFeature.single_player,
+            SKUFeature.pvp,
+        ),
     )
 
 

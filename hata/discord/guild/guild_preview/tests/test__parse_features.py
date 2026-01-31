@@ -10,18 +10,21 @@ def _iter_options():
         {},
         None,
     )
+    
     yield (
         {
             'features': None,
         },
         None,
     )
+    
     yield (
         {
             'features': [],
         },
         None,
     )
+    
     yield (
         {
             'features': [
@@ -34,6 +37,7 @@ def _iter_options():
             GuildFeature.icon_animated,
         ),
     )
+    
     yield (
         {
             'features': [

@@ -4,10 +4,31 @@ from ..fields import parse_content
 
 
 def _iter_options():
-    yield {}, None
-    yield {'content': None}, None
-    yield {'content': ''}, None
-    yield {'content': 'a'}, 'a'
+    yield (
+        {},
+        None,
+    )
+    
+    yield (
+        {
+            'content': None,
+        },
+        None,
+    )
+    
+    yield (
+        {
+            'content': '',
+        },
+        None,
+    )
+    
+    yield (
+        {
+            'content': 'a',
+        },
+        'a',
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
@@ -24,4 +45,6 @@ def test__parse_content(input_data):
     -------
     output : `None | str`
     """
-    return parse_content(input_data)
+    output = parse_content(input_data)
+    vampytest.assert_instance(output, str, nullable = True)
+    return output

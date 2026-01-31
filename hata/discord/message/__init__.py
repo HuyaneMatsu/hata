@@ -7,6 +7,8 @@ from .message_call import *
 from .message_interaction import *
 from .message_pin import *
 from .message_role_subscription import *
+from .message_search_query import *
+from .message_search_response import *
 from .message_snapshot import *
 from .poll_change import *
 from .poll_update import *
@@ -24,6 +26,8 @@ __all__ = (
     *message_interaction.__all__,
     *message_pin.__all__,
     *message_role_subscription.__all__,
+    *message_search_query.__all__,
+    *message_search_response.__all__,
     *message_snapshot.__all__,
     *poll_change.__all__,
     *poll_update.__all__,

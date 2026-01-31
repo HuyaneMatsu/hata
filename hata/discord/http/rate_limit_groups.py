@@ -708,6 +708,14 @@ Group Details
     - Limit : `1`
     - Resets after : `0.25`
 
+- message_search_channel
+    - Endpoint : `/channels/{channel_id}/messages/search`
+    - Method : `GET`
+    - Required auth : `bot`
+    - Limiter : `channel_id`
+    - Limit : `6`
+    - Resets after : `5.0`
+
 - message_suppress_embeds
     - Endpoint : `/channels/{channel_id}/messages/{message_id}/suppress-embeds`
     - Method : `POST`
@@ -1665,6 +1673,14 @@ Group Details
     - Limit : `5`
     - Resets after : `30.0`
 
+- message_search_guild
+    - Endpoint : `/guilds/{guild_id}/messages/search`
+    - Method : `GET`
+    - Required auth : `bot`
+    - Limiter : `guild_id`
+    - Limit : `6`
+    - Resets after : `5.0`
+
 - soundboard_sound_create
     - Endpoint : `/guilds/{guild_id}/soundboard-sounds`
     - Method : `POST`
@@ -2407,6 +2423,7 @@ reaction_delete_own = GROUP_REACTION_MODIFY
 reaction_add = GROUP_REACTION_MODIFY
 reaction_delete = GROUP_REACTION_MODIFY
 message_suppress_embeds = RateLimitGroup()
+message_search_channel = RateLimitGroup(LIMITER_CHANNEL)
 thread_create_from_message = GROUP_THREAD_CREATE
 permission_overwrite_delete = GROUP_PERMISSION_OVERWRITE_MODIFY
 permission_overwrite_create = GROUP_PERMISSION_OVERWRITE_MODIFY
@@ -2518,6 +2535,7 @@ scheduled_event_occasion_overwrite_create = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_occasion_overwrite_delete = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_occasion_overwrite_edit = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_user_get_chunk = RateLimitGroup(LIMITER_GUILD)
+message_search_guild = RateLimitGroup(LIMITER_GUILD)
 soundboard_sound_create = RateLimitGroup.unlimited()
 soundboard_sound_delete = RateLimitGroup.unlimited()
 soundboard_sound_edit = RateLimitGroup.unlimited()

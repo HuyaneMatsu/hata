@@ -31,8 +31,10 @@ def put_end(end, data, defaults):
     ----------
     end : `None | DateTime`
         Activity timestamps end.
+    
     data : `dict<str, object>`
         Json serializable dictionary.
+    
     defaults : `bool`
         Whether default values should be included as well.
     

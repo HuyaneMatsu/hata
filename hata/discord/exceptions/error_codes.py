@@ -127,6 +127,10 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | unknown_sound                                                     | 10097     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| unknown_invite_target_users_job                                   | 10124     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| unknown_invite_target_users                                       | 10129     | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | bots_not_allowed                                                  | 20001     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | only_bots_allowed                                                 | 20002     | -         |
@@ -593,6 +597,8 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | billing_non_refundable_payment_source                             | 100060    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| message_history_not_yet_indexed                                   | 110000    | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | application_not_yet_available                                     | 110001    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | listing_already_joined                                            | 120000    | -         |
@@ -788,6 +794,8 @@ unknown_scheduled_event = 10070
 unknown_scheduled_event_user = 10071
 unknown_tag = 10087
 unknown_sound = 10097
+unknown_invite_target_users_job = 10124
+unknown_invite_target_users = 10129
 
 bots_not_allowed = 20001
 only_bots_allowed = 20002
@@ -1029,6 +1037,7 @@ card_declined = 100054
 purchase_token_authorization_required = 100056
 billing_non_refundable_payment_source = 100060
 
+message_history_not_yet_indexed = 110000
 application_not_yet_available = 110001
 
 listing_already_joined = 120000

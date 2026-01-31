@@ -13,6 +13,7 @@ def _iter_options():
             'features': [],
         },
     )
+    
     yield (
         None,
         True,
@@ -20,6 +21,7 @@ def _iter_options():
             'features': [],
         },
     )
+    
     yield (
         (
             GuildFeature.banner_animated,
@@ -33,6 +35,7 @@ def _iter_options():
             ],
         },
     )
+    
     yield (
         (
             GuildFeature.banner_animated,

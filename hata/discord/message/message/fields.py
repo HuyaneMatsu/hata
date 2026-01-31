@@ -609,8 +609,10 @@ def put_reactions(reactions, data, defaults):
     ----------
     reactions : `None`, ``ReactionMapping``
         The message's reactions.
+    
     data : `dict<str, object>`
         Json serializable dictionary.
+    
     defaults : `bool`
         Whether default values should be included as well.
     

@@ -182,6 +182,8 @@ setup(
         'hata.discord.message.message_interaction',
         'hata.discord.message.message_pin',
         'hata.discord.message.message_role_subscription',
+        'hata.discord.message.message_search_query',
+        'hata.discord.message.message_search_response',
         'hata.discord.message.message_snapshot',
         'hata.discord.message.poll_change',
         'hata.discord.message.poll_update',

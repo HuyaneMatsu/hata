@@ -346,7 +346,7 @@ class UserMenuFactory:
                 timeout = float(timeout)
             except (TypeError, ValueError) as err:
                 raise TypeError(
-                    f'`timeout` cannot be converted to `float`, got {timeout.__class__.__mame__}; {timeout!r}'
+                    f'`timeout` cannot be converted to `float`, got {type(timeout).__name__}; {timeout!r}'
                 ) from err
         
         close = getattr(klass, 'close', None)

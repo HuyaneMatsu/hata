@@ -291,6 +291,50 @@ def test__Message__from_data__should_update_if_precreate():
     vampytest.assert_eq(message.call, call)
 
 
+def test__Message__from_data__should_update_if_reactions_are_omitted():
+    """
+    Tests whether ``from_data`` works as intended.
+    
+    Case: Should update if precreated
+    """
+    client_id = 202601060000
+    channel_id = 202601060001
+    message_id = 202601060002
+    
+    client = Client(
+        'token_' + str(client_id),
+        client_id = client_id,
+    )
+    
+    channel = Channel.precreate(channel_id, channel_type = ChannelType.private, users = [client])
+    reaction_mapping = ReactionMapping(
+        lines = {
+            Reaction.from_fields(BUILTIN_EMOJIS['heart'], ReactionType.standard): ReactionMappingLine(count = 1),
+        },
+    )
+    
+    try:
+        input_data = {
+            'id': str(message_id),
+            'channel_id': str(channel_id),
+        }
+        
+        message = Message.from_data(input_data)
+        
+        input_data = {
+            'id': str(message_id),
+            'channel_id': str(channel_id),
+            'reactions': reaction_mapping.to_data(),
+        }
+        
+        Message.from_data(input_data)
+    
+    finally:
+        client = None
+    
+    vampytest.assert_eq(message.reactions, reaction_mapping)
+
+
 def test__Message__to_data():
     """
     Tests whether ``to_data`` works as intended.

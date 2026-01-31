@@ -3,30 +3,69 @@ import vampytest
 from ..fields import validate_aliases
 
 
-def test__validate_aliases__0():
+def _iter_options__passing():
+    yield (
+        None,
+        None,
+    )
+    
+    yield (
+        [],
+        None,
+    )
+    
+    yield (
+        [
+            'fry',
+            'shrimp',
+        ],
+        (
+            'fry',
+            'shrimp',
+        ),
+    )
+    
+    yield (
+        [
+            'shrimp',
+            'fry',
+        ],
+        (
+            'fry',
+            'shrimp',
+        ),
+    )
+
+
+def _iter_options__type_error():
+    yield 12.6
+    yield [12.6]
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_aliases(input_value):
     """
     Tests whether `validate_aliases` works as intended.
     
-    Case: passing.
-    """
-    for input_aliases, expected_output in (
-        (None, None),
-        ([], None),
-        ('a', ('a',)),
-        (['a'], ('a', )),
-    ):
-        output = validate_aliases(input_aliases)
-        vampytest.assert_eq(output, expected_output)
-
-
-def test__validate_aliases__1():
-    """
-    Tests whether `validate_aliases` works as intended.
+    Parameters
+    ----------
+    input_value : `object`
+        Input value to validate.
     
-    Case: `TypeError`.
+    Returns
+    -------
+    output : `None | tuple<str>`
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_aliases in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_aliases(input_aliases)
+    output = validate_aliases(input_value)
+    vampytest.assert_instance(output, tuple, nullable = True)
+    
+    if (output is not None):
+        for element in output:
+            vampytest.assert_instance(element, str)
+    
+    return output

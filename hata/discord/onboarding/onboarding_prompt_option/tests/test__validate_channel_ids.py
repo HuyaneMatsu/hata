@@ -38,10 +38,17 @@ def test__validate_channel_ids(input_value):
     
     Returns
     -------
-    output : `None | list<int>`
+    output : `None | tuple<int>`
     
     Raises
     ------
     TypeError
     """
-    return validate_channel_ids(input_value)
+    output = validate_channel_ids(input_value)
+    vampytest.assert_instance(output, tuple, nullable = True)
+    
+    if (output is not None):
+        for element in output:
+            vampytest.assert_instance(element, int)
+    
+    return output

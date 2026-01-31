@@ -46,6 +46,8 @@ class EmbedType(PreinstancedBase, value_type = str):
     +-------------------------------+-------------------------------+-------------------------------+
     | safety_policy_notice          | safety policy notice          | safety_policy_notice          |
     +-------------------------------+-------------------------------+-------------------------------+
+    | sound                         | sound                         | sound                         |
+    +-------------------------------+-------------------------------+-------------------------------+
     | text                          | text                          | text                          |
     +-------------------------------+-------------------------------+-------------------------------+
     | tweet                         | tweet                         | tweet                         |
@@ -68,6 +70,7 @@ class EmbedType(PreinstancedBase, value_type = str):
     link = P('link', 'link')
     rich = P('rich', 'rich')
     safety_policy_notice = P('safety_policy_notice', 'safety policy notice')
+    sound = P('sound', 'sound')
     text = P('text', 'text')
     tweet = P('tweet', 'tweet')
     video = P('video', 'video')

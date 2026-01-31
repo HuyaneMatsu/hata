@@ -5,9 +5,25 @@ from ..preinstanced import SKUFeature
 
 
 def _iter_options():
-    yield ({}, None)
-    yield ({'features': None}, None)
-    yield ({'features': []}, None)
+    yield (
+        {},
+        None,
+    )
+    
+    yield (
+        {
+            'features': None,
+        },
+        None,
+    )
+    
+    yield (
+        {
+            'features': [],
+        },
+        None,
+    )
+    
     yield (
         {
             'features': [
@@ -20,7 +36,7 @@ def _iter_options():
             SKUFeature.pvp,
         ),
     )
-    
+
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
 def test__parse_features(input_data):

@@ -662,6 +662,24 @@ class DiscordApiClient(RichAttributeErrorBaseType):
             f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}/crosspost',
         )
     
+    
+    async def message_search_channel(self, channel_id, query):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.message_search_channel, channel_id),
+            METHOD_GET,
+            f'{API_ENDPOINT}/channels/{channel_id}/messages/search',
+            query = query,
+        )
+    
+    
+    async def message_search_guild(self, guild_id, query):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.message_search_guild, guild_id),
+            METHOD_GET,
+            f'{API_ENDPOINT}/guilds/{guild_id}/messages/search',
+            query = query,
+        )
+    
     # pin
     
     async def channel_pin_get_chunk(self, channel_id, query):

@@ -9,33 +9,64 @@ def _iter_options__passing():
         None,
         None,
     )
+    
     yield (
         [],
         None,
     )
+    
     yield (
         GuildFeature.banner_animated,
-        (GuildFeature.banner_animated, ),
+        (
+            GuildFeature.banner_animated,
+        ),
     )
+    
     yield (
         GuildFeature.banner_animated.value,
-        (GuildFeature.banner_animated, ),
+        (
+            GuildFeature.banner_animated,
+        ),
     )
+    
     yield (
-        [GuildFeature.banner_animated],
-        (GuildFeature.banner_animated, ),
+        [
+            GuildFeature.banner_animated,
+        ],
+        (
+            GuildFeature.banner_animated,
+        ),
     )
+    
     yield (
-        [GuildFeature.banner_animated.value],
-        (GuildFeature.banner_animated, ),
+        [
+            GuildFeature.banner_animated.value,
+        ],
+        (
+            GuildFeature.banner_animated,
+        ),
     )
+    
     yield (
-        [GuildFeature.icon_animated, GuildFeature.banner_animated],
-        (GuildFeature.banner_animated, GuildFeature.icon_animated,),
+        [
+            GuildFeature.icon_animated,
+            GuildFeature.banner_animated,
+        ],
+        (
+            GuildFeature.banner_animated,
+            GuildFeature.icon_animated,
+        ),
     )
+    
     yield (
-        [GuildFeature.banner_animated, GuildFeature.icon_animated],
-        (GuildFeature.banner_animated, GuildFeature.icon_animated,),
+        [
+            GuildFeature.banner_animated,
+            GuildFeature.icon_animated,
+        ],
+        (
+            GuildFeature.banner_animated,
+            GuildFeature.icon_animated,
+        ),
     )
 
 

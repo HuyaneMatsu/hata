@@ -39,4 +39,6 @@ def test__validate_content(input_value):
     TypeError
     ValueError
     """
-    return validate_content(input_value)
+    output = validate_content(input_value)
+    vampytest.assert_instance(output, str, nullable = True)
+    return output

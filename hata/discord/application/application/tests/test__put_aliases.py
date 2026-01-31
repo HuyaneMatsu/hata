@@ -3,14 +3,65 @@ import vampytest
 from ..fields import put_aliases
 
 
-def test__put_aliases():
+def _iter_options():
+    yield (
+        None,
+        False,
+        {},
+    )
+    
+    yield (
+        None,
+        True,
+        {
+            'aliases': [],
+        },
+    )
+    
+    yield (
+        (
+            'fry',
+            'shrimp',
+        ),
+        False,
+        {
+            'aliases': [
+                'fry',
+                'shrimp',
+            ],
+        },
+    )
+    
+    yield (
+        (
+            'fry',
+            'shrimp',
+        ),
+        True,
+        {
+            'aliases': [
+                'fry',
+                'shrimp',
+            ],
+        },
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__put_aliases(input_value, defaults):
     """
     Tests whether ``put_aliases`` is working as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | tuple<str>`
+        The value to serialise.
+    
+    defaults : `bool`
+        Whether fields as their defaults should be included as well.
+    
+    Returns
+    -------
+    output : `dict<str, object>`
     """
-    for input_, defaults, expected_output in (
-        (None, False, {}),
-        (None, True, {'aliases': []}),
-        (('a', ), False, {'aliases': ['a']}),
-    ):
-        data = put_aliases(input_, {}, defaults)
-        vampytest.assert_eq(data, expected_output)
+    return put_aliases(input_value, {}, defaults)

@@ -616,9 +616,9 @@ component = create_attachment_input(
 )
 ```
 
-### Radio groups & checkbox groups & checkboxes
+## Radio groups & checkbox groups & checkboxes
 
-#### Radio groups
+### Radio groups
 
 ```py3
 from hata import RadioGroupOption, create_radio_group
@@ -638,7 +638,7 @@ component = create_radio_group(
 When capturing a radio group inside of a handler function, the selected option's `value` is passed.
 No selected option means `None` will be passed.
 
-#### Checkbox group
+### Checkbox group
 
 Can be used to allow the user to select multiple options of many.
 
@@ -663,7 +663,7 @@ When capturing a checkbox group inside of a handler function, a `nullable tuple`
 selected options' `value`-s is passed.
 
 
-#### Checkbox
+### Checkbox
 
 Can be used to allow the user to tick a single `true / false` checkbox.
 

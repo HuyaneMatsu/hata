@@ -2,7 +2,7 @@ __all__ = ('ComponentMetadataStringSelect', )
 
 from scarletio import copy_docs
 
-from .fields import parse_options, put_options, validate_options
+from .fields import parse_options__string_select, put_options__string_select, validate_options__string_select
 from .select_base import ComponentMetadataSelectBase
 
 
@@ -84,7 +84,7 @@ class ComponentMetadataStringSelect(ComponentMetadataSelectBase):
         if options is ...:
             options = None
         else:
-            options = validate_options(options)
+            options = validate_options__string_select(options)
         
         # Construct
         self = ComponentMetadataSelectBase.__new__(
@@ -173,7 +173,7 @@ class ComponentMetadataStringSelect(ComponentMetadataSelectBase):
     @copy_docs(ComponentMetadataSelectBase.from_data)
     def from_data(cls, data):
         self = super(ComponentMetadataStringSelect, cls).from_data(data)
-        self.options = parse_options(data)
+        self.options = parse_options__string_select(data)
         return self
     
     
@@ -181,7 +181,7 @@ class ComponentMetadataStringSelect(ComponentMetadataSelectBase):
     def to_data(self, *, defaults = False, include_internals = False):
         data = ComponentMetadataSelectBase.to_data(self, defaults = defaults, include_internals = include_internals)
         
-        put_options(self.options, data, defaults)
+        put_options__string_select(self.options, data, defaults)
         
         return data
     
@@ -224,7 +224,7 @@ class ComponentMetadataStringSelect(ComponentMetadataSelectBase):
         required = ...,
     ):
         """
-        Copies the channel select component metadata with the given fields.
+        Copies the string select component metadata with the given fields.
         
         Parameters
         ----------
@@ -266,7 +266,7 @@ class ComponentMetadataStringSelect(ComponentMetadataSelectBase):
             if (options is not None):
                 options = tuple(option.copy() for option in options)
         else:
-            options = validate_options(options)
+            options = validate_options__string_select(options)
         
         # Construct
         new = ComponentMetadataSelectBase.copy_with(

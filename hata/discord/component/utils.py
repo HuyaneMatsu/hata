@@ -1,8 +1,8 @@
 __all__ = (
-    'create_attachment_input', 'create_attachment_media', 'create_button', 'create_channel_select', 'create_container',
-    'create_label', 'create_media_gallery', 'create_mentionable_select', 'create_role_select', 'create_row',
-    'create_section', 'create_separator', 'create_string_select', 'create_text_display', 'create_text_input',
-    'create_thumbnail_media', 'create_user_select'
+    'create_attachment_input', 'create_attachment_media', 'create_button', 'create_channel_select', 'create_checkbox',
+    'create_checkbox_group', 'create_container', 'create_label', 'create_media_gallery', 'create_mentionable_select',
+    'create_radio_group', 'create_role_select', 'create_row', 'create_section', 'create_separator',
+    'create_string_select', 'create_text_display', 'create_text_input', 'create_thumbnail_media', 'create_user_select'
 )
 
 from .component import Component, ComponentType
@@ -115,7 +115,7 @@ def create_string_select(
     
     Parameters
     ----------
-    options : `None` or `iterable` of ``StringSelectOption``
+    options : ``None | iterable<StringSelectOption>``
         Options of the select.
     
     custom_id : `None | str`, Optional
@@ -154,7 +154,8 @@ def create_string_select(
         options = options,
         max_values = max_values,
         min_values = min_values,
-        placeholder = placeholder,required = required,
+        placeholder = placeholder,
+        required = required,
     )
 
 
@@ -780,4 +781,126 @@ def create_attachment_input(
         max_values = max_values,
         min_values = min_values,
         required = required,
+    )
+
+
+def create_radio_group(
+    options,
+    custom_id = ...,
+    *,
+    required = ...,
+):
+    """
+    Creates a new radio group.
+    
+    Parameters
+    ----------
+    options : ``None | iterable<RadioGroupOption>``
+        Options of the radio group.
+    
+    custom_id : `None | str`, Optional
+        Custom identifier to detect which component was used by the user.
+    
+    required : `None | bool`, Optional (Keyword only)
+        Whether the field is required to be fulfilled.
+    
+    Returns
+    -------
+    radio_group : ``Component``
+    
+    Raises
+    ------
+    TypeError
+        - If a parameter's type is incorrect.
+    ValueError
+        - If a parameter's value is incorrect.
+    """
+    return Component(
+        ComponentType.radio_group,
+        custom_id = custom_id,
+        options = options,
+        required = required,
+    )
+
+
+def create_checkbox_group(
+    options,
+    custom_id = ...,
+    *,
+    max_values = ...,
+    min_values = ...,
+    required = ...,
+):
+    """
+    Creates a new checkbox group.
+    
+    Parameters
+    ----------
+    options : ``None | iterable<CheckboxGroupOption>``
+        Options of the checkbox group.
+    
+    custom_id : `None | str`, Optional
+        Custom identifier to detect which component was used by the user.
+    
+    max_values : `int`, Optional (Keyword only)
+        The maximal amount of options to check.
+        
+    min_values : `int`, Optional (Keyword only)
+        The minimal amount of options to check.
+    
+    required : `None | bool`, Optional (Keyword only)
+        Whether the field is required to be fulfilled.
+    
+    Returns
+    -------
+    checkbox_group : ``Component``
+    
+    Raises
+    ------
+    TypeError
+        - If a parameter's type is incorrect.
+    ValueError
+        - If a parameter's value is incorrect.
+    """
+    return Component(
+        ComponentType.checkbox_group,
+        custom_id = custom_id,
+        options = options,
+        max_values = max_values,
+        min_values = min_values,
+        required = required,
+    )
+
+
+def create_checkbox(
+    custom_id = ...,
+    *,
+    default = ...,
+):
+    """
+    Creates a new checkbox.
+    
+    Parameters
+    ----------
+    custom_id : `None | str`, Optional
+        Custom identifier to detect which component was used by the user.
+    
+    default : `None | bool`, Optional (Keyword only)
+        Whether the checkbox should be checked by default.
+    
+    Returns
+    -------
+    checkbox : ``Component``
+    
+    Raises
+    ------
+    TypeError
+        - If a parameter's type is incorrect.
+    ValueError
+        - If a parameter's value is incorrect.
+    """
+    return Component(
+        ComponentType.checkbox,
+        custom_id = custom_id,
+        default = default,
     )

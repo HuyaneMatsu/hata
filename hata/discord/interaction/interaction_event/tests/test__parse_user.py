@@ -5,7 +5,7 @@ from ....user import GuildProfile, ClientUserBase
 from ..fields import parse_user
 
 
-def test__parse_user__0():
+def test__parse_user__user():
     """
     Tests whether ``parse_user`` works as intended.
     
@@ -16,7 +16,7 @@ def test__parse_user__0():
     data = {
         'user': {
             'id': str(user_id),
-        }
+        },
     }
     
     user = parse_user(data, 0)
@@ -24,11 +24,11 @@ def test__parse_user__0():
     vampytest.assert_eq(user.id, user_id)
 
 
-def test__parse_user__1():
+def test__parse_user__in_guild_user():
     """
     Tests whether ``parse_user`` works as intended.
     
-    Case: user.
+    Case: in guild user.
     """
     user_id = 202210280012
     guild_id = 202210280013
@@ -39,8 +39,8 @@ def test__parse_user__1():
             'nick': nick,
             'user': {
                 'id': str(user_id),
-            }
-        }
+            },
+        },
     }
     
     

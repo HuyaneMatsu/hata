@@ -11,11 +11,8 @@ from ...field_putters import (
     nullable_string_array_optional_putter_factory, nullable_string_optional_putter_factory
 )
 from ...field_validators import (
-    nullable_entity_validator_factory, nullable_object_array_validator_factory,
-    nullable_string_array_validator_factory, nullable_string_validator_factory
+    nullable_object_array_validator_factory, nullable_string_array_validator_factory, nullable_string_validator_factory
 )
-
-from ..shared_fields import parse_custom_id, put_custom_id, validate_custom_id
 
 # components
 
@@ -243,6 +240,86 @@ def validate_thumbnail(thumbnail):
 parse_value = field_parser_factory('value')
 put_value = nullable_string_optional_putter_factory('value')
 validate_value = nullable_string_validator_factory('value', 0, 16384)
+
+
+def parse_value__bool(data):
+    """
+    Parses a boolean value and converts it to string.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    value : `None | str`
+    """
+    value = data.get('value', None)
+    if value is None:
+        return None
+    
+    return '\01' if value else '\00'
+
+
+def put_value__bool(value, data, defaults):
+    """
+    Serialises a given string as a boolean.
+    
+    Parameters
+    ----------
+    value : `None | str`
+        the value to serialise.
+    
+    data : `dict<str, object>`
+        Json serializable dictionary.
+    
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    if defaults or (value is not None):
+        data['value'] = None if (value is None) else (value == '\01')
+    
+    return data
+
+
+def validate_value__bool(value):
+    """
+    Validates the given value representing a boolean.
+    
+    Parameters
+    ----------
+    value : `object`
+        The value to validate.
+    
+    Returns
+    -------
+    value : `None | str`
+    
+    Raises
+    ------
+    TypeError
+        - If value of invalid type given.
+    ValueError
+        - If value of invalid type given.
+    """
+    if value is None:
+        return value
+    
+    if not isinstance(value, str):
+        raise TypeError(f'`value` can be `None | str`, got {type(value).__name__}; {value!r}.')
+    
+    if not value:
+        return None
+    
+    if value not in ('\x00', '\01'):
+        raise ValueError(f'`value` can be either `\'\'`, `\'\\00\'` or `\'\\01\'`, got {value!r}.')
+    
+    return value
 
 
 # values

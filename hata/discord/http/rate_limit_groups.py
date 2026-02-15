@@ -1651,27 +1651,47 @@ Group Details
     - Endpoint : `/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/exceptions`
     - Method : `POST`
     - Required auth : `bot`
-    - Limiter : ???
+    - Limiter : `guild_id`
+    - Limit : `5`
+    - Resets after : `60.0`
 
 - scheduled_event_occasion_overwrite_delete
     - Endpoint : `/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/exceptions/{timestamp_as_id}`
     - Method : `DELETE`
     - Required auth : `bot`
-    - Limiter : ???
+    - Limit : `5`
+    - Resets after : `20.0`
 
 - scheduled_event_occasion_overwrite_edit
     - Endpoint : `/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/exceptions/{timestamp_as_id}`
     - Method : `PATCH`
     - Required auth : `bot`
+    - Limit : `5`
+    - Resets after : `20.0`
+
+- scheduled_event_occasion_user_get_chunk
+    - Endpoint : `/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/exceptions/{timestamp_as_id}/users`
+    - Method : `GET`
+    - Required auth : `bot`
     - Limiter : ???
+    - Notes: Not found 404 :LeBenben:
 
 - scheduled_event_user_get_chunk
     - Endpoint : `/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/users`
-    - Method : `PATCH`
+    - Method : `GET`
     - Required auth : `bot`
     - Limiter : `guild_id`
     - Limit : `5`
     - Resets after : `30.0`
+
+- scheduled_event_user_counts_get
+    - Endpoint : `/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/users/counts`
+    - Method : `GET`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `1000`
+    - Resets after : `1.0`
+    - Notes : Assumably global.
 
 - message_search_guild
     - Endpoint : `/guilds/{guild_id}/messages/search`
@@ -2534,7 +2554,9 @@ scheduled_event_edit = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_occasion_overwrite_create = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_occasion_overwrite_delete = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_occasion_overwrite_edit = RateLimitGroup(LIMITER_GUILD)
+scheduled_event_occasion_user_get_chunk = RateLimitGroup(LIMITER_GUILD) # untested - this endpoint does not exist
 scheduled_event_user_get_chunk = RateLimitGroup(LIMITER_GUILD)
+scheduled_event_user_counts_get = RateLimitGroup()
 message_search_guild = RateLimitGroup(LIMITER_GUILD)
 soundboard_sound_create = RateLimitGroup.unlimited()
 soundboard_sound_delete = RateLimitGroup.unlimited()

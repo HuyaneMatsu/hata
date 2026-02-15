@@ -4,11 +4,9 @@ import reprlib
 
 from scarletio import RichAttributeErrorBaseType
 
-from ..shared_fields import parse_emoji, put_emoji, validate_emoji
-
-from .fields import (
-    parse_default, parse_description, parse_label, parse_value, put_default, put_description, put_label,
-    put_value, validate_default, validate_description, validate_label, validate_value
+from ..shared_fields import (
+    parse_default, parse_description, parse_emoji, parse_label, parse_value, put_default, put_description, put_emoji,
+    put_label, put_value, validate_default, validate_description, validate_emoji, validate_label, validate_value
 )
 
 
@@ -324,7 +322,6 @@ class StringSelectOption(RichAttributeErrorBaseType):
             emoji = self.emoji
         else:
            emoji = validate_emoji(emoji)
-        
         
         # label
         if label is ...:

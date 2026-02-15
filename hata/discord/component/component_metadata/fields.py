@@ -27,9 +27,11 @@ from ...field_validators import (
 from ...role import Role
 from ...user import ClientUserBase
 
+from ..checkbox_group_option import CheckboxGroupOption
 from ..entity_select_default_value import EntitySelectDefaultValue, EntitySelectDefaultValueType
 from ..media_info import MediaInfo
 from ..media_item import MediaItem
+from ..radio_group_option import RadioGroupOption
 from ..shared_fields import (
     parse_components, parse_custom_id, parse_emoji, put_components, put_custom_id, put_emoji,
     validate_components_factory, validate_custom_id, validate_emoji
@@ -485,6 +487,7 @@ validate_max_values__select = int_conditional_validator_factory(
     f'>= {MAX_VALUES_MIN} and <= {MAX_VALUES_MAX__SELECT},'
 )
 
+
 # media
 
 parse_media__attachment_only = default_entity_parser_factory(
@@ -523,6 +526,7 @@ def validate_media(media):
         f'`media` can be `str | {MediaInfo.__name__}`, got {type(media).__name__}, {media!r}.'
     )
 
+
 # min_length
 
 parse_min_length = int_parser_factory('min_length', MIN_LENGTH_DEFAULT)
@@ -533,6 +537,7 @@ validate_min_length = int_conditional_validator_factory(
     (lambda min_length: min_length >= MIN_LENGTH_MIN and min_length <= MIN_LENGTH_MAX),
     f'>= {MIN_LENGTH_MIN} and <= {MIN_LENGTH_MAX},'
 )
+
 
 # min_values
 
@@ -572,15 +577,86 @@ validate_name = force_string_validator_factory('name', 0, 1024)
 
 # options
 
-parse_options = nullable_object_array_parser_factory('options', StringSelectOption)
-put_options = nullable_entity_array_putter_factory('options', StringSelectOption)
-validate_options = nullable_object_array_validator_factory('options', StringSelectOption)
+def validate_options(options):
+    """
+    Validates the given options.
+    
+    Parameters
+    ----------
+    options : `object`
+        Value to validate.
+    
+    Returns
+    -------
+    options : ``None | tuple<CheckboxGroupOption> | tuple<RadioGroupOption> | tuple<StringSelectOption>``
+    
+    Raises
+    ------
+    TypeError
+        - Value of invalid type given.
+    """
+    if options is None:
+        return None
+    
+    if (getattr(options, '__iter__', None) is None):
+        raise TypeError(
+            f'`options` can be `None`, `iterable` of `{CheckboxGroupOption.__name__}`, '
+            f'`{RadioGroupOption.__name__}`, `{StringSelectOption.__name__}`, got '
+            f'{type(options).__name__}; {options!r}.'
+        )
+        
+    options_validates = None
+    option_type = None
+    
+    for option in options:
+        if option_type is None:
+            option_type = type(option)
+            if not issubclass(option_type, (CheckboxGroupOption, RadioGroupOption, StringSelectOption)):
+                raise TypeError(
+                    f'`{option}` can contain `{CheckboxGroupOption.__name__}`, `{RadioGroupOption.__name__}`, '
+                    f'`{StringSelectOption.__name__}` elements, got '
+                    f'{type(option).__name__}; {option!r}; option = {option!r}.'
+                )
+        
+        else:
+            if not isinstance(option, option_type):
+                raise TypeError(
+                    f'`{option}` is expected to contain `{option_type.__name__}` elements, got '
+                    f'{type(option).__name__}; {option!r}; option = {option!r}.'
+                )
+        
+        if (options_validates is None):
+            options_validates = []
+        
+        options_validates.append(option)
+    
+    if (options_validates is not None):
+        options_validates = tuple(options_validates)
+    
+    return options_validates
+
+
+parse_options__checkbox_group = nullable_object_array_parser_factory('options', CheckboxGroupOption)
+put_options__checkbox_group = nullable_entity_array_putter_factory('options', CheckboxGroupOption)
+validate_options__checkbox_group = nullable_object_array_validator_factory('options', CheckboxGroupOption)
+
+
+parse_options__radio_group = nullable_object_array_parser_factory('options', RadioGroupOption)
+put_options__radio_group = nullable_entity_array_putter_factory('options', RadioGroupOption)
+validate_options__radio_group = nullable_object_array_validator_factory('options', RadioGroupOption)
+
+
+parse_options__string_select = nullable_object_array_parser_factory('options', StringSelectOption)
+put_options__string_select = nullable_entity_array_putter_factory('options', StringSelectOption)
+validate_options__string_select = nullable_object_array_validator_factory('options', StringSelectOption)
+
 
 # placeholder
 
 parse_placeholder = nullable_string_parser_factory('placeholder')
 put_placeholder = nullable_string_optional_putter_factory('placeholder')
 validate_placeholder = nullable_string_validator_factory('placeholder', 0, PLACEHOLDER_LENGTH_MAX)
+
 
 # required
 
@@ -599,6 +675,7 @@ validate_size = int_conditional_validator_factory(
     lambda size : size >= 0,
     '>= 0',
 )
+
 
 # sku_id
 

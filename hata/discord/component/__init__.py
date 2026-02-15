@@ -1,3 +1,4 @@
+from .checkbox_group_option import *
 from .component import *
 from .component_metadata import *
 from .entity_select_default_value import *
@@ -6,6 +7,7 @@ from .interaction_component_metadata import *
 from .media_info import *
 from .interaction_form import *
 from .media_item import *
+from .radio_group_option import *
 from .string_select_option import *
 
 from .shared_constants import *
@@ -15,6 +17,7 @@ from .utils import *
 
 
 __all__ = (
+    *checkbox_group_option.__all__,
     *component.__all__,
     *component_metadata.__all__,
     *entity_select_default_value.__all__,
@@ -23,6 +26,7 @@ __all__ = (
     *media_info.__all__,
     *interaction_form.__all__,
     *media_item.__all__,
+    *radio_group_option.__all__,
     *string_select_option.__all__,
     
     *shared_constants.__all__,

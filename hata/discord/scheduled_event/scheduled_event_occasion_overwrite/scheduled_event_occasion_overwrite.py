@@ -145,7 +145,7 @@ class ScheduledEventOccasionOverwrite(RichAttributeErrorBaseType):
         Parameters
         ----------
         data : `dict<str, object>`
-            Scheduled event cancellation event data.
+            Input data.
         
         Returns
         -------

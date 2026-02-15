@@ -2,8 +2,10 @@ __all__ = ('InteractionComponentMetadataTextInput',)
 
 from scarletio import copy_docs, include
 
+from ..shared_fields import parse_custom_id, put_custom_id, validate_custom_id
+
 from .base import InteractionComponentMetadataBase
-from .fields import parse_custom_id, parse_value, put_custom_id, put_value, validate_custom_id, validate_value
+from .fields import parse_value, put_value, validate_value
 
 ComponentType = include('ComponentType')
 

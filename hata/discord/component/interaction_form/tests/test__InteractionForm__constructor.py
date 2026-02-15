@@ -5,7 +5,7 @@ from ...component import Component, ComponentType
 from ..interaction_form import InteractionForm
 
 
-def _check_are_fields_set(interaction_form):
+def _assert_fields_set(interaction_form):
     """
     Tests whether all attributes are set of the given form.
     
@@ -31,7 +31,7 @@ def test__InteractionForm__new__no_fields():
     custom_id = None
     
     interaction_form = InteractionForm(title, components, custom_id)
-    _check_are_fields_set(interaction_form)
+    _assert_fields_set(interaction_form)
 
 
 def test__InteractionForm__new__all_fields():
@@ -45,7 +45,7 @@ def test__InteractionForm__new__all_fields():
     custom_id = 'lie'
     
     interaction_form = InteractionForm(title, components, custom_id)
-    _check_are_fields_set(interaction_form)
+    _assert_fields_set(interaction_form)
     
     vampytest.assert_eq(interaction_form.title, title)
     vampytest.assert_eq(

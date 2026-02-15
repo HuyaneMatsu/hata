@@ -1,0 +1,39 @@
+import vampytest
+
+from ....user import ClientUserBase, User, ZEROUSER
+
+from ..fields import validate_user
+
+
+def _iter_options__passing():
+    user = User.precreate(202602100018, name = 'Ken')
+    yield user, user
+    yield None, ZEROUSER
+
+
+def _iter_options__type_error():
+    yield 'a'
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_user(input_value):
+    """
+    Tests whether `validate_user` works as intended.
+    
+    Parameters
+    ----------
+    input_value : ``None | ClientUserBase``
+        The value to validate.
+    
+    Returns
+    -------
+    output : ``ClientUserBase``
+    
+    Raises
+    ------
+    TypeError
+    """
+    output = validate_user(input_value)
+    vampytest.assert_instance(output, ClientUserBase)
+    return output

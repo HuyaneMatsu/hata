@@ -10,8 +10,21 @@ from ..fields import put_timestamp
 def _iter_options():
     timestamp = DateTime(2016, 5, 14, 13, 0, 0, tzinfo = TimeZone.utc)
     
-    yield timestamp, False, {'event_exception_id': datetime_to_id(timestamp)}
-    yield timestamp, True, {'event_exception_id': datetime_to_id(timestamp)}
+    yield (
+        timestamp,
+        False,
+        {
+            'event_exception_id': str(datetime_to_id(timestamp)),
+        },
+    )
+    
+    yield (
+        timestamp,
+        True,
+        {
+            'event_exception_id': str(datetime_to_id(timestamp)),
+        },
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

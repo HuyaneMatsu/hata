@@ -185,6 +185,21 @@ def _iter_options__value_error():
         ComponentType.attachment_input,
     )
     
+    interaction_component__radio_group = InteractionComponent(
+        ComponentType.radio_group,
+        custom_id = 'koishi',
+    )
+    
+    interaction_component__checkbox_group = InteractionComponent(
+        ComponentType.checkbox_group,
+        custom_id = 'koishi',
+    )
+    
+    interaction_component__checkbox = InteractionComponent(
+        ComponentType.checkbox,
+        custom_id = 'koishi',
+    )
+    
     yield [interaction_component__none]
     yield [interaction_component__row]
     yield [interaction_component__label]
@@ -196,6 +211,9 @@ def _iter_options__value_error():
     yield [interaction_component__separator]
     yield [interaction_component__container]
     yield [interaction_component__attachment_input]
+    yield [interaction_component__radio_group]
+    yield [interaction_component__checkbox_group]
+    yield [interaction_component__checkbox]
 
 
 @vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())

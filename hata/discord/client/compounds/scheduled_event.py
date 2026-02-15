@@ -4,7 +4,7 @@ from scarletio import Compound
 
 from ...http import DiscordApiClient
 from ...payload_building import build_create_payload, build_edit_payload
-from ...scheduled_event import ScheduledEvent
+from ...scheduled_event import ScheduledEvent, ScheduledEventUserCounts, ScheduledEventUserEntry
 from ...scheduled_event.scheduled_event.utils import (
     SCHEDULED_EVENT_CREATE_FIELD_CONVERTERS, SCHEDULED_EVENT_EDIT_FIELD_CONVERTERS,
     scheduled_event_occasion_overwrite_get
@@ -13,12 +13,16 @@ from ...scheduled_event.scheduled_event_occasion_overwrite.fields import validat
 from ...scheduled_event.scheduled_event_occasion_overwrite.utils import (
     SCHEDULED_EVENT_OCCASION_OVERWRITE_CREATE_FIELD_CONVERTERS, SCHEDULED_EVENT_OCCASION_OVERWRITE_EDIT_FIELD_CONVERTERS
 )
-from ...user import User
 from ...utils import datetime_to_id, datetime_to_timestamp, log_time_converter
 
 from ..request_helpers import (
     get_guild_id, get_scheduled_event_and_guild_id_and_id, get_scheduled_event_guild_id_and_id
 )
+
+
+SCHEDULED_EVENT_USER_GET_CHUNK_LIMIT_MIN = 1
+SCHEDULED_EVENT_USER_GET_CHUNK_LIMIT_MAX = 100
+SCHEDULED_EVENT_USER_GET_CHUNK_LIMIT_DEFAULT = 100
 
 
 class ClientCompoundScheduledEventEndpoints(Compound):
@@ -186,7 +190,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
             await self.api.scheduled_event_edit(guild_id, scheduled_event_id, data, reason)
     
     
-    async def scheduled_event_delete(self, scheduled_event):
+    async def scheduled_event_delete(self, scheduled_event, *, reason = None):
         """
         Edits the given scheduled event.
         
@@ -207,7 +211,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
             If any exception was received from the Discord API.
         """
         guild_id, scheduled_event_id = get_scheduled_event_guild_id_and_id(scheduled_event)
-        await self.api.scheduled_event_delete(guild_id, scheduled_event_id)
+        await self.api.scheduled_event_delete(guild_id, scheduled_event_id, reason)
     
     
     async def scheduled_event_get(self, scheduled_event, *, force_update = False):
@@ -220,6 +224,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         ----------
         scheduled_event : ``ScheduledEvent | (int, int)``
             The scheduled event to get.
+        
         force_update : `bool` = `False`, Optional (Keyword only)
             Whether the scheduled event should be requested even if it supposed to be up to date.
         
@@ -238,7 +243,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         """
         scheduled_event, guild_id, scheduled_event_id = get_scheduled_event_and_guild_id_and_id(scheduled_event)
         if (scheduled_event is None) or force_update:
-            data = await self.api.scheduled_event_get(guild_id, scheduled_event_id, {'with_user_count', None})
+            data = await self.api.scheduled_event_get(guild_id, scheduled_event_id, {'with_user_count': True})
             
             scheduled_event, is_created = ScheduledEvent.from_data_is_created(data)
             if not is_created:
@@ -260,7 +265,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         
         Returns
         -------
-        scheduled_events : `list` of ``ScheduledEvent``
+        scheduled_events : ``list<ScheduledEvent>``
         
         Raises
         ------
@@ -286,16 +291,19 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         ----------
         scheduled_event : ``ScheduledEvent | (int, int)``
             The scheduled event to get.
+        
         after : ``None | int | DiscordEntity | DateTime`` = `None`, Optional (Keyword only)
             The timestamp after the subscribed users were created.
+        
         before : ``None | int | DiscordEntity | DateTime`` = `None`, Optional (Keyword only)
             The timestamp before the subscribed users were created.
+        
         limit : `None | int` = `None`, Optional (Keyword only)
             The amount of scheduled event users to request. Can be between 1 and 100.
         
         Returns
         -------
-        users : ``list<ClientUserBase>``
+        scheduled_event_user_entries : ``list<ScheduledEventUserEntry>``
         
         Raises
         ------
@@ -313,22 +321,23 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         guild_id, scheduled_event_id = get_scheduled_event_guild_id_and_id(scheduled_event)
         
         if limit is None:
-            limit = 100
+            limit = SCHEDULED_EVENT_USER_GET_CHUNK_LIMIT_DEFAULT
         else:
             if __debug__:
                 if not isinstance(limit, int):
                     raise AssertionError(
-                        f'`limit` can be `int`, got {limit.__class__.__name__}; {limit!r}.'
+                        f'`limit` can be `None | int`, got {type(limit).__name__}; {limit!r}.'
                     )
-                
-                if (limit < 1) or (limit > 100):
-                    raise AssertionError(
-                        f'`limit` is out from the expected [1:100] range, got {limit!r}.'
-                    )
+            
+            if limit < SCHEDULED_EVENT_USER_GET_CHUNK_LIMIT_MIN:
+                limit = SCHEDULED_EVENT_USER_GET_CHUNK_LIMIT_MIN
+            elif limit > SCHEDULED_EVENT_USER_GET_CHUNK_LIMIT_MAX:
+                limit = SCHEDULED_EVENT_USER_GET_CHUNK_LIMIT_MAX
+
         
         query_parameters = {}
         
-        if limit != 100:
+        if limit != SCHEDULED_EVENT_USER_GET_CHUNK_LIMIT_DEFAULT:
             query_parameters['limit'] = limit
         
         if (after is not None):
@@ -340,17 +349,17 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         if guild_id:
             query_parameters['with_member'] = True
         
-        scheduled_event_user_datas = await self.api.scheduled_event_user_get_chunk(
+        scheduled_event_user_entry_datas = await self.api.scheduled_event_user_get_chunk(
             guild_id, scheduled_event_id, query_parameters
         )
         
-        users = []
-        for scheduled_event_user_data in scheduled_event_user_datas:
-            user_data = scheduled_event_user_data['user']
-            user = User.from_data(user_data, user_data.get('member', None), guild_id)
-            users.append(user)
+        scheduled_event_user_entries = []
+        for scheduled_event_user_entry_data in scheduled_event_user_entry_datas:
+            scheduled_event_user_entries.append(
+                ScheduledEventUserEntry.from_data(scheduled_event_user_entry_data, guild_id)
+            )
         
-        return users
+        return scheduled_event_user_entries
     
     
     async def scheduled_event_user_get_all(self, scheduled_event):
@@ -366,7 +375,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         
         Returns
         -------
-        users : ``list<ClientUserBase>``
+        scheduled_event_user_entries : ``list<ScheduledEventUserEntry>``
         
         Raises
         ------
@@ -379,29 +388,29 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         """
         guild_id, scheduled_event_id = get_scheduled_event_guild_id_and_id(scheduled_event)
         
-        query_parameters = {'after': 0}
+        query_parameters = {'after': 0, 'limit': SCHEDULED_EVENT_USER_GET_CHUNK_LIMIT_MAX}
         
         if guild_id:
             query_parameters['with_member'] = True
         
-        users = []
+        scheduled_event_user_entries = []
         
         while True:
-            scheduled_event_user_datas = await self.api.scheduled_event_user_get_chunk(
+            scheduled_event_user_entry_datas = await self.api.scheduled_event_user_get_chunk(
                 guild_id, scheduled_event_id, query_parameters,
             )
             
-            for scheduled_event_user_data in scheduled_event_user_datas:
-                user_data = scheduled_event_user_data['user']
-                user = User.from_data(user_data, user_data.get('member', None), guild_id)
-                users.append(user)
+            for scheduled_event_user_entry_data in scheduled_event_user_entry_datas:
+                scheduled_event_user_entries.append(
+                    ScheduledEventUserEntry.from_data(scheduled_event_user_entry_data, guild_id)
+                )
             
-            if len(scheduled_event_user_datas) < 100:
+            if len(scheduled_event_user_entry_datas) < SCHEDULED_EVENT_USER_GET_CHUNK_LIMIT_MAX:
                 break
             
-            query_parameters['after'] = users[-1].id
+            query_parameters['after'] = scheduled_event_user_entries[-1].user.id
         
-        return users
+        return scheduled_event_user_entries
     
     
     async def scheduled_event_occasion_overwrite_create(
@@ -582,3 +591,187 @@ class ClientCompoundScheduledEventEndpoints(Compound):
             datetime_to_id(validate_timestamp(timestamp)),
             reason,
         )
+
+    
+    async def scheduled_event_occasion_user_get_chunk(
+        self, scheduled_event, timestamp, *, after = None, before = None, limit = None
+    ):
+        """
+        Requests a chunk user subscribed to a scheduled event's specific occasion.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        scheduled_event : ``ScheduledEvent | (int, int)``
+            The scheduled event to get.
+        
+        timestamp : `None | DateTime`
+            The occasion overwrite's date.
+        
+        after : ``None | int | DiscordEntity | DateTime`` = `None`, Optional (Keyword only)
+            The timestamp after the subscribed users were created.
+        
+        before : ``None | int | DiscordEntity | DateTime`` = `None`, Optional (Keyword only)
+            The timestamp before the subscribed users were created.
+        
+        limit : `None | int` = `None`, Optional (Keyword only)
+            The amount of scheduled event users to request. Can be between 1 and 100.
+        
+        Returns
+        -------
+        scheduled_event_user_entries : ``list<ScheduledEventUserEntry>``
+        
+        Raises
+        ------
+        TypeError
+            - If `scheduled_event` is invalid type.
+            - If `after`, `before` was passed with an unexpected type.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `limit` was not given as `int`.
+            - If `limit` is out of range [1:100].
+        """
+        guild_id, scheduled_event_id = get_scheduled_event_guild_id_and_id(scheduled_event)
+        
+        if limit is None:
+            limit = SCHEDULED_EVENT_USER_GET_CHUNK_LIMIT_DEFAULT
+        else:
+            if __debug__:
+                if not isinstance(limit, int):
+                    raise AssertionError(
+                        f'`limit` can be `None | int`, got {type(limit).__name__}; {limit!r}.'
+                    )
+            
+            if limit < SCHEDULED_EVENT_USER_GET_CHUNK_LIMIT_MIN:
+                limit = SCHEDULED_EVENT_USER_GET_CHUNK_LIMIT_MIN
+            elif limit > SCHEDULED_EVENT_USER_GET_CHUNK_LIMIT_MAX:
+                limit = SCHEDULED_EVENT_USER_GET_CHUNK_LIMIT_MAX
+
+        
+        query_parameters = {}
+        
+        if limit != SCHEDULED_EVENT_USER_GET_CHUNK_LIMIT_DEFAULT:
+            query_parameters['limit'] = limit
+        
+        if (after is not None):
+            query_parameters['after'] = log_time_converter(after)
+        
+        if (before is not None):
+            query_parameters['before'] = log_time_converter(before)
+        
+        if guild_id:
+            query_parameters['with_member'] = True
+        
+        scheduled_event_user_entry_datas = await self.api.scheduled_event_occasion_user_get_chunk(
+            guild_id, scheduled_event_id, datetime_to_id(validate_timestamp(timestamp)), query_parameters
+        )
+        
+        scheduled_event_user_entries = []
+        for scheduled_event_user_entry_data in scheduled_event_user_entry_datas:
+            scheduled_event_user_entries.append(
+                ScheduledEventUserEntry.from_data(scheduled_event_user_entry_data, guild_id)
+            )
+        
+        return scheduled_event_user_entries
+    
+    
+    async def scheduled_event_occasion_user_get_all(self, scheduled_event, timestamp):
+        """
+        Requests all user subscribed to the scheduled event's specific occasion.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        scheduled_event : ``ScheduledEvent | (int, int)``
+            The scheduled event to get.
+        
+        timestamp : `None | DateTime`
+            The occasion overwrite's date.
+        
+        Returns
+        -------
+        scheduled_event_user_entries : ``list<ScheduledEventUserEntry>``
+        
+        Raises
+        ------
+        TypeError
+            - If `scheduled_event` is invalid type.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        guild_id, scheduled_event_id = get_scheduled_event_guild_id_and_id(scheduled_event)
+        
+        query_parameters = {'after': 0, 'limit': SCHEDULED_EVENT_USER_GET_CHUNK_LIMIT_MAX}
+        
+        if guild_id:
+            query_parameters['with_member'] = True
+        
+        timestamp_as_id = datetime_to_id(validate_timestamp(timestamp))
+        
+        scheduled_event_user_entries = []
+        
+        while True:
+            scheduled_event_user_entry_datas = await self.api.scheduled_event_occasion_user_get_chunk(
+                guild_id, scheduled_event_id, timestamp_as_id, query_parameters,
+            )
+            
+            for scheduled_event_user_entry_data in scheduled_event_user_entry_datas:
+                scheduled_event_user_entries.append(
+                    ScheduledEventUserEntry.from_data(scheduled_event_user_entry_data, guild_id)
+                )
+            
+            if len(scheduled_event_user_entry_datas) < SCHEDULED_EVENT_USER_GET_CHUNK_LIMIT_MAX:
+                break
+            
+            query_parameters['after'] = scheduled_event_user_entries[-1].user.id
+        
+        return scheduled_event_user_entries
+    
+    
+    async def scheduled_event_user_counts_get(self, scheduled_event, *, timestamps = None):
+        """
+        Requests how much users are subscribed to the scheduled and optionally how much to the given occasions.
+        
+        Parameters
+        ----------
+        scheduled_event : ``ScheduledEvent | (int, int)``
+            The scheduled event to get.
+        
+        timestamps : `None | iterable<DateTime>`
+            The occasion overwrite's dates to also request.
+        
+        Returns
+        -------
+        scheduled_event_user_counts : ``ScheduledEventUserCounts``
+        
+        Raises
+        ------
+        TypeError
+            - If `scheduled_event` is invalid type.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        guild_id, scheduled_event_id = get_scheduled_event_guild_id_and_id(scheduled_event)
+        
+        query_parameters = {}
+        
+        if (timestamps is not None):
+            query_parameters['guild_scheduled_event_exception_ids'] = [
+                datetime_to_id(validate_timestamp(timestamp)) for timestamp in timestamps
+            ]
+        
+        data = await self.api.scheduled_event_user_counts_get(
+            guild_id,
+            scheduled_event_id,
+            query_parameters,
+        )
+        return ScheduledEventUserCounts.from_data(data)

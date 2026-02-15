@@ -11,8 +11,13 @@ class ScheduledEventUnsubscribeEvent(ScheduledEventSubscribeEvent):
     ----------
     guild_id : `int`
         The guild's identifier where the event is for.
+    
     scheduled_event_id : `int`
         The scheduled event's identifier.
+    
+    timestamp : `None | DateTime`
+        The timestamp of the occurrence the user unsubscribed for if applicable.
+    
     user_id : `int`
         The identifier of the user, who unsubscribed to the event.
     """

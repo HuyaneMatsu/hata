@@ -1,3 +1,43 @@
+## 1.3.91 *\[2026-02-15\]*
+
+### Improvements
+
+- Add `ScheduledEventSubscribeEvent.timestamp`.
+- Add `ScheduledEventUnsubscribeEvent.timestamp`.
+- Add `reason` parameter to `Client.scheduled_event_delete`.
+- Add `image` parameter to `Client.scheduled_event_create`.
+- Add `image` parameter to `Client.scheduled_event_edit`.
+- Add `ScheduledEventUserEntry`.
+- `Client.scheduled_event_user_get_chunk`'s return now has `ScheduledEventUserEntry` elements.
+- `Client.scheduled_event_user_get_all`'s return now has `ScheduledEventUserEntry` elements.
+- Add `Client.scheduled_event_occasion_user_get_chunk`.
+- Add `Client.scheduled_event_occasion_user_get_all`.
+- Add `DiscordApiClient.scheduled_event_occasion_user_get_chunk`.
+- Add `RATE_LIMIT_GROUPS.scheduled_event_occasion_user_get_chunk`.
+- Add `ScheduledEventUserCounts`.  
+- Add `Client.scheduled_event_user_counts_get`.
+- Add `DiscordApiClient.scheduled_event_user_counts_get`.
+- Add `RATE_LIMIT_GROUPS.scheduled_event_user_counts_get`.
+- Add `RadioGroupOption`.
+- Add `CheckboxGroupOption`.
+- Add `ComponentMetadataCheckboxGroup`
+- Add `ComponentMetadataCheckbox`.
+- Add `ComponentMetadataBase.default`.
+- Add `ComponentMetadataRadioGroup`.
+- Add `InteractionComponentMetadataCheckbox`.
+- Add `InteractionComponentMetadataCheckboxGroup`.
+- Add `ComponentType.radio_group`.
+- Add `ComponentType.checkbox_group`.
+- Add `ComponentType.checkbox`.
+- Add `create_radio_group`.
+- Add `create_checkbox_group`.
+- Add `create_checkbox`.
+- Add `ERROR_CODES.scheduled_event_occurrence_overwrite_must_change_something`.
+
+### Bug fixes
+
+- Fix `Client.scheduled_event_get` used bad query.
+
 ## 1.3.90 *\[2026-01-31\]*
 
 ### Improvements
@@ -614,7 +654,7 @@
 - Add `SoundboardSound.mention`.
 - Use `with_components` query parameter for non application owned webhook requests.
     It is actually not working but documented, so I added it.
-- `MessageType.poll.converter` now returns the correct value if noone voted.
+- `MessageType.poll.converter` now returns the correct value if no-one voted.
 - Add `AttachmentFlag.spoiler`.
 - Add `AttachmentFlag.explicit`.
 - Add `AttachmentFlag.animated`.
@@ -799,7 +839,7 @@
 
 - Fix `scaffold` cli command, the generated `{project_name}.bots.{client_name}` file's style was borked.
 - Fix `scaffold` cli command, the generated `{project_name}.plugins.ping` file's style was borked.
-- Fix `find_dot_env_file_in_current_working_directory` not finding the local envfile. 
+- Fix `find_dot_env_file_in_current_working_directory` not finding the local `.env` file. 
 - Fix `help` cli command failing to render correct `use` note when executing from dependent project.
 
 ## 1.3.66 *\[2024-09-26\]*
@@ -2425,8 +2465,8 @@
 
 #### Renames, Deprecation & Removals
 
-- Rname `MessageType.add_user` to `.user_add`.
-- Rname `MessageType.remove_user` to `.user_remove`.
+- Rename `MessageType.add_user` to `.user_add`.
+- Rename `MessageType.remove_user` to `.user_remove`.
 - Deprecate `MessageType.add_user`.
 - Deprecate `MessageType.remove_user`.
 

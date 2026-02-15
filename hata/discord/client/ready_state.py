@@ -32,7 +32,7 @@ class ShardUserRequester:
         Whether the client can request users with it's gateway.
     gateway : ``DiscordGateway``
         The shard's gateway.
-    guild_create_waiter : `None`, ``Future``
+    guild_create_waiter : ``None | Future``
         Water to wait for guild create event. Used when no more guild id is received to use up.
     guild_ids : `set` of `int`
         The guild's id to request the users of.

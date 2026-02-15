@@ -60,10 +60,13 @@ def put_user(user, data, defaults, *, guild_id = 0):
     ----------
     user : ``ClientUserBase``
         The user to serialize.
+    
     data : `dict<str, object>`
         Reaction event data.
+    
     defaults : `bool`
         Whether fields with their default values should be included as well.
+    
     guild_id : `int` = `0`, Optional (Keyword only)
         The guild's identifier where the event is from.
     

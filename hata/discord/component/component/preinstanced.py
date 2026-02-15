@@ -4,22 +4,26 @@ from scarletio import export
 
 from ...bases import Preinstance as P, PreinstancedBase
 from ...resolved.resolver.resolvers import (
-    RESOLVER_ATTACHMENT, RESOLVER_CHANNEL, RESOLVER_MENTIONABLE, RESOLVER_ROLE, RESOLVER_STRING, RESOLVER_USER
+    RESOLVER_ATTACHMENT, RESOLVER_BOOLEAN, RESOLVER_CHANNEL, RESOLVER_MENTIONABLE, RESOLVER_ROLE, RESOLVER_STRING,
+    RESOLVER_USER
 )
 
 from ..component_metadata import (
     ComponentMetadataAttachmentInput, ComponentMetadataAttachmentMedia, ComponentMetadataBase, ComponentMetadataButton,
-    ComponentMetadataChannelSelect, ComponentMetadataContainer, ComponentMetadataLabel, ComponentMetadataMediaGallery,
-    ComponentMetadataMentionableSelect, ComponentMetadataRoleSelect, ComponentMetadataRow, ComponentMetadataSection,
-    ComponentMetadataSeparator, ComponentMetadataStringSelect, ComponentMetadataTextDisplay, ComponentMetadataTextInput,
-    ComponentMetadataThumbnailMedia, ComponentMetadataUserSelect
+    ComponentMetadataChannelSelect, ComponentMetadataCheckbox, ComponentMetadataCheckboxGroup,
+    ComponentMetadataContainer, ComponentMetadataLabel, ComponentMetadataMediaGallery,
+    ComponentMetadataMentionableSelect, ComponentMetadataRadioGroup, ComponentMetadataRoleSelect, ComponentMetadataRow,
+    ComponentMetadataSection, ComponentMetadataSeparator, ComponentMetadataStringSelect, ComponentMetadataTextDisplay,
+    ComponentMetadataTextInput, ComponentMetadataThumbnailMedia, ComponentMetadataUserSelect
 )
 from ..interaction_component_metadata import (
     InteractionComponentMetadataAttachmentInput, InteractionComponentMetadataBase, InteractionComponentMetadataButton,
-    InteractionComponentMetadataChannelSelect, InteractionComponentMetadataContainer, InteractionComponentMetadataLabel,
-    InteractionComponentMetadataMentionableSelect, InteractionComponentMetadataRoleSelect,
-    InteractionComponentMetadataRow, InteractionComponentMetadataSection, InteractionComponentMetadataStringSelect,
-    InteractionComponentMetadataTextInput, InteractionComponentMetadataUserSelect
+    InteractionComponentMetadataChannelSelect, InteractionComponentMetadataCheckbox,
+    InteractionComponentMetadataCheckboxGroup, InteractionComponentMetadataContainer, InteractionComponentMetadataLabel,
+    InteractionComponentMetadataMentionableSelect, InteractionComponentMetadataRadioGroup,
+    InteractionComponentMetadataRoleSelect, InteractionComponentMetadataRow, InteractionComponentMetadataSection,
+    InteractionComponentMetadataStringSelect, InteractionComponentMetadataTextInput,
+    InteractionComponentMetadataUserSelect
 )
 
 from .flags import ComponentTypeLayoutFlag
@@ -120,6 +124,14 @@ class ComponentType(PreinstancedBase, value_type = int):
     | label                 | label                         | 18    |
     +-----------------------+-------------------------------+-------+
     | attachment_input      | attachment input              | 19    |
+    +-----------------------+-------------------------------+-------+
+    | ???                   | ???                           | 20    |
+    +-----------------------+-------------------------------+-------+
+    | radio_group           | radio group                   | 21    |
+    +-----------------------+-------------------------------+-------+
+    | checkbox_group        | checkbox group                | 22    |
+    +-----------------------+-------------------------------+-------+
+    | checkbox              | checkbox                      | 23    |
     +-----------------------+-------------------------------+-------+
     """
     __slots__ = ('layout_flags', 'interaction_metadata_type', 'iter_resolve', 'metadata_type', 'resolve', 'resolver')
@@ -439,4 +451,48 @@ class ComponentType(PreinstancedBase, value_type = int):
         ),
         metadata_type = ComponentMetadataAttachmentInput,
         resolver = RESOLVER_ATTACHMENT,
+    )
+    
+    # 20 ???
+    
+    radio_group = P(
+        21,
+        'radio group',
+        interaction_metadata_type = InteractionComponentMetadataRadioGroup,
+        layout_flags = ComponentTypeLayoutFlag().update_by_keys(
+            allowed_in_form = True,
+            version_2 = True,
+            nestable_into_label = True,
+            holds_value_single = True,
+        ),
+        metadata_type = ComponentMetadataRadioGroup,
+        resolver = RESOLVER_STRING,
+    )
+    
+    checkbox_group = P(
+        22,
+        'checkbox group',
+        interaction_metadata_type = InteractionComponentMetadataCheckboxGroup,
+        layout_flags = ComponentTypeLayoutFlag().update_by_keys(
+            allowed_in_form = True,
+            version_2 = True,
+            nestable_into_label = True,
+            holds_value_multiple = True,
+        ),
+        metadata_type = ComponentMetadataCheckboxGroup,
+        resolver = RESOLVER_STRING,
+    )
+    
+    checkbox = P(
+        23,
+        'checkbox group',
+        interaction_metadata_type = InteractionComponentMetadataCheckbox,
+        layout_flags = ComponentTypeLayoutFlag().update_by_keys(
+            allowed_in_form = True,
+            version_2 = True,
+            nestable_into_label = True,
+            holds_value_single = True,
+        ),
+        metadata_type = ComponentMetadataCheckbox,
+        resolver = RESOLVER_BOOLEAN,
     )

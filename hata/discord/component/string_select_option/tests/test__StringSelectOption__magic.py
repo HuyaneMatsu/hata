@@ -15,9 +15,10 @@ def test__StringSelectOption__repr():
     default = True
     description = 'good'
     
-    
     string_select_option = StringSelectOption(value, label, emoji, default = default, description = description)
-    vampytest.assert_instance(repr(string_select_option), str)
+    
+    output = repr(string_select_option)
+    vampytest.assert_instance(output, str)
 
 
 def test__StringSelectOption__hash():
@@ -30,15 +31,13 @@ def test__StringSelectOption__hash():
     default = True
     description = 'good'
     
-    
     string_select_option = StringSelectOption(value, label, emoji, default = default, description = description)
-    vampytest.assert_instance(hash(string_select_option), int)
+    
+    output = hash(string_select_option)
+    vampytest.assert_instance(output, int)
 
 
-def test__StringSelectOption__eq():
-    """
-    Tests whether ``StringSelectOption.__eq__`` works as intended.
-    """
+def _iter_options__eq():
     value = 'last'
     label = 'night'
     emoji = BUILTIN_EMOJIS['heart']
@@ -53,17 +52,78 @@ def test__StringSelectOption__eq():
         'description': description,
     }
     
-    string_select_option = StringSelectOption(**keyword_parameters)
+    yield (
+        keyword_parameters,
+        keyword_parameters,
+        True,
+    )
     
-    vampytest.assert_eq(string_select_option, string_select_option)
-    vampytest.assert_ne(string_select_option, object())
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'value': 'orin',
+        },
+        False,
+    )
     
-    for field_name, field_value in (
-        ('value', 'akaki'),
-        ('label', 'agari'),
-        ('emoji', BUILTIN_EMOJIS['x']),
-        ('default', False),
-        ('description', 'aka'),
-    ):
-        test_string_select_option = StringSelectOption(**{**keyword_parameters, field_name: field_value})
-        vampytest.assert_ne(string_select_option, test_string_select_option)
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'label': 'okuu',
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'emoji': BUILTIN_EMOJIS['x'],
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'default': False,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'description': 'satori',
+        },
+        False,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__eq()).returning_last())
+def test__StringSelectOption__eq(keyword_parameters_0, keyword_parameters_1):
+    """
+    Tests whether ``StringSelectOption.__eq__`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters_0 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    keyword_parameters_1 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    string_select_0 = StringSelectOption(**keyword_parameters_0)
+    string_select_1 = StringSelectOption(**keyword_parameters_1)
+    
+    output = string_select_0 == string_select_1
+    vampytest.assert_instance(output, bool)
+    return output

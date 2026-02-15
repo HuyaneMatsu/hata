@@ -1,6 +1,6 @@
 import vampytest
 
-from ....user import User, ZEROUSER
+from ....user import ClientUserBase, User, ZEROUSER
 
 from ..fields import validate_user
 
@@ -34,4 +34,6 @@ def test__validate_user(input_value):
     ------
     TypeError
     """
-    return validate_user(input_value)
+    output = validate_user(input_value)
+    vampytest.assert_instance(output, ClientUserBase)
+    return output

@@ -4,7 +4,7 @@ from ...component import Component, ComponentType
 
 from ..interaction_form import InteractionForm
 
-from .test__InteractionForm__constructor import _check_are_fields_set
+from .test__InteractionForm__constructor import _assert_fields_set
 
 
 def test__InteractionForm__copy():
@@ -18,7 +18,7 @@ def test__InteractionForm__copy():
     interaction_form = InteractionForm(title, components, custom_id)
     copy = interaction_form.copy()
     
-    _check_are_fields_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(interaction_form, copy)
     vampytest.assert_eq(copy.title, title)
     vampytest.assert_eq(
@@ -41,7 +41,7 @@ def test__InteractionForm__copy_with__no_fields():
     interaction_form = InteractionForm(title, components, custom_id)
     copy = interaction_form.copy_with()
     
-    _check_are_fields_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(interaction_form, copy)
     vampytest.assert_eq(copy.title, title)
     vampytest.assert_eq(
@@ -68,7 +68,7 @@ def test__InteractionForm__copy_with__all_fields():
     interaction_form = InteractionForm(old_title, old_components, old_custom_id)
     copy = interaction_form.copy_with(title = new_title, components = new_components, custom_id = new_custom_id)
     
-    _check_are_fields_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(interaction_form, copy)
     vampytest.assert_eq(copy.title, new_title)
     vampytest.assert_eq(

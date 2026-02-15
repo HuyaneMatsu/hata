@@ -82,7 +82,7 @@ class RPCClient(RichAttributeErrorBaseType):
     ----------
     _auto_nonce : `int`
         Auto nonce generation index for the next request.
-    _connection_waiter : `None`, ``Future``
+    _connection_waiter : ``None | Future``
         Waiter for client connection.
     _protocol : `None`, ``BaseProtocol``
         The connected protocol if any.

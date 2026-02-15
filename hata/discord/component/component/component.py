@@ -10,7 +10,7 @@ from ..component_metadata.fields import (
     validate_options, validate_placeholder, validate_required, validate_size, validate_sku_id, validate_spacing_size,
     validate_spoiler, validate_text_input_style, validate_thumbnail, validate_url, validate_value
 )
-from ..shared_fields import validate_components, validate_custom_id, validate_emoji
+from ..shared_fields import validate_components, validate_custom_id, validate_default, validate_emoji
 
 from .fields import parse_type, put_type, validate_type
 from .preinstanced import ComponentType
@@ -65,6 +65,9 @@ class Component(RichAttributeErrorBaseType):
         
         custom_id : `None | str`, Optional (Keyword only)
             Custom identifier to detect which component was clicked (or used) by the user.
+        
+        default : `None | bool`, Optional (Keyword only)
+            Whether the checkbox is checked by default.
         
         default_values : ``None | iterable<Channel> | iterable<Role> | iterable<ClientUserBase> | iterable<EntitySelectDefaultValue> | iterable<(str | EntitySelectDefaultValueTyp, int | str)>>`` \
                 , Optional (Keyword only)
@@ -345,6 +348,9 @@ class Component(RichAttributeErrorBaseType):
         custom_id : `None | str`, Optional (Keyword only)
             Custom identifier to detect which component was clicked (or used) by the user.
         
+        default : `None | bool`, Optional (Keyword only)
+            Whether the checkbox is checked by default.
+        
         default_values : ``None | iterable<Channel> | iterable<Role> | iterable<ClientUserBase> | iterable<EntitySelectDefaultValue> | iterable<(str | EntitySelectDefaultValueTyp, int | str)>>`` \
                 , Optional (Keyword only)
             Entities presented in the select by default.
@@ -526,6 +532,17 @@ class Component(RichAttributeErrorBaseType):
     @custom_id.setter
     def custom_id(self, custom_id):
         self.metadata.custom_id = validate_custom_id(custom_id)
+    
+    
+    # default
+    @property
+    @copy_docs(ComponentMetadataBase.default)
+    def default(self):
+        return self.metadata.default
+    
+    @default.setter
+    def default(self, default):
+        self.metadata.default = validate_default(default)
     
     
     # default_values

@@ -5,10 +5,12 @@ from ....color import Color
 from ....core import BUILTIN_EMOJIS
 from ....emoji import Emoji
 
+from ...checkbox_group_option import CheckboxGroupOption
 from ...component_metadata import ButtonStyle, SeparatorSpacingSize, TextInputStyle
 from ...entity_select_default_value import EntitySelectDefaultValue, EntitySelectDefaultValueType
 from ...media_info import MediaInfo
 from ...media_item import MediaItem
+from ...radio_group_option import RadioGroupOption
 from ...string_select_option import StringSelectOption
 
 from ..component import Component
@@ -30,6 +32,7 @@ def test__Component__proxies__reading_defaults():
     vampytest.assert_instance(component.components, tuple, nullable = True)
     vampytest.assert_instance(component.content, str, nullable = True)
     vampytest.assert_instance(component.custom_id, str, nullable = True)
+    vampytest.assert_instance(component.default, bool)
     vampytest.assert_instance(component.default_values, tuple, nullable = True)
     vampytest.assert_instance(component.description, str, nullable = True)
     vampytest.assert_instance(component.emoji, Emoji, nullable = True)
@@ -203,16 +206,31 @@ def test__Component__proxies__read_string_select():
     
     Case: reading string select fields.
     """
+    custom_id = 'momiji'
+    enabled = False
+    max_values = 10
+    min_values = 2
     options = [StringSelectOption('yume')]
+    placeholder = 'aya'
     required = True
     
     component = Component(
         ComponentType.string_select,
+        custom_id = custom_id,
+        max_values = max_values,
+        min_values = min_values,
+        enabled = enabled,
         options = options,
+        placeholder = placeholder,
         required = required,
     )
     
+    vampytest.assert_eq(component.custom_id, custom_id)
+    vampytest.assert_eq(component.enabled, enabled)
+    vampytest.assert_eq(component.max_values, max_values)
+    vampytest.assert_eq(component.min_values, min_values)
     vampytest.assert_eq(component.options, tuple(options))
+    vampytest.assert_eq(component.placeholder, placeholder)
     vampytest.assert_eq(component.required, required)
 
 
@@ -401,6 +419,75 @@ def test__Component__proxies__read_attachment_input():
     vampytest.assert_eq(component.required, required)
 
 
+def test__Component__proxies__read_radio_group():
+    """
+    Tests whether ``Component`` field proxies work as intended.
+    
+    Case: reading radio group fields.
+    """
+    custom_id = 'kaguya'
+    options = [RadioGroupOption('yume')]
+    required = True
+    
+    component = Component(
+        ComponentType.radio_group,
+        custom_id = custom_id,
+        options = options,
+        required = required,
+    )
+    
+    vampytest.assert_eq(component.custom_id, custom_id)
+    vampytest.assert_eq(component.options, tuple(options))
+    vampytest.assert_eq(component.required, required)
+
+
+def test__Component__proxies__read_checkbox_group():
+    """
+    Tests whether ``Component`` field proxies work as intended.
+    
+    Case: reading checkbox group fields.
+    """
+    custom_id = 'kaguya'
+    max_values = 10
+    min_values = 9
+    options = [CheckboxGroupOption('yume')]
+    required = True
+    
+    component = Component(
+        ComponentType.checkbox_group,
+        custom_id = custom_id,
+        max_values = max_values,
+        min_values = min_values,
+        options = options,
+        required = required,
+    )
+    
+    vampytest.assert_eq(component.custom_id, custom_id)
+    vampytest.assert_eq(component.max_values, max_values)
+    vampytest.assert_eq(component.min_values, min_values)
+    vampytest.assert_eq(component.options, tuple(options))
+    vampytest.assert_eq(component.required, required)
+
+
+def test__Component__proxies__read_checkbox():
+    """
+    Tests whether ``Component`` field proxies work as intended.
+    
+    Case: reading checkbox fields.
+    """
+    custom_id = 'kaguya'
+    default = True
+    
+    component = Component(
+        ComponentType.checkbox,
+        custom_id = custom_id,
+        default = default,
+    )
+    
+    vampytest.assert_eq(component.custom_id, custom_id)
+    vampytest.assert_eq(component.default, default)
+
+
 def test__Component__proxies__write_button__generic():
     """
     Tests whether ``Component`` field proxies work as intended.
@@ -543,15 +630,30 @@ def test__Component__proxies__write_string_select():
     
     Case: writing string select fields.
     """
+    custom_id = 'momiji'
+    enabled = False
+    max_values = 10
+    min_values = 2
     options = [StringSelectOption('yume')]
+    placeholder = 'aya'
     required = True
     
     component = Component(ComponentType.string_select)
     
+    component.custom_id = custom_id
+    component.enabled = enabled
+    component.max_values = max_values
+    component.min_values = min_values
     component.options = options
+    component.placeholder = placeholder
     component.required = required
     
+    vampytest.assert_eq(component.custom_id, custom_id)
+    vampytest.assert_eq(component.enabled, enabled)
+    vampytest.assert_eq(component.max_values, max_values)
+    vampytest.assert_eq(component.min_values, min_values)
     vampytest.assert_eq(component.options, tuple(options))
+    vampytest.assert_eq(component.placeholder, placeholder)
     vampytest.assert_eq(component.required, required)
 
 
@@ -737,3 +839,69 @@ def test__Component__proxies__write_attachment_input():
     vampytest.assert_eq(component.max_values, max_values)
     vampytest.assert_eq(component.min_values, min_values)
     vampytest.assert_eq(component.required, required)
+
+
+def test__Component__proxies__write_radio_group():
+    """
+    Tests whether ``Component`` field proxies work as intended.
+    
+    Case: writing radio group fields.
+    """
+    custom_id = 'kaguya'
+    options = [RadioGroupOption('yume')]
+    required = True
+    
+    component = Component(ComponentType.radio_group)
+    
+    component.custom_id = custom_id
+    component.options = options
+    component.required = required
+    
+    vampytest.assert_eq(component.custom_id, custom_id)
+    vampytest.assert_eq(component.options, tuple(options))
+    vampytest.assert_eq(component.required, required)
+
+
+def test__Component__proxies__write_checkbox_group():
+    """
+    Tests whether ``Component`` field proxies work as intended.
+    
+    Case: writing checkbox group fields.
+    """
+    custom_id = 'kaguya'
+    max_values = 10
+    min_values = 9
+    options = [CheckboxGroupOption('yume')]
+    required = True
+    
+    component = Component(ComponentType.checkbox_group)
+    
+    component.custom_id = custom_id
+    component.max_values = max_values
+    component.min_values = min_values
+    component.options = options
+    component.required = required
+    
+    vampytest.assert_eq(component.custom_id, custom_id)
+    vampytest.assert_eq(component.max_values, max_values)
+    vampytest.assert_eq(component.min_values, min_values)
+    vampytest.assert_eq(component.options, tuple(options))
+    vampytest.assert_eq(component.required, required)
+
+
+def test__Component__proxies__write_checkbox_():
+    """
+    Tests whether ``Component`` field proxies work as intended.
+    
+    Case: writing checkbox fields.
+    """
+    custom_id = 'kaguya'
+    default = True
+    
+    component = Component(ComponentType.checkbox)
+    
+    component.custom_id = custom_id
+    component.default = default
+    
+    vampytest.assert_eq(component.custom_id, custom_id)
+    vampytest.assert_eq(component.default, default)

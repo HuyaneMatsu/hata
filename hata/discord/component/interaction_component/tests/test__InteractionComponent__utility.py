@@ -231,6 +231,25 @@ def test__InteractionComponent__proxies__read_text_input():
     vampytest.assert_eq(interaction_component.value, value)
 
 
+def test__InteractionComponent__proxies__read_checkbox():
+    """
+    Tests whether ``InteractionComponent`` field proxies work as intended.
+    
+    Case: reading text input fields.
+    """
+    custom_id = 'rabbit'
+    value = '\01'
+    
+    interaction_component = InteractionComponent(
+        ComponentType.checkbox,
+        custom_id = custom_id,
+        value = value
+    )
+    
+    vampytest.assert_eq(interaction_component.custom_id, custom_id)
+    vampytest.assert_eq(interaction_component.value, value)
+
+
 def test__InteractionComponent__proxies__read_string_select():
     """
     Tests whether ``InteractionComponent`` field proxies work as intended.
@@ -441,3 +460,23 @@ def test__InteractionComponent__proxies__write_section():
     
     vampytest.assert_eq(interaction_component.components, tuple(nested_interaction_components))
     vampytest.assert_eq(interaction_component.thumbnail, thumbnail)
+
+
+def test__InteractionComponent__proxies__write_checkbox():
+    """
+    Tests whether ``InteractionComponent`` field proxies work as intended.
+    
+    Case: writing text input fields.
+    """
+    custom_id = 'rabbit'
+    value = '\01'
+    
+    interaction_component = InteractionComponent(
+        ComponentType.checkbox,
+    )
+    
+    interaction_component.custom_id = custom_id
+    interaction_component.value = value
+    
+    vampytest.assert_eq(interaction_component.custom_id, custom_id)
+    vampytest.assert_eq(interaction_component.value, value)

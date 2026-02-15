@@ -1909,11 +1909,12 @@ class DiscordApiClient(RichAttributeErrorBaseType):
         )
     
     
-    async def scheduled_event_delete(self, guild_id, scheduled_event_id):
+    async def scheduled_event_delete(self, guild_id, scheduled_event_id, reason):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.scheduled_event_delete, guild_id),
             METHOD_DELETE,
             f'{API_ENDPOINT}/guilds/{guild_id}/scheduled-events/{scheduled_event_id}',
+            reason = reason,
         )
     
     
@@ -1972,6 +1973,24 @@ class DiscordApiClient(RichAttributeErrorBaseType):
             f'{API_ENDPOINT}/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/exceptions/{timestamp_as_id}',
             data,
             reason = reason,
+        )
+    
+    
+    async def scheduled_event_occasion_user_get_chunk(self, guild_id, scheduled_event_id, timestamp_as_id, query):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.scheduled_event_occasion_user_get_chunk, guild_id),
+            METHOD_GET,
+            f'{API_ENDPOINT}/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/exceptions/{timestamp_as_id}/users',
+            query = query,
+        )
+    
+    
+    async def scheduled_event_user_counts_get(self, guild_id, scheduled_event_id, query):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.scheduled_event_user_counts_get, guild_id),
+            METHOD_GET,
+            f'{API_ENDPOINT}/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/users/counts',
+            query = query,
         )
     
     

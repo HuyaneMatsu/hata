@@ -1,3 +1,5 @@
+from datetime import datetime as DateTime, timezone as TimeZone
+
 import vampytest
 
 from ..scheduled_event_unsubscribe_event import ScheduledEventUnsubscribeEvent
@@ -15,6 +17,7 @@ def _assert_fields_set(event):
     vampytest.assert_instance(event, ScheduledEventUnsubscribeEvent)
     vampytest.assert_instance(event.guild_id, int)
     vampytest.assert_instance(event.scheduled_event_id, int)
+    vampytest.assert_instance(event.timestamp, DateTime, nullable = True)
     vampytest.assert_instance(event.user_id, int)
 
 
@@ -36,15 +39,18 @@ def test__ScheduledEventUnsubscribeEvent__new__all_fields():
     """
     guild_id = 202303120036
     scheduled_event_id = 202303120037
+    timestamp = DateTime(2016, 5, 5, tzinfo = TimeZone.utc)
     user_id = 202303120038
     
     event = ScheduledEventUnsubscribeEvent(
         guild_id = guild_id,
         scheduled_event_id = scheduled_event_id,
+        timestamp = timestamp,
         user_id = user_id,
     )
     _assert_fields_set(event)
     
     vampytest.assert_eq(event.guild_id, guild_id)
     vampytest.assert_eq(event.scheduled_event_id, scheduled_event_id)
+    vampytest.assert_eq(event.timestamp, timestamp)
     vampytest.assert_eq(event.user_id, user_id)

@@ -373,10 +373,13 @@ def put_user(user, data, defaults, *, guild_id = 0):
     ----------
     user : ``ClientUserBase``
         The user to put into the given `data`.
+    
     data : `dict<str, object>`
         Json serializable dictionary.
+    
     defaults : `bool`
         Whether default fields should be included as well.
+    
     guild_id : `int` = `0`, Optional (Keyword only)
         The user's specific guild's identifier to use for getting the user's local profile.
     

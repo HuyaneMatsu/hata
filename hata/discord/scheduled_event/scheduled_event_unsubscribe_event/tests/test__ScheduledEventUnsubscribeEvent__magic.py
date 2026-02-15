@@ -1,3 +1,5 @@
+from datetime import datetime as DateTime, timezone as TimeZone
+
 import vampytest
 
 from ..scheduled_event_unsubscribe_event import ScheduledEventUnsubscribeEvent
@@ -9,11 +11,13 @@ def test__ScheduledEventUnsubscribeEvent__repr():
     """
     guild_id = 202303120045
     scheduled_event_id = 202303120046
+    timestamp = DateTime(2016, 5, 5, tzinfo = TimeZone.utc)
     user_id = 202303120047
     
     event = ScheduledEventUnsubscribeEvent(
         guild_id = guild_id,
         scheduled_event_id = scheduled_event_id,
+        timestamp = timestamp,
         user_id = user_id,
     )
     
@@ -26,11 +30,13 @@ def test__ScheduledEventUnsubscribeEvent__hash():
     """
     guild_id = 202303120048
     scheduled_event_id = 202303120049
+    timestamp = DateTime(2016, 5, 5, tzinfo = TimeZone.utc)
     user_id = 202303120050
     
     event = ScheduledEventUnsubscribeEvent(
         guild_id = guild_id,
         scheduled_event_id = scheduled_event_id,
+        timestamp = timestamp,
         user_id = user_id,
     )
     
@@ -40,11 +46,13 @@ def test__ScheduledEventUnsubscribeEvent__hash():
 def _iter_options__eq():
     guild_id = 202303120051
     scheduled_event_id = 202303120052
+    timestamp = DateTime(2016, 5, 5, tzinfo = TimeZone.utc)
     user_id = 202303120053
     
     keyword_parameters = {
         'guild_id': guild_id,
         'scheduled_event_id': scheduled_event_id,
+        'timestamp': timestamp,
         'user_id': user_id,
     }
     
@@ -68,6 +76,15 @@ def _iter_options__eq():
         {
             **keyword_parameters,
             'scheduled_event_id': 0,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'timestamp': None,
         },
         False,
     )
@@ -113,11 +130,13 @@ def test__ScheduledEventUnsubscribeEvent__unpack():
     """
     guild_id = 202303120054
     scheduled_event_id = 202303120055
+    timestamp = DateTime(2016, 5, 5, tzinfo = TimeZone.utc)
     user_id = 202303120056
     
     event = ScheduledEventUnsubscribeEvent(
         guild_id = guild_id,
         scheduled_event_id = scheduled_event_id,
+        timestamp = timestamp,
         user_id = user_id,
     )
     

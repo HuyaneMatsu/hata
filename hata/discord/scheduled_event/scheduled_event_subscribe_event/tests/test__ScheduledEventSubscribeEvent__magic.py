@@ -1,3 +1,5 @@
+from datetime import datetime as DateTime, timezone as TimeZone
+
 import vampytest
 
 from ..scheduled_event_subscribe_event import ScheduledEventSubscribeEvent
@@ -9,11 +11,13 @@ def test__ScheduledEventSubscribeEvent__repr():
     """
     guild_id = 202303120009
     scheduled_event_id = 202303120010
+    timestamp = DateTime(2016, 5, 5, tzinfo = TimeZone.utc)
     user_id = 202303120011
     
     event = ScheduledEventSubscribeEvent(
         guild_id = guild_id,
         scheduled_event_id = scheduled_event_id,
+        timestamp = timestamp,
         user_id = user_id,
     )
     
@@ -26,11 +30,13 @@ def test__ScheduledEventSubscribeEvent__hash():
     """
     guild_id = 202303120012
     scheduled_event_id = 202303120013
+    timestamp = DateTime(2016, 5, 5, tzinfo = TimeZone.utc)
     user_id = 202303120014
     
     event = ScheduledEventSubscribeEvent(
         guild_id = guild_id,
         scheduled_event_id = scheduled_event_id,
+        timestamp = timestamp,
         user_id = user_id,
     )
     
@@ -40,11 +46,13 @@ def test__ScheduledEventSubscribeEvent__hash():
 def _iter_options__eq():
     guild_id = 202303120015
     scheduled_event_id = 202303120016
+    timestamp = DateTime(2016, 5, 5, tzinfo = TimeZone.utc)
     user_id = 202303120017
     
     keyword_parameters = {
         'guild_id': guild_id,
         'scheduled_event_id': scheduled_event_id,
+        'timestamp': timestamp,
         'user_id': user_id,
     }
     
@@ -68,6 +76,15 @@ def _iter_options__eq():
         {
             **keyword_parameters,
             'scheduled_event_id': 0,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'timestamp': None,
         },
         False,
     )
@@ -113,11 +130,13 @@ def test__ScheduledEventSubscribeEvent__unpack():
     """
     guild_id = 202303120018
     scheduled_event_id = 202303120019
+    timestamp = DateTime(2016, 5, 5, tzinfo = TimeZone.utc)
     user_id = 202303120020
     
     event = ScheduledEventSubscribeEvent(
         guild_id = guild_id,
         scheduled_event_id = scheduled_event_id,
+        timestamp = timestamp,
         user_id = user_id,
     )
     

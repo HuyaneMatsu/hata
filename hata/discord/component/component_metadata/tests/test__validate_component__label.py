@@ -1,83 +1,119 @@
 import vampytest
 
+from ...checkbox_group_option import CheckboxGroupOption
 from ...component import Component, ComponentType
 from ...media_info import MediaInfo
+from ...radio_group_option import RadioGroupOption
 from ...string_select_option import StringSelectOption
 
 from ..fields import validate_component__label
 
 
 def _iter_options__passing():
-    component_text_input = Component(
+    component__text_input = Component(
         ComponentType.text_input,
         placeholder = 'Fairies',
     )
     
-    component_string_select = Component(
+    component__string_select = Component(
         ComponentType.string_select,
         options = [
             StringSelectOption('cart'),
         ],
     )
     
-    component_user_select = Component(
+    component__user_select = Component(
         ComponentType.user_select,
     )
     
-    component_role_select = Component(
+    component__role_select = Component(
         ComponentType.role_select,
     )
     
-    component_mentionable_select = Component(
+    component__mentionable_select = Component(
         ComponentType.mentionable_select,
     )
     
-    component_channel_select = Component(
+    component__channel_select = Component(
         ComponentType.channel_select,
     )
     
-    component_attachment_input = Component(
+    component__attachment_input = Component(
         ComponentType.attachment_input,
     )
     
+    component__radio_group = Component(
+        ComponentType.radio_group,
+        options = [
+            RadioGroupOption('cart'),
+        ],
+    )
+    
+    component__checkbox_group = Component(
+        ComponentType.checkbox_group,
+        options = [
+            CheckboxGroupOption('cart'),
+        ],
+    )
+    
+    component__checkbox = Component(
+        ComponentType.checkbox,
+        default = True,
+    )
+    
     yield (
         None,
         None,
     )
     
     yield (
-        component_text_input,
-        component_text_input,
+        component__text_input,
+        component__text_input,
     )
     
     yield (
-        component_string_select,
-        component_string_select,
+        component__string_select,
+        component__string_select,
     )
     
     yield (
-        component_user_select,
-        component_user_select,
+        component__user_select,
+        component__user_select,
     )
     
     yield (
-        component_user_select,
-        component_user_select,
+        component__role_select,
+        component__role_select,
     )
     
     yield (
-        component_mentionable_select,
-        component_mentionable_select,
+        component__mentionable_select,
+        component__mentionable_select,
     )
     
     yield (
-        component_channel_select,
-        component_channel_select,
+        component__channel_select,
+        component__channel_select,
     )
     
     yield (
-        component_attachment_input,
-        component_attachment_input,
+        component__attachment_input,
+        component__attachment_input,
+    )
+    
+    yield (
+        component__radio_group,
+        component__radio_group,
+    )
+    
+    yield (
+        component__checkbox_group,
+        component__checkbox_group,
+    )
+    
+    yield (
+        component__checkbox,
+        component__checkbox,
     )
 
 
@@ -86,11 +122,11 @@ def _iter_options__type_error():
 
 
 def _iter_options__value_error():
-    component_none = Component(
+    component__none = Component(
         ComponentType.none,
     )
     
-    component_row = Component(
+    component__row = Component(
         ComponentType.row,
         components = [
             Component(
@@ -100,31 +136,31 @@ def _iter_options__value_error():
         ],
     )
     
-    component_attachment_media = Component(
+    component__attachment_media = Component(
         ComponentType.attachment_media,
         media = MediaInfo('attachment://orin.png'),
     )
     
-    component_separator = Component(
+    component__separator = Component(
         ComponentType.separator,
     )
     
-    component_button = Component(
+    component__button = Component(
         ComponentType.button,
         label = 'Orin',
     )
     
-    component_thumbnail_media = Component(
+    component__thumbnail_media = Component(
         ComponentType.thumbnail_media,
         media = MediaInfo('attachment://orin.png'),
     )
     
-    component_text_display = Component(
+    component__text_display = Component(
         ComponentType.text_display,
         content = 'Orin',
     )
     
-    component_label = Component(
+    component__label = Component(
         ComponentType.label,
         component = Component(
             ComponentType.text_input,
@@ -132,14 +168,14 @@ def _iter_options__value_error():
         ),
     )
     
-    yield component_none
-    yield component_row
-    yield component_attachment_media
-    yield component_separator
-    yield component_button
-    yield component_thumbnail_media
-    yield component_text_display
-    yield component_label
+    yield component__none
+    yield component__row
+    yield component__attachment_media
+    yield component__separator
+    yield component__button
+    yield component__thumbnail_media
+    yield component__text_display
+    yield component__label
 
 
 @vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())

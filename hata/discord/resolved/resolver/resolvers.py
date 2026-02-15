@@ -5,6 +5,99 @@ from ..resolved import Resolved
 from .resolver import Resolver
 
 
+def _boolean_resolve_single(resolved, value):
+    """
+    Boolean resolver for single value.
+    
+    Parameters
+    ----------
+    resolved : ``None | Resolved``
+        Resolved to use.
+    
+    value : `None | str`
+        Value to resolve.
+    
+    Returns
+    -------
+    value : `None | bool`
+    """
+    if value is None:
+        return
+    
+    return (value == '\01')
+
+
+def _boolean_iter_resolve_single(resolved, value):
+    """
+    Iterative boolean resolver for single value.
+    
+    This function is an iterable generator.
+    
+    Parameters
+    ----------
+    resolved : ``None | Resolved``
+        Resolved to use.
+    
+    value : `None | str`
+        Value to resolve.
+    
+    Yields
+    -------
+    value : `bool`
+    """
+    if value is None:
+        return
+    
+    yield (value == '\01')
+
+
+def _boolean_resolve_multiple(resolved, values):
+    """
+    Boolean resolver for multiple values.
+    
+    Parameters
+    ----------
+    resolved : ``None | Resolved``
+        Resolved to use.
+    
+    values : `None | tuple<str>`
+        Values to resolve.
+    
+    Returns
+    -------
+    values : `None | tuple<bool>`
+    """
+    if values is None:
+        return
+    
+    return (*((value == '\01') for value in values),)
+
+
+def _iter_resolve_boolean_multiple(resolved, values):
+    """
+    Iterative boolean resolver for multiple values.
+    
+    This function is an iterable generator.
+    
+    Parameters
+    ----------
+    resolved : ``None | Resolved``
+        Resolved to use.
+    
+    values : `None | tuple<str>`
+        Values to resolve.
+    
+    Yields
+    -------
+    value : `bool`
+    """
+    if values is None:
+        return
+    
+    for value in values:
+        yield (value == '\01')
+
+
 def _string_resolve_single(resolved, value):
     """
     String resolver for single value.
@@ -264,6 +357,15 @@ def _entity_resolver_factory(resolver_function):
     return _entity_resolve_single, _entity_iter_resolve_single, _entity_resolve_multiple, _entity_iter_resolve_multiple
 
 
+RESOLVER_BOOLEAN = Resolver(
+    'boolean',
+    _boolean_resolve_single,
+    _boolean_iter_resolve_single,
+    _boolean_resolve_multiple,
+    _iter_resolve_boolean_multiple,
+)
+
+
 RESOLVER_STRING = Resolver(
     'string',
     _string_resolve_single,
@@ -278,25 +380,30 @@ RESOLVER_ATTACHMENT = Resolver(
     *_entity_resolver_factory(Resolved.resolve_attachment),
 )
 
+
 RESOLVER_CHANNEL = Resolver(
     'channel',
     *_entity_resolver_factory(Resolved.resolve_channel),
 )
+
 
 RESOLVER_ROLE = Resolver(
     'role',
     *_entity_resolver_factory(Resolved.resolve_role),
 )
 
+
 RESOLVER_MENTIONABLE = Resolver(
     'mentionable',
     *_entity_resolver_factory(Resolved.resolve_mentionable),
 )
 
+
 RESOLVER_MESSAGE = Resolver(
     'message',
     *_entity_resolver_factory(Resolved.resolve_message),
 )
+
 
 RESOLVER_USER = Resolver(
     'user',

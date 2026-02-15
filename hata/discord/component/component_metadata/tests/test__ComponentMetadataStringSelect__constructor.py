@@ -8,6 +8,11 @@ from ..string_select import ComponentMetadataStringSelect
 def _assert_fields_set(component_metadata):
     """
     Checks whether the ``ComponentMetadataStringSelect`` has all it's attributes set.
+    
+    Parameters
+    ----------
+    component_metadata : ``ComponentMetadataStringSelect``
+        The instance to check.
     """
     vampytest.assert_instance(component_metadata, ComponentMetadataStringSelect)
     vampytest.assert_instance(component_metadata.custom_id, str, nullable = True)

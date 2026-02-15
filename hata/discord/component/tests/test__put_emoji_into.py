@@ -10,12 +10,61 @@ def _iter_options():
     emoji_0 = BUILTIN_EMOJIS['heart']
     emoji_1 = Emoji.precreate(202210220000, name = 'met')
     
-    yield None, False, {}
-    yield None, True, {'emoji': None}
-    yield emoji_0, False, {'emoji': {'name': emoji_0.unicode}}
-    yield emoji_1, False, {'emoji': {'name': emoji_1.name, 'id': str(emoji_1.id)}}
-    yield emoji_0, True, {'emoji': {'name': emoji_0.unicode}}
-    yield emoji_1, True, {'emoji': {'name': emoji_1.name, 'id': str(emoji_1.id)}}
+    yield (
+        None,
+        False,
+        {},
+    )
+    
+    yield (
+        None,
+        True,
+        {
+            'emoji': None,
+        },
+    )
+    
+    yield (
+        emoji_0,
+        False,
+        {
+            'emoji': {
+                'name': emoji_0.unicode,
+            },
+        },
+    )
+    
+    yield (
+        emoji_1,
+        False,
+        {
+            'emoji': {
+                'name': emoji_1.name,
+                'id': str(emoji_1.id),
+            },
+        },
+    )
+    
+    yield (
+        emoji_0,
+        True,
+        {
+            'emoji': {
+                'name': emoji_0.unicode,
+            },
+        },
+    )
+    
+    yield (
+        emoji_1,
+        True,
+        {
+            'emoji': {
+                'name': emoji_1.name,
+                'id': str(emoji_1.id),
+            },
+        },
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

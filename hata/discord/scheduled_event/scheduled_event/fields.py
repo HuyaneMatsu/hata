@@ -1,7 +1,5 @@
 __all__ = ()
 
-from datetime import datetime as DateTime
-
 from ...channel import Channel
 from ...field_parsers import (
     default_entity_parser_factory, entity_id_array_parser_factory, entity_id_parser_factory,
@@ -21,7 +19,7 @@ from ...field_validators import (
     nullable_object_array_validator_factory
 )
 from ...user import ClientUserBase, User, ZEROUSER
-from ...utils import datetime_to_id, id_to_datetime
+from ...utils import DISCORD_EPOCH_START, datetime_to_timestamp
 
 from ..schedule import Schedule
 from ..scheduled_event_occasion_overwrite import ScheduledEventOccasionOverwrite
@@ -29,6 +27,9 @@ from ..scheduled_event_entity_metadata import ScheduledEventEntityMetadataBase, 
 
 from .constants import DESCRIPTION_LENGTH_MAX, DESCRIPTION_LENGTH_MIN, NAME_LENGTH_MAX, NAME_LENGTH_MIN
 from .preinstanced import PrivacyLevel, ScheduledEventEntityType, ScheduledEventStatus
+
+
+DISCORD_EPOCH_JSON = datetime_to_timestamp(DISCORD_EPOCH_START)
 
 
 # occasion_overwrites
@@ -238,10 +239,13 @@ def put_schedule(schedule, data, defaults, *, start = None):
     ----------
     schedule : ``None | Schedule``
         The schedule to serialize.
+    
     data : `dict<str, object>`
         Json serializable dictionary.
+    
     defaults : `bool`
         Whether default values should be included as well.
+    
     start : `None | DateTime` = `None`, Optional (Keyword only)
         Start date to use if schedule does not define it.
     
@@ -257,10 +261,45 @@ def put_schedule(schedule, data, defaults, *, start = None):
         
         data['recurrence_rule'] = schedule_data
     
-    return data    
+    return data
 
 
 validate_schedule = nullable_entity_validator_factory('schedule', Schedule)
+
+
+def put_schedule_with_pass_from_start(schedule, data, defaults):
+    """
+    Serialises the given schedule. if the data has `start` inserted to it, updates its own `start` as required.
+    
+    Parameters
+    ----------
+    schedule : ``None | Schedule``
+        The schedule to serialize.
+    
+    data : `dict<str, object>`
+        Json serializable dictionary.
+    
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    if defaults or (schedule is not None):
+        if schedule is None:
+            schedule_data = None
+        else:
+            schedule_data = schedule.to_data(defaults = defaults)
+        
+        data['recurrence_rule'] = schedule_data
+        
+        if (schedule is not None) and (schedule.start is None):
+            start = data.get('scheduled_start_time', None)
+            if (start is not None):
+                schedule_data['start'] = start
+    
+    return data
 
 
 # start
@@ -268,6 +307,40 @@ validate_schedule = nullable_entity_validator_factory('schedule', Schedule)
 parse_start = nullable_date_time_parser_factory('scheduled_start_time')
 put_start = nullable_date_time_optional_putter_factory('scheduled_start_time')
 validate_start = nullable_date_time_validator_factory('start')
+
+
+def put_start_with_pass_to_schedule_start(start, data, defaults):
+    """
+    Serialises the start value. If the data has `schedule` already inserted to it, updates its `start` as required.
+    
+    Parameters
+    ----------
+    start : `None | DateTime` = `None`
+        Start date.
+    
+    data : `dict<str, object>`
+        Json serializable dictionary.
+    
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    if defaults or (start is not None):
+        if start is None:
+            timestamp = None
+        else:
+            timestamp = datetime_to_timestamp(start)
+        data['scheduled_start_time'] = timestamp
+        
+        if (timestamp is not None):
+            schedule_data = data.get('recurrence_rule', None)
+            if (schedule_data is not None) and (schedule_data['start'] == DISCORD_EPOCH_JSON):
+                schedule_data['start'] = timestamp
+    
+    return data
 
 
 # sku_ids

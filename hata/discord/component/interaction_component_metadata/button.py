@@ -2,8 +2,9 @@ __all__ = ('InteractionComponentMetadataButton',)
 
 from scarletio import copy_docs, include
 
+from ..shared_fields import parse_custom_id, put_custom_id, validate_custom_id
+
 from .base import InteractionComponentMetadataBase
-from .fields import parse_custom_id, put_custom_id, validate_custom_id
 
 
 ComponentType = include('ComponentType')

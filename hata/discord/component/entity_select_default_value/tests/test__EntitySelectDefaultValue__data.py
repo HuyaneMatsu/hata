@@ -3,7 +3,7 @@ import vampytest
 from ..entity_select_default_value import EntitySelectDefaultValue
 from ..preinstanced import EntitySelectDefaultValueType
 
-from .test__EntitySelectDefaultValue__constructor import _check_are_fields_set
+from .test__EntitySelectDefaultValue__constructor import _assert_fields_set
 
 
 def test__EntitySelectDefaultValue__from_data():
@@ -19,7 +19,7 @@ def test__EntitySelectDefaultValue__from_data():
     }
     
     entity_select_default_value = EntitySelectDefaultValue.from_data(data)
-    _check_are_fields_set(entity_select_default_value)
+    _assert_fields_set(entity_select_default_value)
     vampytest.assert_eq(entity_select_default_value.id, entity_id)
     vampytest.assert_is(entity_select_default_value.type, option_type)
 

@@ -4,14 +4,20 @@ from scarletio import include_with_callback
 
 from ..emoji import Emoji, create_partial_emoji_data, create_partial_emoji_from_data
 from ..field_parsers import (
-    nullable_functional_parser_factory, nullable_object_array_parser_factory, nullable_string_parser_factory
+    bool_parser_factory, force_string_parser_factory, nullable_functional_parser_factory,
+    nullable_object_array_parser_factory, nullable_string_parser_factory
 )
 from ..field_putters import (
-    nullable_entity_array_putter_factory, nullable_functional_optional_putter_factory, url_optional_putter_factory
+    bool_optional_putter_factory, force_string_putter_factory, nullable_entity_array_putter_factory,
+    nullable_functional_optional_putter_factory, nullable_string_putter_factory, url_optional_putter_factory
 )
-from ..field_validators import nullable_entity_validator_factory, nullable_string_validator_factory
+from ..field_validators import (
+    bool_validator_factory, force_string_validator_factory, nullable_entity_validator_factory,
+    nullable_string_validator_factory
+)
 
-from .shared_constants import CUSTOM_ID_LENGTH_MAX
+from .shared_constants import CUSTOM_ID_LENGTH_MAX, DESCRIPTION_LENGTH_MAX, LABEL_LENGTH_MAX, VALUE_LENGTH_MAX
+
 
 # components
 
@@ -220,14 +226,44 @@ validate_components = validate_components_factory(
     ),
 )
 
+
 # custom_id
 
 parse_custom_id = nullable_string_parser_factory('custom_id')
 put_custom_id = url_optional_putter_factory('custom_id')
 validate_custom_id = nullable_string_validator_factory('custom_id', 0, CUSTOM_ID_LENGTH_MAX)
 
+
+# default
+
+parse_default = bool_parser_factory('default', False)
+put_default = bool_optional_putter_factory('default', False)
+validate_default = bool_validator_factory('default', False)
+
+
+# description
+
+parse_description = nullable_string_parser_factory('description')
+put_description = nullable_string_putter_factory('description')
+validate_description = nullable_string_validator_factory('description', 0, DESCRIPTION_LENGTH_MAX)
+
+
 # emoji
 
 parse_emoji = nullable_functional_parser_factory('emoji', create_partial_emoji_from_data)
 put_emoji = nullable_functional_optional_putter_factory('emoji', create_partial_emoji_data)
 validate_emoji = nullable_entity_validator_factory('emoji', Emoji)
+
+
+# label
+
+parse_label = force_string_parser_factory('label')
+put_label = force_string_putter_factory('label')
+validate_label = force_string_validator_factory('label', 0, LABEL_LENGTH_MAX)
+
+
+# value
+
+parse_value = force_string_parser_factory('value')
+put_value = force_string_putter_factory('value')
+validate_value = force_string_validator_factory('value', 0, VALUE_LENGTH_MAX)

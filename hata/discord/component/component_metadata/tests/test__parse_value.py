@@ -4,10 +4,31 @@ from ..fields import parse_value
 
 
 def _iter_options():
-    yield {}, None
-    yield {'value': None}, None
-    yield {'value': ''}, None
-    yield {'value': 'a'}, 'a'
+    yield (
+        {},
+        None,
+    )
+    
+    yield (
+        {
+            'value': None,
+        },
+        None,
+    )
+    
+    yield (
+        {
+            'value': '',
+        },
+        None,
+    )
+    
+    yield (
+        {
+            'value': 'a',
+        },
+        'a',
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

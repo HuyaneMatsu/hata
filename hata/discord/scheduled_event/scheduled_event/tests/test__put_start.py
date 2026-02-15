@@ -10,10 +10,35 @@ from ..fields import put_start
 def _iter_options():
     timestamp = DateTime(2016, 9, 9, tzinfo = TimeZone.utc)
     
-    yield None, False, {}
-    yield None, True, {'scheduled_start_time': None}
-    yield timestamp, False, {'scheduled_start_time': datetime_to_timestamp(timestamp)}
-    yield timestamp, True, {'scheduled_start_time': datetime_to_timestamp(timestamp)}
+    yield (
+        None,
+        False,
+        {},
+    )
+    
+    yield (
+        None,
+        True,
+        {
+            'scheduled_start_time': None,
+        },
+    )
+    
+    yield (
+        timestamp,
+        False,
+        {
+            'scheduled_start_time': datetime_to_timestamp(timestamp),
+        },
+    )
+    
+    yield (
+        timestamp,
+        True,
+        {
+            'scheduled_start_time': datetime_to_timestamp(timestamp),
+        },
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

@@ -5,10 +5,11 @@ from scarletio import copy_docs
 from ...bases import EventBase
 from ...core import GUILDS, SCHEDULED_EVENTS
 from ...user import create_partial_user_from_id
+from ...utils import DATETIME_FORMAT_CODE
 
 from .fields import (
-    parse_guild_id, parse_scheduled_event_id, parse_user_id, put_guild_id, put_scheduled_event_id,
-    put_user_id, validate_guild_id, validate_scheduled_event_id, validate_user_id
+    parse_guild_id, parse_scheduled_event_id, parse_timestamp, parse_user_id, put_guild_id, put_scheduled_event_id,
+    put_timestamp, put_user_id, validate_guild_id, validate_scheduled_event_id, validate_timestamp, validate_user_id
 )
 
 
@@ -24,13 +25,16 @@ class ScheduledEventSubscribeEvent(EventBase):
     scheduled_event_id : `int`
         The scheduled event's identifier.
     
+    timestamp : `None | DateTime`
+        The timestamp of the occurrence the user subscribed for if applicable.
+    
     user_id : `int`
         The identifier of the user, who subscribed to the event.
     """
-    __slots__ = ('guild_id', 'scheduled_event_id', 'user_id', )
+    __slots__ = ('guild_id', 'scheduled_event_id', 'timestamp', 'user_id')
     
     
-    def __new__(cls, *, guild_id = ..., scheduled_event_id = ..., user_id = ...):
+    def __new__(cls, *, guild_id = ..., scheduled_event_id = ..., timestamp = ..., user_id = ...):
         """
         Creates a new scheduled event (un)subscribe event.
         
@@ -41,6 +45,9 @@ class ScheduledEventSubscribeEvent(EventBase):
         
         scheduled_event_id : ``None | int | ScheduledEvent``, Optional (Keyword only)
             The scheduled event or its identifier.
+        
+        timestamp : `None | DateTime`, Optional (Keyword only)
+            The timestamp of the occurrence the user subscribed for if applicable.
         
         user_id : ``None | int | ClientUserBase``, Optional (Keyword only)
             The user or their their identifier who subscribed to the event.
@@ -58,6 +65,12 @@ class ScheduledEventSubscribeEvent(EventBase):
         else:
             guild_id = validate_guild_id(guild_id)
         
+        # timestamp
+        if timestamp is ...:
+            timestamp = None
+        else:
+            timestamp = validate_timestamp(timestamp)
+        
         # scheduled_event_id
         if scheduled_event_id is ...:
             scheduled_event_id = 0
@@ -73,6 +86,7 @@ class ScheduledEventSubscribeEvent(EventBase):
         self = object.__new__(cls)
         self.guild_id = guild_id
         self.scheduled_event_id = scheduled_event_id
+        self.timestamp = timestamp
         self.user_id = user_id
         return self
     
@@ -94,6 +108,7 @@ class ScheduledEventSubscribeEvent(EventBase):
         self = object.__new__(cls)
         self.guild_id = parse_guild_id(data)
         self.scheduled_event_id = parse_scheduled_event_id(data)
+        self.timestamp = parse_timestamp(data)
         self.user_id = parse_user_id(data)
         return self
     
@@ -114,24 +129,34 @@ class ScheduledEventSubscribeEvent(EventBase):
         data = {}
         put_guild_id(self.guild_id, data, defaults)
         put_scheduled_event_id(self.scheduled_event_id, data, defaults)
+        put_timestamp(self.timestamp, data, defaults)
         put_user_id(self.user_id, data, defaults)
         return data
     
     
     @copy_docs(EventBase.__repr__)
     def __repr__(self):
-        repr_parts = [
-            '<',
-            self.__class__.__name__,
-            ' guild_id = ',
-            repr(self.guild_id),
-            ', scheduled_event_id = ',
-            repr(self.scheduled_event_id),
-            ', user_id = ',
-            repr(self.user_id),
-            '>'
-        ]
+        repr_parts = ['<', type(self).__name__]
         
+        # guild_id
+        repr_parts.append(' guild_id = ')
+        repr_parts.append(repr(self.guild_id))
+        
+        # scheduled_event_id
+        repr_parts.append(', scheduled_event_id = ')
+        repr_parts.append(repr(self.scheduled_event_id))
+        
+        # timestamp
+        timestamp = self.timestamp
+        if (timestamp is not None):
+            repr_parts.append(', timestamp = ')
+            repr_parts.append(format(timestamp, DATETIME_FORMAT_CODE))
+        
+        # user_id
+        repr_parts.append(', user_id = ')
+        repr_parts.append(repr(self.user_id))
+        
+        repr_parts.append('>')
         return ''.join(repr_parts)
     
     
@@ -152,12 +177,19 @@ class ScheduledEventSubscribeEvent(EventBase):
         if type(self) is not type(other):
             return NotImplemented
         
+        # guild_id
         if self.guild_id != other.guild_id:
             return False
         
+        # scheduled_event_id
         if self.scheduled_event_id != other.scheduled_event_id:
             return False
         
+        # timestamp
+        if self.timestamp != other.timestamp:
+            return False
+        
+        # user_id
         if self.user_id != other.user_id:
             return False
         
@@ -166,7 +198,23 @@ class ScheduledEventSubscribeEvent(EventBase):
     
     @copy_docs(EventBase.__hash__)
     def __hash__(self):
-        return self.guild_id ^ self.scheduled_event_id ^ self.user_id
+        hash_value = 0
+        
+        # guild-id
+        hash_value ^= self.guild_id
+        
+        # scheduled_event_id
+        hash_value ^= self.scheduled_event_id
+        
+        # timestamp
+        timestamp = self.timestamp
+        if (timestamp is not None):
+            hash_value ^= hash(timestamp)
+        
+        # user_id
+        hash_value ^= self.user_id
+        
+        return hash_value
     
 
     def copy(self):
@@ -180,11 +228,12 @@ class ScheduledEventSubscribeEvent(EventBase):
         new = object.__new__(type(self))
         new.guild_id = self.guild_id
         new.scheduled_event_id = self.scheduled_event_id
+        new.timestamp = self.timestamp
         new.user_id = self.user_id
         return new
     
     
-    def copy_with(self, guild_id = ..., scheduled_event_id = ..., user_id = ...):
+    def copy_with(self, guild_id = ..., scheduled_event_id = ..., timestamp = ..., user_id = ...):
         """
         Copies the scheduled event (un)subscribe event with the given fields.
         
@@ -195,6 +244,9 @@ class ScheduledEventSubscribeEvent(EventBase):
         
         scheduled_event_id : ``None | int | ScheduledEvent``, Optional (Keyword only)
             The scheduled event or its identifier.
+        
+        timestamp : `None | DateTime`, Optional (Keyword only)
+            The timestamp of the occurrence the user subscribed for if applicable.
         
         user_id : ``None | int | ClientUserBase``, Optional (Keyword only)
             The user or their their identifier who subscribed to the event.
@@ -222,6 +274,12 @@ class ScheduledEventSubscribeEvent(EventBase):
         else:
             scheduled_event_id = validate_scheduled_event_id(scheduled_event_id)
         
+        # timestamp
+        if timestamp is ...:
+            timestamp = self.timestamp
+        else:
+            timestamp = validate_timestamp(timestamp)
+        
         # user_id
         if user_id is ...:
             user_id = self.user_id
@@ -232,6 +290,7 @@ class ScheduledEventSubscribeEvent(EventBase):
         new = object.__new__(type(self))
         new.guild_id = guild_id
         new.scheduled_event_id = scheduled_event_id
+        new.timestamp = timestamp
         new.user_id = user_id
         return new
     

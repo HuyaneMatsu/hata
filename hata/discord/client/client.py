@@ -81,7 +81,7 @@ class Client(
         Cached up gateway url, what is invalidated after `1` minute. Used to avoid unnecessary requests when launching
         up more shards.
     
-    _gateway_waiter : `None`, ``Future``
+    _gateway_waiter : ``None | Future``
         When client gateway is being requested multiple times at the same time, this future is set and awaited at the
         secondary requests.
     

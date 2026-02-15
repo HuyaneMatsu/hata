@@ -2032,7 +2032,7 @@ def nullable_object_array_validator_factory(field_name, object_type, *, include 
                 if not isinstance(object, object_type):
                     raise TypeError(
                         f'`{field_name}` can contain `{object_type.__name__}` elements, got '
-                        f'{type(object).__name__}; {object!r}; object_array = {object_array!r}.'
+                        f'{type(object).__name__}; {object!r}; {field_name} = {object_array!r}.'
                     )
                 
                 if (object_array_processed is None):
@@ -2066,7 +2066,7 @@ def nullable_object_array_validator_factory(field_name, object_type, *, include 
                 if not isinstance(object, object_type):
                     raise TypeError(
                         f'`{field_name}` can contain `{object_type.__name__}` elements, got '
-                        f'{type(object).__name__}; {object!r}; object_array = {object_array!r}.'
+                        f'{type(object).__name__}; {object!r}; {field_name} = {object_array!r}.'
                     )
                 
                 if (object_array_processed is None):

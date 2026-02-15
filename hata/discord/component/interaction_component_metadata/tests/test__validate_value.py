@@ -5,6 +5,7 @@ from ..fields import validate_value
 
 def _iter_options__passing():
     yield None, None
+    yield '', None
     yield 'a', 'a'
 
 

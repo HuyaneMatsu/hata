@@ -5,9 +5,9 @@ from scarletio import RichAttributeErrorBaseType, copy_docs, export, include
 from ..component import ComponentType
 from ..interaction_component_metadata import InteractionComponentMetadataBase
 from ..interaction_component_metadata.fields import (
-    validate_component__label, validate_components, validate_custom_id, validate_thumbnail, validate_value,
-    validate_values
+    validate_component__label, validate_components, validate_thumbnail, validate_value, validate_values
 )
+from ..shared_fields import validate_custom_id
 
 from .fields import parse_type, put_type, validate_type
 

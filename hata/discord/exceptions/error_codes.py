@@ -639,6 +639,8 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | failed_to_create_stage_needed_for_scheduled_event                 | 180002    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| scheduled_event_occurrence_overwrite_must_change_something        | 180005    | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | privacy_policy_required                                           | 190001    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | terms_of_service_required                                         | 190002    | -         |
@@ -1064,6 +1066,7 @@ poggermode_temporarily_disabled = 170008
 cannot_update_finished_scheduled_event = 180000
 exactly_one_guild_id_parameter_is_required = 180001
 failed_to_create_stage_needed_for_scheduled_event = 180002
+scheduled_event_occurrence_overwrite_must_change_something = 180005
 
 privacy_policy_required = 190001
 terms_of_service_required = 190002

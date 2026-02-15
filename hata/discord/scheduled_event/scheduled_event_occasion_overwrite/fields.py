@@ -57,7 +57,7 @@ def put_timestamp(timestamp, data, defaults):
     
     Parameters
     ----------
-    timestamp : `None | tuple<DateTime>`
+    timestamp : `DateTime`
         The timestamp to serialize.
     
     data : `dict<str, object>`
@@ -70,7 +70,7 @@ def put_timestamp(timestamp, data, defaults):
     -------
     data : `dict<str, object>`
     """
-    data['event_exception_id'] = datetime_to_id(timestamp)
+    data['event_exception_id'] = str(datetime_to_id(timestamp))
     return data
 
 

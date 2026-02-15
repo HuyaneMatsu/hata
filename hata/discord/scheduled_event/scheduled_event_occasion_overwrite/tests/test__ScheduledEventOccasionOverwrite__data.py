@@ -24,7 +24,7 @@ def test__ScheduledEventOccasionOverwrite__from_data():
         'is_canceled': cancelled,
         'scheduled_end_time': datetime_to_timestamp(end),
         'scheduled_start_time': datetime_to_timestamp(start),
-        'event_exception_id': datetime_to_id(timestamp),
+        'event_exception_id': str(datetime_to_id(timestamp)),
     }
     
     scheduled_event_occasion_overwrite = ScheduledEventOccasionOverwrite.from_data(data)
@@ -58,7 +58,7 @@ def test__ScheduledEventOccasionOverwrite__to_data():
         'is_canceled': cancelled,
         'scheduled_end_time': datetime_to_timestamp(end),
         'scheduled_start_time': datetime_to_timestamp(start),
-        'event_exception_id': datetime_to_id(timestamp),
+        'event_exception_id': str(datetime_to_id(timestamp)),
     }
     
     vampytest.assert_eq(
@@ -82,7 +82,7 @@ def test__ScheduledEventOccasionOverwrite__update_attributes():
         'is_canceled': cancelled,
         'scheduled_end_time': datetime_to_timestamp(end),
         'scheduled_start_time': datetime_to_timestamp(start),
-        'event_exception_id': datetime_to_id(timestamp),
+        'event_exception_id': str(datetime_to_id(timestamp)),
     }
     
     scheduled_event_occasion_overwrite = ScheduledEventOccasionOverwrite(
@@ -116,7 +116,7 @@ def test__ScheduledEventOccasionOverwrite__difference_update_attributes():
         'is_canceled': new_cancelled,
         'scheduled_end_time': datetime_to_timestamp(new_end),
         'scheduled_start_time': datetime_to_timestamp(new_start),
-        'event_exception_id': datetime_to_id(timestamp),
+        'event_exception_id': str(datetime_to_id(timestamp)),
     }
     
     scheduled_event_occasion_overwrite = ScheduledEventOccasionOverwrite(

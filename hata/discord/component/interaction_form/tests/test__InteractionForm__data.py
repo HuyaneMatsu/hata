@@ -4,7 +4,7 @@ from ...component import Component, ComponentType
 
 from ..interaction_form import InteractionForm
 
-from .test__InteractionForm__constructor import _check_are_fields_set
+from .test__InteractionForm__constructor import _assert_fields_set
 
 
 
@@ -25,7 +25,7 @@ def test__InteractionForm__from_data():
     }
     
     interaction_form = InteractionForm.from_data(data)
-    _check_are_fields_set(interaction_form)
+    _assert_fields_set(interaction_form)
     
     vampytest.assert_eq(interaction_form.title, title)
     vampytest.assert_eq(interaction_form.components, expected_labels)

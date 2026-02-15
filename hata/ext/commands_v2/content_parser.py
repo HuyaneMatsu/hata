@@ -19,7 +19,7 @@ from ...discord.invite import Invite
 from ...discord.message import Message
 from ...discord.role import Role, parse_role_mention
 from ...discord.sticker import Sticker
-from ...discord.user import User, UserBase
+from ...discord.user import ClientUserBase, User, UserBase
 from ...discord.utils import (
     CHANNEL_MENTION_RP, CHANNEL_MESSAGE_RP, ID_RP, INVITE_CODE_RP, USER_MENTION_RP, parse_rdelta, parse_tdelta
 )
@@ -1315,6 +1315,7 @@ CONVERTER_USER = ConverterSetting(
     alternative_type_name = 'user',
     default_type = User,
     alternative_types = [
+        ClientUserBase,
         UserBase,
     ],
     requires_part = True,

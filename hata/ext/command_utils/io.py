@@ -24,7 +24,7 @@ class ChannelOutputStream:
         The maximal chunk size to send in one message.
     _client : ``Client``
         The client who send the stream to the channel.
-    _close_waiter : `None`, ``Future``
+    _close_waiter : ``None | Future``
         Waiter future set to wait for closing.
     _closed : `bool`
         Whether the stream is closed.
@@ -335,7 +335,7 @@ class ChannelInputStream:
     
     _client : ``Client``
         The client who send the stream to the channel.
-    _close_waiter : `None`, ``Future``
+    _close_waiter : ``None | Future``
         Waiter future set to wait for closing.
     _closed : `bool`
         Whether the stream is closed.

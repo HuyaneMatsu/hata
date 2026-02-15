@@ -23,6 +23,7 @@ def test__ComponentMetadataBase__placeholders():
     vampytest.assert_instance(component_metadata.components, tuple, nullable = True)
     vampytest.assert_instance(component_metadata.content, str, nullable = True)
     vampytest.assert_instance(component_metadata.custom_id, str, nullable = True)
+    vampytest.assert_instance(component_metadata.default, bool, nullable = True)
     vampytest.assert_instance(component_metadata.default_values, tuple, nullable = True)
     vampytest.assert_instance(component_metadata.description, str, nullable = True)
     vampytest.assert_instance(component_metadata.divider, bool)

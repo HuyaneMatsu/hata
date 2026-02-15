@@ -1000,7 +1000,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        waiter : `None`, ``Future`` = `None`, Optional
+        waiter : ``None | Future`` = `None`, Optional
             A Waiter what's result is set (or is raised to), when the voice client connects (or failed to connect).
         """
         # Are we double started?

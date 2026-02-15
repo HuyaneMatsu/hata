@@ -294,6 +294,18 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
     )
     
     
+    default = PlaceHolder(
+        False,
+        """
+        Whether the component is checked by default
+        
+        Returns
+        -------
+        default : `bool`
+        """
+    )
+    
+    
     default_values = PlaceHolder(
         None,
         """

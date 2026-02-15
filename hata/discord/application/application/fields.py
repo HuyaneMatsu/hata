@@ -810,8 +810,10 @@ def put_type(application_type, data, defaults):
     ----------
     application_type : ``ApplicationType``
         The application's type.
+    
     data : `dict<str, object>`
         Json serializable dictionary.
+    
     defaults : `bool`
         Whether default values should be included as well.
     

@@ -79,6 +79,7 @@ def test__put_user__user_and_guild_id_and_guild_profile():
         expected_output,
     )
 
+
 def test__put_user__user_and_guild_profile():
     """
     Tests whether ``put_user`` works as intended.

@@ -4,10 +4,31 @@ from ..shared_fields import parse_custom_id
 
 
 def _iter_options():
-    yield {}, None
-    yield {'custom_id': None}, None
-    yield {'custom_id': ''}, None
-    yield {'custom_id': 'a'}, 'a'
+    yield (
+        {},
+        None,
+    )
+    
+    yield (
+        {
+            'custom_id': None,
+        },
+        None,
+    )
+    
+    yield (
+        {
+            'custom_id': '',
+        },
+        None,
+    )
+    
+    yield (
+        {
+            'custom_id': 'a',
+        },
+        'a',
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

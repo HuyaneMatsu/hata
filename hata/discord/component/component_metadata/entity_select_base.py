@@ -223,7 +223,7 @@ class ComponentMetadataEntitySelectBase(ComponentMetadataSelectBase):
         required = ...,
     ):
         """
-        Copies the channel select component metadata with the given fields.
+        Copies the entity select base component metadata with the given fields.
         
         Parameters
         ----------

@@ -260,7 +260,7 @@ class ComponentInteractionIterator:
         Whether the waiter finished with an exception.
     _finished : `bool`
         Whether the interaction iterator is finished.
-    _future : `None`, ``Future``
+    _future : ``None | Future``
         The waiter future.
     _message : ``Message``
         The waited interaction component's message.

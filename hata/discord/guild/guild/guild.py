@@ -4567,7 +4567,7 @@ class Guild(DiscordEntity, immortal = True):
     
     def iter_scheduled_events(self):
         """
-        Iterates overt he scheduled events of the guild.
+        Iterates over the scheduled events of the guild.
         
         This method is an iterable generator.
         

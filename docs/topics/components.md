@@ -148,6 +148,9 @@ Here is a complete overview of where components can be used, how can they be nes
 | container           | X                  |                 | X         |                   |                         |                       |                        |                   |                       |                       |           | X         |
 | label               |                    | X               | X         |                   |                         |                       |                        |                   |                       |                       |           | X         |
 | attachment input    |                    | X               |           |                   |                         |                       | X                      |                   |                       | X                     |           | X         |
+| radio group         |                    | X               |           |                   |                         |                       | X                      |                   | X                     |                       |           | X         |
+| checkbox group      |                    | X               |           |                   |                         |                       | X                      |                   |                       | X                     |           | X         |
+| checkbox            |                    | X               |           |                   |                         |                       | X                      |                   | X                     |                       |           | X         |
 
 
 This information can also be accessed at runtime:

@@ -28,7 +28,7 @@ def test__validate_position(input_value):
     Parameters
     ----------
     input_value : `object`
-        Value to validate.
+        The value to validate.
     
     Returns
     -------

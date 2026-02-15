@@ -17,7 +17,7 @@ class Kokoro(RichAttributeErrorBaseType):
     ----------
     beat_task : `None`, ``Task``
         The beat task of kokoro's gateway. Set by ``._task`` meanwhile it's gateway is connected.
-    beat_waiter : `None`, ``Future``
+    beat_waiter : ``None | Future``
         `.runner` task's waiter. Sleeps `.runner` between two beat.
     gateway : ``DiscordGatewayBase``
         Kokoro's owner gateway.

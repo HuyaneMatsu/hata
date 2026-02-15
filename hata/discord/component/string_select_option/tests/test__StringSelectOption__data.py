@@ -4,7 +4,7 @@ from ....core import BUILTIN_EMOJIS
 
 from ..string_select_option import StringSelectOption
 
-from .test__StringSelectOption__constructor import _check_are_fields_set
+from .test__StringSelectOption__constructor import _assert_fields_set
 
 
 def test__StringSelectOption__from_data():
@@ -26,7 +26,8 @@ def test__StringSelectOption__from_data():
     }
     
     string_select_option = StringSelectOption.from_data(data)
-    _check_are_fields_set(string_select_option)
+    _assert_fields_set(string_select_option)
+    
     vampytest.assert_eq(string_select_option.value, value)
     vampytest.assert_eq(string_select_option.label, label)
     vampytest.assert_is(string_select_option.emoji, emoji)

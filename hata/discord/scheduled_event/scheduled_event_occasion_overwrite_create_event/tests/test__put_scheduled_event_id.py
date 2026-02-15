@@ -6,10 +6,37 @@ from ..fields import put_scheduled_event_id
 def _iter_options():
     scheduled_event_id = 202506210044
     
-    yield 0, False, {'event_id': None}
-    yield 0, True, {'event_id': None}
-    yield scheduled_event_id, False, {'event_id': str(scheduled_event_id)}
-    yield scheduled_event_id, True, {'event_id': str(scheduled_event_id)}
+    yield (
+        0,
+        False,
+        {
+            'event_id': None,
+        },
+    )
+    
+    yield (
+        0,
+        True,
+        {
+            'event_id': None,
+        },
+    )
+    
+    yield (
+        scheduled_event_id,
+        False,
+        {
+            'event_id': str(scheduled_event_id),
+        },
+    )
+    
+    yield (
+        scheduled_event_id,
+        True,
+        {
+            'event_id': str(scheduled_event_id),
+        },
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

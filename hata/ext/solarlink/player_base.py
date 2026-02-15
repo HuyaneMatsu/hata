@@ -94,7 +94,7 @@ class SolarPlayerBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        waiter : `None`, ``Future``
+        waiter : ``None | Future``
             Waiter to set it's result or exception, when connection is established.
         """
         try:

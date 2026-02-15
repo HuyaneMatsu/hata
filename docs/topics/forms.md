@@ -507,7 +507,7 @@ You can also use these in form submit commands alongside with text displays.
 
 ```py3
 from hata import (
-    InteractionForm, StringSelectOption, TextInputStyle, create_label, create_select, create_text_display,
+    InteractionForm, StringSelectOption, TextInputStyle, create_label, create_string_select, create_text_display,
     create_user_select
 )
 from hata.ext.slash import InteractionResponse
@@ -535,10 +535,10 @@ REWARD_FORM = InteractionForm(
             'With what would you like to reward them?',
             component = create_string_select(
                 [
-                    StringSelectOption('Cake',),
-                    StringSelectOption('Cookie',),
-                    StringSelectOption('Pudding',),
-                    StringSelectOption('Chocomilk',),
+                    StringSelectOption('Cake'),
+                    StringSelectOption('Cookie'),
+                    StringSelectOption('Pudding'),
+                    StringSelectOption('Chocomilk'),
                 ],
                 custom_id = 'items',
                 min_values = 1,
@@ -595,7 +595,7 @@ async def handle(event, *, users, items, reason):
 
 You may also input attachments with attachment input components.
 
-```
+```py3
 from hata import create_attachment_input
 
 component = create_attachment_input(
@@ -608,13 +608,76 @@ or at this case, input multiple attachments.
 Therefore when capturing an attachment component in a handler function,
 it is always passed to it as a nullable tuple of attachments.
 
-```
+```py3
 component = create_attachment_input(
     custom_id = CUSTOM_ID,
     min_values = 0,
     max_values = 10,
 )
 ```
+
+### Radio groups & checkbox groups & checkboxes
+
+#### Radio groups
+
+```py3
+from hata import RadioGroupOption, create_radio_group
+
+component = create_radio_group(
+    custom_id = CUSTOM_ID,
+    options = [
+        RadioGroupOption('Cake'),
+        RadioGroupOption('Cookie'),
+        RadioGroupOption('Pudding'),
+        RadioGroupOption('Chocomilk', default = True),
+    ],
+    required = True,
+)
+```
+
+When capturing a radio group inside of a handler function, the selected option's `value` is passed.
+No selected option means `None` will be passed.
+
+#### Checkbox group
+
+Can be used to allow the user to select multiple options of many.
+
+```py3
+from hata import CheckboxGroupOption, create_checkbox_group
+
+component = create_checkbox_group(
+    custom_id = CUSTOM_ID,
+    min_values = 2,
+    max_values = 4,
+    options = [
+        CheckboxGroupOption('Cake', default = True),
+        CheckboxGroupOption('Cookie', default = True),
+        CheckboxGroupOption('Pudding', default = True),
+        CheckboxGroupOption('Chocomilk', default = True),
+    ],
+    required = True,
+)
+```
+
+When capturing a checkbox group inside of a handler function, a `nullable tuple` is passed containing the 
+selected options' `value`-s is passed.
+
+
+#### Checkbox
+
+Can be used to allow the user to tick a single `true / false` checkbox.
+
+```py3
+from hata import create_checkbox
+
+component = create_checkbox(
+    custom_id = CUSTOM_ID,
+    default = True,
+)
+```
+
+When capturing a checkbox inside of a handler function, a `nullable boolean` representing whether the field was
+checked is passed.
 
 ----
 

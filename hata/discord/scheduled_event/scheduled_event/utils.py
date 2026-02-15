@@ -1,22 +1,30 @@
 __all__ = ()
 
+from functools import partial as partial_func
+
 from .fields import (
-    put_description, put_end, put_name, put_privacy_level, put_schedule, put_start,
-    put_status, put_target, validate_description, validate_end, validate_name, validate_privacy_level,
-    validate_schedule, validate_start, validate_status, validate_target_location, validate_target_stage,
-    validate_target_voice
+    put_description, put_end, put_name, put_privacy_level, put_schedule_with_pass_from_start,
+    put_start_with_pass_to_schedule_start, put_status, put_target, validate_description, validate_end, validate_name,
+    validate_privacy_level, validate_schedule, validate_start, validate_status, validate_target_location,
+    validate_target_stage, validate_target_voice
 )
+from .scheduled_event import SCHEDULED_EVENT_IMAGE
+
 
 
 SCHEDULED_EVENT_CREATE_FIELD_CONVERTERS = {
     'description': (validate_description, put_description),
     'end': (validate_end, put_end),
+    'image': (
+        partial_func(SCHEDULED_EVENT_IMAGE.validate_icon, allow_data = True),
+        partial_func(SCHEDULED_EVENT_IMAGE.put_into, as_data = True),
+    ),
     'location': (validate_target_location, put_target),
     'name': (validate_name, put_name),
     'privacy_level': (validate_privacy_level, put_privacy_level),
-    'schedule': (validate_schedule, put_schedule),
+    'schedule': (validate_schedule, put_schedule_with_pass_from_start),
     'stage': (validate_target_stage, put_target),
-    'start': (validate_start, put_start),
+    'start': (validate_start, put_start_with_pass_to_schedule_start),
     'voice': (validate_target_voice, put_target),
 }
 

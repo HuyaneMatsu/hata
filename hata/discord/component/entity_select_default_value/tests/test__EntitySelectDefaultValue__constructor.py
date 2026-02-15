@@ -4,7 +4,7 @@ from ..entity_select_default_value import EntitySelectDefaultValue
 from ..preinstanced import EntitySelectDefaultValueType
 
 
-def _check_are_fields_set(entity_select_default_value):
+def _assert_fields_set(entity_select_default_value):
     """
     Checks whether all attributes of the entity select default option are set.
     
@@ -26,7 +26,7 @@ def test__EntitySelectDefaultValue__new():
     option_type = EntitySelectDefaultValueType.role
 
     entity_select_default_value = EntitySelectDefaultValue(option_type, entity_id)
-    _check_are_fields_set(entity_select_default_value)
+    _assert_fields_set(entity_select_default_value)
     vampytest.assert_eq(entity_select_default_value.id, entity_id)
     vampytest.assert_is(entity_select_default_value.type, option_type)
 
@@ -39,6 +39,6 @@ def test__EntitySelectDefaultValue__from_fields():
     option_type = EntitySelectDefaultValueType.role
 
     entity_select_default_value = EntitySelectDefaultValue.from_fields(option_type, entity_id)
-    _check_are_fields_set(entity_select_default_value)
+    _assert_fields_set(entity_select_default_value)
     vampytest.assert_eq(entity_select_default_value.id, entity_id)
     vampytest.assert_is(entity_select_default_value.type, option_type)

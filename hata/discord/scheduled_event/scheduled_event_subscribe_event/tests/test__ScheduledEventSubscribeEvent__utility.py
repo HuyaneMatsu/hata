@@ -1,3 +1,5 @@
+from datetime import datetime as DateTime, timezone as TimeZone
+
 import vampytest
 
 from ....guild import Guild
@@ -16,11 +18,13 @@ def test__ScheduledEventSubscribeEvent__copy():
     """
     guild_id = 202303120021
     scheduled_event_id = 202303120022
+    timestamp = DateTime(2016, 5, 5, tzinfo = TimeZone.utc)
     user_id = 202303120023
     
     event = ScheduledEventSubscribeEvent(
         guild_id = guild_id,
         scheduled_event_id = scheduled_event_id,
+        timestamp = timestamp,
         user_id = user_id,
     )
     copy = event.copy()
@@ -28,7 +32,6 @@ def test__ScheduledEventSubscribeEvent__copy():
     vampytest.assert_is_not(event, copy)
 
     vampytest.assert_eq(event, copy)
-
 
 
 def test__ScheduledEventSubscribeEvent__copy_with__no_fields():
@@ -39,11 +42,13 @@ def test__ScheduledEventSubscribeEvent__copy_with__no_fields():
     """
     guild_id = 202303120024
     scheduled_event_id = 202303120025
+    timestamp = DateTime(2016, 5, 5, tzinfo = TimeZone.utc)
     user_id = 202303120026
     
     event = ScheduledEventSubscribeEvent(
         guild_id = guild_id,
         scheduled_event_id = scheduled_event_id,
+        timestamp = timestamp,
         user_id = user_id,
     )
     copy = event.copy_with()
@@ -51,7 +56,6 @@ def test__ScheduledEventSubscribeEvent__copy_with__no_fields():
     vampytest.assert_is_not(event, copy)
 
     vampytest.assert_eq(event, copy)
-
 
 
 def test__ScheduledEventSubscribeEvent__copy_with__all_fields():
@@ -62,20 +66,24 @@ def test__ScheduledEventSubscribeEvent__copy_with__all_fields():
     """
     old_guild_id = 202303120027
     old_scheduled_event_id = 202303120028
+    old_timestamp = DateTime(2016, 5, 5, tzinfo = TimeZone.utc)
     old_user_id = 202303120029
     
     new_guild_id = 202303120030
     new_scheduled_event_id = 202303120031
+    new_timestamp = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
     new_user_id = 202303120032
     
     event = ScheduledEventSubscribeEvent(
         guild_id = old_guild_id,
         scheduled_event_id = old_scheduled_event_id,
+        timestamp = old_timestamp,
         user_id = old_user_id,
     )
     copy = event.copy_with(
         guild_id = new_guild_id,
         scheduled_event_id = new_scheduled_event_id,
+        timestamp = new_timestamp,
         user_id = new_user_id,
     )
     _assert_fields_set(copy)
@@ -83,6 +91,7 @@ def test__ScheduledEventSubscribeEvent__copy_with__all_fields():
 
     vampytest.assert_eq(copy.guild_id, new_guild_id)
     vampytest.assert_eq(copy.scheduled_event_id, new_scheduled_event_id)
+    vampytest.assert_eq(copy.timestamp, new_timestamp)
     vampytest.assert_eq(copy.user_id, new_user_id)
 
 
@@ -121,7 +130,6 @@ def test__ScheduledEventSubscribeEvent__guild(guild_id):
 def test__ScheduledEventSubscribeEvent__user():
     """
     Tests whether ``ScheduledEventSubscribeEvent.user`` works as intended.
-    
     """
     user_id = 202303120035
     

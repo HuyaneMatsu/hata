@@ -1543,7 +1543,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     
     def has_entitlement(self, entitlement):
         """
-        Returns whether the interaction event hast he given entitlement.
+        Returns whether the interaction event has the given entitlement.
         
         Parameters
         ----------

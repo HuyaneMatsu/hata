@@ -10,9 +10,24 @@ from ..fields import parse_timestamp
 def _iter_options():
     timestamp = DateTime(2016, 5, 14, 13, 0, 0, tzinfo = TimeZone.utc)
     
-    yield {}, DISCORD_EPOCH_START
-    yield {'event_exception_id': None}, DISCORD_EPOCH_START
-    yield {'event_exception_id': str(datetime_to_id(timestamp))}, timestamp
+    yield (
+        {},
+        DISCORD_EPOCH_START,
+    )
+    
+    yield (
+        {
+            'event_exception_id': None,
+        },
+        DISCORD_EPOCH_START,
+    )
+    
+    yield (
+        {
+            'event_exception_id': str(datetime_to_id(timestamp)),
+        },
+        timestamp,
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

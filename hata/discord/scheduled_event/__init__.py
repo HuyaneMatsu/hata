@@ -8,6 +8,8 @@ from .scheduled_event_occasion_overwrite_update_event import *
 from .scheduled_event_entity_metadata import *
 from .scheduled_event_subscribe_event import *
 from .scheduled_event_unsubscribe_event import *
+from .scheduled_event_user_counts import *
+from .scheduled_event_user_entry import *
 
 
 __all__ = (
@@ -21,4 +23,6 @@ __all__ = (
     *scheduled_event_entity_metadata.__all__,
     *scheduled_event_subscribe_event.__all__,
     *scheduled_event_unsubscribe_event.__all__,
+    *scheduled_event_user_counts.__all__,
+    *scheduled_event_user_entry.__all__,
 )

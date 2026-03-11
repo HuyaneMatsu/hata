@@ -21,7 +21,7 @@ async def try_send_private_message(client, user, content):
     try:
         await client.message_create(private_channel, content)
     except DiscordException as err:
-        if err.code != ERROR_CODES.cannot_message_user:
+        if err.code not in (ERROR_CODES.cannot_message_user_0, ERROR_CODES.cannot_message_user_1):
             raise
 ```
 
@@ -335,7 +335,7 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | cannot_create_empty_message                                       | 50006     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
-| cannot_message_user                                               | 50007     | -         |
+| cannot_message_user_0                                             | 50007     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | cannot_send_message_to_non_text_channel                           | 50008     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -500,6 +500,8 @@ Error Codes
 | invalid_activity_launch_incorrect_guild_size                      | 50209     | 25        |
 +-------------------------------------------------------------------+-----------+-----------+
 | handler_valid_only_for_primary_entry_points                       | 50227     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| cannot_message_user_1                                             | 50278     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | activity_does_not_support_flatform                                | 50231     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -902,7 +904,7 @@ invalid_action_for_private_channel = 50003
 widget_disabled = 50004
 cannot_edit_message_of_other_user = 50005
 cannot_create_empty_message = 50006
-cannot_message_user = 50007
+cannot_message_user_0 = 50007
 cannot_send_message_to_non_text_channel = 50008
 channel_verification_level_too_high = 50009
 oauth2_application_has_no_bot = 50010
@@ -985,6 +987,7 @@ file_duration_invalid = 50192
 invalid_gift_redemption_incorrect_user = 50194
 invalid_activity_launch_incorrect_guild_size = 50209
 handler_valid_only_for_primary_entry_points = 50227
+cannot_message_user_1 = 50278
 activity_does_not_support_flatform = 50231
 invalid_message_create_game_friend_private_channel = 50251
 invalid_message_create_provisional_account_offline = 50252
@@ -1139,9 +1142,7 @@ account_revert_account_not_found = 620002
 
 
 __deprecations__ = {
-    'activity_launch_premium_tier': ('activity_launch_boost_level', '2025 November', activity_launch_boost_level),
-    'request_too_large': ('request_too_large', '2025 November', message_entity_too_large),
-    'feature_disabled': ('<removed>', '2025 November', 0)
+    'cannot_message_user': ('cannot_message_user_0', '2027 February', cannot_message_user_0),
 }
 
 

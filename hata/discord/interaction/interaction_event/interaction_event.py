@@ -1754,7 +1754,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         Yields
         ------
-        entity : ``str | Channel | ClientUserbase | Role``
+        entity : ``str | Channel | ClientUserBase | Role``
         """
         resolved = self.resolved
         for custom_id, component_type, value_or_values in self.iter_custom_ids_and_values():
@@ -1773,7 +1773,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         Returns
         -------
-        entities : ``list<Channel | ClientUserbase | Role>``
+        entities : ``list<Channel | ClientUserBase | Role>``
         """
         return [*self.iter_entities()]
     

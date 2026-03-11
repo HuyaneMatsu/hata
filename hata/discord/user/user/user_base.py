@@ -1403,7 +1403,7 @@ class UserBase(DiscordEntity, immortal = True):
         
         Returns
         -------
-        user : ``ClientUserbase``
+        user : ``ClientUserBase``
             The updated user.
         """
         raise NotImplementedError

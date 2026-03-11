@@ -165,7 +165,10 @@ async def add_role(client, event, user_id, role_id, *, message):
         await client.message_create(channel, embed = embed) 
     except DiscordException as err:
         # Ignore the exception if the user has dm-s disabled.
-        if err.code != ERROR_CODES.cannot_message_user: # user has dm-s disabled
+        if err.code not in (
+            ERROR_CODES.cannot_message_user_0, # user has dm-s disallowed
+            ERROR_CODES.cannot_message_user_1, # user has dm-s disallowed
+        ):
             raise
     
     # Note: The user might not be cached at this point. Request it.

@@ -1,3 +1,11 @@
+## 1.3.92 *\[2026-03-11\]*
+
+- Add `ERROR_CODES.cannot_message_user_1`.
+
+### Renames, Deprecations & Removals
+
+- Deprecate and rename `ERROR_CODES.cannot_message_user` to `ERROR_CODES.cannot_message_user_0`.
+
 ## 1.3.91 *\[2026-02-15\]*
 
 ### Improvements

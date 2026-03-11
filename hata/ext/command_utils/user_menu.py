@@ -567,7 +567,8 @@ class UserMenuRunner(PaginationBase):
                     ERROR_CODES.unknown_channel, # message's channel deleted
                     ERROR_CODES.missing_access, # client removed
                     ERROR_CODES.missing_permissions, # permissions changed meanwhile
-                    ERROR_CODES.cannot_message_user, # user has dm-s disallowed
+                    ERROR_CODES.cannot_message_user_0, # user has dm-s disallowed
+                    ERROR_CODES.cannot_message_user_1, # user has dm-s disallowed
                 ):
                     return self
             

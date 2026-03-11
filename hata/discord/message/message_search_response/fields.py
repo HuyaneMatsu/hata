@@ -14,7 +14,7 @@ from ..message import Message
 
 def parse_analytics_id(data):
     """
-    Parses analytics identifier from teh given data.
+    Parses analytics identifier from the given data.
     
     Parameters
     ----------

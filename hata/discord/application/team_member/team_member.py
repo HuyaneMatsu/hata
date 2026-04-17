@@ -121,7 +121,7 @@ class TeamMember(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the team member's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         # user
         repr_parts.append(' user = ')

@@ -91,7 +91,7 @@ class ActivityParty(ActivityFieldBase):
     def __repr__(self):
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
         ]
         
         party_id = self.id

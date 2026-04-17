@@ -86,7 +86,7 @@ class ApplicationCommandOptionMetadataBase(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the application command option metadata's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         self._add_type_specific_repr_fields(repr_parts)
         repr_parts.append('>')
         return ''.join(repr_parts)

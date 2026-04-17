@@ -95,7 +95,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Other Parameters
         ----------------
-        application_id : `int`, ``Application``, Optional (Keyword only)
+        application_id : ``None | int | Application``, Optional (Keyword only)
             The application's identifier the channel is managed by.
         
         archived : `bool`, Optional (Keyword only)
@@ -155,7 +155,7 @@ class Channel(DiscordEntity, immortal = True):
         open : `bool`, Optional (Keyword only)
             Whether the thread channel is open.
         
-        owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+        owner_id : ``None | int | ClientUserBase``, Optional (Keyword only)
             The channel's owner's or creator's identifier.
         
         parent_id : ``None | int | Channel``, Optional (Keyword only)
@@ -182,7 +182,7 @@ class Channel(DiscordEntity, immortal = True):
         user_limit : `int`, Optional (Keyword only)
             The maximal amount of users, who can join the voice channel, or `0` if unlimited.
             
-        users : `iterable` of (`int`, ``ClientUserBase``), Optional (Keyword only)
+        users : ``iterable<int> | iterable<ClientUserBase>``, Optional (Keyword only)
             The users in the channel.
             
         video_quality_mode : ``VideoQualityMode``, Optional (Keyword only)
@@ -319,7 +319,7 @@ class Channel(DiscordEntity, immortal = True):
     
     def __repr__(self):
         """Returns the representation of the channel."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         channel_id = self.id
         if channel_id:
@@ -429,7 +429,7 @@ class Channel(DiscordEntity, immortal = True):
             return format(self.created_at, DATETIME_FORMAT_CODE)
         
         raise ValueError(
-            f'Unknown format code {code!r} for {self.__class__.__name__}; {self!r}. '
+            f'Unknown format code {code!r} for {type(self).__name__}; {self!r}. '
             f'Available format codes: {""!r}, {"c"!r}, {"d"!r}, {"m"!r}.'
         )
     
@@ -1265,7 +1265,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Other Parameters
         ----------------
-        application_id : `int`, ``Application``, Optional (Keyword only)
+        application_id : ``None | int | Application``, Optional (Keyword only)
             The application's identifier the channel is managed by.
         
         archived : `bool`, Optional (Keyword only)
@@ -1325,7 +1325,7 @@ class Channel(DiscordEntity, immortal = True):
         open : `bool`, Optional (Keyword only)
             Whether the thread channel is open.
         
-        owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+        owner_id : ``None | int | ClientUserBase``, Optional (Keyword only)
             The channel's owner's or creator's identifier.
         
         parent_id : ``None | int | Channel``, Optional (Keyword only)
@@ -1352,7 +1352,7 @@ class Channel(DiscordEntity, immortal = True):
         user_limit : `int`, Optional (Keyword only)
             The maximal amount of users, who can join the voice channel, or `0` if unlimited.
         
-        users : `iterable` of (`int`, ``ClientUserBase``), Optional (Keyword only)
+        users : ``iterable<int> | iterable<ClientUserBase>``, Optional (Keyword only)
             The users in the channel.
         
         video_quality_mode : ``VideoQualityMode``, Optional (Keyword only)
@@ -2291,7 +2291,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Other Parameters
         ----------------
-        application_id : `int`, ``Application``, Optional (Keyword only)
+        application_id : ``None | int | Application``, Optional (Keyword only)
             The application's identifier the channel is managed by.
         
         archived : `bool`, Optional (Keyword only)
@@ -2363,7 +2363,7 @@ class Channel(DiscordEntity, immortal = True):
         open : `bool`, Optional (Keyword only)
             Whether the thread channel is open.
         
-        owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+        owner_id : ``None | int | ClientUserBase``, Optional (Keyword only)
             The channel's owner's or creator's identifier.
         
         parent_id : ``None | int | Channel``, Optional (Keyword only)
@@ -2387,7 +2387,7 @@ class Channel(DiscordEntity, immortal = True):
         user_limit : `int`, Optional (Keyword only)
             The channel's ``.user_limit``.
             
-        users : `iterable` of (`int`, ``ClientUserBase``), Optional (Keyword only)
+        users : ``iterable<int> | iterable<ClientUserBase>``, Optional (Keyword only)
             The users in the channel.
             
         video_quality_mode : ``VideoQualityMode``, Optional (Keyword only)

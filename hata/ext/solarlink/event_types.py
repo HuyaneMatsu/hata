@@ -51,7 +51,7 @@ class TrackStartEvent(EventBase):
         repr_parts = []
         
         repr_parts.append('<')
-        repr_parts.append(self.__class__.__name__)
+        repr_parts.append(type(self).__name__)
         
         repr_parts.append(' player = ')
         repr_parts.append(repr(self.player))
@@ -135,7 +135,7 @@ class TrackEndEvent(EventBase):
         repr_parts = []
         
         repr_parts.append('<')
-        repr_parts.append(self.__class__.__name__)
+        repr_parts.append(type(self).__name__)
         
         repr_parts.append(' player = ')
         repr_parts.append(repr(self.player))
@@ -243,7 +243,7 @@ class TrackStuckEvent(EventBase):
         repr_parts = []
         
         repr_parts.append('<')
-        repr_parts.append(self.__class__.__name__)
+        repr_parts.append(type(self).__name__)
         
         repr_parts.append(' player = ')
         repr_parts.append(repr(self.player))
@@ -358,7 +358,7 @@ class TrackExceptionEvent(EventBase):
         repr_parts = []
         
         repr_parts.append('<')
-        repr_parts.append(self.__class__.__name__)
+        repr_parts.append(type(self).__name__)
         
         repr_parts.append(' player = ')
         repr_parts.append(repr(self.player))
@@ -480,7 +480,7 @@ class PlayerWebSocketClosedEvent(EventBase):
         repr_parts = []
         
         repr_parts.append('<')
-        repr_parts.append(self.__class__.__name__)
+        repr_parts.append(type(self).__name__)
         
         repr_parts.append(' player = ')
         repr_parts.append(repr(self.player))

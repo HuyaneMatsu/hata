@@ -61,7 +61,7 @@ class AuditLogEntryDetailConversion(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the detail conversion's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         # field_key
         repr_parts.append(' field_key = ')

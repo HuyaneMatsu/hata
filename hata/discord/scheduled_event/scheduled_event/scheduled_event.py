@@ -673,7 +673,7 @@ class ScheduledEvent(DiscordEntity):
     def __repr__(self):
         """Returns the guild event's representation."""
         repr_parts = [
-            '<', self.__class__.__name__,
+            '<', type(self).__name__,
             ' id = ', repr(self.id),
             ', name = ', repr(self.name),
             ', guild_id = ', repr(self.guild_id),

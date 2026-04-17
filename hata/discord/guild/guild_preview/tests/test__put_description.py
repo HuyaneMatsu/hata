@@ -4,10 +4,37 @@ from ..fields import put_description
 
 
 def _iter_options():
-    yield None, False, {'description': ''}
-    yield None, True, {'description': ''}
-    yield 'a', False, {'description': 'a'}
-    yield 'a', True, {'description': 'a'}
+    yield (
+        None,
+        False,
+        {
+            'description': '',
+        },
+    )
+    
+    yield (
+        None,
+        True,
+        {
+            'description': '',
+        },
+    )
+    
+    yield (
+        'a',
+        False,
+        {
+            'description': 'a',
+        },
+    )
+    
+    yield (
+        'a',
+        True,
+        {
+            'description': 'a',
+        },
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
@@ -17,7 +44,7 @@ def test__put_description(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `None`, `str`
+    input_value : `None | str`
         Value to serialize.
     
     defaults : `bool`

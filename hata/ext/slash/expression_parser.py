@@ -1522,7 +1522,7 @@ class ParserBase:
     
     def __repr__(self):
         """Returns the parser's representation."""
-        return f'{self.__class__.__name__}()'
+        return f'{type(self).__name__}()'
 
 
 class ParserIdentifier(ParserBase):
@@ -1566,7 +1566,7 @@ class ParserIdentifier(ParserBase):
     
     @copy_docs(ParserBase.__repr__)
     def __repr__(self):
-        return f'{self.__class__.__name__}({self.parser!r}, {self.id!r})'
+        return f'{type(self).__name__}({self.parser!r}, {self.id!r})'
 
 
 class ParserPostfixCheck(ParserBase):
@@ -1618,7 +1618,7 @@ class ParserPostfixCheck(ParserBase):
     
     @copy_docs(ParserBase.__repr__)
     def __repr__(self):
-        return f'{self.__class__.__name__}({self.parser!r}, {self.message!r})'
+        return f'{type(self).__name__}({self.parser!r}, {self.message!r})'
 
 
 class ParserCharRange(ParserBase):
@@ -1672,7 +1672,7 @@ class ParserCharRange(ParserBase):
     
     @copy_docs(ParserBase.__repr__)
     def __repr__(self):
-        return f'{self.__class__.__name__}({chr(self.start)!r}, {chr(self.end)!r})'
+        return f'{type(self).__name__}({chr(self.start)!r}, {chr(self.end)!r})'
 
 
 class ParserOptional(ParserBase):
@@ -1710,7 +1710,7 @@ class ParserOptional(ParserBase):
     
     @copy_docs(ParserBase.__repr__)
     def __repr__(self):
-        return f'{self.__class__.__name__}({self.parser!r})'
+        return f'{type(self).__name__}({self.parser!r})'
 
 
 class ParserRepeat(ParserBase):
@@ -1749,7 +1749,7 @@ class ParserRepeat(ParserBase):
     
     @copy_docs(ParserBase.__repr__)
     def __repr__(self):
-        return f'{self.__class__.__name__}({self.parser!r})'
+        return f'{type(self).__name__}({self.parser!r})'
 
 
 class ParserCharOne(ParserBase):
@@ -1793,7 +1793,7 @@ class ParserCharOne(ParserBase):
     
     @copy_docs(ParserBase.__repr__)
     def __repr__(self):
-        return f'{self.__class__.__name__}({chr(self.value)!r})'
+        return f'{type(self).__name__}({chr(self.value)!r})'
 
 
 class ParserCharSequence(ParserBase):
@@ -1845,7 +1845,7 @@ class ParserCharSequence(ParserBase):
     
     @copy_docs(ParserBase.__repr__)
     def __repr__(self):
-        return f'{self.__class__.__name__}({bytes(self.sequence).decode()!r})'
+        return f'{type(self).__name__}({bytes(self.sequence).decode()!r})'
 
 
 class ParserCharAny(ParserBase):
@@ -1890,7 +1890,7 @@ class ParserCharAny(ParserBase):
     
     @copy_docs(ParserBase.__repr__)
     def __repr__(self):
-        return f'{self.__class__.__name__}([{", ".join(repr(chr(value)) for value in self.values)}])'
+        return f'{type(self).__name__}([{", ".join(repr(chr(value)) for value in self.values)}])'
 
 
 class ParserSequence(ParserBase):
@@ -1919,7 +1919,7 @@ class ParserSequence(ParserBase):
                 if not isinstance(parser, ParserBase):
                     raise AssertionError(
                         f'`{ParserSequence}.__new__` can be created with an `iterable` of only '
-                        f'`{ParserBase.__name__}`-s, got {parser.__class__.__name__}; {parser!r}; parsers={parsers!r}.'
+                        f'`{ParserBase.__name__}`-s, got {type(parser).__name__}; {parser!r}; parsers={parsers!r}.'
                     )
         
         self = object.__new__(cls)
@@ -1941,7 +1941,7 @@ class ParserSequence(ParserBase):
     
     @copy_docs(ParserBase.__repr__)
     def __repr__(self):
-        return f'{self.__class__.__name__}([{", ".join(repr(parser) for parser in self.parsers)}])'
+        return f'{type(self).__name__}([{", ".join(repr(parser) for parser in self.parsers)}])'
 
 
 class ParserAny(ParserBase):
@@ -1985,7 +1985,7 @@ class ParserAny(ParserBase):
     
     @copy_docs(ParserBase.__repr__)
     def __repr__(self):
-        return f'{self.__class__.__name__}([{", ".join(repr(parser) for parser in self.parsers)}])'
+        return f'{type(self).__name__}([{", ".join(repr(parser) for parser in self.parsers)}])'
 
 
 PARSE_DECIMAL = ParserCharRange('0', '9')

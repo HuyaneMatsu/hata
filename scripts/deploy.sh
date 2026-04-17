@@ -42,14 +42,14 @@ get_and_set_env "TWINE_PASSWORD" "Its called password, but its actually your pyp
 
 # Install dependencies
 
-python3 -m pip install setuptools twine
+python3.8 -m pip install setuptools twine
 
 # Upload
 
 echo "Deploying"
-python3 setup.py sdist bdist_wheel
+python3.8 setup.py sdist bdist_wheel
 
-python3 -m twine upload --disable-progress-bar --skip-existing --non-interactive --repository pypi dist/*
+python3.8    -m twine upload --disable-progress-bar --skip-existing --non-interactive --repository pypi dist/*
 
 # Remove temporary files
 

@@ -646,7 +646,7 @@ def validate_permission_overwrites(permission_overwrites):
     if (getattr(permission_overwrites, '__iter__', None) is None):
         raise TypeError(
             f'`permission_overwrites` can be `None`, `iterable` of `{PermissionOverwrite.__name__}`, got '
-            f'{permission_overwrites.__class__.__name__}; {permission_overwrites!r}.'
+            f'{type(permission_overwrites).__name__}; {permission_overwrites!r}.'
         )
     
     permission_overwrites_processed = None
@@ -655,7 +655,7 @@ def validate_permission_overwrites(permission_overwrites):
         if not isinstance(permission_overwrite, PermissionOverwrite):
             raise TypeError(
                 f'`permission_overwrites` can contain `{PermissionOverwrite.__name__}` elements, got '
-                f'{permission_overwrite.__class__.__name__}; {permission_overwrite!r}; '
+                f'{type(permission_overwrite).__name__}; {permission_overwrite!r}; '
                 f'permission_overwrites = {permission_overwrites!r}.'
             )
         

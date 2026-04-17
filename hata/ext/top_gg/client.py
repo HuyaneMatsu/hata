@@ -218,24 +218,24 @@ class TopGGClient:
         """
         if not isinstance(client, Client):
             raise TypeError(
-                f'`client` can be `{Client.__name__}`, got {client.__class__.__name__}; {client!r}.'
+                f'`client` can be `{Client.__name__}`, got {type(client).__name__}; {client!r}.'
             )
         
         if not isinstance(top_gg_token, str):
             raise TypeError(
-                f'`top_gg_token` can be `str`, got {top_gg_token.__class__.__name__}; {top_gg_token!r}.'
+                f'`top_gg_token` can be `str`, got {type(top_gg_token).__name__}; {top_gg_token!r}.'
             )
         
         if not isinstance(auto_post_bot_stats, bool):
             raise TypeError(
                 f'`auto_post_bot_stats` can be `bool`, got '
-                f'{auto_post_bot_stats.__class__.__name__}; {auto_post_bot_stats!r}.'
+                f'{type(auto_post_bot_stats).__name__}; {auto_post_bot_stats!r}.'
             )
         
         if not isinstance(raise_on_top_gg_global_rate_limit, bool):
             raise TypeError(
                 f'`raise_on_top_gg_global_rate_limit` can be `bool`, got '
-                f'{raise_on_top_gg_global_rate_limit.__class__.__name__}; {raise_on_top_gg_global_rate_limit!r}.'
+                f'{type(raise_on_top_gg_global_rate_limit).__name__}; {raise_on_top_gg_global_rate_limit!r}.'
             )
         
         
@@ -269,7 +269,7 @@ class TopGGClient:
     
     def __repr__(self):
         """Returns the representation of the top.gg client."""
-        repr_parts = ['<', self.__class__.__name__, ' to ' ]
+        repr_parts = ['<', type(self).__name__, ' to ' ]
         
         client = self.client_reference()
         if client is None:

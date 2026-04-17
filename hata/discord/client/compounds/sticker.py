@@ -169,7 +169,7 @@ class ClientCompoundStickerEndpoints(Compound):
             if snowflake_pair is None:
                 raise TypeError(
                     f'`sticker` can be `{Sticker.__name__}`, `tuple` (`int`, `int`), '
-                    f'got {sticker.__class__.__name__}; {sticker!r}.'
+                    f'got {type(sticker).__name__}; {sticker!r}.'
                 )
             
             guild_id, sticker_id = snowflake_pair
@@ -234,7 +234,7 @@ class ClientCompoundStickerEndpoints(Compound):
         
         if not isinstance(image, (bytes, bytearray, memoryview)):
             raise TypeError(
-                f'`image` can be `None`, `bytes-like`, got {image.__class__.__name__}; {short_repr(image)}.'
+                f'`image` can be `None`, `bytes-like`, got {type(image).__name__}; {short_repr(image)}.'
             )
         
         media_type = get_image_media_type(image)
@@ -250,7 +250,7 @@ class ClientCompoundStickerEndpoints(Compound):
         # If no description is given Discord drops back an unrelated error
         form_data.add_field('description', '' if description is None else description)
         form_data.add_field('tags', '' if tags is None else ', '.join(tags))
-        form_data.add_field('file', image, file_name = f'file.{extension}', content_type = media_type)
+        form_data.add_field('file', image, content_type = media_type, file_name = f'file.{extension}')
         
         sticker_data = await self.api.sticker_create(guild_id, form_data, reason)
         

@@ -483,7 +483,7 @@ async def pick(client, event):
     content = ''.join(content_parts)
     
     yield InteractionResponse(
-        content, allowed_mentions = most_liked, components = None, message = message, event = component_interaction
+        content, allowed_mentions = [most_liked], components = None, message = message, event = component_interaction
     )
 ```
 

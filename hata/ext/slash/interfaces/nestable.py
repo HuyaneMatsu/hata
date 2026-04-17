@@ -104,8 +104,10 @@ class NestableInterface(RichAttributeErrorBaseType):
         ----------
         function : `None | CoroutineFunctionType | CoroutineGeneratorFunctionType`
             Function to create command from.
+        
         positional_parameters : `tuple<object>`
             Captured positional parameters.
+        
         keyword_parameters : `dict<str, object>`
             Captured keyword parameters.
         

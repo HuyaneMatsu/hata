@@ -80,9 +80,13 @@ def setup_ext_slash(client, **kwargs):
     
     Other Parameters
     ----------------
-    assert_application_command_permission_missmatch_at : ``None | int | Guild | iterable<int> | iterable<Guild>``
+    assert_application_command_permission_mismatch_at : ``None | int | Guild | iterable<int> | iterable<Guild>``
             = `None`, Optional (Keyword only)
-        Guilds, where permission overwrites missmatch should be asserted.
+        Guilds, where permission overwrites mismatch should be asserted.
+    
+    assert_application_command_permission_missmatch_at : ``None | int | Guild | iterable<int> | iterable<Guild>``
+        Deprecated and scheduled for removal in 2027 March.
+        Use `assert_application_command_permission_mismatch_at` instead.
     
     delete_commands_on_unload: `bool`, Optional (Keyword only)
         Whether commands should be deleted when unloaded.
@@ -91,6 +95,7 @@ def setup_ext_slash(client, **kwargs):
         Whether application command permissions should be enforced where they are asserted.
         
         > This only works if the application is NOT owned by a team.
+    
     random_error_message_getter : `None`, `FunctionType` = `None`, Optional (Keyword only)
         Random error message getter used by the default exception handler.
     
@@ -100,8 +105,6 @@ def setup_ext_slash(client, **kwargs):
     
     use_default_exception_handler : `bool`, Optional (Keyword only)
         Whether the default slash exception handler should be added as an exception handler.
-    
-    
     
     Returns
     -------
@@ -123,6 +126,15 @@ def setup_ext_slash(client, **kwargs):
     for attr_name in ('slasher', 'interactions'):
         if hasattr(client, attr_name):
             raise RuntimeError(f'The client already has an attribute named as `{attr_name}`.')
+    
+    try:
+        assert_application_command_permission_mismatch_at = kwargs.pop(
+            'assert_application_command_permission_missmatch_at'
+        )
+    except KeyError:
+        pass
+    else:
+        kwargs['assert_application_command_permission_mismatch_at'] = assert_application_command_permission_mismatch_at
     
     slasher = Slasher(client, **kwargs)
     
@@ -149,6 +161,7 @@ register_setup_function(
     setup_ext_slash,
     None,
     (
+        'assert_application_command_permission_mismatch_at',
         'assert_application_command_permission_missmatch_at',
         'delete_commands_on_unload',
         'enforce_application_command_permissions',

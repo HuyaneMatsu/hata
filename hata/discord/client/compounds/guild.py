@@ -682,7 +682,7 @@ class ClientCompoundGuildEndpoints(Compound):
         if __debug__:
             if not isinstance(count, bool):
                 raise AssertionError(
-                    f'`count` can be `bool`, got {count.__class__.__name__}; {count!r}.'
+                    f'`count` can be `bool`, got {type(count).__name__}; {count!r}.'
                 )
         
         if count and (guild is not None) and guild.large:
@@ -691,7 +691,7 @@ class ClientCompoundGuildEndpoints(Compound):
         if __debug__:
             if not isinstance(days, int):
                 raise AssertionError(
-                    f'``days` can be `int`, got {days.__class__.__name__}; {days!r}.'
+                    f'``days` can be `int`, got {type(days).__name__}; {days!r}.'
                 )
             
             if days < 1 or days > 30:
@@ -709,7 +709,7 @@ class ClientCompoundGuildEndpoints(Compound):
                 if not isinstance(roles, list):
                     raise AssertionError(
                         f'`roles` can be `None`m `list` of (`{Role.__name__}`, `int`)'
-                        f', got {roles.__class__.__name__}; {roles!r}.')
+                        f', got {type(roles).__name__}; {roles!r}.')
             
             role_ids = set()
             for index, role in enumerate(roles):
@@ -720,7 +720,7 @@ class ClientCompoundGuildEndpoints(Compound):
                     if role_id is None:
                         raise TypeError(
                             f'`roles[{index}]` is not `{Role.__name__}`, `int`,'
-                            f' got {role.__class__.__name__}; {role!r}; roles={roles!r}.'
+                            f' got {type(role).__name__}; {role!r}; roles={roles!r}.'
                         )
                 
                 role_ids.add(role_id)
@@ -771,7 +771,7 @@ class ClientCompoundGuildEndpoints(Compound):
         
         if __debug__:
             if not isinstance(days, int):
-                raise AssertionError(f'`days can be `int`, got {days.__class__.__name__}.')
+                raise AssertionError(f'`days can be `int`, got {type(days).__name__}.')
             
             if days < 1 or days > 30:
                 raise AssertionError(f'`days can be in range [1:30], got {days!r}.')
@@ -785,7 +785,7 @@ class ClientCompoundGuildEndpoints(Compound):
                 if not isinstance(roles, list):
                     raise AssertionError(
                         f'`roles` can be `None`, `list` of (`{Role.__name__}`, `int`)'
-                        f', got {roles.__class__.__name__}; {roles!r}.'
+                        f', got {type(roles).__name__}; {roles!r}.'
                     )
             
             role_ids = set()
@@ -877,7 +877,7 @@ class ClientCompoundGuildEndpoints(Compound):
         nsfw_level : ``NsfwLevel``, `int`, Optional (Keyword only)
             The nsfw level of the guild.
         
-        owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+        owner_id : ``None | int | ClientUserBase``, Optional (Keyword only)
             The guild's owner or their id.
         
         public_updates_channel_id : `int`, ``Channel``, Optional (Keyword only)
@@ -1170,7 +1170,7 @@ class ClientCompoundGuildEndpoints(Compound):
         if __debug__:
             if not isinstance(limit, int):
                 raise AssertionError(
-                    f'`limit` can be `int`, got {limit.__class__.__name__}; {limit!r}.'
+                    f'`limit` can be `int`, got {type(limit).__name__}; {limit!r}.'
                 )
             
             if limit < 1 or limit > 100:
@@ -1194,7 +1194,7 @@ class ClientCompoundGuildEndpoints(Compound):
                 user_id = maybe_snowflake(user)
                 if user_id is None:
                     raise TypeError(
-                        f'`user` can be `{ClientUserBase.__name__}`, `int`, got {user.__class__.__name__}; {user!r}.'
+                        f'`user` can be `{ClientUserBase.__name__}`, `int`, got {type(user).__name__}; {user!r}.'
                     )
             
             data['user_id'] = user_id
@@ -1207,7 +1207,7 @@ class ClientCompoundGuildEndpoints(Compound):
             else:
                 raise TypeError(
                     f'`entry_type` can be `None`, `{AuditLogEntryType.__name__}`, `int`, got '
-                    f'{entry_type.__class__.__name__}; {entry_type!r}.'
+                    f'{type(entry_type).__name__}; {entry_type!r}.'
                 )
             
             data['action_type'] = entry_type_value
@@ -1474,3 +1474,37 @@ class ClientCompoundGuildEndpoints(Compound):
         )
         if data:
             await self.api.guild_activity_overview_edit(guild_id, data, reason)
+    
+    
+    async def guild_role_user_counts_get(self, guild):
+        """
+        Requests how much users are in each role of the guild.
+        Does not include the `@everyone` role.
+        
+        This function is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild | int˙˙
+            The guild to get its role user counts.
+        
+        Returns
+        -------
+        role_user_counts : `dict<int, int>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is invalid.
+        ValueError
+            - If a parameter's value is incorrect.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        guild_id = get_guild_id(guild)
+        
+        data = await self.api.guild_role_user_counts_get(guild_id)
+        
+        return {int(key) : value for key, value in data}

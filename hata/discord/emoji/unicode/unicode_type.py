@@ -62,7 +62,7 @@ class Unicode(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the unicode's representation."""
-        return f'<{self.__class__.__name__} name = {self.name!r}>'
+        return f'<{type(self).__name__} name = {self.name!r}>'
     
     
     def get_system_name(self):

@@ -91,8 +91,8 @@ class ChannelOutputStream:
         
         if not isinstance(data, str):
             raise TypeError(
-                f'Only `str` can be written into `{self.__class__.__name__}`, got '
-                f'{data.__class__.__name__}; {reprlib.repr(data)}.'
+                f'Only `str` can be written into `{type(self).__name__}`, got '
+                f'{type(data).__name__}; {reprlib.repr(data)}.'
             )
         
         if not data:
@@ -243,7 +243,7 @@ class ChannelOutputStream:
     def __repr__(self):
         """Returns the stream's representation."""
         repr_parts = [
-            '<', self.__class__.__name__, ' client = ', repr(self._client), ', channel = ', repr(self._channel)
+            '<', type(self).__name__, ' client = ', repr(self._client), ', channel = ', repr(self._channel)
         ]
         
         chunks_size = 0

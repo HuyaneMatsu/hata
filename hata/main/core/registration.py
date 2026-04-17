@@ -63,7 +63,7 @@ def register(func = ..., *, available = True, aliases = None, description = None
     else:
         raise TypeError(
             f'`into` can be `None`, `{Command.__name__}`, `{CommandCategory.__name__}`, `{CommandFunction.__name__}`,'
-            f' got {into.__class__.__name__}; {into!r}.'
+            f' got {type(into).__name__}; {into!r}.'
         )
     
     if (func is not None):

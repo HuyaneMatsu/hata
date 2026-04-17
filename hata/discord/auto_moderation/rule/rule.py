@@ -573,7 +573,7 @@ class AutoModerationRule(DiscordEntity, immortal = True):
     
     def __repr__(self):
         """Returns the auto moderation rule's representation"""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         # system fields: `.id`, `.guild_id`, `.creator_id`
         
@@ -944,7 +944,7 @@ class AutoModerationRule(DiscordEntity, immortal = True):
         actions : `None`, ``AutoModerationAction``, `iterable` of ``AutoModerationAction``, Optional (keyword only)
              Actions which will execute when the rule is triggered.
     
-        creator_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+        creator_id : ``None | int | ClientUserBase``, Optional (Keyword only)
             The user who created the rule.
             
         enabled : `bool` , Optional (Keyword only)

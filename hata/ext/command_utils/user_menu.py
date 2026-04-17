@@ -293,7 +293,7 @@ class UserMenuFactory:
         """
         if not isinstance(klass, type):
             raise TypeError(
-                f'`klass` can be `type`, got {klass.__class__.__name__}; {klass!r}.'
+                f'`klass` can be `type`, got {type(klass).__name__}; {klass!r}.'
             )
         
         check = getattr(klass, 'check', None)
@@ -306,7 +306,7 @@ class UserMenuFactory:
         if (close_emoji is not None) and (not isinstance(close_emoji, Emoji)):
             raise TypeError(
                 f'`close_emoji can be `None`, `{Emoji.__name__}`, got '
-                f'{close_emoji.__class__.__name__}; {close_emoji!r}'
+                f'{type(close_emoji).__name__}; {close_emoji!r}'
             )
             
         emojis = getattr(klass, 'emojis', None)
@@ -314,7 +314,7 @@ class UserMenuFactory:
             if not isinstance(emojis, (tuple, list)):
                 raise TypeError(
                     f'`emojis` can be `None`, `list`, `tuple`, got '
-                    f'{emojis.__class__.__name__}; {emojis!r}.'
+                    f'{type(emojis).__name__}; {emojis!r}.'
                 )
             
             # Making sure
@@ -323,7 +323,7 @@ class UserMenuFactory:
                 if not isinstance(emoji, Emoji):
                     raise TypeError(
                         f'`emojis` can contain `{Emoji.__name__}` elements, got '
-                        f'{emoji.__class__.__name__}; {emoji!r}; emojis={emojis!r}.'
+                        f'{type(emoji).__name__}; {emoji!r}; emojis={emojis!r}.'
                     )
             
             emojis_length = len(emojis)
@@ -376,7 +376,7 @@ class UserMenuFactory:
         """Returns the user menu factory's representation."""
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
             ' klass = ',
             self.klass.__name__,
         ]
@@ -517,7 +517,7 @@ class UserMenuRunner(PaginationBase):
         else:
             raise TypeError(
                 f'`channel` can be `{Channel.__name__}`, `{Message.__name__}`, `{InteractionEvent.__name__}`, '
-                f'got {channel.__class__.__name__}; {channel!r}.'
+                f'got {type(channel).__name__}; {channel!r}.'
             )
         
         self = object.__new__(cls)
@@ -722,7 +722,7 @@ class UserMenuRunner(PaginationBase):
     @copy_docs(PaginationBase.__repr__)
     def __repr__(self):
         repr_parts = [
-            '<', self.__class__.__name__,
+            '<', type(self).__name__,
             ' client = ', repr(self.client),
             ', channel = ', repr(self.channel),
             ', state = '

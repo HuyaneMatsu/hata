@@ -1599,6 +1599,14 @@ Group Details
     - Limit : `1000`
     - Resets after : `86400.0`
 
+- guild_role_user_counts_get
+    - Endpoint : `/guilds/{guild_id}/roles/member-counts`
+    - Method : `GET`
+    - Required auth : `bot`
+    - Limiter : `guild_id`
+    - Limit : `3`
+    - Resets after : `120`
+
 - scheduled_event_get_all_guild
     - Endpoint : `/guilds/{guild_id}/scheduled-events`
     - Method : `GET`
@@ -1904,6 +1912,30 @@ Group Details
     - Limiter : `GLOBAL`
     - Limit : `250`
     - Resets after : `6.0`
+
+- invite_allowed_user_ids_get
+    - Endpoint : `/invites/{invite_code}/target-users`
+    - Method : `GET`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `6`
+    - Resets after : `30`
+
+- invite_allowed_user_ids_edit
+    - Endpoint : `/invites/{invite_code}/target-users`
+    - Method : `PUT`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `3`
+    - Resets after : `5`
+
+- invite_allowed_user_ids_get_status
+    - Endpoint : `/invites/{invite_code}/target-users/job-status`
+    - Method : `GET`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `6`
+    - Resets after : `30`
 
 - oauth2_application_get_own
     - Endpoint : `/oauth2/applications/@me`
@@ -2546,6 +2578,7 @@ role_create = RateLimitGroup(LIMITER_GUILD)
 role_delete = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 role_get = RateLimitGroup(LIMITER_GUILD)
 role_edit = RateLimitGroup(LIMITER_GUILD)
+guild_role_user_counts_get = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_get_all_guild = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_create = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_delete = RateLimitGroup(LIMITER_GUILD)
@@ -2582,6 +2615,9 @@ hypesquad_house_change = RateLimitGroup() # untested
 interaction_response_message_create = RateLimitGroup.unlimited()
 invite_delete = RateLimitGroup.unlimited()
 invite_get = RateLimitGroup()
+invite_allowed_user_ids_get = RateLimitGroup()
+invite_allowed_user_ids_edit = RateLimitGroup()
+invite_allowed_user_ids_get_status = RateLimitGroup()
 oauth2_application_get_own = RateLimitGroup(optimistic = True)
 bulk_ack = RateLimitGroup(optimistic = True) # untested
 subscription_get_chunk_sku_user = RateLimitGroup()

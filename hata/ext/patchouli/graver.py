@@ -357,7 +357,7 @@ def build_graves(text):
                 try:
                     literal_eval(reference)
                 except SyntaxError as err:
-                    # warnings.append(f'{err.__class__.__name__}({err}) at a single grave: {reference!r}')
+                    # warnings.append(f'{type(err).__name__}({err}) at a single grave: {reference!r}')
                     grave_type = GRAVE_TYPE_QUOTE
                 except ValueError:
                     grave_type = GRAVE_TYPE_LOCAL_REFERENCE
@@ -512,7 +512,7 @@ class GravedDescription:
     
     def __repr__(self):
         """Returns the graved description's representation."""
-        return f'<{self.__class__.__name__} content = {graved_to_source_text(self.content)!r}>'
+        return f'<{type(self).__name__} content = {graved_to_source_text(self.content)!r}>'
     
     
     def copy(self):
@@ -615,7 +615,7 @@ class GravedAttributeDescription:
     def __repr__(self):
         """Returns the graved description's representation."""
         return (
-            f'<{self.__class__.__name__} name = {self.name!r}, separator = {self.separator!r}, content = '
+            f'<{type(self).__name__} name = {self.name!r}, separator = {self.separator!r}, content = '
             f'{graved_to_source_text(self.content)!r}>'
         )
 

@@ -145,6 +145,8 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | account_disabled                                                  | 20013     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| action_requires_subscription                                      | 20015     | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | rate_limit_slowmode                                               | 20016     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | staff_required                                                    | 20017     | -         |
@@ -321,6 +323,10 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | max_interaction_followup_messages                                 | 40094     | 5         |
 +-------------------------------------------------------------------+-----------+-----------+
+| invite_allowed_users_ids_are_already_processing                   | 40114     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| invite_allowed_users_ids_are_being_processed                      | 40115     | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | cloudflare_block                                                  | 40333     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | missing_access                                                    | 50001     | -         |
@@ -487,6 +493,8 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | activity_launch_age_gated                                         | 50165     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| cannot_send_voice_effect_when_user_is_muted_deafen_or_suppressed  | 50167     | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | cannot_send_voice_message_to_this_channel                         | 50173     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | user_must_be_verified                                             | 50178     | -         |
@@ -625,6 +633,8 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | max_active_announcement_threads                                   | 160007    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| cannot_forward_message_whats_content_you_cannot_read              | 160014    | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | invalid_lottie_json                                               | 170001    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | sticker_maximum_dimensions_exceeded                               | 170005    | 320x320   |
@@ -672,6 +682,8 @@ Error Codes
 | user_limited_access_default                                       | 340000    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | user_limited_access_friend_request                                | 340007    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| user_limited_access_guild_join                                    | 340015    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | user_limited_access_max                                           | 349999    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -808,6 +820,7 @@ explicit_content = 20009
 account_scheduled_for_deletion = 20011
 user_not_authorized_for_application = 20012
 account_disabled = 20013
+action_requires_subscription = 20015
 rate_limit_slowmode = 20016
 staff_required = 20017
 team_ownership_required = 20018
@@ -896,6 +909,8 @@ user_quarantined = 40068
 invites_disabled = 40069
 entitlement_already_granted = 40074
 max_interaction_followup_messages = 40094
+invite_allowed_users_ids_are_already_processing = 40114
+invite_allowed_users_ids_are_being_processed = 40115
 cloudflare_block = 40333
 
 missing_access = 50001
@@ -980,6 +995,7 @@ cannot_edit_voice_message = 50162
 cannot_delete_guild_subscription_integration = 50163
 new_owner_ineligible_for_subscription = 50164
 activity_launch_age_gated = 50165
+cannot_send_voice_effect_when_user_is_muted_deafen_or_suppressed = 50167
 cannot_send_voice_message_to_this_channel = 50173
 user_must_be_verified = 50178
 invalid_sku_attachment_no_archives = 50186
@@ -1059,6 +1075,7 @@ message_has_thread = 160004
 thread_locked = 160005
 max_active_threads = 160006
 max_active_announcement_threads = 160007
+cannot_forward_message_whats_content_you_cannot_read = 160014
 
 invalid_lottie_json = 170001
 sticker_maximum_dimensions_exceeded = 170005
@@ -1092,6 +1109,7 @@ clyde_consent_required = 310000
 
 user_limited_access_default = 340000
 user_limited_access_friend_request = 340007
+user_limited_access_guild_join = 340015
 user_limited_access_max = 349999
 
 cannot_enable_onboarding_requirements_not_met = 350000

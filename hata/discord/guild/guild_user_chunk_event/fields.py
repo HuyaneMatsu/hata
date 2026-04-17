@@ -206,13 +206,13 @@ def validate_users(users):
     if (getattr(users, '__iter__', None) is None):
         raise TypeError(
             f'`users` can be `None`,`iterable` of `{ClientUserBase.__name__}` elements, '
-            f'got {users.__class__.__name__}; {users!r}.'
+            f'got {type(users).__name__}; {users!r}.'
         )
     
     for user in users:
         if not isinstance(user, ClientUserBase):
             raise TypeError(
-                f'`users` elements can be `{ClientUserBase.__name__}`, got {user.__class__.__name__}; '
+                f'`users` elements can be `{ClientUserBase.__name__}`, got {type(user).__name__}; '
                 f'{user!r}; users = {users!r}.'
             )
         

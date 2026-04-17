@@ -193,7 +193,7 @@ class EmbeddedActivityConfiguration(RichAttributeErrorBaseType):
         """Returns the embedded activity configuration's representation."""
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
         ]
         
         field_added = False

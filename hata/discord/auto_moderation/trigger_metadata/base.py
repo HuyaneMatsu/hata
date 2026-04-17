@@ -19,7 +19,7 @@ class AutoModerationRuleTriggerMetadataBase(RichAttributeErrorBaseType):
         
     def __repr__(self):
         """Returns the trigger metadata's representation."""
-        return f'<{self.__class__.__name__}>'
+        return f'<{type(self).__name__}>'
     
     
     @classmethod

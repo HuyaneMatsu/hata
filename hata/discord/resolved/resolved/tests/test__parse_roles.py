@@ -52,6 +52,7 @@ def test__parse_roles(input_data, guild_id):
     ----------
     input_data : `dict<str, object>`
         Data to parse from.
+    
     guild_id : `int`
         The respective guild's identifier.
     

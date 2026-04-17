@@ -122,7 +122,7 @@ class ClientCompoundAutoModerationEndpoints(Compound):
         if not isinstance(auto_moderation_rule, AutoModerationRule):
             raise TypeError(
                 f'`auto_moderation_rule` can be {AutoModerationRule.__name__}, '
-                f'got {auto_moderation_rule.__class__.__name__}; {auto_moderation_rule!r}.'
+                f'got {type(auto_moderation_rule).__name__}; {auto_moderation_rule!r}.'
             )
         
         data = auto_moderation_rule.to_data()
@@ -166,7 +166,7 @@ class ClientCompoundAutoModerationEndpoints(Compound):
         if not isinstance(new_auto_moderation_rule, AutoModerationRule):
             raise TypeError(
                 f'`new_auto_moderation_rule` can be {AutoModerationRule.__name__}, '
-                f'got {new_auto_moderation_rule.__class__.__name__}; {new_auto_moderation_rule!r}.'
+                f'got {type(new_auto_moderation_rule).__name__}; {new_auto_moderation_rule!r}.'
             )
         
         data = new_auto_moderation_rule.to_data()

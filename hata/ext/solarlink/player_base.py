@@ -537,7 +537,7 @@ class SolarPlayerBase(RichAttributeErrorBaseType):
     def __repr__(self):
         """Returns the representation of the player."""
         repr_parts = [
-            '<', self.__class__.__name__,
+            '<', type(self).__name__,
             ' guild_id = ', repr(self.guild_id),
         ]
         

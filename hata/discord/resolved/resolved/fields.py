@@ -281,7 +281,7 @@ def parse_users(data, guild_id = 0):
     
     Returns
     -------
-    messages : `None`, `dict` of (`int`, ``ClientUserBase``) items
+    users : ``None | dict<int, ClientUserBase>``
     """
     resolved_user_datas = data.get('users', None)
     if (resolved_user_datas is None) or (not resolved_user_datas):
@@ -310,7 +310,7 @@ def put_users(users, data, defaults, *, guild_id = 0):
     
     Parameters
     ----------
-    users : `None`, `dict` of (`int`, ``ClientUserBase``) items
+    users : ``None | dict<int, ClientUserBase>``
         Resolved users.
     
     data : `dict<str, object>`

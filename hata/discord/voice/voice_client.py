@@ -642,7 +642,7 @@ class VoiceClient(RichAttributeErrorBaseType):
             
             raise TypeError(
                 f'`channel` can be guild connectable channel, `int`, got '
-                f'{channel.__class__.__name__}; {channel!r}.'
+                f'{type(channel).__name__}; {channel!r}.'
             )
         
         if self.channel_id == channel_id:
@@ -742,7 +742,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         """
         if not isinstance(source, AudioSource):
             raise TypeError(
-                f'Expected `{AudioSource.__name__}`, got {source.__class__.__name__}; {source!r}.'
+                f'Expected `{AudioSource.__name__}`, got {type(source).__name__}; {source!r}.'
             )
         
         player = self.player

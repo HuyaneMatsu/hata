@@ -88,21 +88,21 @@ elif IMPLEMENTATION.name == 'cpython':
                 return False
             
             memory_value = UInt64()
-            address_memory = Pointer(memory_value)
+            memory_address = Pointer(memory_value)
             
-            move_memory(address_memory, id(original_new) + 16, 8)
+            move_memory(memory_address, id(original_new) + 16, 8)
             original_new_address = memory_value.value
             
-            move_memory(address_memory, id(given_new) + 16, 8)
+            move_memory(memory_address, id(given_new) + 16, 8)
             given_new_address = memory_value.value
             
             if given_new_address != original_new_address:
                 return False
             
-            move_memory(address_memory, id(original_init) + 48, 8)
+            move_memory(memory_address, id(original_init) + 48, 8)
             original_init_address = memory_value.value
             
-            move_memory(address_memory, id(given_init) + 48, 8)
+            move_memory(memory_address, id(given_init) + 48, 8)
             given_init_address = memory_value.value
             
             if given_init_address != original_init_address:
@@ -1409,7 +1409,7 @@ def parse_annotation_choice_from_tuple(annotation):
             return create_annotation_choice_from_float(value)
         
         raise TypeError(
-            f'`annotation-value` can be `str`, `int`, `float`, got {value.__class__.__name__}; {value!r}.'
+            f'`annotation-value` can be `str`, `int`, `float`, got {type(value).__name__}; {value!r}.'
         )
     
     # if annotation_length == 2:
@@ -1457,7 +1457,7 @@ def parse_annotation_choice(annotation_choice):
     
     raise TypeError(
         f'`annotation-choice` can be `tuple`, `str`, `int`  or `float`, got '
-        f'{annotation_choice.__class__.__name__}; {annotation_choice!r}.'
+        f'{type(annotation_choice).__name__}; {annotation_choice!r}.'
     )
 
 
@@ -1567,7 +1567,7 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
         else:
             raise TypeError(
                 f'Parameter `{parameter_name}` has annotation not set neither as `tuple`, `str`, `type`, '
-                f'`list`, `set`, `dict`, got {annotation_value.__class__.__name__}; {annotation_value!r}.'
+                f'`list`, `set`, `dict`, got {type(annotation_value).__name__}; {annotation_value!r}.'
             )
         
         # Filter dupe names
@@ -1650,7 +1650,7 @@ def parse_annotation_description(description, parameter_name):
     else:
         raise TypeError(
             f'Parameter `{parameter_name}` has annotation description not as `str`, got '
-            f'{description.__class__.__name__}; {description!r}.'
+            f'{type(description).__name__}; {description!r}.'
         )
     
     description_length = len(description)
@@ -1697,7 +1697,7 @@ def parse_annotation_name(name, parameter_name):
     else:
         raise TypeError(
             f'`Parameter `{parameter_name}` has `name` given as non `str`, got '
-            f'{name.__class__.__name__}; {name!r}.'
+            f'{type(name).__name__}; {name!r}.'
         )
     
     name = raw_name_to_display(name)
@@ -2002,7 +2002,7 @@ def parse_annotation_fallback(parameter, annotation_value):
     if not isinstance(annotation_value, (str, type)):
         raise TypeError(
             f'Parameter `{parameter.name}` is not `tuple`, `str`, `str`, got '
-            f'{annotation_value.__class__.__name__}; {annotation_value!r}.'
+            f'{type(annotation_value).__name__}; {annotation_value!r}.'
         )
     else:
         annotation_type = parse_annotation_internal(annotation_value)

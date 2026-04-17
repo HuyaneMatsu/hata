@@ -152,7 +152,7 @@ class ComponentDescriptor(RichAttributeErrorBaseType):
         """
         if not isinstance(value, Component):
             raise TypeError(
-                f'Attribute can be set only as `{Component.__name__}`, got {value.__class__.__name__}; {value!r}.'
+                f'Attribute can be set only as `{Component.__name__}`, got {type(value).__name__}; {value!r}.'
             )
             
         instance._component_cache[self._identifier] = value
@@ -187,7 +187,7 @@ class ComponentDescriptor(RichAttributeErrorBaseType):
         """Returns the component descriptor's representation."""
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
             ' identifier = ', repr(self._identifier),
             ', source_component = ', repr(self._source_component),
         ]
@@ -613,7 +613,7 @@ class MenuStructure(RichAttributeErrorBaseType):
         """Returns the user menu structure's representation."""
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
         ]
         
         check = self.check
@@ -977,7 +977,7 @@ class Menu(RichAttributeErrorBaseType, metaclass = MenuType):
         menu_structure = cls._menu_structure
         if not menu_structure.is_final:
             raise RuntimeError(
-                f'{cls.__class__.__name__} has not every required fields fulfilled. Required fields: '
+                f'{type(cls).__name__} has not every required fields fulfilled. Required fields: '
                 f'`initial_invoke`, `invoke`.'
             )
         
@@ -1011,7 +1011,7 @@ class Menu(RichAttributeErrorBaseType, metaclass = MenuType):
             raise TypeError(
                 f'`target` can be `{InteractionEvent.__name__}`, '
                 f'`{Message.__name__}`, `{Channel.__name__}`, `int`, got '
-                f'{target.__class__.__name__}; {target!r}.'
+                f'{type(target).__name__}; {target!r}.'
             )
         
         self = object.__new__(cls)
@@ -1034,7 +1034,7 @@ class Menu(RichAttributeErrorBaseType, metaclass = MenuType):
         tracked_changes = self._tracked_changes
         if not tracked_changes:
             raise RuntimeError(
-                f'{cls.__class__.__name__}\'s `initial_invoke` method: '
+                f'{type(cls).__name__}\'s `initial_invoke` method: '
                 f'{menu_structure.initial_invoke!r} did not change any parameters.'
             )
         
@@ -1402,7 +1402,7 @@ class Menu(RichAttributeErrorBaseType, metaclass = MenuType):
         if (embed is not None) and (not isinstance(embed, Embed)):
             raise TypeError(
                 f'`embed` can be `None`, `{Embed.__name__}`, got '
-                f'{embed.__class__.__name__}; {embed!r}.'
+                f'{type(embed).__name__}; {embed!r}.'
             )
         
         self._tracked_changes['embed'] =  embed

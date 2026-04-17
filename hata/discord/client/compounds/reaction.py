@@ -118,7 +118,7 @@ class ClientCompoundReactionEndpoints(Compound):
             emoji_value = emoji
         else:
             raise TypeError(
-                f'`emoji` can be `{Emoji.__name__}`, `str`, got {emoji.__class__.__name__}; {emoji!r}.'
+                f'`emoji` can be `{Emoji.__name__}`, `str`, got {type(emoji).__name__}; {emoji!r}.'
             )
         
         await self.api.reaction_delete_emoji(channel_id, message_id, emoji_value)

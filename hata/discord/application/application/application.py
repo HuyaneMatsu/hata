@@ -1104,7 +1104,7 @@ class Application(DiscordEntity, immortal = True):
         if include_internals:
             warn(
                 (
-                    f'`{self.__class__.__name__}` has specialized to-data converters if you wanna include internal '
+                    f'`{type(self).__name__}` has specialized to-data converters if you wanna include internal '
                     f'fields. They are: `.to_data_ready`, `.to_data_own`, `.to_data_invite`, `.to_data_detectable`. '
                     f'Please use any of those instead.'
                 ),

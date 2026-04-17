@@ -121,7 +121,7 @@ class ClientWrapperEventsProxy(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the proxy's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         repr_parts.append(' client_wrapper = ')
         repr_parts.append(repr(self.client_wrapper))
@@ -227,7 +227,7 @@ class ClientWrapper(RichAttributeErrorBaseType):
                 if not isinstance(client, Client):
                     raise TypeError(
                         f'{cls.__name__} expects only `{Client.__name__}`, '
-                        f'got {client.__class__.__name__}; {client!r}.'
+                        f'got {type(client).__name__}; {client!r}.'
                     )
         else:
             clients = tuple(CLIENTS.values())
@@ -239,7 +239,7 @@ class ClientWrapper(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the client wrapper's representation."""
-        result = [self.__class__.__name__, '(']
+        result = [type(self).__name__, '(']
         
         clients = self.clients
         limit = len(clients)

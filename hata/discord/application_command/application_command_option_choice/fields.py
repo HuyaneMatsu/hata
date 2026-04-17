@@ -51,7 +51,7 @@ def validate_name(name):
     if not isinstance(processed_name, str):
         raise TypeError(
             f'`name` type can be `str`, `{Enum.__name__}`, '
-            f'got {processed_name.__class__.__name__}; {processed_name!r}.'
+            f'got {type(processed_name).__name__}; {processed_name!r}.'
         )
     
     name_length = len(processed_name)
@@ -137,7 +137,7 @@ def validate_value(value):
     else:
         raise TypeError(
             f'`value` type can be `str`, `int`, `float`, `{Enum.__name__}`, '
-            f'got {value.__class__.__name__}; {value!r}.'
+            f'got {type(value).__name__}; {value!r}.'
         )
     
     return processed_value

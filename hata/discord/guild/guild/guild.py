@@ -398,7 +398,7 @@ class Guild(DiscordEntity, immortal = True):
         
         Defaults to `0`.
     
-    users : `dict`, ``WeakValueDictionary`` of (`int`, ``ClientUserBase``) items
+    users : ``(dict  |  WeakValueDictionary)<int, ClientUserBase>``
         The users at the guild stored within `user_id` - `user` relation.
     
     vanity_code : `None`, `str`
@@ -535,7 +535,7 @@ class Guild(DiscordEntity, immortal = True):
         nsfw_level : ``NsfwLevel``, `int`, Optional (Keyword only)
             The nsfw level of the guild.
         
-        owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+        owner_id : ``None | int | ClientUserBase``, Optional (Keyword only)
             The guild's owner or their id.
         
         public_updates_channel_id : `int`, ``Channel``, Optional (Keyword only)
@@ -919,10 +919,10 @@ class Guild(DiscordEntity, immortal = True):
         nsfw_level : ``NsfwLevel``, `int`, Optional (Keyword only)
             The nsfw level of the guild.
         
-        owner : `int`, ``ClientUserBase``, Optional (Keyword only)
+        owner : ``None | int | ClientUserBase``, Optional (Keyword only)
             Alternative for `owner`.
         
-        owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+        owner_id : ``None | int | ClientUserBase``, Optional (Keyword only)
             The guild's owner or their id.
         
         public_updates_channel : `int`, ``Channel``, Optional (Keyword only)
@@ -977,8 +977,7 @@ class Guild(DiscordEntity, immortal = True):
         user_count : `int`, Optional (Keyword only)
             The amount of users at the guild.
         
-        users : `None`, `iterable` of ``ClientUserBase``, `dict` of (`int`, ``ClientUserBase``) items \
-                , Optional (Keyword only)
+        users : ``None | iterable<ClientUserBase> | ``dict<int, ClientUserBase>``, Optional (Keyword only)
             The users of the guild.
         
         vanity_code : `None`, `str`, Optional (Keyword only)
@@ -1684,7 +1683,7 @@ class Guild(DiscordEntity, immortal = True):
     def __repr__(self):
         """Returns the guild's representation."""
         repr_parts = [
-            '<', self.__class__.__name__,
+            '<', type(self).__name__,
         ]
         
         guild_id = self.id
@@ -1757,7 +1756,7 @@ class Guild(DiscordEntity, immortal = True):
             return format(self.created_at, DATETIME_FORMAT_CODE)
         
         raise ValueError(
-            f'Unknown format code {code!r} for {self.__class__.__name__}; {self!r}. '
+            f'Unknown format code {code!r} for {type(self).__name__}; {self!r}. '
             f'Available format codes: {""!r}, {"c"!r}.'
         )
     
@@ -2220,7 +2219,7 @@ class Guild(DiscordEntity, immortal = True):
         nsfw_level : ``NsfwLevel``, `int`, Optional (Keyword only)
             The nsfw level of the guild.
         
-        owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+        owner_id : ``None | int | ClientUserBase``, Optional (Keyword only)
             The guild's owner or their id.
         
         public_updates_channel_id : `int`, ``Channel``, Optional (Keyword only)

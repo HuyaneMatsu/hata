@@ -160,7 +160,7 @@ class UserGuildPermission:
     
     def __repr__(self):
         """Returns the user guild permission's representation."""
-        return f'<{self.__class__.__name__}  owner = {self.owner}, permissions = {self.permission:d}>'
+        return f'<{type(self).__name__}  owner = {self.owner}, permissions = {self.permission:d}>'
     
     
     def __len__(self):

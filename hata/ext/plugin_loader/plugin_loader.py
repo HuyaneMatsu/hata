@@ -433,8 +433,8 @@ class PluginLoader(RichAttributeErrorBaseType):
     def default_entry_point(self, default_entry_point):
         if not _validate_entry_or_exit(default_entry_point):
             raise TypeError(
-                f'`{self.__class__.__name__}.default_entry_point` can be `None`, `str`, `callable`, got '
-                f'{default_entry_point.__class__.__name__}; {default_entry_point!r}.'
+                f'`{type(self).__name__}.default_entry_point` can be `None`, `str`, `callable`, got '
+                f'{type(default_entry_point).__name__}; {default_entry_point!r}.'
             )
         
         self._default_entry_point = default_entry_point
@@ -458,8 +458,8 @@ class PluginLoader(RichAttributeErrorBaseType):
     def default_exit_point(self, default_exit_point):
         if not _validate_entry_or_exit(default_exit_point):
             raise TypeError(
-                f'`{self.__class__.__name__}.default_exit_point` can be `None`, `str`, `callable`, got '
-                f'{default_exit_point.__class__.__name__}; {default_exit_point!r}.'
+                f'`{type(self).__name__}.default_exit_point` can be `None`, `str`, `callable`, got '
+                f'{type(default_exit_point).__name__}; {default_exit_point!r}.'
             )
         
         self._default_exit_point = default_exit_point
@@ -1605,7 +1605,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         """Returns the plugin loader's representation."""
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
             ' plugin count: ',
             repr(len(PLUGINS)),
         ]

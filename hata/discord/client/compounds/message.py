@@ -132,7 +132,7 @@ class ClientCompoundMessageEndpoints(Compound):
         if __debug__:
             if not isinstance(limit, int):
                 raise AssertionError(
-                    f'`limit` can be `int`, got {limit.__class__.__name__}; {limit!r}.'
+                    f'`limit` can be `int`, got {type(limit).__name__}; {limit!r}.'
                 )
             
             if (limit < 1) or (limit > 100):
@@ -262,7 +262,7 @@ class ClientCompoundMessageEndpoints(Compound):
             else:
                 raise TypeError(
                     f'`message` can be `{Message.__name__}`, `tuple` (`int`, `int`), '
-                    f'got {message.__class__.__name__}; {message!r}.'
+                    f'got {type(message).__name__}; {message!r}.'
                 )
         
         message_data = await self.api.message_get(channel_id, message_id)
@@ -612,7 +612,7 @@ class ClientCompoundMessageEndpoints(Compound):
         if __debug__:
             if not isinstance(messages, (list, set, tuple)):
                 raise AssertionError(
-                    f'`messages` can be `list`, `set`, `tuple`, got {messages.__class__.__name__}; {messages!r}.'
+                    f'`messages` can be `list`, `set`, `tuple`, got {type(messages).__name__}; {messages!r}.'
                 )
         
         if not messages:
@@ -748,7 +748,7 @@ class ClientCompoundMessageEndpoints(Compound):
         if __debug__:
             if not (isinstance(channel, Channel) and (channel.is_in_group_textual() or channel.partial)):
                 raise AssertionError(
-                    f'`channel` can be a messageable channel, got {channel.__class__.__name__}; {channel!r}.'
+                    f'`channel` can be a messageable channel, got {type(channel).__name__}; {channel!r}.'
                 )
         
         # Check permissions
@@ -1101,7 +1101,7 @@ class ClientCompoundMessageEndpoints(Compound):
         if __debug__:
             if not (isinstance(channel, Channel) and (channel.is_in_group_textual() or channel.partial)):
                 raise AssertionError(
-                    f'`channel` can be a messageable channel, got {channel.__class__.__name__}; {channel!r}.'
+                    f'`channel` can be a messageable channel, got {type(channel).__name__}; {channel!r}.'
                 )
         
         # Check permissions
@@ -1794,7 +1794,7 @@ class ClientCompoundMessageEndpoints(Compound):
         """
         if not isinstance(index, int):
             raise TypeError(
-                f'`index` can be `int`, got {index.__class__.__name__}; {index!r}.'
+                f'`index` can be `int`, got {type(index).__name__}; {index!r}.'
             )
         
         if index < 0:
@@ -1869,7 +1869,7 @@ class ClientCompoundMessageEndpoints(Compound):
         if __debug__:
             if not isinstance(start, int):
                 raise AssertionError(
-                    f'`start` can be `int`, got {start.__class__.__name__}; {start!r}.'
+                    f'`start` can be `int`, got {type(start).__name__}; {start!r}.'
                 )
             
             if start < 0:
@@ -1879,7 +1879,7 @@ class ClientCompoundMessageEndpoints(Compound):
         
             if not isinstance(end, int):
                 raise AssertionError(
-                    f'`end` can be `int`, got {end.__class__.__name__}; {end!r}.'
+                    f'`end` can be `int`, got {type(end).__name__}; {end!r}.'
                 )
             
             if end < 0:

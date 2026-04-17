@@ -214,7 +214,7 @@ class EULA(DiscordEntity, immortal = True):
     
     def __repr__(self):
         """Returns the eula's representation"""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         eula_id = self.id
         if eula_id:

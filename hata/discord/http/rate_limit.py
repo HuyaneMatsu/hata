@@ -162,7 +162,7 @@ class RateLimitGroup:
         """Returns the representation of the rate limit group."""
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
             ' size = ',
             repr(self.size),
             ', ',
@@ -286,7 +286,7 @@ class RateLimitUnit:
         """Returns the representation of the rate limit unit."""
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
             ' drop = ',
             repr(self.drop),
             ', allocates = ',
@@ -939,7 +939,7 @@ class StaticRateLimitGroup:
         """Returns the representation of the rate limit group."""
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
             ' size = ',
             repr(self.size),
             ', timeout = ',
@@ -1009,7 +1009,7 @@ class StaticRateLimitHandler:
         """Returns the rate limit handler's representation."""
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
         ]
         
         limiter = self.parent.limiter
@@ -1169,7 +1169,7 @@ class StackedStaticRateLimitHandler:
     
     def __repr__(self):
         """Returns the rate limit handler's representation."""
-        return f'<{self.__class__.__name__} stack={self.stack!r}>'
+        return f'<{type(self).__name__} stack={self.stack!r}>'
     
     
     def __bool__(self):

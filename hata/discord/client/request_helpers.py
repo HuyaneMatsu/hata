@@ -7,11 +7,12 @@ from ..bases import maybe_snowflake, maybe_snowflake_pair, maybe_snowflake_token
 from ..channel import Channel, ForumTag, PermissionOverwrite
 from ..core import (
     APPLICATION_COMMANDS, AUTO_MODERATION_RULES, CHANNELS, EMBEDDED_ACTIVITIES, EMOJIS, ENTITLEMENTS, FORUM_TAGS,
-    GUILDS, MESSAGES, ROLES, SCHEDULED_EVENTS, SOUNDBOARD_SOUNDS, STICKERS, STICKER_PACKS, SUBSCRIPTIONS, USERS
+    GUILDS, INVITES, MESSAGES, ROLES, SCHEDULED_EVENTS, SOUNDBOARD_SOUNDS, STICKERS, STICKER_PACKS, SUBSCRIPTIONS, USERS
 )
 from ..embedded_activity import EmbeddedActivity
 from ..emoji import Emoji, Reaction, ReactionType
 from ..guild import Guild
+from ..invite import Invite
 from ..message import Message
 from ..oauth2 import Oauth2Access, Oauth2User
 from ..role import Role
@@ -30,22 +31,24 @@ def validate_message_to_delete(message):
     
     Parameters
     ----------
-    message : ``Message``, `tuple` (`int`, `int`)
+    message : ``(int, int) | Message``
         The message to validate for deletion.
     
     Returns
     -------
     channel_id : `int`
         The channel's identifier where the message is.
+    
     message_id : `int`
         The message's identifier.
+    
     message : ``None | Message``
         The referenced message if found.
     
     Raises
     ------
     TypeError
-        If message was not given neither as ``Message``, `tuple` (`int`, `int`).
+        If `message`'s type is incorrect.
     """
     if isinstance(message, Message):
         channel_id = message.channel_id
@@ -71,8 +74,9 @@ def get_channel_id(channel, type_checker):
     
     Parameters
     ----------
-    channel : ``Channel``, `int`
+    channel : ``int | Channel``
         The channel, or it's identifier.
+    
     type_checker : `FunctionType`
         Type checker for `channel`.
     
@@ -97,7 +101,7 @@ def get_channel_id(channel, type_checker):
         
     raise TypeError(
         f'`channel` can be `{Channel.__name__}`, `int`,  passing the `{type_checker.__name__}` check, '
-        f'got {channel.__class__.__name__}; {channel!r}.'
+        f'got {type(channel).__name__}; {channel!r}.'
     )
 
 
@@ -133,7 +137,7 @@ def get_channel_guild_id_and_id(channel, type_checker):
     
     raise TypeError(
         f'`channel` can be `{Channel.__name__}`, `tuple` (`int`, `int`),  passing the `{type_checker.__name__}` check, '
-        f'got {channel.__class__.__name__}; {channel!r}.'
+        f'got {type(channel).__name__}; {channel!r}.'
     )
 
 
@@ -174,8 +178,9 @@ def get_channel_and_id(channel, type_checker = None):
     
     Parameters
     ----------
-    channel : ``Channel``, `int`
+    channel : ``int | Channel``
         The channel, or it's identifier.
+    
     type_checker : `None | FunctionType` = `None`, Optional
         Type checker for `channel`.
     
@@ -253,7 +258,7 @@ def get_stage_and_channel_id(stage):
         
         raise TypeError(
             f'`stage` can be `{Stage.__name__}`, `{Channel.__name__}`, `int`, got '
-            f'{stage.__class__.__name__}; {stage!r}.'
+            f'{type(stage).__name__}; {stage!r}.'
         )
     
     return stage, channel_id
@@ -295,7 +300,7 @@ def get_stage_channel_id(stage):
         
         raise TypeError(
             f'`stage` can be `{Stage.__name__}`, `{Channel.__name__}`, `int`, got '
-            f'{stage.__class__.__name__}; {stage!r}.'
+            f'{type(stage).__name__}; {stage!r}.'
         )
     
     return channel_id
@@ -328,7 +333,7 @@ def get_user_id(user):
         return user_id
     
     raise TypeError(
-        f'`user` can be `{ClientUserBase.__name__}`, `int`, got {user.__class__.__name__}; {user!r}.'
+        f'`user` can be `{ClientUserBase.__name__}`, `int`, got {type(user).__name__}; {user!r}.'
     )
 
 
@@ -370,7 +375,7 @@ def get_user_and_id(user):
                 break
         
         raise TypeError(
-            f'`user` can be `{ClientUserBase.__name__}`, `int`, got {user.__class__.__name__}; {user!r}.'
+            f'`user` can be `{ClientUserBase.__name__}`, `int`, got {type(user).__name__}; {user!r}.'
         )
         
     return user, user_id
@@ -408,7 +413,7 @@ def get_user_id_nullable(user):
         return user_id
         
     raise TypeError(
-        f'`user` can be `{ClientUserBase.__name__}`, `int`, got {user.__class__.__name__}; {user!r}.'
+        f'`user` can be `{ClientUserBase.__name__}`, `int`, got {type(user).__name__}; {user!r}.'
     )
 
 
@@ -439,7 +444,7 @@ def get_guild_id(guild):
         return guild_id
         
     raise TypeError(
-        f'`guild` can be `{Guild.__name__}`, `int`, got {guild.__class__.__name__}; {guild!r}.'
+        f'`guild` can be `{Guild.__name__}`, `int`, got {type(guild).__name__}; {guild!r}.'
     )
 
 
@@ -470,7 +475,7 @@ def get_guild_and_id(guild):
         guild_id = maybe_snowflake(guild)
         if guild_id is None:
             raise TypeError(
-                f'`guild` can be `{Guild.__name__}`, `int`, got {guild.__class__.__name__}; {guild!r}.'
+                f'`guild` can be `{Guild.__name__}`, `int`, got {type(guild).__name__}; {guild!r}.'
             )
         
         guild = GUILDS.get(guild_id, None)
@@ -515,7 +520,7 @@ def get_channel_id_and_message_id(message):
         if snowflake_pair is None:
             raise TypeError(
                 f'`message` can be `{Message.__name__}`, '
-                f'`tuple` of (`int`, `int`), got {message.__class__.__name__}; {message!r}.'
+                f'`tuple` of (`int`, `int`), got {type(message).__name__}; {message!r}.'
             )
         
         channel_id, message_id = snowflake_pair
@@ -562,7 +567,7 @@ def get_message_and_channel_id_and_message_id(message):
         if snowflake_pair is None:
             raise TypeError(
                 f'`message` can be `{Message.__name__}`, '
-                f'`tuple` of (`int`, `int`), got {message.__class__.__name__}; {message!r}.'
+                f'`tuple` of (`int`, `int`), got {type(message).__name__}; {message!r}.'
             )
         
         channel_id, message_id = snowflake_pair
@@ -596,7 +601,7 @@ def get_role_id(role):
         role_id = maybe_snowflake(role)
         if role_id is None:
             raise TypeError(
-                f'`role` can be `{Role.__name__}`, `int`, got {role.__class__.__name__}; {role!r}.'
+                f'`role` can be `{Role.__name__}`, `int`, got {type(role).__name__}; {role!r}.'
             )
     
     return role_id
@@ -635,7 +640,7 @@ def get_role_role_guild_id_and_id(role):
         snowflake_pair = maybe_snowflake_pair(role)
         if snowflake_pair is None:
             raise TypeError(
-                f'`role` can be `{Role.__name__}`, `tuple` (`int`, `int`), got {role.__class__.__name__}; {role!r}.'
+                f'`role` can be `{Role.__name__}`, `tuple` (`int`, `int`), got {type(role).__name__}; {role!r}.'
             )
         
         guild_id, role_id = snowflake_pair
@@ -674,7 +679,7 @@ def get_role_guild_id_and_id(role):
         return snowflake_pair
     
     raise TypeError(
-        f'`role` can be `{Role.__name__}`, `tuple` (`int`, `int`), got {role.__class__.__name__}; {role!r}.'
+        f'`role` can be `{Role.__name__}`, `tuple` (`int`, `int`), got {type(role).__name__}; {role!r}.'
     )
 
 
@@ -703,7 +708,7 @@ def get_webhook_id(webhook):
         webhook_id = maybe_snowflake(webhook)
         if webhook_id is None:
             raise TypeError(
-                f'`webhook` can be `{Webhook.__name__}`, `int`, got {webhook.__class__.__name__}; {webhook!r}.'
+                f'`webhook` can be `{Webhook.__name__}`, `int`, got {type(webhook).__name__}; {webhook!r}.'
             )
     
     return webhook_id
@@ -747,7 +752,7 @@ def get_webhook_and_id(webhook):
                 break
             
             raise TypeError(
-                f'`webhook` can be `{Webhook.__name__}`, `int`, got {webhook.__class__.__name__}; {webhook!r}.'
+                f'`webhook` can be `{Webhook.__name__}`, `int`, got {type(webhook).__name__}; {webhook!r}.'
             )
     
     return webhook, webhook_id
@@ -781,7 +786,7 @@ def get_webhook_id_and_token(webhook):
         if (snowflake_token_pair is None):
             raise TypeError(
                 f'`webhook` can be `{Webhook.__name__}`, `tuple` (`int`, `str`), got '
-                f'{webhook.__class__.__name__}; {webhook!r}.'
+                f'{type(webhook).__name__}; {webhook!r}.'
             )
     
     return snowflake_token_pair
@@ -831,7 +836,7 @@ def get_webhook_and_id_and_token(webhook):
         
         raise TypeError(
             f'`webhook` can be `{Webhook.__name__}`, `tuple` (`int`, `str`), got '
-            f'{webhook.__class__.__name__}; {webhook!r}.'
+            f'{type(webhook).__name__}; {webhook!r}.'
         )
     
     return webhook, webhook_id, webhook_token
@@ -1024,7 +1029,7 @@ def get_sticker_and_id(sticker):
             break
         
         raise TypeError(
-            f'`sticker` can be `{Sticker.__name__}`, `int`, got {sticker.__class__.__name__}; {sticker!r}.'
+            f'`sticker` can be `{Sticker.__name__}`, `int`, got {type(sticker).__name__}; {sticker!r}.'
         )
         
     return sticker, sticker_id
@@ -1062,7 +1067,7 @@ def get_sticker_pack_and_id(sticker_pack):
             break
         
         raise TypeError(
-            f'`sticker_pack` can be `{StickerPack.__name__}`, `int`, got {sticker_pack.__class__.__name__}; '
+            f'`sticker_pack` can be `{StickerPack.__name__}`, `int`, got {type(sticker_pack).__name__}; '
             f'{sticker_pack!r}.'
         )
         
@@ -1098,7 +1103,7 @@ def get_scheduled_event_guild_id_and_id(scheduled_event):
     if snowflake_pair is None:
         raise TypeError(
             f'`scheduled_event` can be `{ScheduledEvent.__name__}`, `tuple` of (`int`, `int`), got '
-            f'{scheduled_event.__class__.__name__}; {scheduled_event!r}.'
+            f'{type(scheduled_event).__name__}; {scheduled_event!r}.'
         )
     
     return snowflake_pair
@@ -1136,7 +1141,7 @@ def get_scheduled_event_and_guild_id_and_id(scheduled_event):
         if snowflake_pair is None:
             raise TypeError(
                 f'`scheduled_event` can be `{ScheduledEvent.__name__}`, `tuple` of (`int`, `int`), got '
-                f'{scheduled_event.__class__.__name__}; {scheduled_event!r}.'
+                f'{type(scheduled_event).__name__}; {scheduled_event!r}.'
             )
         
         guild_id, scheduled_event_id = snowflake_pair
@@ -1173,7 +1178,7 @@ def get_application_command_id(application_command):
         if application_command_id is None:
             raise TypeError(
                 f'`application_command` can be `{ApplicationCommand.__name__}`, `int`, got '
-                f'{application_command.__class__.__name__}; {application_command!r}.'
+                f'{type(application_command).__name__}; {application_command!r}.'
             )
     
     return application_command_id
@@ -1208,7 +1213,7 @@ def get_application_command_and_id(application_command):
         if application_command_id is None:
             raise TypeError(
                 f'`application_command` can be `{ApplicationCommand.__name__}`, `int`, got '
-                f'{application_command.__class__.__name__}; {application_command!r}.'
+                f'{type(application_command).__name__}; {application_command!r}.'
             )
         
         application_command = APPLICATION_COMMANDS.get(application_command_id, None)
@@ -1248,7 +1253,7 @@ def get_application_command_id_nullable(application_command):
         if application_command_id is None:
             raise TypeError(
                 f'`application_command` can be `{ApplicationCommand.__name__}`, `int`, got '
-                f'{application_command.__class__.__name__}; {application_command!r}.'
+                f'{type(application_command).__name__}; {application_command!r}.'
             )
     
     return application_command_id
@@ -1284,7 +1289,7 @@ def get_auto_moderation_rule_guild_id_and_id(auto_moderation_rule):
         if snowflake_pair is None:
             raise TypeError(
                 f'`auto_moderation_rule` can be `{AutoModerationRule.__name__}`, `tuple` of (`int`, `int`), got '
-                f'{auto_moderation_rule.__class__.__name__}; {auto_moderation_rule!r}.'
+                f'{type(auto_moderation_rule).__name__}; {auto_moderation_rule!r}.'
             )
         
         guild_id, rule_id = snowflake_pair
@@ -1324,7 +1329,7 @@ def get_auto_moderation_rule_and_guild_id_and_id(auto_moderation_rule):
         if snowflake_pair is None:
             raise TypeError(
                 f'`auto_moderation_rule` can be `{AutoModerationRule.__name__}`, `tuple` of (`int`, `int`), got '
-                f'{auto_moderation_rule.__class__.__name__}; {auto_moderation_rule!r}.'
+                f'{type(auto_moderation_rule).__name__}; {auto_moderation_rule!r}.'
             )
         
         guild_id, rule_id = snowflake_pair
@@ -1359,7 +1364,7 @@ def get_forum_tag_id(forum_tag):
         forum_tag_id = maybe_snowflake(forum_tag)
         if (forum_tag_id is None):
             raise TypeError(
-                f'`forum_tag` can be `{ForumTag.__name__}, `int`, got {forum_tag.__class__.__name__}; {forum_tag!r}.'
+                f'`forum_tag` can be `{ForumTag.__name__}, `int`, got {type(forum_tag).__name__}; {forum_tag!r}.'
             )
     
     return forum_tag_id
@@ -1393,7 +1398,7 @@ def get_forum_tag_and_id(forum_tag):
         forum_tag_id = maybe_snowflake(forum_tag)
         if (forum_tag_id is None):
             raise TypeError(
-                f'`forum_tag` can be `{ForumTag.__name__}, `int`, got {forum_tag.__class__.__name__}; {forum_tag!r}.'
+                f'`forum_tag` can be `{ForumTag.__name__}, `int`, got {type(forum_tag).__name__}; {forum_tag!r}.'
             )
         
         forum_tag = FORUM_TAGS.get(forum_tag_id, None)
@@ -1427,7 +1432,7 @@ def get_permission_overwrite_target_id(permission_overwrite):
         if (target_id is None):
             raise TypeError(
                 f'`permission_overwrite` can be `{PermissionOverwrite.__name__}`, `int` got '
-                f'{permission_overwrite.__class__.__name__}; {permission_overwrite!r}.'
+                f'{type(permission_overwrite).__name__}; {permission_overwrite!r}.'
             )
     
     return target_id
@@ -1473,7 +1478,7 @@ def get_oauth2_access_token(access, required_scope = None):
     else:
         raise TypeError(
             f'`access` can be `{Oauth2Access.__name__}`, `{Oauth2User.__name__}`, `str`'
-            f', got {access.__class__.__name__}; {access!r}.'
+            f', got {type(access).__name__}; {access!r}.'
         )
     
     return access_token
@@ -1524,7 +1529,7 @@ def get_oauth2_access_token_and_user_id(access, user, required_scope = None):
     else:
         raise TypeError(
             f'`access` can be `{Oauth2Access.__name__}`, `{Oauth2User.__name__}`, `str`, got '
-            f'{access.__class__.__name__}; {access!r}.'
+            f'{type(access).__name__}; {access!r}.'
         )
     
     
@@ -1571,7 +1576,7 @@ def get_soundboard_sound_and_guild_id_and_id(soundboard_sound):
         if snowflake_pair is None:
             raise TypeError(
                 f'`soundboard_sound` can be `{SoundboardSound.__name__}`, `tuple` (`int`, `int`), '
-                f'got {soundboard_sound.__class__.__name__}; {soundboard_sound!r}.'
+                f'got {type(soundboard_sound).__name__}; {soundboard_sound!r}.'
             )
         
         guild_id, soundboard_sound_id = snowflake_pair
@@ -1612,7 +1617,7 @@ def get_soundboard_sound_guild_id_and_id(soundboard_sound):
     
     raise TypeError(
         f'`soundboard_sound` can be `{SoundboardSound.__name__}`, `tuple` (`int`, `int`), '
-        f'got {soundboard_sound.__class__.__name__}; {soundboard_sound!r}.'
+        f'got {type(soundboard_sound).__name__}; {soundboard_sound!r}.'
     )
 
 
@@ -1643,7 +1648,7 @@ def get_entitlement_id(entitlement):
         if (entitlement_id is None):
             raise TypeError(
                 f'`entitlement` can be `{Entitlement.__name__}, `int`, '
-                f'got {entitlement.__class__.__name__}; {entitlement!r}.'
+                f'got {type(entitlement).__name__}; {entitlement!r}.'
             )
     
     return entitlement_id
@@ -1708,7 +1713,7 @@ def get_poll_answer_and_id(poll_answer):
     if poll_answer_id is None:
         raise TypeError(
             f'`poll_answer` can be `{PollAnswer.__name__}, `int`, '
-            f'got {poll_answer.__class__.__name__}; {poll_answer!r}.'
+            f'got {type(poll_answer).__name__}; {poll_answer!r}.'
         )
     
     return None, poll_answer_id
@@ -1751,7 +1756,7 @@ def get_embedded_activity_and_id(embedded_activity):
     
     Parameters
     ----------
-    embedded_activity : `EmbeddedActivity | int`
+    embedded_activity : ``int | EmbeddedActivity``
         The embedded activity to get its identifier.
     
     Returns
@@ -1805,10 +1810,74 @@ def get_subscription_and_sku_id_and_id(subscription):
         snowflake_pair = maybe_snowflake_pair(subscription)
         if snowflake_pair is None:
             raise TypeError(
-                f'`subscription` can be `{Subscription.__name__}`, `(int, int)`, got {type(subscription).__name__}; {subscription!r}.'
+                f'`subscription` can be `{Subscription.__name__}`, `(int, int)`, got '
+                f'{type(subscription).__name__}; {subscription!r}.'
             )
         
         sku_id, subscription_id = snowflake_pair
         subscription = SUBSCRIPTIONS.get(subscription_id, None)
     
     return subscription, sku_id, subscription_id
+
+
+def get_invite_and_code(invite):
+    """
+    Parameters
+    ----------
+    invite : ``str | Invite``
+        Invite or its code.
+    
+    Returns
+    -------
+    invite_and_invite_code : ``(None | Invite, str)``
+    
+    Raises
+    ------
+    TypeError
+        - If `invite`'s type is incorrect.
+    """
+    if isinstance(invite, Invite):
+        invite_code = invite.code
+    
+    elif isinstance(invite, str):
+        invite_code = invite
+        invite = INVITES.get(invite_code, None)
+    
+    else:
+        raise TypeError(
+            f'`invite`` can be `{Invite.__name__}`, `str`, got {type(invite).__name__}; {invite!r}.'
+        )
+    
+    return invite, invite_code
+
+
+def get_invite_code(invite):
+    """
+    Get invites and its code.
+    
+    Parameters
+    ----------
+    invite : ``str | Invite``
+        Invite or its code.
+    
+    Returns
+    -------
+    invite_code : `str`
+    
+    Raises
+    ------
+    TypeError
+        - If `invite`'s type is incorrect.
+    """
+    if isinstance(invite, Invite):
+        invite_code = invite.code
+    
+    elif isinstance(invite, str):
+        invite_code = invite
+    
+    else:
+        raise TypeError(
+            f'`invite`` can be `{Invite.__name__}`, `str`, got {type(invite).__name__}; {invite!r}.'
+        )
+    
+    return invite_code

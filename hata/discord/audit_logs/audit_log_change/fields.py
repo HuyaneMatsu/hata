@@ -28,7 +28,7 @@ def validate_attribute_name(attribute_name):
     
     if not isinstance(attribute_name, str):
         raise TypeError(
-            f'`attribute_name` can be `None`, `str`, got {attribute_name.__class__.__name__}; {attribute_name!r}.'
+            f'`attribute_name` can be `None`, `str`, got {type(attribute_name).__name__}; {attribute_name!r}.'
         )
     
     if attribute_name and (not attribute_name.isidentifier()):
@@ -63,7 +63,7 @@ def validate_flags(flags):
         return 0
     
     if not isinstance(flags, int):
-        raise TypeError(f'`flags` can be `int`, got {flags.__class__.__name__}; {flags!r}.')
+        raise TypeError(f'`flags` can be `int`, got {type(flags).__name__}; {flags!r}.')
     
     if flags < 0:
         raise ValueError(f'`flags` can not be negative, got {flags!r}.')

@@ -84,7 +84,7 @@ def preconvert_snowflake_array(snowflake_array, name):
     if getattr(preconvert_snowflake_array, '__iter__', None) is None:
         raise TypeError(
             f'`{name}` can be `list`, `tuple`, `set`, got '
-            f'{snowflake_array.__class__.__name__}; {snowflake_array!r}.'
+            f'{type(snowflake_array).__name__}; {snowflake_array!r}.'
         )
     
     for snowflake in snowflake_array:
@@ -158,7 +158,7 @@ def preconvert_str(value, name, lower_limit, upper_limit):
         value = str(value)
     else:
         raise TypeError(
-            f'`{name}` can be `str`, got {value.__class__.__name__}; {value!r}.'
+            f'`{name}` can be `str`, got {type(value).__name__}; {value!r}.'
         )
     
     length = len(value)
@@ -348,7 +348,7 @@ def preconvert_preinstanced_type(value, name, type_):
     ValueError
         If there is no preinstanced object for the given `value`.
     """
-    value_type = value.__class__
+    value_type = type(value)
     if (value_type is not type_):
         value_expected_type = type_.VALUE_TYPE
         if value is None:
@@ -402,7 +402,7 @@ def _pre_validate_int(value, name):
         value = int(value)
     else:
         raise TypeError(
-            f'`{name}` can be `int`, got {value.__class__.__name__}; {value!r}.'
+            f'`{name}` can be `int`, got {type(value).__name__}; {value!r}.'
         )
 
     return value
@@ -512,7 +512,7 @@ def preconvert_float(value, name, lower_limit, upper_limit):
         float_converter = getattr(type(value), '__float__', None)
         if float_converter is None:
             raise TypeError(
-                f'`{name}` can be `float`, got {value.__class__.__name__}; {value!r}.'
+                f'`{name}` can be `float`, got {type(value).__name__}; {value!r}.'
             )
         
         value = float_converter(value)

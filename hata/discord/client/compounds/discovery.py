@@ -139,7 +139,7 @@ class ClientCompoundDiscoveryEndpoints(Compound):
         else:
             raise TypeError(
                 f'`category` can be `{DiscoveryCategory.__name__}`, `{DiscoveryCategory.VALUE_TYPE.__name__}`, '
-                f'got {category.__class__.__name__}; {category!r}.'
+                f'got {type(category).__name__}; {category!r}.'
             )
         
         await self.api.guild_discovery_add_sub_category(guild_id, category_id)
@@ -183,7 +183,7 @@ class ClientCompoundDiscoveryEndpoints(Compound):
         else:
             raise TypeError(
                 f'`category` can be `{DiscoveryCategory.__name__}`, `{DiscoveryCategory.VALUE_TYPE.__name__}`, '
-                f'got {category.__class__.__name__}; {category!r}.'
+                f'got {type(category).__name__}; {category!r}.'
             )
         
         await self.api.guild_discovery_delete_sub_category(guild_id, category_id)

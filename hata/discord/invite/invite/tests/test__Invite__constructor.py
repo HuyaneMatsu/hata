@@ -6,6 +6,7 @@ from ....application import Application
 from ....channel import Channel
 from ....guild import Guild, GuildActivityOverview
 from ....permission import Permission
+from ....role import Role
 from ....user import ClientUserBase, User
 
 from ..flags import InviteFlag
@@ -36,6 +37,7 @@ def _assert_fields_set(invite):
     vampytest.assert_instance(invite.inviter, ClientUserBase)
     vampytest.assert_instance(invite.max_age, int, nullable = True)
     vampytest.assert_instance(invite.max_uses, int, nullable = True)
+    vampytest.assert_instance(invite.roles, tuple, nullable = True)
     vampytest.assert_instance(invite.target_application, Application, nullable = True)
     vampytest.assert_instance(invite.target_type, InviteTargetType)
     vampytest.assert_instance(invite.target_user, ClientUserBase, nullable = True)
@@ -64,6 +66,10 @@ def test__Invite__new__all_fields():
     flags = InviteFlag(11)
     max_age = 3600
     max_uses = 100
+    roles = [
+        Role.precreate(202604050000),
+        Role.precreate(202604050001),
+    ]
     target_application = Application.precreate(202308060066)
     target_type = InviteTargetType.stream
     target_user = User.precreate(202308060067)
@@ -73,6 +79,7 @@ def test__Invite__new__all_fields():
         flags = flags,
         max_age = max_age,
         max_uses = max_uses,
+        roles = roles,
         target_application = target_application,
         target_type = target_type,
         target_user = target_user,
@@ -82,6 +89,7 @@ def test__Invite__new__all_fields():
     vampytest.assert_eq(invite.flags, flags)
     vampytest.assert_eq(invite.max_age, max_age)
     vampytest.assert_eq(invite.max_uses, max_uses)
+    vampytest.assert_eq(invite.roles, tuple(roles))
     vampytest.assert_is(invite.target_application, target_application)
     vampytest.assert_is(invite.target_type, target_type)
     vampytest.assert_is(invite.target_user, target_user)
@@ -145,6 +153,10 @@ def test__Invite__precreate__all_fields():
     inviter = User.precreate(202308060074)
     max_age = 3600
     max_uses = 100
+    roles = [
+        Role.precreate(202604050002),
+        Role.precreate(202604050003),
+    ]
     target_application = Application.precreate(202308060075)
     target_type = InviteTargetType.stream
     target_user = User.precreate(202308060076)
@@ -167,6 +179,7 @@ def test__Invite__precreate__all_fields():
         inviter = inviter,
         max_age = max_age,
         max_uses = max_uses,
+        roles = roles,
         target_application = target_application,
         target_type = target_type,
         target_user = target_user,
@@ -188,6 +201,7 @@ def test__Invite__precreate__all_fields():
     vampytest.assert_is(invite.inviter, inviter)
     vampytest.assert_eq(invite.max_age, max_age)
     vampytest.assert_eq(invite.max_uses, max_uses)
+    vampytest.assert_eq(invite.roles, tuple(roles))
     vampytest.assert_is(invite.target_application, target_application)
     vampytest.assert_is(invite.target_type, target_type)
     vampytest.assert_is(invite.target_user, target_user)

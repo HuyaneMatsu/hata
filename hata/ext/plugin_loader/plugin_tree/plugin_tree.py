@@ -43,7 +43,7 @@ class PluginTree(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the plugin tree's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         try:
             entry_plugin = self.get_entry_plugin()

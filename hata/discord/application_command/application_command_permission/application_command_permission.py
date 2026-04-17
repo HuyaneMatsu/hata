@@ -122,7 +122,7 @@ class ApplicationCommandPermission(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the application command permission's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         # application_command_id
         repr_parts.append(' application_command_id = ')

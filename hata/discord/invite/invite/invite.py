@@ -13,16 +13,16 @@ from ...user import ClientUserBase, ZEROUSER
 
 from .fields import (
     parse_approximate_online_count, parse_approximate_user_count, parse_channel, parse_code, parse_created_at,
-    parse_flags, parse_guild, parse_guild_activity_overview, parse_inviter, parse_max_age, parse_max_uses,
+    parse_flags, parse_guild, parse_guild_activity_overview, parse_inviter, parse_max_age, parse_max_uses, parse_roles,
     parse_target_application, parse_target_type, parse_target_user, parse_temporary, parse_type, parse_user_permissions,
     parse_uses, put_approximate_online_count, put_approximate_user_count, put_channel, put_code, put_created_at,
-    put_flags, put_guild, put_guild_activity_overview, put_inviter, put_max_age, put_max_uses, put_target_application,
-    put_target_application_id, put_target_type, put_target_user, put_target_user_id, put_temporary, put_type,
-    put_user_permissions, put_uses, validate_approximate_online_count, validate_approximate_user_count,
-    validate_channel, validate_code, validate_created_at, validate_flags, validate_guild,
-    validate_guild_activity_overview, validate_inviter, validate_max_age, validate_max_uses,
-    validate_target_application, validate_target_type, validate_target_user, validate_temporary, validate_type,
-    validate_user_permissions, validate_uses
+    put_flags, put_guild, put_guild_activity_overview, put_inviter, put_max_age, put_max_uses, put_roles,
+    put_roles_as_role_ids, put_target_application, put_target_application_id, put_target_type, put_target_user,
+    put_target_user_id, put_temporary, put_type, put_user_permissions, put_uses, validate_approximate_online_count,
+    validate_approximate_user_count, validate_channel, validate_code, validate_created_at, validate_flags,
+    validate_guild, validate_guild_activity_overview, validate_inviter, validate_max_age, validate_max_uses,
+    validate_roles, validate_target_application, validate_target_type, validate_target_user, validate_temporary,
+    validate_type, validate_user_permissions, validate_uses
 )
 from .flags import InviteFlag
 from .preinstanced import InviteTargetType, InviteType
@@ -40,6 +40,7 @@ PRECREATE_FIELDS = {
     'inviter': ('inviter', validate_inviter),
     'max_age': ('max_age', validate_max_age),
     'max_uses': ('max_uses', validate_max_uses),
+    'roles': ('roles', validate_roles),
     'target_application': ('target_application', validate_target_application),
     'target_type': ('target_type', validate_target_type),
     'target_user': ('target_user', validate_target_user),
@@ -99,6 +100,9 @@ class Invite(DiscordEntity, immortal = True):
         
         If the invite has no use limit, then this value is set as `0`.
     
+    roles : ``None | tuple<Role>``
+        Roles that the invite grants upon using.
+    
     target_application : ``None | Application``
         The invite's target application.
     
@@ -125,7 +129,7 @@ class Invite(DiscordEntity, immortal = True):
     """
     __slots__ = (
         'approximate_user_count', 'approximate_online_count', 'channel', 'code', 'created_at', 'flags', 'guild',
-        'guild_activity_overview', 'inviter', 'max_age', 'max_uses', 'target_application', 'target_type',
+        'guild_activity_overview', 'inviter', 'max_age', 'max_uses', 'roles', 'target_application', 'target_type',
         'target_user', 'temporary', 'type', 'user_permissions', 'uses'
     )
     
@@ -136,6 +140,7 @@ class Invite(DiscordEntity, immortal = True):
         flags = ...,
         max_age = ...,
         max_uses = ...,
+        roles = ...,
         target_application = ...,
         target_type = ...,
         target_user = ...,
@@ -154,6 +159,9 @@ class Invite(DiscordEntity, immortal = True):
         
         max_uses : `None | int`, Optional (Keyword only)
             How much times the invite can be used.
+    
+        roles : ``None | iterable<Role>``, Optional (Keyword only)
+            Roles that the invite grants upon using.
         
         target_application : ``None | Application``, Optional (Keyword only)
             The invite's target application.
@@ -191,6 +199,12 @@ class Invite(DiscordEntity, immortal = True):
             max_uses = None
         else:
             max_uses = validate_max_uses(max_uses)
+        
+        # roles
+        if roles is ...:
+            roles = None
+        else:
+            roles = validate_roles(roles)
         
         # target_application
         if target_application is ...:
@@ -230,6 +244,7 @@ class Invite(DiscordEntity, immortal = True):
         self.inviter = ZEROUSER
         self.max_age = max_age
         self.max_uses = max_uses
+        self.roles = roles
         self.target_application = target_application
         self.target_type = target_type
         self.target_user = target_user
@@ -304,6 +319,7 @@ class Invite(DiscordEntity, immortal = True):
             put_guild(self.guild, data, defaults)
             put_guild_activity_overview(self.guild_activity_overview, data, defaults)
             put_inviter(self.inviter, data, defaults)
+            put_roles(self.roles, data, defaults)
             put_target_application(self.target_application, data, defaults)
             put_target_user(self.target_user, data, defaults)
             put_type(self.type, data, defaults)
@@ -311,6 +327,7 @@ class Invite(DiscordEntity, immortal = True):
             put_uses(self.uses, data, defaults)
         
         else:
+            put_roles_as_role_ids(self.roles, data, defaults)
             put_target_application_id(self.target_application_id, data, defaults)
             put_target_user_id(self.target_user_id, data, defaults)
         
@@ -348,6 +365,13 @@ class Invite(DiscordEntity, immortal = True):
         
         # max_uses
         hash_value ^= self.max_uses << 8
+        
+        # roles
+        roles = self.roles
+        if (roles is not None):
+            hash_value ^= 1 << 18
+            for role in roles:
+                hash_value ^= hash(role)
         
         # target_application
         target_application = self.target_application
@@ -409,6 +433,10 @@ class Invite(DiscordEntity, immortal = True):
         
         # max_uses
         if self.max_uses != other.max_uses:
+            return False
+        
+        # roles
+        if self.roles != other.roles:
             return False
         
         # target_application
@@ -478,14 +506,17 @@ class Invite(DiscordEntity, immortal = True):
         data : `dict<str, object>`
             Invite data.
         """
+        guild = parse_guild(data)
+        
         self.channel = parse_channel(data)
         self.created_at = parse_created_at(data)
         self.flags = parse_flags(data)
-        self.guild = parse_guild(data)
+        self.guild = guild
         self.guild_activity_overview = parse_guild_activity_overview(data)
         self.inviter = parse_inviter(data)
         self.max_age = parse_max_age(data)
         self.max_uses = parse_max_uses(data)
+        self.roles = parse_roles(data, (0 if guild is None else guild.id))
         self.target_application = parse_target_application(data)
         self.target_type = parse_target_type(data)
         self.target_user = parse_target_user(data)
@@ -585,6 +616,9 @@ class Invite(DiscordEntity, immortal = True):
         
         max_uses : `None | int`, Optional (Keyword only)
             How much times the invite can be used.
+    
+        roles : ``None | iterable<Role>``, Optional (Keyword only)
+            Roles that the invite grants upon using.
         
         target_application : ``None | Application``, Optional (Keyword only)
             The target application of the invite.
@@ -666,6 +700,7 @@ class Invite(DiscordEntity, immortal = True):
         self.inviter = ZEROUSER
         self.max_age = None
         self.max_uses = None
+        self.roles = None
         self.target_application = None
         self.target_type = InviteTargetType.none
         self.target_user = None
@@ -698,6 +733,12 @@ class Invite(DiscordEntity, immortal = True):
         new.inviter = ZEROUSER
         new.max_age = self.max_age
         new.max_uses = self.max_uses
+        
+        roles = self.roles
+        if (roles is not None):
+            roles = (*roles,)
+        new.roles = roles
+        
         new.target_application = self.target_application
         new.target_type = self.target_type
         new.target_user = self.target_user
@@ -715,6 +756,7 @@ class Invite(DiscordEntity, immortal = True):
         flags = ...,
         max_age = ...,
         max_uses = ...,
+        roles = ...,
         target_application = ...,
         target_type = ...,
         target_user = ...,
@@ -733,6 +775,9 @@ class Invite(DiscordEntity, immortal = True):
         
         max_uses : `None | int`, Optional (Keyword only)
             How much times the invite can be used.
+    
+        roles : ``None | iterable<Role>``, Optional (Keyword only)
+            Roles that the invite grants upon using.
         
         target_application : ``None | Application``, Optional (Keyword only)
             The invite's target application.
@@ -775,6 +820,14 @@ class Invite(DiscordEntity, immortal = True):
         else:
             max_uses = validate_max_uses(max_uses)
         
+        # roles
+        if roles is ...:
+            roles = self.roles
+            if (roles is not None):
+                roles = (*roles,)
+        else:
+            roles = validate_roles(roles)
+        
         # target_application
         if target_application is ...:
             target_application = self.target_application
@@ -813,6 +866,7 @@ class Invite(DiscordEntity, immortal = True):
         new.inviter = ZEROUSER
         new.max_age = max_age
         new.max_uses = max_uses
+        new.roles = roles
         new.target_application = target_application
         new.target_type = target_type
         new.target_user = target_user

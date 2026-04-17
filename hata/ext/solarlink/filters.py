@@ -83,7 +83,7 @@ class Filter(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the filter's representation."""
-        return f'<{self.__class__.__name__}>'
+        return f'<{type(self).__name__}>'
     
     
     def __bool__(self):
@@ -159,22 +159,22 @@ class ChannelMix(Filter):
         """
         if not isinstance(left_to_left, float):
             raise TypeError(
-                f'`left_to_left` can be `float`, got {left_to_left.__class__.__name__}; {left_to_left!r}.'
+                f'`left_to_left` can be `float`, got {type(left_to_left).__name__}; {left_to_left!r}.'
             )
         
         if not isinstance(left_to_right, float):
             raise TypeError(
-                f'`left_to_right` can be `float`, got {left_to_right.__class__.__name__}; {left_to_right!r}.'
+                f'`left_to_right` can be `float`, got {type(left_to_right).__name__}; {left_to_right!r}.'
             )
         
         if not isinstance(right_to_right, float):
             raise TypeError(
-                f'`right_to_right` can be `float`, got {right_to_right.__class__.__name__}; {right_to_right!r}.'
+                f'`right_to_right` can be `float`, got {type(right_to_right).__name__}; {right_to_right!r}.'
             )
         
         if not isinstance(right_to_left, float):
             raise TypeError(
-                f'`right_to_left` can be `float`, got {right_to_left.__class__.__name__}; {right_to_left!r}.'
+                f'`right_to_left` can be `float`, got {type(right_to_left).__name__}; {right_to_left!r}.'
             )
         
         
@@ -235,7 +235,7 @@ class ChannelMix(Filter):
     
     @copy_docs(Filter.__repr__)
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         repr_parts.append(' left_to_left = ')
         repr_parts.append(format(self._left_to_left, '.02f'))
@@ -374,42 +374,42 @@ class Distortion(Filter):
         """
         if not isinstance(sin_offset, float):
             raise TypeError(
-                f'`sin_offset` can be `float`, got {sin_offset.__class__.__name__}; {sin_offset!r}.'
+                f'`sin_offset` can be `float`, got {type(sin_offset).__name__}; {sin_offset!r}.'
             )
         
         if not isinstance(sin_scale, float):
             raise TypeError(
-                f'`sin_scale` can be `float`, got {sin_scale.__class__.__name__}; {sin_scale!r}.'
+                f'`sin_scale` can be `float`, got {type(sin_scale).__name__}; {sin_scale!r}.'
             )
         
         if not isinstance(cos_offset, float):
             raise TypeError(
-                f'`cos_offset` can be `float`, got {cos_offset.__class__.__name__}; {cos_offset!r}.'
+                f'`cos_offset` can be `float`, got {type(cos_offset).__name__}; {cos_offset!r}.'
             )
         
         if not isinstance(cos_scale, float):
             raise TypeError(
-                f'`cos_scale` can be `float`, got {cos_scale.__class__.__name__}; {cos_scale!r}.'
+                f'`cos_scale` can be `float`, got {type(cos_scale).__name__}; {cos_scale!r}.'
             )
         
         if not isinstance(tan_offset, float):
             raise TypeError(
-                f'`tan_offset` can be `float`, got {tan_offset.__class__.__name__}; {tan_offset!r}.'
+                f'`tan_offset` can be `float`, got {type(tan_offset).__name__}; {tan_offset!r}.'
             )
         
         if not isinstance(tan_scale, float):
             raise TypeError(
-                f'`tan_scale` can be `float`, got {tan_scale.__class__.__name__}; {tan_scale!r}.'
+                f'`tan_scale` can be `float`, got {type(tan_scale).__name__}; {tan_scale!r}.'
             )
         
         if not isinstance(offset, float):
             raise TypeError(
-                f'`offset` can be `float`, got {offset.__class__.__name__}; {offset!r}.'
+                f'`offset` can be `float`, got {type(offset).__name__}; {offset!r}.'
             )
         
         if not isinstance(scale, float):
             raise TypeError(
-                f'`scale` can be `float`, got {scale.__class__.__name__}; {scale!r}.'
+                f'`scale` can be `float`, got {type(scale).__name__}; {scale!r}.'
             )
         
         self = object.__new__(cls)
@@ -497,7 +497,7 @@ class Distortion(Filter):
     
     @copy_docs(Filter.__repr__)
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         sin_offset = self._sin_offset
         if (sin_offset != 0.0):
@@ -679,7 +679,7 @@ class Equalizer(Filter):
             if not isinstance(band_gain_pair, tuple):
                 raise TypeError(
                     f'`band_gain_pairs` can contain `tuple` elements, got '
-                    f'{band_gain_pair.__class__.__name__}; {band_gain_pair!r}; band_gain_pairs={band_gain_pairs!r}.'
+                    f'{type(band_gain_pair).__name__}; {band_gain_pair!r}; band_gain_pairs={band_gain_pairs!r}.'
                 )
             
             band, gain = band_gain_pair
@@ -732,7 +732,7 @@ class Equalizer(Filter):
     
     @copy_docs(Filter.__repr__)
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         bands = self._bands
         if (bands is not None):
@@ -833,22 +833,22 @@ class Karaoke(Filter):
         """
         if not isinstance(level, float):
             raise TypeError(
-                f'`level` can be `float`, got {level.__class__.__name__}; {level!r}.'
+                f'`level` can be `float`, got {type(level).__name__}; {level!r}.'
             )
         
         if not isinstance(mono_level, float):
             raise TypeError(
-                f'`mono_level` can be `float`, got {mono_level.__class__.__name__}; {mono_level!r}.'
+                f'`mono_level` can be `float`, got {type(mono_level).__name__}; {mono_level!r}.'
             )
         
         if not isinstance(filter_band, float):
             raise TypeError(
-                f'`filter_band` can be `float`, got {filter_band.__class__.__name__}; {filter_band!r}.'
+                f'`filter_band` can be `float`, got {type(filter_band).__name__}; {filter_band!r}.'
             )
         
         if not isinstance(filter_width, float):
             raise TypeError(
-                f'`filter_width` can be `float`, got {filter_width.__class__.__name__}; {filter_width!r}.'
+                f'`filter_width` can be `float`, got {type(filter_width).__name__}; {filter_width!r}.'
             )
         
         self = object.__new__(cls)
@@ -891,7 +891,7 @@ class Karaoke(Filter):
     
     @copy_docs(Filter.__repr__)
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         repr_parts.append(' level = ')
         repr_parts.append(format(self._level, '.02f'))
@@ -962,7 +962,7 @@ class LowPass(Filter):
         """
         if not isinstance(smoothing, float):
             raise TypeError(
-                f'`smoothing` can be `float`, got {smoothing.__class__.__name__}; {smoothing!r}.'
+                f'`smoothing` can be `float`, got {type(smoothing).__name__}; {smoothing!r}.'
             )
         
         
@@ -996,7 +996,7 @@ class LowPass(Filter):
     
     @copy_docs(Filter.__repr__)
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         repr_parts.append(' smoothing = ')
         repr_parts.append(format(self._smoothing, '.02f'))
@@ -1063,7 +1063,7 @@ class Rotation(Filter):
         """
         if not isinstance(rotation, float):
             raise TypeError(
-                f'`rotation` can be `float`, got {rotation.__class__.__name__}; {rotation!r}.'
+                f'`rotation` can be `float`, got {type(rotation).__name__}; {rotation!r}.'
             )
         
         
@@ -1097,7 +1097,7 @@ class Rotation(Filter):
     
     @copy_docs(Filter.__repr__)
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         repr_parts.append(' rotation = ')
         repr_parts.append(format(self._rotation, '.02f'))
@@ -1170,17 +1170,17 @@ class Timescale(Filter):
         """
         if not isinstance(speed, float):
             raise TypeError(
-                f'`speed` can be `float`, got {speed.__class__.__name__}; {speed!r}.'
+                f'`speed` can be `float`, got {type(speed).__name__}; {speed!r}.'
             )
         
         if not isinstance(pitch, float):
             raise TypeError(
-                f'`pitch` can be `float`, got {pitch.__class__.__name__}; {pitch!r}.'
+                f'`pitch` can be `float`, got {type(pitch).__name__}; {pitch!r}.'
             )
         
         if not isinstance(rate, float):
             raise TypeError(
-                f'`rate` can be `float`, got {rate.__class__.__name__}; {rate!r}.'
+                f'`rate` can be `float`, got {type(rate).__name__}; {rate!r}.'
             )
         
         if speed < 0:
@@ -1243,7 +1243,7 @@ class Timescale(Filter):
     
     @copy_docs(Filter.__repr__)
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         speed = self._speed
         if (speed != 1.0):
@@ -1348,12 +1348,12 @@ class Tremolo(Filter):
         """
         if not isinstance(frequency, float):
             raise TypeError(
-                f'`frequency` can be `float`, got {frequency.__class__.__name__}; {frequency!r}.'
+                f'`frequency` can be `float`, got {type(frequency).__name__}; {frequency!r}.'
             )
         
         if not isinstance(depth, float):
             raise TypeError(
-                f'`depth` can be `float`, got {depth.__class__.__name__}; {depth!r}.'
+                f'`depth` can be `float`, got {type(depth).__name__}; {depth!r}.'
             )
         
         
@@ -1404,7 +1404,7 @@ class Tremolo(Filter):
     
     @copy_docs(Filter.__repr__)
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         repr_parts.append(' depth = ')
         repr_parts.append(format(self._depth, '.02f'))
@@ -1478,12 +1478,12 @@ class Vibrato(Filter):
         """
         if not isinstance(frequency, float):
             raise TypeError(
-                f'`frequency` can be `float`, got {frequency.__class__.__name__}; {frequency!r}.'
+                f'`frequency` can be `float`, got {type(frequency).__name__}; {frequency!r}.'
             )
         
         if not isinstance(depth, float):
             raise TypeError(
-                f'`depth` can be `float`, got {depth.__class__.__name__}; {depth!r}.'
+                f'`depth` can be `float`, got {type(depth).__name__}; {depth!r}.'
             )
         
         
@@ -1534,7 +1534,7 @@ class Vibrato(Filter):
     
     @copy_docs(Filter.__repr__)
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         repr_parts.append(' depth = ')
         repr_parts.append(format(self._depth, '.02f'))
@@ -1604,7 +1604,7 @@ class Volume(Filter):
         """
         if not isinstance(volume, float):
             raise TypeError(
-                f'`volume` can be `float`, got {volume.__class__.__name__}; {volume!r}.'
+                f'`volume` can be `float`, got {type(volume).__name__}; {volume!r}.'
             )
         
         if volume > 5.0:
@@ -1635,7 +1635,7 @@ class Volume(Filter):
     
     @copy_docs(Filter.__repr__)
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         repr_parts.append(' volume = ')
         repr_parts.append(format(self._volume, '.02f'))

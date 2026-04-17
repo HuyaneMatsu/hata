@@ -543,7 +543,7 @@ async def get_interaction_client_and_message(event_or_message, timeout):
     else:
         raise TypeError(
             f'`event_or_message` can be `{Message.__name__}`, `{InteractionEvent.__name__}` , got '
-            f'{event_or_message.__class__.__name__}; {event_or_message!r}.'
+            f'{type(event_or_message).__name__}; {event_or_message!r}.'
         )
     
     return client, message

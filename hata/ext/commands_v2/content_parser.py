@@ -74,7 +74,7 @@ class ContentParameterParserContextBase(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the content parameter parser context's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         repr_parts.append(' parsed = ')
         repr_parts.append(repr(self._parsed))
@@ -419,7 +419,7 @@ class ContentParameterParser(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the content parameter separator's representation."""
-        return f'{self.__class__.__name__}({self.separator!r}, {self.assigner!r})'
+        return f'{type(self).__name__}({self.separator!r}, {self.assigner!r})'
     
     def __hash__(self):
         """Returns the content parameter parser's hash."""
@@ -713,12 +713,12 @@ class ConverterSetting(RichAttributeErrorBaseType):
         if not isinstance(converter, FunctionType):
             raise TypeError(
                 f'`converter` can be `{FunctionType.__name__}`, got '
-                f'{converter.__class__.__name__}; {converter!r}.'
+                f'{type(converter).__name__}; {converter!r}.'
             )
         
         if type(requires_part) is not bool:
             raise TypeError(
-                f'`requires_part` can be `bool`, got {requires_part.__class__.__name__}; {requires_part!r}.'
+                f'`requires_part` can be `bool`, got {type(requires_part).__name__}; {requires_part!r}.'
             )
         
         analyzed = CallableAnalyzer(converter)
@@ -754,31 +754,31 @@ class ConverterSetting(RichAttributeErrorBaseType):
         
         if type(uses_flags) is not bool:
             raise TypeError(
-                f'`uses_flags` can be `bool`, got {uses_flags.__class__.__name__}; {uses_flags!r}.'
+                f'`uses_flags` can be `bool`, got {type(uses_flags).__name__}; {uses_flags!r}.'
             )
         
         if type(default_flags) is not ConverterFlag:
             raise TypeError(
                 f'`default_flags` can be `{ConverterFlag.__name__}`, got '
-                f'{default_flags.__class__.__name__}; {default_flags!r}.'
+                f'{type(default_flags).__name__}; {default_flags!r}.'
             )
         
         if type(all_flags) is not ConverterFlag:
             raise TypeError(
                 f'`all_flags` can be `{ConverterFlag.__name__}`, got '
-                f'{all_flags.__class__.__name__}; {all_flags!r}.'
+                f'{type(all_flags).__name__}; {all_flags!r}.'
             )
         
         if (alternative_type_name is not None) and (type(alternative_type_name) is not str):
             raise TypeError(
                 f'`alternative_type_name` can be `None`, `str`, got '
-                f'{alternative_type_name.__class__.__name__}; {alternative_type_name!r}.'
+                f'{type(alternative_type_name).__name__}; {alternative_type_name!r}.'
             )
         
         if (default_type is not None) and (not isinstance(default_type, type)):
             raise TypeError(
                 f'`default_type` can be `None`, `type`, got '
-                f'{default_type.__class__.__name__}; {default_type!r}.'
+                f'{type(default_type).__name__}; {default_type!r}.'
             )
         
         if (alternative_types is None):
@@ -798,7 +798,7 @@ class ConverterSetting(RichAttributeErrorBaseType):
             for alternative_type in alternative_types:
                 if not isinstance(alternative_type, type):
                     raise TypeError(
-                        f'`alternative_types[{index}]` can be `type`, got {alternative_type.__class__.__name__}; '
+                        f'`alternative_types[{index}]` can be `type`, got {type(alternative_type).__name__}; '
                         f'{alternative_type!r}; alternative_types = {alternative_types!r}.'
                     )
                 
@@ -821,7 +821,7 @@ class ConverterSetting(RichAttributeErrorBaseType):
         else:
             if not isinstance(alternative_checked_types, dict):
                 raise TypeError(
-                    f'`alternative_checked_types` can be `dict`, got {alternative_checked_types.__class__.__name__}; '
+                    f'`alternative_checked_types` can be `dict`, got {type(alternative_checked_types).__name__}; '
                     f'{alternative_checked_types!r}.'
                 )
             
@@ -830,13 +830,13 @@ class ConverterSetting(RichAttributeErrorBaseType):
             for key, value in alternative_checked_types.items():
                 if not isinstance(key, str):
                     raise TypeError(
-                        f'`alternative_checked_types`\'s keys can be `str`, got {key.__class__.__name__}; {key!r}.'
+                        f'`alternative_checked_types`\'s keys can be `str`, got {type(key).__name__}; {key!r}.'
                     )
                 
                 if not callable(value):
                     raise TypeError(
                         f'`alternative_checked_types`\'s values can be `callable`, got '
-                        f'{key.__class__.__name__}; {key!r}.'
+                        f'{type(key).__name__}; {key!r}.'
                     )
                 
                 alternative_checked_types_processed[key] = value
@@ -884,7 +884,7 @@ class ConverterSetting(RichAttributeErrorBaseType):
         """Returns the converter setting's representation."""
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
             ' converter = ',
             self.converter.__name__,
         ]
@@ -2654,7 +2654,7 @@ def get_details_from_set(annotation):
         if (detail is None):
             raise TypeError(
                 f'`annotation` set can contain only `str` and `type` elements, got '
-                f'{sub_annotation.__class__.__name__}; {sub_annotation!r}; annotation={annotation!r}.'
+                f'{type(sub_annotation).__name__}; {sub_annotation!r}; annotation={annotation!r}.'
             )
         
         yield detail
@@ -2757,7 +2757,7 @@ class CommandContentParser(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the command content parser's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         repr_parts.append(' content_parameter_parser = ')
         repr_parts.append(repr(self._content_parameter_parser))
@@ -3079,7 +3079,7 @@ class ParameterParsingStateBase:
         """Returns the parsing state's representation."""
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
             ' content_parser_parameter = ',
             repr(self.content_parser_parameter),
             '>',
@@ -3165,7 +3165,7 @@ class GenericParameterParsingState(ParameterParsingStateBase):
     def __repr__(self):
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
             ' content_parser_parameter = ',
             repr(self.content_parser_parameter),
             ', parsed_values = ',
@@ -3224,7 +3224,7 @@ class KwargsParameterParsingState(ParameterParsingStateBase):
     def __repr__(self):
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
             ' content_parser_parameter = ',
             repr(self.content_parser_parameter),
             ', parsed_items = ',
@@ -3280,7 +3280,7 @@ class RestParameterParsingState(ParameterParsingStateBase):
     def __repr__(self):
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
             ' content_parser_parameter = ',
             repr(self.content_parser_parameter),
             ', value = ',

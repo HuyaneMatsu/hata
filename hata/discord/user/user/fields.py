@@ -107,7 +107,7 @@ def validate_activities(activities):
     if getattr(activities, '__iter__', None) is None:
         raise TypeError(
             f'`activities` can be `None`, `iterable` of `{Activity.__name__}`, got '
-            f'{activities.__class__.__name__}; {activities!r}.'
+            f'{type(activities).__name__}; {activities!r}.'
         )
     
     activities_validated = None
@@ -116,7 +116,7 @@ def validate_activities(activities):
         if not isinstance(entity, Activity):
             raise TypeError(
                 f'`activities` elements can be `{Activity.__name__}`, got '
-                f'{entity.__class__.__name__}; {entity!r}; activities = {activities!r}'
+                f'{type(entity).__name__}; {entity!r}; activities = {activities!r}'
             )
         
         if activities_validated is None:

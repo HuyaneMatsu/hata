@@ -839,8 +839,8 @@ class Slasher(
     
     Attributes
     ----------
-    _assert_application_command_permission_missmatch_at : `None`, `set` of `int`
-        The guilds' identifier, where permission overwrites missmatch should be asserted.
+    _assert_application_command_permission_mismatch_at : `None`, `set` of `int`
+        The guilds' identifier, where permission overwrites mismatch should be asserted.
     
     _auto_completers : `None`, `list` of ``SlashCommandParameterAutoCompleter``
         Auto completer functions.
@@ -972,7 +972,7 @@ class Slasher(
     ``Slasher``-s are weakreferable.
     """
     __slots__ = (
-        '__weakref__', '_assert_application_command_permission_missmatch_at', '_auto_completers', '_call_later',
+        '__weakref__', '_assert_application_command_permission_mismatch_at', '_auto_completers', '_call_later',
         '_client_reference', '_command_states', '_command_unloading_behaviour', '_component_commands',
         '_component_interaction_waiters', '_enforce_application_command_permissions', '_exception_handlers',
         '_form_submit_commands', '_get_permission_tasks', '_guild_level_permission_overwrites', '_owners_access',
@@ -989,7 +989,7 @@ class Slasher(
     def __new__(
         cls,
         client,
-        assert_application_command_permission_missmatch_at = None,
+        assert_application_command_permission_mismatch_at = None,
         delete_commands_on_unload = False,
         enforce_application_command_permissions = False,
         use_default_exception_handler = True,
@@ -1004,9 +1004,9 @@ class Slasher(
         client : ``Client``
             The owner client instance.
             
-        assert_application_command_permission_missmatch_at : ``None | int | Guild | iterable<int> | iterable<Guild>``
+        assert_application_command_permission_mismatch_at : ``None | int | Guild | iterable<int> | iterable<Guild>``
                 = `None`, Optional (Keyword only)
-            Guilds, where permission overwrites missmatch should be asserted.
+            Guilds, where permission overwrites mismatch should be asserted.
         
         delete_commands_on_unload: `bool`, Optional (Keyword only)
             Whether commands should be deleted when unloaded.
@@ -1044,32 +1044,32 @@ class Slasher(
         
         client_reference = WeakReferer(client)
         
-        # assert_application_command_permission_missmatch_at
+        # assert_application_command_permission_mismatch_at
         
-        if assert_application_command_permission_missmatch_at is None:
+        if assert_application_command_permission_mismatch_at is None:
             asserted_guild_ids = None
         else:
             asserted_guild_ids = set()
             
-            if isinstance(assert_application_command_permission_missmatch_at, Guild):
-                asserted_guild_ids.add(assert_application_command_permission_missmatch_at.id)
+            if isinstance(assert_application_command_permission_mismatch_at, Guild):
+                asserted_guild_ids.add(assert_application_command_permission_mismatch_at.id)
             
-            elif type(assert_application_command_permission_missmatch_at) is int:
-                asserted_guild_ids.add(assert_application_command_permission_missmatch_at)
+            elif type(assert_application_command_permission_mismatch_at) is int:
+                asserted_guild_ids.add(assert_application_command_permission_mismatch_at)
             
-            elif isinstance(assert_application_command_permission_missmatch_at, int):
-                asserted_guild_ids.add(int(assert_application_command_permission_missmatch_at))
+            elif isinstance(assert_application_command_permission_mismatch_at, int):
+                asserted_guild_ids.add(int(assert_application_command_permission_mismatch_at))
             
             else:
-                iterator = getattr(type(assert_application_command_permission_missmatch_at), '__iter__', None)
+                iterator = getattr(type(assert_application_command_permission_mismatch_at), '__iter__', None)
                 if iterator is None:
                     raise TypeError(
-                        f'`assert_application_command_permission_missmatch_at` can be `iterable`, got '
-                        f'{type(assert_application_command_permission_missmatch_at).__name__}; '
-                        f'{assert_application_command_permission_missmatch_at!r}.'
+                        f'`assert_application_command_permission_mismatch_at` can be `iterable`, got '
+                        f'{type(assert_application_command_permission_mismatch_at).__name__}; '
+                        f'{assert_application_command_permission_mismatch_at!r}.'
                     )
                 
-                for additional_owner in iterator(assert_application_command_permission_missmatch_at):
+                for additional_owner in iterator(assert_application_command_permission_mismatch_at):
                     if type(additional_owner) is int:
                         pass
                     elif isinstance(additional_owner, int):
@@ -1078,7 +1078,7 @@ class Slasher(
                         additional_owner = additional_owner.id
                     else:
                         raise TypeError(
-                            f'`assert_application_command_permission_missmatch_at` contains a non '
+                            f'`assert_application_command_permission_mismatch_at` contains a non '
                             f'`int`, `{Guild.__name__}` , got '
                             f'{type(additional_owner).__name__}; {additional_owner!r}.'
                         )
@@ -1170,7 +1170,7 @@ class Slasher(
         self._self_reference = None
         self._auto_completers = None
         
-        self._assert_application_command_permission_missmatch_at = asserted_guild_ids
+        self._assert_application_command_permission_mismatch_at = asserted_guild_ids
         self._enforce_application_command_permissions = enforce_application_command_permissions
         
         self._owners_access = None
@@ -2021,12 +2021,12 @@ class Slasher(
                     command_delete_callbacks = []
                 command_delete_callbacks.append(callback)
             
-            assert_application_command_permission_missmatch_at = \
-                self._assert_application_command_permission_missmatch_at
+            assert_application_command_permission_mismatch_at = \
+                self._assert_application_command_permission_mismatch_at
             
             if (
-                (assert_application_command_permission_missmatch_at is not None) and
-                (guild_id in assert_application_command_permission_missmatch_at)
+                (assert_application_command_permission_mismatch_at is not None) and
+                (guild_id in assert_application_command_permission_mismatch_at)
             ):
                 guild_permission_sync_callbacks = [
                     (type(self)._sync_permissions_task, self, client, guild_id, None, None),
@@ -2247,14 +2247,14 @@ class Slasher(
         success : `bool`
             Whether the command's permissions were synced successfully.
         """
-        assert_application_command_permission_missmatch_at = self._assert_application_command_permission_missmatch_at
-        if (assert_application_command_permission_missmatch_at is None):
+        assert_application_command_permission_mismatch_at = self._assert_application_command_permission_mismatch_at
+        if (assert_application_command_permission_mismatch_at is None):
             return True
         
         if guild_id == SYNC_ID_GLOBAL:
             tasks = []
             for permission_guild_id in command._get_permission_sync_ids():
-                if permission_guild_id not in assert_application_command_permission_missmatch_at:
+                if permission_guild_id not in assert_application_command_permission_mismatch_at:
                     continue
                 
                 task = Task(
@@ -2282,7 +2282,7 @@ class Slasher(
             
             return True
         
-        if guild_id not in assert_application_command_permission_missmatch_at:
+        if guild_id not in assert_application_command_permission_mismatch_at:
             return True
         
         return await self._sync_permissions_task(client, guild_id, command, application_command)
@@ -2876,7 +2876,7 @@ class Slasher(
         else:
             raise TypeError(
                 f'`delete_commands_on_unload` can be `bool`, got '
-                f'{delete_commands_on_unload.__class__.__name__}; {delete_commands_on_unload!r}.'
+                f'{type(delete_commands_on_unload).__name__}; {delete_commands_on_unload!r}.'
             )
         
         if delete_commands_on_unload:

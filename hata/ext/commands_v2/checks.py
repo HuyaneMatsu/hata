@@ -206,7 +206,7 @@ def _convert_permission(permission):
         else:
             raise TypeError(
                 f'`permission` can be `None`, `{Permission.__name__}`, `int`, got '
-                f'{permission.__class__.__name__}; {permission!r}.'
+                f'{type(permission).__name__}; {permission!r}.'
             )
     
     return permission
@@ -287,7 +287,7 @@ class CheckBase(metaclass = CheckMeta):
     def __repr__(self):
         """Returns the check's representation."""
         repr_parts = [
-            self.__class__.__name__,
+            type(self).__name__,
             '(',
         ]
         
@@ -388,7 +388,7 @@ class CheckInvert(CheckBase):
         """
         if not isinstance(check, CheckBase):
             raise TypeError(
-                f'`check` can be `{CheckBase.__name__}`, got {check.__class__.__name__}; {check!r}.'
+                f'`check` can be `{CheckBase.__name__}`, got {type(check).__name__}; {check!r}.'
             )
         
         self = object.__new__(cls)
@@ -428,7 +428,7 @@ class CheckRelationBase(CheckBase):
         for check in checks:
             if not isinstance(check, CheckBase):
                 raise TypeError(
-                    f'`check` can be `{CheckBase.__name__}`, got {check.__class__.__name__}; {check!r}.'
+                    f'`check` can be `{CheckBase.__name__}`, got {type(check).__name__}; {check!r}.'
                 )
         
         self = object.__new__(cls)
@@ -2060,7 +2060,7 @@ class CheckReleaseAt(CheckBase):
         """
         if not isinstance(release_at, datetime):
             raise TypeError(
-                f'`release_at` can be `datetime`, got {release_at.__class__.__name__}; {release_at!r}.'
+                f'`release_at` can be `datetime`, got {type(release_at).__name__}; {release_at!r}.'
             )
         
         roles_processed = set()

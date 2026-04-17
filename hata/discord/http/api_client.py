@@ -878,11 +878,19 @@ class DiscordApiClient(RichAttributeErrorBaseType):
     
     async def guild_activity_overview_edit(self, guild_id, data, reason):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.guild_activity_overview_get, guild_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.guild_activity_overview_edit, guild_id),
             METHOD_PATCH,
             f'{API_ENDPOINT}/guilds/{guild_id}/profile',
             data,
             reason = reason,
+        )
+    
+    
+    async def guild_role_user_counts_get(self, guild_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.guild_role_user_counts_get, guild_id),
+            METHOD_GET,
+            f'{API_ENDPOINT}/guilds/{guild_id}/roles/member-counts',
         )
     
     
@@ -1311,12 +1319,13 @@ class DiscordApiClient(RichAttributeErrorBaseType):
     
     # Invite
     
-    async def invite_create(self, channel_id, data):
+    async def invite_create(self, channel_id, data, reason):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.invite_create, channel_id),
             METHOD_POST,
             f'{API_ENDPOINT}/channels/{channel_id}/invites',
             data,
+            reason = reason,
         )
     
     
@@ -1345,12 +1354,37 @@ class DiscordApiClient(RichAttributeErrorBaseType):
         )
     
     
-    async def invite_delete(self,invite_code, reason):
+    async def invite_delete(self, invite_code, reason):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.invite_delete, NO_SPECIFIC_RATE_LIMITER),
             METHOD_DELETE,
             f'{API_ENDPOINT}/invites/{invite_code}',
             reason = reason,
+        )
+    
+    
+    async def invite_allowed_user_ids_get(self, invite_code):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.invite_allowed_user_ids_get, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET,
+            f'{API_ENDPOINT}/invites/{invite_code}/target-users',
+        )
+    
+    
+    async def invite_allowed_user_ids_get_status(self, invite_code):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.invite_allowed_user_ids_get_status, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET,
+            f'{API_ENDPOINT}/invites/{invite_code}/target-users/job-status',
+        )
+    
+    
+    async def invite_allowed_user_ids_edit(self, invite_code, data):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.invite_allowed_user_ids_edit, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_PUT,
+            f'{API_ENDPOINT}/invites/{invite_code}/target-users',
+            data,
         )
     
     

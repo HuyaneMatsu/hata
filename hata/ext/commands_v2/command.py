@@ -86,7 +86,7 @@ def _validate_name(name):
         If `name` is not given as `str`.
     """
     if name is not None:
-        name_type = name.__class__
+        name_type = type(name)
         if name_type is str:
             pass
         elif issubclass(name_type, str):
@@ -125,7 +125,7 @@ def _validate_aliases(aliases):
             for alias in aliases:
                 if not isinstance(alias, str):
                     raise TypeError(
-                        f'Aliases can be `str`, got {alias.__class__.__name__}; {alias!r}; aliases={aliases!r}.'
+                        f'Aliases can be `str`, got {type(alias).__name__}; {alias!r}; aliases={aliases!r}.'
                     )
                 
                 if not alias:
@@ -179,7 +179,7 @@ def _validate_category(category):
         Category is not given either as `None`, `str`, ``Category``.
     """
     if (category is not None):
-        category_type = category.__class__
+        category_type = type(category)
         if category_type is Category:
             pass
         elif category_type is str:
@@ -242,7 +242,7 @@ def _generate_category_hint_from(category):
     if category is None:
         category_hint = None
     else:
-        category_type = category.__class__
+        category_type = type(category)
         if category_type is Category:
             category_hint = category.name
         elif category_type is str:
@@ -1108,7 +1108,7 @@ class CommandFunction:
     
     def __repr__(self):
         """Returns the command function's representation."""
-        return f'<{self.__class__.__name__} content_parser={self._content_parser!r} function={self._function!r}>'
+        return f'<{type(self).__name__} content_parser = {self._content_parser!r} function = {self._function!r}>'
     
     def copy(self):
         """
@@ -1321,7 +1321,7 @@ class CommandCategory:
     
     def __repr__(self):
         """Returns the command category's representation."""
-        repr_parts = ['<', self.__class__.__name__, ' name = ', repr(self.name)]
+        repr_parts = ['<', type(self).__name__, ' name = ', repr(self.name)]
         
         command_function = self._command_function
         if (command_function is not None):

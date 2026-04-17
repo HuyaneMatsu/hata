@@ -50,7 +50,7 @@ class SolarClient(RichAttributeErrorBaseType):
         """
         if not isinstance(client, Client):
             raise TypeError(
-                f'`client` parameter can be `{Client.__name__}`, got {client.__class__.__name__}; {client!r}.'
+                f'`client` parameter can be `{Client.__name__}`, got {type(client).__name__}; {client!r}.'
             )
         
         event_plugin = SolarLinkEventManager()
@@ -112,7 +112,7 @@ class SolarClient(RichAttributeErrorBaseType):
         """
         client = self._client_reference()
         if client is None:
-            raise RuntimeError(f'`{self.__class__.__name__}` client is deconstructed.')
+            raise RuntimeError(f'`{type(self).__name__}` client is deconstructed.')
         
         node = SolarNode(
             client,
@@ -157,7 +157,7 @@ class SolarClient(RichAttributeErrorBaseType):
         
         client = self._client_reference()
         if client is None:
-            raise RuntimeError(f'`{self.__class__.__name__}` client is deconstructed.')
+            raise RuntimeError(f'`{type(self).__name__}` client is deconstructed.')
         
         node = choice(self.available_nodes)
         
@@ -211,7 +211,7 @@ class SolarClient(RichAttributeErrorBaseType):
         """
         client = self._client_reference()
         if client is None:
-            raise RuntimeError(f'`{self.__class__.__name__}` client is deconstructed.')
+            raise RuntimeError(f'`{type(self).__name__}` client is deconstructed.')
         
         available_nodes = self.available_nodes
         if not available_nodes:
@@ -269,7 +269,7 @@ class SolarClient(RichAttributeErrorBaseType):
         """
         client = self._client_reference()
         if client is None:
-            raise RuntimeError(f'`{self.__class__.__name__}` client is deconstructed.')
+            raise RuntimeError(f'`{type(self).__name__}` client is deconstructed.')
         
         available_nodes = self.available_nodes
         if not available_nodes:
@@ -324,7 +324,7 @@ class SolarClient(RichAttributeErrorBaseType):
         """
         client = self._client_reference()
         if client is None:
-            raise RuntimeError(f'`{self.__class__.__name__}` client is deconstructed.')
+            raise RuntimeError(f'`{type(self).__name__}` client is deconstructed.')
         
         async with client.http.get(
             f'http://{node._host}:{node._port}/routeplanner/status',
@@ -376,7 +376,7 @@ class SolarClient(RichAttributeErrorBaseType):
         """
         client = self._client_reference()
         if client is None:
-            raise RuntimeError(f'`{self.__class__.__name__}` client is deconstructed.')
+            raise RuntimeError(f'`{type(self).__name__}` client is deconstructed.')
         
         async with client.http.post(
             f'http://{node._host}:{node._port}/routeplanner/free/address',
@@ -428,7 +428,7 @@ class SolarClient(RichAttributeErrorBaseType):
         """
         client = self._client_reference()
         if client is None:
-            raise RuntimeError(f'`{self.__class__.__name__}` client is deconstructed.')
+            raise RuntimeError(f'`{type(self).__name__}` client is deconstructed.')
         
         async with client.http.post(
             f'http://{node._host}:{node._port}/routeplanner/free/all',
@@ -616,7 +616,7 @@ class SolarClient(RichAttributeErrorBaseType):
             if player.channel_id != channel_id:
                 client = self._client_reference()
                 if client is None:
-                    raise RuntimeError(f'`{self.__class__.__name__}` client is deconstructed.')
+                    raise RuntimeError(f'`{type(self).__name__}` client is deconstructed.')
                 
                 gateway = client.gateway_for(guild_id)
                 await gateway.change_voice_state(guild_id, channel_id)
@@ -626,7 +626,7 @@ class SolarClient(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the solar client's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         node_count = len(self.nodes)
         if node_count:

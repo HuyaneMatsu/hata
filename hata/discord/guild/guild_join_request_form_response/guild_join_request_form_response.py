@@ -63,7 +63,7 @@ class GuildJoinRequestFormResponse(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the guild join request form response's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         # nothing yet
         

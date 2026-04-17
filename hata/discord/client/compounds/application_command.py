@@ -61,7 +61,7 @@ def _assert__application_command(application_command):
     if not isinstance(application_command, ApplicationCommand):
         raise AssertionError(
             f'`application_command` can be `{ApplicationCommand.__name__}`, got '
-            f'{application_command.__class__.__name__}; {application_command!r}.'
+            f'{type(application_command).__name__}; {application_command!r}.'
         )
     
     return True
@@ -84,7 +84,7 @@ def _assert__new_application_command(new_application_command):
     if not isinstance(new_application_command, ApplicationCommand):
         raise AssertionError(
             f'`new_application_command` can be `{ApplicationCommand.__name__}`, got '
-            f'{new_application_command.__class__.__name__}; {new_application_command!r}.'
+            f'{type(new_application_command).__name__}; {new_application_command!r}.'
         )
     
     return True
@@ -350,7 +350,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         if getattr(application_commands, '__iter__', None) is None:
             raise TypeError(
                 f'`application_commands` can be an `iterable`, got '
-                f'{application_commands.__class__.__name__}; {application_commands!r}.'
+                f'{type(application_commands).__name__}; {application_commands!r}.'
             )
         
         application_command_datas = []
@@ -359,7 +359,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
             if not isinstance(application_command, ApplicationCommand):
                 raise TypeError(
                     f'`application_commands` contains a not `{ApplicationCommand.__name__}` element, got: '
-                    f'{application_command.__class__.__name__}; {application_command!r}; '
+                    f'{type(application_command).__name__}; {application_command!r}; '
                     f'application_commands={application_commands!r}.'
                 )
             
@@ -630,7 +630,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         if iterator is None:
             raise TypeError(
                 f'`application_commands` can be an `iterable`, got '
-                f'{application_commands.__class__.__name__}; {application_commands!r}.'
+                f'{type(application_commands).__name__}; {application_commands!r}.'
             )
         
         
@@ -640,7 +640,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
             if not isinstance(application_command, ApplicationCommand):
                 raise TypeError(
                     f'`application_commands` contains a not `{ApplicationCommand.__name__}` element, got: '
-                    f'{application_command.__class__.__name__}; {application_command!r}; '
+                    f'{type(application_command).__name__}; {application_command!r}; '
                     f'application_commands={application_commands!r}.'
                 )
             
@@ -787,7 +787,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         else:
             raise TypeError(
                 f'`access` can be `{Oauth2Access.__name__}`, `{Oauth2User.__name__}` `str`'
-                f', got {access.__class__.__name__}; {access!r}.'
+                f', got {type(access).__name__}; {access!r}.'
             )
         
         
@@ -802,14 +802,14 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
             if getattr(permission_overwrites, '__iter__', None) is None:
                 raise TypeError(
                     f'`permission_overwrites` can be `None`, `list`, `tuple` or '
-                    f'`set`, got {permission_overwrites.__class__.__name__}; {permission_overwrites!r}.'
+                    f'`set`, got {type(permission_overwrites).__name__}; {permission_overwrites!r}.'
                 )
             
             for permission_overwrite in permission_overwrites:
                 if not isinstance(permission_overwrite, ApplicationCommandPermissionOverwrite):
                     raise TypeError(
                         f'`permission_overwrites` can contain `{ApplicationCommandPermissionOverwrite.__name__}` '
-                        f'elements, got {permission_overwrite.__class__.__name__}; {permission_overwrite!r}; '
+                        f'elements, got {type(permission_overwrite).__name__}; {permission_overwrite!r}; '
                         f'permission_overwrites={permission_overwrites!r}.'
                     )
                 

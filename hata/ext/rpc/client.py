@@ -572,7 +572,7 @@ class RPCClient(RichAttributeErrorBaseType):
                 for index, scope in enumerate(scopes):
                     if not isinstance(scope, str):
                         raise AssertionError(
-                            f'`scopes[{index!r}]` is not `str`, got {scope.__class__.__name__}; {scope!r} '
+                            f'`scopes[{index!r}]` is not `str`, got {type(scope).__name__}; {scope!r} '
                             f'scopes={scopes!r}.'
                         )
                     
@@ -585,19 +585,19 @@ class RPCClient(RichAttributeErrorBaseType):
         
         else:
             raise TypeError(
-                f'`scopes` can be `str`, `list` of `str`, got {scopes.__class__.__name__}; {scopes!r}.'
+                f'`scopes` can be `str`, `list` of `str`, got {type(scopes).__name__}; {scopes!r}.'
             )
         
         
         if __debug__:
             if not isinstance(rpc_token, str):
                 raise AssertionError(
-                    f'`rpc_token` can be `str`, got {rpc_token.__class__.__name__}; {rpc_token!r}.'
+                    f'`rpc_token` can be `str`, got {type(rpc_token).__name__}; {rpc_token!r}.'
                 )
             
             if not isinstance(name, str):
                 raise AssertionError(
-                    f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
+                    f'`name` can be `str`, got {type(name).__name__}; {name!r}.'
                 )
         
         
@@ -640,7 +640,7 @@ class RPCClient(RichAttributeErrorBaseType):
         if __debug__:
             if not isinstance(access_token, str):
                 raise AssertionError(
-                    f'`access_token` can be `str`, got {access_token.__class__.__name__}; {access_token!r}.'
+                    f'`access_token` can be `str`, got {type(access_token).__name__}; {access_token!r}.'
                 )
         
         data = {
@@ -885,7 +885,7 @@ class RPCClient(RichAttributeErrorBaseType):
             if not isinstance(audio_balance, AudioBalance):
                 raise AssertionError(
                     f'`audio_balance` can be `None`, `{AudioBalance.__name__}`, got '
-                    f'{audio_balance.__class__.__name__}; {audio_balance!r}.'
+                    f'{type(audio_balance).__name__}; {audio_balance!r}.'
                 )
             
             audio_balance_data = audio_balance.to_data()
@@ -895,7 +895,7 @@ class RPCClient(RichAttributeErrorBaseType):
         if (mute is not None):
             if not isinstance(mute, bool):
                 raise AssertionError(
-                    f'`mute` can be `None`, `bool`, got {mute.__class__.__name__}, {mute!r}.'
+                    f'`mute` can be `None`, `bool`, got {type(mute).__name__}, {mute!r}.'
                 )
             
             parameters['mute'] = mute
@@ -903,7 +903,7 @@ class RPCClient(RichAttributeErrorBaseType):
         if (volume is not None):
             if not isinstance(mute, float):
                 raise AssertionError(
-                    f'`volume` can be `None`, `float`, got {volume.__class__.__name__}; {volume!r}.'
+                    f'`volume` can be `None`, `float`, got {type(volume).__name__}; {volume!r}.'
                 )
             
             if (volume < 0.0) or (volume > 2.0):
@@ -963,7 +963,7 @@ class RPCClient(RichAttributeErrorBaseType):
         if __debug__:
             if not isinstance(force, bool):
                 raise AssertionError(
-                    f'`force` can be `bool`, got {force.__class__.__name__}; {force!r}.'
+                    f'`force` can be `bool`, got {type(force).__name__}; {force!r}.'
                 )
         
         data = {
@@ -1174,59 +1174,59 @@ class RPCClient(RichAttributeErrorBaseType):
             if (input_ is not None) and (not isinstance(input_, VoiceSettingsInput)):
                 raise AssertionError(
                     f'`input_` can be `{VoiceSettingsInput.__name__}`, got'
-                    f'{input_.__class__.__name__}; {input_!r}.'
+                    f'{type(input_).__name__}; {input_!r}.'
                 )
             
             if (output is not None) and (not isinstance(output, VoiceSettingsOutput)):
                 raise AssertionError(
                     f'`output` can be `{VoiceSettingsOutput.__name__}`, got'
-                    f'{output.__class__.__name__}; {output!r}.'
+                    f'{type(output).__name__}; {output!r}.'
                 )
             
             if (mode is not None) and (not isinstance(mode, VoiceSettingsMode)):
                 raise AssertionError(
                     f'`mode` can be `{VoiceSettingsMode.__name__}`, got'
-                    f'{mode.__class__.__name__}; {mode!r}.'
+                    f'{type(mode).__name__}; {mode!r}.'
                 )
             
             if (automatic_gain_control is not None) and (not isinstance(automatic_gain_control, bool)):
                 raise AssertionError(
                     f'`automatic_gain_control` can be `bool`, got '
-                    f'{automatic_gain_control.__class__.__name__}; {automatic_gain_control!r}.'
+                    f'{type(automatic_gain_control).__name__}; {automatic_gain_control!r}.'
                 )
             
             if (echo_cancellation is not None) and (not isinstance(echo_cancellation, bool)):
                 raise AssertionError(
                     f'`echo_cancellation` can be `bool`, got '
-                    f'{echo_cancellation.__class__.__name__}; {echo_cancellation!r}.'
+                    f'{type(echo_cancellation).__name__}; {echo_cancellation!r}.'
                 )
             
             if (noise_suppression is not None) and (not isinstance(noise_suppression, bool)):
                 raise AssertionError(
                     f'`noise_suppression` can be `bool`, got '
-                    f'{noise_suppression.__class__.__name__}; {noise_suppression!r}.'
+                    f'{type(noise_suppression).__name__}; {noise_suppression!r}.'
                 )
             
             if (quality_of_service is not None) and (not isinstance(quality_of_service, bool)):
                 raise AssertionError(
                     f'`quality_of_service` can be `bool`, got '
-                    f'{quality_of_service.__class__.__name__}; {quality_of_service!r}.'
+                    f'{type(quality_of_service).__name__}; {quality_of_service!r}.'
                 )
             
             if (silence_warning is not None) and (not isinstance(silence_warning, bool)):
                 raise AssertionError(
                     f'`silence_warning` can be `bool`, got '
-                    f'{silence_warning.__class__.__name__}; {silence_warning!r}.'
+                    f'{type(silence_warning).__name__}; {silence_warning!r}.'
                 )
             
             if (deaf is not None) and (not isinstance(deaf, bool)):
                 raise AssertionError(
-                    f'`deaf` can be `bool`, got {deaf.__class__.__name__}; {deaf!r}.'
+                    f'`deaf` can be `bool`, got {type(deaf).__name__}; {deaf!r}.'
                 )
             
             if (mute is not None) and (not isinstance(mute, bool)):
                 raise AssertionError(
-                    f'`mute` can be `bool`, got {mute.__class__.__name__}; {mute!r}.'
+                    f'`mute` can be `bool`, got {type(mute).__name__}; {mute!r}.'
                 )
         
         
@@ -2262,7 +2262,7 @@ class RPCClient(RichAttributeErrorBaseType):
                 if not isinstance(device, CertifiedDevice):
                     raise AssertionError(
                         f'`devices` can be `{CertifiedDevice.__name__}`, got '
-                        f'{device.__class__.__name__}; {device!r}.'
+                        f'{type(device).__name__}; {device!r}.'
                     )
         
         device_datas = [device.to_data() for device in devices]

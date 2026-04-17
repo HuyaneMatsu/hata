@@ -14,15 +14,78 @@ def _iter_options():
         name = role_name,
     )
     
-    yield None, True, {'roles': []}
-    yield None, False, {'roles': []}
-    yield [role], True, {'roles': [role.to_data(defaults = True, include_internals = True)]}
-    yield [role], False, {'roles': [role.to_data(defaults = False, include_internals = True)]}
-    yield [{'name': role_name}], True, {'roles': [{'name': role_name}]}
     yield (
-        [role, {'name': role_name}],
+        None,
         True,
-        {'roles': [role.to_data(defaults = True, include_internals = True), {'name': role_name}]},
+        {
+            'roles': [],
+        },
+    )
+    
+    yield (
+        None,
+        False,
+        {
+            'roles': [],
+        },
+    )
+    
+    yield (
+        [
+            role,
+        ],
+        True,
+        {
+            'roles': [
+                role.to_data(defaults = True, include_internals = True),
+            ],
+        },
+    )
+    
+    yield (
+        [
+            role,
+        ],
+        False,
+        {
+            'roles': [
+                role.to_data(defaults = False, include_internals = True),
+            ],
+        },
+    )
+    
+    yield (
+        [
+            {
+                'name': role_name,
+            },
+        ],
+        True,
+        {
+            'roles': [
+                {
+                    'name': role_name,
+                },
+            ],
+        },
+    )
+    
+    yield (
+        [
+            role,
+            {
+                'name': role_name,
+            },
+        ],
+        True,
+        {
+            'roles': [
+                role.to_data(defaults = True, include_internals = True),
+                {
+                    'name': role_name,
+                },
+            ],
+        },
     )
     
 
@@ -33,8 +96,9 @@ def test__put_roles_and_role_datas(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `dict<int, Role>`
+    input_value : ``None | list<Role | dict<str, object>>``
         Input value to serialise.
+    
     defaults : `bool`
         Whether fields with their default values should be included as well.
     

@@ -135,7 +135,7 @@ def bind(bind_to, bind_with, name, *, weak = False, weak_cache_size = 0):
     """
     if not isinstance(bind_to, type):
         raise TypeError(
-            f'`bind_to` can be `type`, got {bind_to.__class__.__name__}; {bind_to!r}.'
+            f'`bind_to` can be `type`, got {type(bind_to).__name__}; {bind_to!r}.'
         )
     
     name_space = bind_to.__dict__
@@ -164,7 +164,7 @@ def bind(bind_to, bind_with, name, *, weak = False, weak_cache_size = 0):
     
     if not isinstance(weak_cache_size, int):
         raise TypeError(
-            f'`weak_cache_size` can be `int`, got {weak_cache_size.__class__.__name__}; {weak_cache_size!r}.'
+            f'`weak_cache_size` can be `int`, got {type(weak_cache_size).__name__}; {weak_cache_size!r}.'
         )
     
     is_descriptor = getattr(bind_with, '__get__', None) is not None
@@ -309,7 +309,7 @@ class ObjectBinderBase(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the object binder representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         repr_parts.append(' name = ')
         repr_parts.append(repr(self.name))

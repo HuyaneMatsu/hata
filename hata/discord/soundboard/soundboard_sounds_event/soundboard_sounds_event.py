@@ -116,7 +116,7 @@ class SoundboardSoundsEvent(EventBase):
     
     @copy_docs(EventBase.__repr__)
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         repr_parts.append(' guild_id = ')
         repr_parts.append(repr(self.guild_id))

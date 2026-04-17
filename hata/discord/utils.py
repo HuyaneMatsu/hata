@@ -40,6 +40,7 @@ RelationshipType = include('RelationshipType')
 
 DATETIME_FORMAT_CODE = '%Y-%m-%d %H:%M:%S'
 
+
 def _endswith_xFFxD9(data):
     """
     Checks whether the given data endswith `b'\xD9\xFF'` ignoring empty bytes at the end of it.

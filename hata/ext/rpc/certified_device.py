@@ -122,18 +122,18 @@ class CertifiedDevice:
                 ) from None
         else:
             raise TypeError(
-                f'`id_` can be `{UUID.__name__}`, `str`, got {id_.__class__.__name__}; {id_!r}.'
+                f'`id_` can be `{UUID.__name__}`, `str`, got {type(id_).__name__}; {id_!r}.'
             )
         
         if __debug__:
             if not isinstance(vendor, Vendor):
                 raise AssertionError(
-                    f'`vendor` can be `{Vendor.__name__}`, got {vendor.__class__.__name__}; {vendor!r}.'
+                    f'`vendor` can be `{Vendor.__name__}`, got {type(vendor).__name__}; {vendor!r}.'
                 )
             
             if not isinstance(model, Model):
                 raise AssertionError(
-                    f'`model` can be `{Model.__name__}`, got {model.__class__.__name__}; {model!r}.'
+                    f'`model` can be `{Model.__name__}`, got {type(model).__name__}; {model!r}.'
                 )
 
         if (related is None):
@@ -194,19 +194,19 @@ class CertifiedDevice:
             
             if not isinstance(noise_suppression, bool):
                 raise AssertionError(
-                    f'`noise_suppression` can be `bool`, got {noise_suppression.__class__.__name__};'
+                    f'`noise_suppression` can be `bool`, got {type(noise_suppression).__name__};'
                     f'{noise_suppression!r}.'
                 )
             
             if not isinstance(automatic_gain_control, bool):
                 raise AssertionError(
                     f'`automatic_gain_control` can be `bool`, got '
-                    f'{automatic_gain_control.__class__.__name__}; {automatic_gain_control!r}.'
+                    f'{type(automatic_gain_control).__name__}; {automatic_gain_control!r}.'
                 )
             
             if not isinstance(hardware_mute, bool):
                 raise AssertionError(
-                    f'`echo_cancellation` can be `bool`, got {hardware_mute.__class__.__name__}'
+                    f'`echo_cancellation` can be `bool`, got {type(hardware_mute).__name__}'
                     f'{echo_cancellation!r}.'
                 )
         
@@ -225,7 +225,7 @@ class CertifiedDevice:
     def __repr__(self):
         """Returns the device's representation."""
         # Any better repr ideas?
-        return f'<{self.__class__.__name__} of {self.model.name!r}>'
+        return f'<{type(self).__name__} of {self.model.name!r}>'
     
     
     def to_data(self):
@@ -350,7 +350,7 @@ class Vendor:
     
     def __repr__(self):
         """Returns the vendor's representation."""
-        return f'<{self.__class__.__name__} name = {self.name!r}>'
+        return f'<{type(self).__name__} name = {self.name!r}>'
     
     
     def to_data(self):
@@ -439,7 +439,7 @@ class Model:
     
     def __repr__(self):
         """Returns the model's representation."""
-        return f'<{self.__class__.__name__} name = {self.name!r}>'
+        return f'<{type(self).__name__} name = {self.name!r}>'
     
     
     def to_data(self):

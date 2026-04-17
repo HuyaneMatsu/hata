@@ -116,7 +116,7 @@ class VerificationScreen(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the verification screen's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         field_added = False
         

@@ -5,6 +5,7 @@ import vampytest
 from ....application import Application
 from ....channel import Channel
 from ....guild import Guild
+from ....role import Role
 from ....user import User
 
 from ..flags import InviteFlag
@@ -21,6 +22,10 @@ def test__Invite__copy():
     flags = InviteFlag(11)
     max_age = 3600
     max_uses = 100
+    roles = [
+        Role.precreate(202604050020),
+        Role.precreate(202604050021),
+    ]
     target_application = Application.precreate(202308070009)
     target_type = InviteTargetType.stream
     target_user = User.precreate(202308070010)
@@ -30,6 +35,7 @@ def test__Invite__copy():
         flags = flags,
         max_age = max_age,
         max_uses = max_uses,
+        roles = roles,
         target_application = target_application,
         target_type = target_type,
         target_user = target_user,
@@ -51,6 +57,10 @@ def test__Invite__copy_with__no_fields():
     flags = InviteFlag(11)
     max_age = 3600
     max_uses = 100
+    roles = [
+        Role.precreate(202604050022),
+        Role.precreate(202604050023),
+    ]
     target_application = Application.precreate(202308070011)
     target_type = InviteTargetType.stream
     target_user = User.precreate(202308070012)
@@ -60,6 +70,7 @@ def test__Invite__copy_with__no_fields():
         flags = flags,
         max_age = max_age,
         max_uses = max_uses,
+        roles = roles,
         target_application = target_application,
         target_type = target_type,
         target_user = target_user,
@@ -81,6 +92,10 @@ def test__Invite__copy_with__all_fields():
     old_flags = InviteFlag(11)
     old_max_age = 3600
     old_max_uses = 100
+    old_roles = [
+        Role.precreate(202604050024),
+        Role.precreate(202604050025),
+    ]
     old_target_application = Application.precreate(202308070013)
     old_target_type = InviteTargetType.stream
     old_target_user = User.precreate(202308070014)
@@ -89,6 +104,10 @@ def test__Invite__copy_with__all_fields():
     new_flags = InviteFlag(12)
     new_max_age = 7200
     new_max_uses = 200
+    new_roles = [
+        Role.precreate(202604050026),
+        Role.precreate(202604050027),
+    ]
     new_target_application = Application.precreate(202308070015)
     new_target_type = InviteTargetType.embedded_application
     new_target_user = User.precreate(202308070016)
@@ -98,6 +117,7 @@ def test__Invite__copy_with__all_fields():
         flags = old_flags,
         max_age = old_max_age,
         max_uses = old_max_uses,
+        roles = old_roles,
         target_application = old_target_application,
         target_type = old_target_type,
         target_user = old_target_user,
@@ -108,6 +128,7 @@ def test__Invite__copy_with__all_fields():
         flags = new_flags,
         max_age = new_max_age,
         max_uses = new_max_uses,
+        roles = new_roles,
         target_application = new_target_application,
         target_type = new_target_type,
         target_user = new_target_user,
@@ -119,6 +140,7 @@ def test__Invite__copy_with__all_fields():
     vampytest.assert_eq(copy.flags, new_flags)
     vampytest.assert_eq(copy.max_age, new_max_age)
     vampytest.assert_eq(copy.max_uses, new_max_uses)
+    vampytest.assert_eq(copy.roles, tuple(new_roles))
     vampytest.assert_is(copy.target_application, new_target_application)
     vampytest.assert_is(copy.target_type, new_target_type)
     vampytest.assert_is(copy.target_user, new_target_user)

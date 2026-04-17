@@ -91,7 +91,7 @@ class ClientCompoundSoundBoardEndpoints(Compound):
         
         if not isinstance(sound, (bytes, bytearray, memoryview)):
             raise TypeError(
-                f'`sound_data` can be `bytes-like`, got {sound.__class__.__name__}; {reprlib.repr(sound)}.'
+                f'`sound_data` can be `bytes-like`, got {type(sound).__name__}; {reprlib.repr(sound)}.'
             )
         
         data = build_create_payload(soundboard_sound_template, SOUNDBOARD_SOUND_FIELD_CONVERTERS, keyword_parameters)

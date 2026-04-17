@@ -90,7 +90,7 @@ def setup_ext_commands_v2(client, prefix, **kwargs):
         - If the given `client` has a ``CommandProcessor`` added as `message_create` event,
     """
     if not isinstance(client, Client):
-        raise TypeError(f'Expected type `{Client.__name__}` as client, meanwhile got `{client.__class__.__name__}`.')
+        raise TypeError(f'Expected type `{Client.__name__}` as client, meanwhile got `{type(client).__name__}`.')
     
     for attr_name in ('command_processor', 'commands'):
         if hasattr(client, attr_name):

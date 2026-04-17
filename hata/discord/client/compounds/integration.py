@@ -117,13 +117,13 @@ class ClientCompoundIntegrationEndpoints(Compound):
         integration_id_value = maybe_snowflake(integration_id)
         if integration_id_value is None:
             raise TypeError(
-                f'`integration_id` can be `int`, got {integration_id.__class__.__name__}; {integration_id!r}.'
+                f'`integration_id` can be `int`, got {type(integration_id).__name__}; {integration_id!r}.'
             )
         
         if __debug__:
             if not isinstance(type_, str):
                 raise AssertionError(
-                    f'`type_` can be `str`, got {type_.__class__.__name__}; {type_!r}.'
+                    f'`type_` can be `str`, got {type(type_).__name__}; {type_!r}.'
                 )
         
         data = {
@@ -181,7 +181,7 @@ class ClientCompoundIntegrationEndpoints(Compound):
             if not isinstance(integration, Integration):
                 raise AssertionError(
                     f'`integration` can be `{Integration.__name__}`, got '
-                    f'{integration.__class__.__name__}; {integration!r}.'
+                    f'{type(integration).__name__}; {integration!r}.'
                 )
         
         detail = integration.detail
@@ -199,7 +199,7 @@ class ClientCompoundIntegrationEndpoints(Compound):
                 if not isinstance(expire_behavior, int):
                     raise AssertionError(
                         f'`expire_behavior` can be `int`, got '
-                        f'{expire_behavior.__class__.__name__}; {expire_behavior!r}.'
+                        f'{type(expire_behavior).__name__}; {expire_behavior!r}.'
                     )
                 
                 if expire_behavior not in (0, 1):
@@ -214,7 +214,7 @@ class ClientCompoundIntegrationEndpoints(Compound):
                 if not isinstance(expire_grace_period, int):
                     raise AssertionError(
                         f'`expire_grace_period` can be `int`, got '
-                        f'{expire_grace_period.__class__.__name__}.'
+                        f'{type(expire_grace_period).__name__}.'
                     )
                 
                 if expire_grace_period not in (1, 3, 7, 14, 30):
@@ -229,7 +229,7 @@ class ClientCompoundIntegrationEndpoints(Compound):
                 if not isinstance(emojis_enabled, bool):
                     raise AssertionError(
                         f'`emojis_enabled` can be `bool`, got '
-                        f'{emojis_enabled.__class__.__name__}; {emojis_enabled!r}.'
+                        f'{type(emojis_enabled).__name__}; {emojis_enabled!r}.'
                     )
             
             data['enable_emoticons'] = emojis_enabled
@@ -260,7 +260,7 @@ class ClientCompoundIntegrationEndpoints(Compound):
         if __debug__:
             if not isinstance(integration, Integration):
                 raise AssertionError(
-                    f'`integration` can be `{Integration.__name__}`, got {integration.__class__.__name__}; '
+                    f'`integration` can be `{Integration.__name__}`, got {type(integration).__name__}; '
                     f'{integration!r}.'
                 )
         
@@ -298,7 +298,7 @@ class ClientCompoundIntegrationEndpoints(Compound):
         if __debug__:
             if not isinstance(integration, Integration):
                 raise AssertionError(
-                    f'`integration` can be `{Integration.__name__}`, got {integration.__class__.__name__}; '
+                    f'`integration` can be `{Integration.__name__}`, got {type(integration).__name__}; '
                     f'{integration!r}.'
                 )
         

@@ -560,7 +560,7 @@ class AuditLogEntry(DiscordEntity):
     
     def __repr__(self):
         """Returns the representation of the audit log entry."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         # id
         entry_id = self.id

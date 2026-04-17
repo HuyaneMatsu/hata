@@ -264,7 +264,7 @@ class SharedClientTheme(RichAttributeErrorBaseType):
         if colors is ...:
             colors = self.colors
             if (colors is not None):
-                colors = (*colors),
+                colors = (*colors,)
         else:
             colors = validate_colors(colors)
         

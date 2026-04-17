@@ -109,7 +109,7 @@ def validate_application_command_permission_overwrite_target(target):
             f'`target` can be `{Role.__name__}`, `{ClientUserBase.__name__}`, `{Channel.__name__}`, '
             f'`tuple` ((`{Role.__name__}`, `{ClientUserBase.__name__}`, `{Channel.__name__}`, `str` '
             f'(`\'Role\'`, `\'role\'`, `\'User\'`, `\'user\'`, `\'Channel\'`, `\'channel\'`)), `int`), '
-            f'got {target.__class__.__name__}: {target!r}.'
+            f'got {type(target).__name__}: {target!r}.'
         )
     
     return target_type, target_id

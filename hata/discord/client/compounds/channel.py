@@ -360,7 +360,7 @@ class ClientCompoundChannelEndpoints(Compound):
         # Check channel type
         if (not channel.is_in_group_guild_sortable()) and (not channel.partial):
             raise TypeError(
-                f'`channel` can be any movable guild channel, got {channel.__class__.__name__}; {channel!r}.'
+                f'`channel` can be any movable guild channel, got {type(channel).__name__}; {channel!r}.'
             )
         
         # Check whether the channel is partial.
@@ -382,7 +382,7 @@ class ClientCompoundChannelEndpoints(Compound):
                 )
         else:
             raise TypeError(
-                f'`parent` can be `None` or {Channel.__name__}`, got {parent.__class__.__name__}; {parent!r}.'
+                f'`parent` can be `None` or {Channel.__name__}`, got {type(parent).__name__}; {parent!r}.'
             )
         
         # Cannot put category under category
@@ -393,13 +393,13 @@ class ClientCompoundChannelEndpoints(Compound):
         
         if not isinstance(visual_position, int):
             raise TypeError(
-                f'`visual_position` can be `int`, got {visual_position.__class__.__name__}; '
+                f'`visual_position` can be `int`, got {type(visual_position).__name__}; '
                 f'{visual_position!r}.'
             )
         
         if not isinstance(lock_permissions, bool):
             raise TypeError(
-                f'`lock_permissions` can be `bool`, got {lock_permissions.__class__.__name__}; {lock_permissions!r}.'
+                f'`lock_permissions` can be `bool`, got {type(lock_permissions).__name__}; {lock_permissions!r}.'
             )
         
         # Cap at 0
@@ -615,7 +615,7 @@ class ClientCompoundChannelEndpoints(Compound):
         topic : `None`, `str`, Optional (Keyword only)
             The channel's topic.
         
-        users : `iterable` of (`int`, ``ClientUserBase``), Optional (Keyword only)
+        users : ``iterable<int> | iterable<ClientUserBase>``, Optional (Keyword only)
             The users in the channel.
         
         video_quality_mode : ``VideoQualityMode``, Optional (Keyword only)
@@ -747,7 +747,7 @@ class ClientCompoundChannelEndpoints(Compound):
         topic : `None`, `str`, Optional (Keyword only)
             The channel's topic.
         
-        users : `iterable` of (`int`, ``ClientUserBase``), Optional (Keyword only)
+        users : ``iterable<int> | iterable<ClientUserBase>``, Optional (Keyword only)
             The users in the channel.
             
         video_quality_mode : ``VideoQualityMode``, Optional (Keyword only)

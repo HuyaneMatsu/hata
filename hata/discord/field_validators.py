@@ -53,7 +53,7 @@ def field_validator_factory(field_name):
             else:
                 raise TypeError(
                     f'`{field_name}` can be any basic type, like `None`, `str`, `int`, `float`, got '
-                    f'{field_value.__class__.__name__}; {field_value!r}.'
+                    f'{type(field_value).__name__}; {field_value!r}.'
                 )
             
         return field_value
@@ -695,7 +695,7 @@ def _field_condition_validator_factory(field_name, field_type, default_value, co
         else:
             if not isinstance(value, field_type):
                 raise TypeError(
-                    f'`{field_name}` can be `{field_type.__name__}`, got {value.__class__.__name__}; {value!r}.'
+                    f'`{field_name}` can be `{field_type.__name__}`, got {type(value).__name__}; {value!r}.'
                 )
             
             if not condition_check(value):
@@ -870,7 +870,7 @@ def nullable_flag_validator_factory(field_name, flag_type):
         else:
             raise TypeError(
                 f'`{field_name}` can be `None | int | {flag_type.__name__}`, '
-                f'got {flag.__class__.__name__}; {flag!r}.'
+                f'got {type(flag).__name__}; {flag!r}.'
             )
     
         return flag
@@ -987,7 +987,7 @@ def bool_validator_factory(field_name, default_value):
             return bool(boolean)
         
         raise TypeError(
-            f'`{field_name}` can be `None`, `bool`, `int` as `0`, `1`, got {boolean.__class__.__name__}; {boolean!r}.'
+            f'`{field_name}` can be `None`, `bool`, `int` as `0`, `1`, got {type(boolean).__name__}; {boolean!r}.'
         )
     
     return validator
@@ -1031,7 +1031,7 @@ def nullable_date_time_validator_factory(field_name):
         if (date_time is not None) and (not isinstance(date_time, DateTime)):
             raise TypeError(
                 f'`{field_name} can be `None`, `{DateTime.__name__}`, '
-                f'got {date_time.__class__.__name__}; {date_time!r}.'
+                f'got {type(date_time).__name__}; {date_time!r}.'
             )
         
         return date_time
@@ -1076,7 +1076,7 @@ def force_date_time_validator_factory(field_name):
         
         if (not isinstance(date_time, DateTime)):
             raise TypeError(
-                f'`{field_name} can be `{DateTime.__name__}`, got {date_time.__class__.__name__}; {date_time!r}.'
+                f'`{field_name} can be `{DateTime.__name__}`, got {type(date_time).__name__}; {date_time!r}.'
             )
         
         return date_time
@@ -1237,7 +1237,7 @@ def nullable_string_array_validator_factory(field_name, *, ordered = True):
             if getattr(string_array, '__iter__', None) is None:
                 raise TypeError(
                     f'`{field_name}` can be `None`, `iterable` of `str`, got '
-                    f'{string_array.__class__.__name__}; {string_array!r}.'
+                    f'{type(string_array).__name__}; {string_array!r}.'
                 )
             
             processed_values = None
@@ -1445,7 +1445,7 @@ def url_optional_validator_factory(field_name, *, length_max = ...):
         if (url is not None):
             if not isinstance(url, str):
                 raise TypeError(
-                    f'`{field_name!s}` can be `None`, `str`, got {url.__class__.__name__!s}; {url!r}.'
+                    f'`{field_name!s}` can be `None`, `str`, got {type(url).__name__!s}; {url!r}.'
                 )
             
             url_length = len(url)
@@ -1508,7 +1508,7 @@ def url_required_validator_factory(field_name):
         if (url is not None) and not isinstance(url, str):
             if not isinstance(url, str):
                 raise TypeError(
-                    f'`{field_name}` can be `None`, `str`, got {url.__class__.__name__}; {url!r}.'
+                    f'`{field_name}` can be `None`, `str`, got {type(url).__name__}; {url!r}.'
                 )
         
         if (url is None) or (not url):
@@ -1650,7 +1650,7 @@ def nullable_entity_set_validator_factory(field_name, entity_type, *, include = 
         if (getattr(entity_array, '__iter__', None) is None):
             raise TypeError(
                 f'`{field_name}` can be `None`, `iterable` of `{entity_type.__name__}`, got '
-                f'{entity_array.__class__.__name__}; {entity_array!r}.'
+                f'{type(entity_array).__name__}; {entity_array!r}.'
             )
             
         entity_set_processed = None
@@ -1659,7 +1659,7 @@ def nullable_entity_set_validator_factory(field_name, entity_type, *, include = 
             if not isinstance(entity, entity_type):
                 raise TypeError(
                     f'`{field_name}` can contain `{entity_type.__name__}` elements, got '
-                    f'{entity.__class__.__name__}; {entity!r}; {field_name!s} = {entity_array!r}.'
+                    f'{type(entity).__name__}; {entity!r}; {field_name!s} = {entity_array!r}.'
                 )
             
             if (entity_set_processed is None):
@@ -1806,7 +1806,7 @@ def nullable_entity_conditional_validator_factory(
             if (not isinstance(entity, entity_type)):
                 raise TypeError(
                     f'`{field_name}` can be `None`, `{entity_type.__name__}`, got '
-                    f'{entity.__class__.__name__}; {entity!r}.'
+                    f'{type(entity).__name__}; {entity!r}.'
                 )
             
             if not condition_check(entity):
@@ -1883,7 +1883,7 @@ def default_entity_validator_factory(field_name, entity_type, *, default = ..., 
             
             else:
                 raise TypeError(
-                    f'`{field_name}` can be `None`, `{entity_type.__name__}`, got {entity.__class__.__name__}; {entity!r}.'
+                    f'`{field_name}` can be `None`, `{entity_type.__name__}`, got {type(entity).__name__}; {entity!r}.'
                 )
             
             return entity
@@ -1902,7 +1902,7 @@ def default_entity_validator_factory(field_name, entity_type, *, default = ..., 
             
             else:
                 raise TypeError(
-                    f'`{field_name}` can be `None`, `{entity_type.__name__}`, got {entity.__class__.__name__}; {entity!r}.'
+                    f'`{field_name}` can be `None`, `{entity_type.__name__}`, got {type(entity).__name__}; {entity!r}.'
                 )
             
             return entity
@@ -1978,7 +1978,7 @@ def entity_validator_factory(field_name, entity_type, *, include = None):
         
         if not isinstance(entity, entity_type):
             raise TypeError(
-                f'`{field_name}` can be `{entity_type.__name__}`, got {entity.__class__.__name__}; {entity!r}.'
+                f'`{field_name}` can be `{entity_type.__name__}`, got {type(entity).__name__}; {entity!r}.'
             )
         
         return entity
@@ -2159,7 +2159,7 @@ def entity_dictionary_validator_factory(field_name, entity_type):
             else:
                 raise TypeError(
                     f'`{field_name}` can be `None`, `dict` of (`int`, `{entity_type.__name__}`) items, `iterable` of '
-                    f'`{entity_type.__name__}` items, got {field_value.__class__.__name__}; {field_value!r}.'
+                    f'`{entity_type.__name__}` items, got {type(field_value).__name__}; {field_value!r}.'
                 )
             
             for element in iterator:
@@ -2225,7 +2225,7 @@ def nullable_entity_dictionary_validator_factory(field_name, entity_type):
             else:
                 raise TypeError(
                     f'`{field_name}` can be `None`, `dict` of (`int`, `{entity_type.__name__}`) items, `iterable` of '
-                    f'`{entity_type.__name__}` items, got {field_value.__class__.__name__}; {field_value!r}.'
+                    f'`{entity_type.__name__}` items, got {type(field_value).__name__}; {field_value!r}.'
                 )
             
             for element in iterator:

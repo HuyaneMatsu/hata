@@ -167,7 +167,7 @@ class ApplicationEntity(DiscordEntity):
     
     def __repr__(self):
         """Returns the entity's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         entity_id = self.id
         if entity_id:

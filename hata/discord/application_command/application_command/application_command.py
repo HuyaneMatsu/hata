@@ -290,10 +290,10 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         
         Other Parameters
         ----------------
-        application : `int`, ``Application``, Optional (Keyword only)
+        application : ``None | int | Application``, Optional (Keyword only)
             Alternative for `application_id`.
         
-        application_id : `int`, ``Application``, Optional (Keyword only)
+        application_id : ``None | int | Application``, Optional (Keyword only)
             The application command's application's id.
         
         description : `None`, `str` = `None`, Optional
@@ -1014,7 +1014,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
             return edited_at
         
         raise ValueError(
-            f'Unknown format code {code!r} for {self.__class__.__name__}; {self!r}. '
+            f'Unknown format code {code!r} for {type(self).__name__}; {self!r}. '
             f'Available format codes: {""!r}, {"c"!r}, {"d"!r}, {"e"!r}, {"m"!r}, {"m@..."!r}.'
         )
     

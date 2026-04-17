@@ -68,14 +68,14 @@ class VoiceSettingsInput:
                 if (available_devices_iterator is None):
                     raise TypeError(
                         f'`available_devices` can be `None`, `iterable`, got '
-                        f'{available_devices.__class__.__name__}; {available_devices!r}.'
+                        f'{type(available_devices).__name__}; {available_devices!r}.'
                     )
                 
                 for available_device in available_devices_iterator(available_devices):
                     if not isinstance(available_device, AvailableDevice):
                         raise TypeError(
                             f'`available_devices` can contain `{AvailableDevice.__name__}` elements, got '
-                            f'{available_device.__class__.__name__}; {available_device!r}; '
+                            f'{type(available_device).__name__}; {available_device!r}; '
                             f'available_devices={available_devices!r}.'
                         )
                     
@@ -97,7 +97,7 @@ class VoiceSettingsInput:
     
     def __repr__(self):
         """Returns the voice settings input's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         
         device_id = self.device_id
@@ -259,7 +259,7 @@ class AvailableDevice:
     
     def __repr__(self):
         """Returns the device's representation."""
-        return f'<{self.__class__.__name__} id = {self.id!r}, name = {self.name!r}>'
+        return f'<{type(self).__name__} id = {self.id!r}, name = {self.name!r}>'
     
     
     def to_data(self):
@@ -357,14 +357,14 @@ class VoiceSettingsOutput:
                 if (available_devices_iterator is None):
                     raise TypeError(
                         f'`available_devices` can be `None`, `iterable`, got '
-                        f'{available_devices.__class__.__name__}; {available_devices!r}.'
+                        f'{type(available_devices).__name__}; {available_devices!r}.'
                     )
                 
                 for available_device in available_devices_iterator(available_devices):
                     if not isinstance(available_device, AvailableDevice):
                         raise TypeError(
                             f'`available_devices` can contain `{AvailableDevice.__name__}` elements, got '
-                            f'{available_device.__class__.__name__}; {available_device!r}; '
+                            f'{type(available_device).__name__}; {available_device!r}; '
                             f'available_devices={available_devices!r}.'
                         )
                     
@@ -386,7 +386,7 @@ class VoiceSettingsOutput:
     
     def __repr__(self):
         """Returns the voice settings output's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         
         device_id = self.device_id
@@ -564,7 +564,7 @@ class VoiceSettingsMode:
             if (auto_threshold is not None) and (not isinstance(auto_threshold, bool)):
                 raise AssertionError(
                     f'`auto_threshold` can be `bool`, got '
-                    f'{auto_threshold.__class__.__name__}; {auto_threshold!r}.'
+                    f'{type(auto_threshold).__name__}; {auto_threshold!r}.'
                 )
         
         if (threshold is not None):
@@ -585,7 +585,7 @@ class VoiceSettingsMode:
                     raise TypeError(
                         f'`shortcut_combination` can be `None`, `{ShortcutKey.__name__}` '
                         f', `iterable` of `{ShortcutKey.__name__}`, got '
-                        f'{shortcut_combination.__class__.__name__}; {shortcut_combination!r}.'
+                        f'{type(shortcut_combination).__name__}; {shortcut_combination!r}.'
                     )
                 
                 shortcut_combination_processed = []
@@ -593,7 +593,7 @@ class VoiceSettingsMode:
                     if not isinstance(shortcut, ShortcutKey):
                         raise TypeError(
                             f'`shortcut_combination` can contain `{ShortcutKey.__name__}` elements, got '
-                            f'{shortcut.__class__.__name__}; {shortcut!r}; '
+                            f'{type(shortcut).__name__}; {shortcut!r}; '
                             f'shortcut_combination = {shortcut_combination!r}.'
                         )
                     
@@ -619,7 +619,7 @@ class VoiceSettingsMode:
     
     def __repr__(self):
         """Returns the voice setting mode's representation."""
-        repr_parts = ['<', self.__class__.__name__,]
+        repr_parts = ['<', type(self).__name__,]
         
         
         type_ = self.type
@@ -821,7 +821,7 @@ class ShortcutKey:
     
     def __repr__(self):
         """Returns the shortcut key's representation."""
-        repr_parts = ['<', self.__class__.__name__, ' type = ']
+        repr_parts = ['<', type(self).__name__, ' type = ']
         
         type_ = self.type
         repr_parts.append(type_.name)
@@ -915,7 +915,7 @@ class VoiceSettings:
     
     def __repr__(self):
         """Returns the voice setting's representation"""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         
         repr_parts.append(' automatic_gain_control = ')

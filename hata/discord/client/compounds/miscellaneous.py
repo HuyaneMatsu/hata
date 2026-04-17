@@ -32,7 +32,7 @@ def _assert__attachment(attachment):
     if not isinstance(attachment, (Attachment, EmbedImage)):
         raise AssertionError(
             f'`attachment` can be `{Attachment.__name__}`, `{EmbedImage.__name__}`, got '
-            f'{attachment.__class__.__name__}; {attachment!r}.'
+            f'{type(attachment).__name__}; {attachment!r}.'
         )
     
     return True
@@ -107,7 +107,7 @@ class ClientCompoundMiscellaneousEndpoints(Compound):
             eula_id = maybe_snowflake(eula)
             if eula_id is None:
                 raise TypeError(
-                    f'`eula` can be `{EULA.__name__}`, `int`, got {eula.__class__.__name__}; {eula!r}.'
+                    f'`eula` can be `{EULA.__name__}`, `int`, got {type(eula).__name__}; {eula!r}.'
                 )
             
             eula = EULAS.get(eula_id, None)

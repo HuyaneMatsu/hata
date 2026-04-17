@@ -163,7 +163,7 @@ class Plugin(RichAttributeErrorBaseType):
         """Returns the plugin's representation."""
         repr_parts = []
         repr_parts.append('<')
-        repr_parts.append(self.__class__.__name__)
+        repr_parts.append(type(self).__name__)
         repr_parts.append(' name = ')
         repr_parts.append(repr(self._spec.name))
         
@@ -288,8 +288,8 @@ class Plugin(RichAttributeErrorBaseType):
     def entry_point(self, entry_point):
         if not _validate_entry_or_exit(entry_point):
             raise TypeError(
-                f'`{self.__class__.__name__}.entry_point` can be `None`, `str`, `callable`, got '
-                f'{entry_point.__class__.__name__}; {entry_point!r}.'
+                f'`{type(self).__name__}.entry_point` can be `None`, `str`, `callable`, got '
+                f'{type(entry_point).__name__}; {entry_point!r}.'
             )
         
         self._entry_point = entry_point
@@ -313,8 +313,8 @@ class Plugin(RichAttributeErrorBaseType):
     def exit_point(self, exit_point):
         if not _validate_entry_or_exit(exit_point):
             raise TypeError(
-                f'`{self.__class__.__name__}.exit_point` can be `None`, `str`, `callable`, got '
-                f'{exit_point.__class__.__name__}; {exit_point!r}.'
+                f'`{type(self).__name__}.exit_point` can be `None`, `str`, `callable`, got '
+                f'{type(exit_point).__name__}; {exit_point!r}.'
             )
         
         self._exit_point = exit_point
@@ -336,7 +336,7 @@ class Plugin(RichAttributeErrorBaseType):
     
     @extend_default_variables.setter
     def extend_default_variables(self, extend_default_variables):
-        extend_default_variables_type = extend_default_variables.__class__
+        extend_default_variables_type = type(extend_default_variables)
         if extend_default_variables_type is bool:
             pass
         elif issubclass(extend_default_variables_type, int):
@@ -363,7 +363,7 @@ class Plugin(RichAttributeErrorBaseType):
     
     @locked.setter
     def locked(self, locked):
-        locked_type = locked.__class__
+        locked_type = type(locked)
         if locked_type is bool:
             pass
         elif issubclass(locked_type, int):

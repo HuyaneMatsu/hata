@@ -62,7 +62,7 @@ class SoundboardSound(DiscordEntity, immortal = True):
             Emoji assigned to the sound.
         name : `str`, Optional (Keyword only)
             The name of the sound.
-        user_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+        user_id : ``None | int | ClientUserBase``, Optional (Keyword only)
             The user or their identifier who created the sound.
         volume : `float`, Optional (Keyword only)
             The volume of the sound to play as.
@@ -499,9 +499,9 @@ class SoundboardSound(DiscordEntity, immortal = True):
             The guild or its identifier to which the sound is added to.
         name : `str`, Optional (Keyword only)
             The name of the sound.
-        user_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+        user_id : ``None | int | ClientUserBase``, Optional (Keyword only)
             Alternative of `user`.
-        user_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+        user_id : ``None | int | ClientUserBase``, Optional (Keyword only)
             The user or their identifier who created the sound.
         volume : `float`, Optional (Keyword only)
             The volume of the sound to play as.
@@ -572,7 +572,7 @@ class SoundboardSound(DiscordEntity, immortal = True):
             Emoji assigned to the sound.
         name : `str`, Optional (Keyword only)
             The name of the sound.
-        user_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+        user_id : ``None | int | ClientUserBase``, Optional (Keyword only)
             The user or their identifier who created the sound.
         volume : `float`, Optional (Keyword only)
             The volume of the sound to play as.

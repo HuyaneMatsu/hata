@@ -61,7 +61,7 @@ class MessageIterator:
         if __debug__:
             if not isinstance(chunk_size, int):
                 raise AssertionError(
-                    f'`chunk_size` can be `int`, got {chunk_size.__class__.__name__}; {chunk_size!r}.'
+                    f'`chunk_size` can be `int`, got {type(chunk_size).__name__}; {chunk_size!r}.'
                 )
             
             if chunk_size < 1:
@@ -79,7 +79,7 @@ class MessageIterator:
             if channel_id is None:
                 raise TypeError(
                     f'`channel` can be `{Channel.__name__}`, got '
-                    f'{channel.__class__.__name__}; {channel!r}.'
+                    f'{type(channel).__name__}; {channel!r}.'
                 )
             
             channel = CHANNELS.get(channel_id, None)

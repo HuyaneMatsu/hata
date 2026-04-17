@@ -548,7 +548,7 @@ class CommandProcessor(EventWaitforBase):
         
         if not isinstance(category_name, str):
             raise TypeError(
-                f'`category_name` can be `None`, `str`, got {category_name.__class__.__name__}; {category_name!r}.'
+                f'`category_name` can be `None`, `str`, got {type(category_name).__name__}; {category_name!r}.'
             )
         
         category_name = raw_name_to_display(category_name)
@@ -628,7 +628,7 @@ class CommandProcessor(EventWaitforBase):
             category = None
         else:
             raise TypeError(
-                f'`category` can be `{Category.__name__}`, `str`, got {category.__class__.__name__}.'
+                f'`category` can be `{Category.__name__}`, `str`, got {type(category).__name__}.'
             )
         
         try:
@@ -699,7 +699,7 @@ class CommandProcessor(EventWaitforBase):
         if __debug__:
             if not isinstance(command, Command):
                 raise AssertionError(
-                    f'`command` can be `{Command.__name__}`, got {command.__class__.__name__}; {command!r}.'
+                    f'`command` can be `{Command.__name__}`, got {type(command).__name__}; {command!r}.'
                 )
         
         command_processor = command.get_command_processor()
@@ -1070,7 +1070,7 @@ class CommandProcessor(EventWaitforBase):
     
     def __repr__(self):
         """Returns the command processor's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         repr_parts.append(' command count: ')
         repr_parts.append(str(len(self.commands)))

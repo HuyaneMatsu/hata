@@ -35,7 +35,7 @@ def validate_activity(activity):
     """
     if not isinstance(activity, Activity):
         raise TypeError(
-            f'`activity` can be `{Activity.__name__}`, got {activity.__class__.__name__}; {activity!r}.'
+            f'`activity` can be `{Activity.__name__}`, got {type(activity).__name__}; {activity!r}.'
         )
     
     if (activity.type is ActivityType.custom):
@@ -99,7 +99,7 @@ def validate_additional_owner_ids(additional_owner_ids):
         else:
             raise TypeError(
                 f'`additional_owner_ids` can contain `int`, `{ClientUserBase.__name__}` elements, got '
-                f'{additional_owner.__class__.__name__}; {additional_owner!r}; '
+                f'{type(additional_owner).__name__}; {additional_owner!r}; '
                 f'additional_owner_ids = {additional_owner!r}.'
             )
         
@@ -157,7 +157,7 @@ def validate_extensions(extensions):
     if (getattr(extensions, '__iter__', None) is None):
         raise TypeError(
             f'`extensions` can be `None | str | iterable<str>`, got '
-            f'{extensions.__class__.__name__}; {extensions!r}.'
+            f'{type(extensions).__name__}; {extensions!r}.'
         )
     
     extensions_validated = None
@@ -171,7 +171,7 @@ def validate_extensions(extensions):
         else:
             raise TypeError(
                 f'{extensions} contains a non `str`, got '
-                f'{extensions.__class__.__name__}; {extensions!r}.'
+                f'{type(extensions).__name__}; {extensions!r}.'
             )
         
         if extensions_validated is None:
@@ -222,7 +222,7 @@ def validate_http_debug_options(http_debug_options):
     if (getattr(http_debug_options, '__iter__', None) is None):
         raise TypeError(
             f'`http_debug_options` can be `None | str | iterable<str>`, got '
-            f'{http_debug_options.__class__.__name__}; {http_debug_options!r}.'
+            f'{type(http_debug_options).__name__}; {http_debug_options!r}.'
         )
     
     http_debug_options_validated = None
@@ -236,7 +236,7 @@ def validate_http_debug_options(http_debug_options):
         else:
             raise TypeError(
                 f'{http_debug_options} contains a non `str`, got '
-                f'{http_debug_options.__class__.__name__}; {http_debug_options!r}.'
+                f'{type(http_debug_options).__name__}; {http_debug_options!r}.'
             )
         
         if not http_debug_option.islower():
@@ -279,7 +279,7 @@ def validate_secret(secret):
         secret = str(secret)
     else:
         raise TypeError(
-            f'`secret` can be `str`, got `{secret.__class__.__name__}`; {secret!r}.'
+            f'`secret` can be `str`, got `{type(secret).__name__}`; {secret!r}.'
         )
     
     return secret
@@ -314,7 +314,7 @@ def validate_shard_count(shard_count):
         shard_count = int(shard_count)
     else:
         raise TypeError(
-            f'`shard_count` can be `int`, got {shard_count.__class__.__name__}; {shard_count!r}.'
+            f'`shard_count` can be `int`, got {type(shard_count).__name__}; {shard_count!r}.'
         )
     
     if shard_count < 0:
@@ -352,7 +352,7 @@ def validate_token(token):
         token = str(token)
     else:
         raise TypeError(
-            f'`token` can be `str`, got {token.__class__.__name__}; {token!r}.'
+            f'`token` can be `str`, got {type(token).__name__}; {token!r}.'
         )
     
     return token

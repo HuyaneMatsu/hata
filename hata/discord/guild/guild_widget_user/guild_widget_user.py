@@ -163,7 +163,7 @@ class GuildWidgetUser(DiscordEntity):
     
     def __repr__(self):
         """Returns the representation of the guild widget user."""
-        return f'<{self.__class__.__name__} id = {self.id}, name = {self.full_name!r}>'
+        return f'<{type(self).__name__} id = {self.id}, name = {self.full_name!r}>'
     
     
     def __hash__(self):

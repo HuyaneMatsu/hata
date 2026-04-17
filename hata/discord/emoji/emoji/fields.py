@@ -77,7 +77,7 @@ def validate_name(name):
     
     if not isinstance(name, str):
         raise TypeError(
-            f'`name` can be `None`, `str`, got {name.__class__.__name__} ;{name!r}.'
+            f'`name` can be `None`, `str`, got {type(name).__name__} ;{name!r}.'
         )
     
     if not name:

@@ -52,7 +52,7 @@ class ClientCompoundLockedEndpoints(Compound):
             if user_id is None:
                 raise TypeError(
                     f'`relationship` can be `{Relationship.__name__}`, `{ClientUserBase.__name__}`, `int`, got '
-                    f'{relationship.__class__.__name__}; {relationship!r}.'
+                    f'{type(relationship).__name__}; {relationship!r}.'
                 )
         
         await self.api.relationship_delete(user_id)
@@ -96,7 +96,7 @@ class ClientCompoundLockedEndpoints(Compound):
         else:
             raise TypeError(
                 f'`relationship_type` can be `None`, `{RelationshipType.__name__}`, `int`'
-                f', got {relationship_type.__class__.__name__}; {relationship_type!r}.'
+                f', got {type(relationship_type).__name__}; {relationship_type!r}.'
             )
         
         data = {}
@@ -175,7 +175,7 @@ class ClientCompoundLockedEndpoints(Compound):
             house_id = house
         else:
             raise TypeError(
-                f'`house` can be `int`, `{HypesquadHouse.__name__}`, got {house.__class__.__name__}; {house!r}.'
+                f'`house` can be `int`, `{HypesquadHouse.__name__}`, got {type(house).__name__}; {house!r}.'
             )
         
         await self.api.hypesquad_house_change({'house_id': house_id})
@@ -236,7 +236,7 @@ class ClientCompoundLockedEndpoints(Compound):
             if application_id is None:
                 raise TypeError(
                     f'`application` can be `{Application.__name__}`, `int`, got '
-                    f'{application.__class__.__name__}; {application!r}.'
+                    f'{type(application).__name__}; {application!r}.'
                 )
         
         application_data = await self.api.application_get(application_id)

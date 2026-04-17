@@ -172,6 +172,7 @@ setup(
         'hata.discord.interaction.responding',
         'hata.discord.invite',
         'hata.discord.invite.invite',
+        'hata.discord.invite.invite_allowed_user_ids_status',
         'hata.discord.localization',
         'hata.discord.message',
         'hata.discord.message.attachment',

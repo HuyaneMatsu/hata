@@ -123,7 +123,7 @@ class ParserState(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the parser's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         repr_parts.append(' position = ')
         repr_parts.append(repr(self.position))
@@ -297,7 +297,7 @@ class ParserFailureInfo(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the parser failure's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         repr_parts.append(' line_index = ')
         repr_parts.append(repr(self.line_index))
         repr_parts.append(', index = ')

@@ -1202,7 +1202,7 @@ class ParameterSubSection:
     
     def __repr__(self):
         """Returns the parameter sub section's representation."""
-        repr_parts = ['<', self.__class__.__name__, ' name = ', repr(self.name)]
+        repr_parts = ['<', type(self).__name__, ' name = ', repr(self.name)]
         
         type_ = self.type
         if (type_ is not None):

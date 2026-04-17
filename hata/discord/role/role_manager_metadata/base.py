@@ -53,7 +53,7 @@ class RoleManagerMetadataBase(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the the role manager metadata's representation."""
-        return f'<{self.__class__.__name__}>'
+        return f'<{type(self).__name__}>'
     
     
     def __hash__(self):

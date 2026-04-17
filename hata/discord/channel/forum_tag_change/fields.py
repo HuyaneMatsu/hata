@@ -30,7 +30,7 @@ def _validate_entity_list(entity_list_name, entity_type, entity_list):
     if getattr(entity_list, '__iter__', None) is None:
         raise TypeError(
             f'`{entity_list_name}` can be `None`, `iterable` of `{entity_type.__name__}`, got '
-            f'{entity_list.__class__.__name__}; {entity_list!r}.'
+            f'{type(entity_list).__name__}; {entity_list!r}.'
         )
     
     entities_validated = None
@@ -39,7 +39,7 @@ def _validate_entity_list(entity_list_name, entity_type, entity_list):
         if not isinstance(entity, entity_type):
             raise TypeError(
                 f'`{entity_list_name}` elements can be `{entity_type.__name__}`, got '
-                f'{entity.__class__.__name__}; {entity!r}; {entity_list_name} = {entity_list!r}'
+                f'{type(entity).__name__}; {entity!r}; {entity_list_name} = {entity_list!r}'
             )
         
         if entities_validated is None:

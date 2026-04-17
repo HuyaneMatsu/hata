@@ -59,13 +59,13 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass = Slotte
         
         Parameters
         ----------
-        application_id : `int`, ``Application``, Optional (Keyword only)
+        application_id : ``None | int | Application``, Optional (Keyword only)
             The application's identifier the channel is managed by.
         icon : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The channel's icon.
         name : `str`, Optional (Keyword only)
             The channel's display name. Can be empty string if the channel has no name.
-        owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+        owner_id : ``None | int | ClientUserBase``, Optional (Keyword only)
             The group channel's owner's id.
         users : `iterable` of ``ClientUserBase``, Optional (Keyword only)
             The users in the channel.
@@ -317,13 +317,13 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass = Slotte
         
         Parameters
         ----------
-        application_id : `int`, ``Application``, Optional (Keyword only)
+        application_id : ``None | int | Application``, Optional (Keyword only)
             The application's identifier the channel is managed by.
         icon : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The channel's icon.
         name : `str`, Optional (Keyword only)
             The channel's display name. Can be empty string if the channel has no name.
-        owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+        owner_id : ``None | int | ClientUserBase``, Optional (Keyword only)
             The group channel's owner's id.
         users : `iterable` of ``ClientUserBase``, Optional (Keyword only)
             The users in the channel.

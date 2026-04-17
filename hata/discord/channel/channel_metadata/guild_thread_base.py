@@ -45,7 +45,7 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
     slowmode : `int`
         The amount of time in seconds what a user needs to wait between it's each message. Bots and user accounts with
         `manage_messages`, `manage_channels` permissions are unaffected.
-    thread_users : `None`, `dict` of (`int`, ``ClientUserBase``) items
+    thread_users : ``None | dict<int, ClientUserBase>``
         The users inside of the thread if any.
     
     Class Attributes
@@ -90,7 +90,7 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
             The channel's parent's identifier.
         open : `bool`, Optional (Keyword only)
             Whether the thread channel is open.
-        owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+        owner_id : ``None | int | ClientUserBase``, Optional (Keyword only)
             The channel's creator's identifier.
         slowmode : `int`, Optional (Keyword only)
             The amount of time in seconds what a user needs to wait between it's each message.
@@ -339,7 +339,7 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
             The channel's parent's identifier.
         open : `bool`, Optional (Keyword only)
             Whether the thread channel is open.
-        owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+        owner_id : ``None | int | ClientUserBase``, Optional (Keyword only)
             The channel's creator's identifier.
         slowmode : `int`, Optional (Keyword only)
             The amount of time in seconds what a user needs to wait between it's each message.

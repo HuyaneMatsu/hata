@@ -92,7 +92,7 @@ def _assert__request_users__name(name):
     """
     if not isinstance(name, str):
         raise AssertionError(
-            f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
+            f'`name` can be `str`, got {type(name).__name__}; {name!r}.'
         )
     
     name_length = len(name)
@@ -229,7 +229,7 @@ class ClientCompoundClientGateway(Compound):
                 
             raise TypeError(
                 f'`channel` can be a connectable channel, `tuple` (`int`, `int`)'
-                f', got {channel.__class__.__name__}; {channel!r}.'
+                f', got {type(channel).__name__}; {channel!r}.'
             )
         
         

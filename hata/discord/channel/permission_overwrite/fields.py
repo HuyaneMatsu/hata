@@ -98,7 +98,7 @@ def validate_target(target):
         if (target_id is None):
             raise TypeError(
                 f'`target` can be `int`, `{Role.__name__}`, `{ClientUserBase.__name__}`, got '
-                f'{target.__class__.__name__}; {target!r}.'
+                f'{type(target).__name__}; {target!r}.'
             )
         
         target_type = PermissionOverwriteTargetType.unknown

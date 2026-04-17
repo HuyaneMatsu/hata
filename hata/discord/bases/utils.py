@@ -51,7 +51,7 @@ def instance_or_id_to_instance(obj, type_, name):
     -----
     The given `type_` must have a `.precreate` function`.
     """
-    obj_type = obj.__class__
+    obj_type = type(obj)
     if issubclass(obj_type, type_):
         instance = obj
     else:
@@ -117,12 +117,12 @@ def iterable_of_instance_or_id_to_instances(iterable_obj, type_, name):
     """
     iterator = getattr(type(iterable_obj), '__iter__', None)
     if iterator is None:
-        raise TypeError(f'`{name}` can be `iterable`, got {iterable_obj.__class__.__name__}.')
+        raise TypeError(f'`{name}` can be `iterable`, got {type(iterable_obj).__name__}.')
     
     instances = set()
     
     for obj in iterator(iterable_obj):
-        obj_type = obj.__class__
+        obj_type = type(obj)
         if issubclass(obj_type, type_):
             instance = obj
         else:
@@ -186,12 +186,12 @@ def iterable_of_instance_or_id_to_snowflakes(iterable_obj, type_, name):
     """
     iterator = getattr(type(iterable_obj), '__iter__', None)
     if iterator is None:
-        raise TypeError(f'`{name}` can be `iterable`, got {iterable_obj.__class__.__name__}.')
+        raise TypeError(f'`{name}` can be `iterable`, got {type(iterable_obj).__name__}.')
     
     snowflakes = set()
     
     for obj in iterator(iterable_obj):
-        obj_type = obj.__class__
+        obj_type = type(obj)
         if issubclass(obj_type, type_):
             snowflake = obj.id
         else:
@@ -251,7 +251,7 @@ def instance_or_id_to_snowflake(obj, type_, name):
     -----
     The given `type_`'s instances must have a `.id` attribute.
     """
-    obj_type = obj.__class__
+    obj_type = type(obj)
     if issubclass(obj_type, type_):
         snowflake = obj.id
     else:

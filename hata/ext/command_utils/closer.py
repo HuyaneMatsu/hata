@@ -147,7 +147,7 @@ class Closer(PaginationBase):
         else:
             raise TypeError(
                 f'`channel` can be `{Channel.__name__}`, `{Message.__name__}`, `{InteractionEvent.__name__}`, '
-                f'got {channel.__class__.__name__}; {channel!r}.'
+                f'got {type(channel).__name__}; {channel!r}.'
             )
         
         self = object.__new__(cls)

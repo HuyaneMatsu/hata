@@ -225,7 +225,7 @@ class Track(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the track's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         if self.is_stream:
             field_added = True
@@ -344,7 +344,7 @@ class ConfiguredTrack(RichAttributeErrorBaseType):
         else:
             raise TypeError(
                 f'`track` can be `{Track.__name__}`, `{ConfiguredTrack.__name__}`, got '
-                f'{track.__class__.__name__}; {track!r}.'
+                f'{type(track).__name__}; {track!r}.'
             )
         
         duration = track.duration
@@ -424,7 +424,7 @@ class ConfiguredTrack(RichAttributeErrorBaseType):
     def __repr__(self):
         """Returns the configured track's representation."""
         repr_parts = [
-            '<', self.__class__.__name__,
+            '<', type(self).__name__,
             ' track = ', repr(self.track),
         ]
         
@@ -684,7 +684,7 @@ class GetTracksResult(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the get tracks result's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         playlist_name = self.playlist_name
         if (playlist_name is None):

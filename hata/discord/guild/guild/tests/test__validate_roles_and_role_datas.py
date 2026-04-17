@@ -14,30 +14,52 @@ def _iter_options__passing():
         name = role_name,
     )
     
-    yield None, None
-    yield [], None
-    yield [role], [role]
-    yield [{'name': role_name}], [{'name': role_name}]
-    yield [role, {'name': role_name}], [role, {'name': role_name}]
-
+    yield (
+        None,
+        None,
+    )
     
-@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
-def test__validate_roles_and_role_datas__passing(input_value):
-    """
-    Tests whether ``validate_roles_and_role_datas`` works as intended.
+    yield (
+        [],
+        None,
+    )
     
-    Case: passing.
+    yield (
+        [
+            role,
+        ],
+        [
+            role,
+        ],
+    )
     
-    Parameters
-    ----------
-    input_value : `object`
-        Value to pass to the validators.
+    yield (
+        [
+            {
+                'name': role_name,
+            },
+        ],
+        [
+            {
+                'name': role_name,
+            },
+        ],
+    )
     
-    Returns
-    -------
-    expected_output : `None | list<Role | dict>`
-    """
-    return validate_roles_and_role_datas(input_value)
+    yield (
+        [
+            role,
+            {
+                'name': role_name,
+            },
+        ],
+        [
+            role,
+            {
+                'name': role_name,
+            },
+        ],
+    )
 
 
 def _iter_options__type_error():
@@ -46,22 +68,30 @@ def _iter_options__type_error():
     yield {}
 
 
-@vampytest.raising(TypeError)
-@vampytest.call_from(_iter_options__type_error())
-def test__validate_roles_and_role_datas__type_error(input_value):
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_roles_and_role_datas(input_value):
     """
     Tests whether ``validate_roles_and_role_datas`` works as intended.
-    
-    Case: `TypeError`.
     
     Parameters
     ----------
     input_value : `object`
         Value to pass to the validators.
     
+    Returns
+    -------
+    output : ``None | list<Role | dict<str, object>>``
+    
     Raises
     ------
     TypeError
-        The occurred exception.
     """
-    validate_roles_and_role_datas(input_value)
+    output = validate_roles_and_role_datas(input_value)
+    
+    vampytest.assert_instance(output, list, nullable = True)
+    if (output is not None):
+        for element in output:
+            vampytest.assert_instance(element, Role, dict)
+    
+    return output

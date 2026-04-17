@@ -120,7 +120,7 @@ class AudioSettings(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the audio settings representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         repr_parts.append(' channels = ')
         repr_parts.append(repr(self.channels))

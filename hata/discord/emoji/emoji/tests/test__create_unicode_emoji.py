@@ -6,7 +6,7 @@ from ..emoji import Emoji
 from ..utils import create_unicode_emoji
 
 
-def test__create_unicode_emoji__0():
+def test__create_unicode_emoji__found():
     """
     Tests whether ``create_unicode_emoji`` works as intended.
     
@@ -31,8 +31,32 @@ def test__create_unicode_emoji__0():
     vampytest.assert_false(debug_logger_called)
 
 
+def test__create_unicode_emoji__as_name():
+    """
+    Tests whether ``create_unicode_emoji`` works as intended.
+    
+    Case: given as name.
+    """
+    emoji = BUILTIN_EMOJIS['x']
+    
+    debug_logger_called = False
+    def call_debug_logger(message, unique):
+        nonlocal debug_logger_called
+        debug_logger_called = True
+    
+    mocked = vampytest.mock_globals(
+        create_unicode_emoji,
+        ALLOW_DEBUG_MESSAGES = True,
+        call_debug_logger = call_debug_logger
+    )
+    
+    output = mocked(emoji.name)
+    
+    vampytest.assert_is(output, emoji)
+    vampytest.assert_false(debug_logger_called)
 
-def test__create_unicode_emoji__1():
+
+def test__create_unicode_emoji__not_found():
     """
     Tests whether ``create_unicode_emoji`` works as intended.
     

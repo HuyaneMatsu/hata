@@ -105,7 +105,7 @@ class SolarNode(RichAttributeErrorBaseType):
             port = int(port)
         else:
             raise TypeError(
-                f'`port` can be `int`, got {port.__class__.__name__}; {port!r}.'
+                f'`port` can be `int`, got {type(port).__name__}; {port!r}.'
             )
         
         if type(password) is str:
@@ -114,13 +114,13 @@ class SolarNode(RichAttributeErrorBaseType):
             password = str(password)
         else:
             raise TypeError(
-                f'`password` can be `str`, got {password.__class__.__name__}; {password!r}.'
+                f'`password` can be `str`, got {type(password).__name__}; {password!r}.'
             )
         
         if (region is not None) and (not isinstance(region, VoiceRegion)):
             raise TypeError(
                 f'`region` can be `None`, `{VoiceRegion.__name__}`, got '
-                f'{region.__class__.__name__}; {region!r}.'
+                f'{type(region).__name__}; {region!r}.'
             )
         
         if (resume_key is None) or (type(resume_key) is str):
@@ -130,7 +130,7 @@ class SolarNode(RichAttributeErrorBaseType):
         else:
             raise TypeError(
                 f'`resume_key` can be `None`, `str`, got '
-                f'{resume_key.__class__.__name__}; {resume_key!r}.'
+                f'{type(resume_key).__name__}; {resume_key!r}.'
             )
         
         if type(reconnect_attempts) is int:
@@ -140,7 +140,7 @@ class SolarNode(RichAttributeErrorBaseType):
         else:
             raise TypeError(
                 f'`reconnect_attempts` can be `int`, got '
-                f'{reconnect_attempts.__class__.__name__}; {reconnect_attempts!r}.'
+                f'{type(reconnect_attempts).__name__}; {reconnect_attempts!r}.'
             )
         
         self = object.__new__(cls)
@@ -460,7 +460,7 @@ class SolarNode(RichAttributeErrorBaseType):
                     KOKORO,
                     client.events.error(
                         client,
-                        f'{self.__class__.__name__}._received_message',
+                        f'{type(self).__name__}._received_message',
                         f'Unknown dispatch event {event}\nData: {message!r}',
                     ),
                 )
@@ -478,7 +478,7 @@ class SolarNode(RichAttributeErrorBaseType):
             KOKORO,
             client.events.error(
                 client,
-                f'{self.__class__.__name__}._received_message',
+                f'{type(self).__name__}._received_message',
                 f'Unknown operation {operation}\nData: {message!r}',
             ),
         )
@@ -517,7 +517,7 @@ class SolarNode(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the node's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         repr_parts.append(' client = ')
         repr_parts.append(repr(self.client))

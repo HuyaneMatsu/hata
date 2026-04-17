@@ -34,7 +34,7 @@ def validate_old_attributes(old_attributes):
     if not isinstance(old_attributes, dict):
         raise TypeError(
             f'`old_attributes` can be `None`, `dict<str, object>`, '
-            f'got {old_attributes.__class__.__name__}; {old_attributes!r}.'
+            f'got {type(old_attributes).__name__}; {old_attributes!r}.'
         )
     
     validated_old_attributes = {}
@@ -43,7 +43,7 @@ def validate_old_attributes(old_attributes):
         if not isinstance(key, str):
             raise TypeError(
                 f'`old_attributes` keys can be `str` instances, got '
-                f'{key.__class__.__name__}; {key!r}; old_attributes = {old_attributes!r}.'
+                f'{type(key).__name__}; {key!r}; old_attributes = {old_attributes!r}.'
             )
         
         validated_old_attributes[key] = value

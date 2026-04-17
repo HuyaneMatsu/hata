@@ -14,8 +14,45 @@ def _iter_options():
         name = role_name,
     )
     
-    yield {}, True, {'roles': []}
-    yield {role_id: role}, True, {'roles': [role.to_data(defaults = True, include_internals = True)]}
+    yield (
+        {},
+        False,
+        {
+            'roles': [],
+        },
+    )
+    
+    yield (
+        {},
+        True,
+        {
+            'roles': [],
+        },
+    )
+    
+    yield (
+        {
+            role_id: role,
+        },
+        False,
+        {
+            'roles': [
+                role.to_data(defaults = False, include_internals = True),
+            ],
+        },
+    )
+    
+    yield (
+        {
+            role_id: role,
+        },
+        True,
+        {
+            'roles': [
+                role.to_data(defaults = True, include_internals = True),
+            ],
+        },
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
@@ -25,8 +62,9 @@ def test__put_roles(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `dict<int, Role>`
+    input_value : ``dict<int, Role>``
         Input value to serialise.
+    
     defaults : `bool`
         Whether fields with their default values should be included as well.
     

@@ -31,7 +31,7 @@ class SoundboardSoundsEventWaiter(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the event waiter's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         repr_parts.append(' counter = ')
         repr_parts.append(repr(self.counter))

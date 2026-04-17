@@ -89,7 +89,7 @@ class CommandWrapper(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the command wrapper's representation."""
-        return f'<{self.__class__.__name__} wrapped={self._wrapped!r}>'
+        return f'<{type(self).__name__} wrapped={self._wrapped!r}>'
     
     
     def fetch_function_and_wrappers_back(self):
@@ -170,7 +170,7 @@ class ApplicationCommandPermissionOverwriteWrapper(CommandWrapper):
             guild_id = preconvert_snowflake(guild, 'guild')
         else:
             raise TypeError(
-                f'`guild` can be `{Guild.__class__.__name__}`, `int`, got {guild.__class__.__name__}; {guild!r}.'
+                f'`guild` can be `{type(Guild).__name__}`, `int`, got {type(guild).__name__}; {guild!r}.'
             )
         
         permission_overwrite = ApplicationCommandPermissionOverwrite(target, allow)
@@ -197,7 +197,7 @@ class ApplicationCommandPermissionOverwriteWrapper(CommandWrapper):
     def __repr__(self):
         """Returns the command wrapper's representation."""
         return (
-            f'<{self.__class__.__name__} wrapped = {self._wrapped!r}, guild_id = {self._guild_id!r}, '
+            f'<{type(self).__name__} wrapped = {self._wrapped!r}, guild_id = {self._guild_id!r}, '
             f'overwrite = {self._permission_overwrite!r}>'
         )
     
@@ -390,7 +390,7 @@ class ApplicationCommandParameterConfigurerWrapper(CommandWrapper):
             parameter_name = str(parameter_name)
         else:
             raise TypeError(
-                f'`parameter_name` can be `str`, got {parameter_name.__class__.__name__}; {parameter_name!r}.'
+                f'`parameter_name` can be `str`, got {type(parameter_name).__name__}; {parameter_name!r}.'
             )
         
         type_, choice_enum_type, choices, parsed_channel_types = parse_annotation_type_and_choice(
@@ -432,7 +432,7 @@ class ApplicationCommandParameterConfigurerWrapper(CommandWrapper):
     def __repr__(self):
         """Returns the command wrapper's representation."""
         repr_parts = [
-            '<', self.__class__.__name__,
+            '<', type(self).__name__,
             ' wrapped = ', repr(self._wrapped),
             ', parameter_name = ', repr(self.parameter_name),
         ]

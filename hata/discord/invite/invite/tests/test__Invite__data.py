@@ -6,6 +6,7 @@ from ....application import Application
 from ....channel import Channel, create_partial_channel_data
 from ....guild import Guild, GuildActivityOverview, create_partial_guild_data
 from ....permission import Permission
+from ....role import Role, create_partial_role_data
 from ....user import User
 from ....utils import datetime_to_timestamp
 
@@ -38,6 +39,10 @@ def test__Invite__set_attributes():
     inviter = User.precreate(202308060018)
     max_age = 3600
     max_uses = 100
+    roles = [
+        Role.precreate(202604050004),
+        Role.precreate(202604050005),
+    ]
     target_application = Application.precreate(202308060019)
     target_type = InviteTargetType.stream
     target_user = User.precreate(202308060020)
@@ -59,6 +64,7 @@ def test__Invite__set_attributes():
         'inviter': inviter.to_data(include_internals = True),
         'max_age': max_age,
         'max_uses': max_uses,
+        'roles': [create_partial_role_data(role) for role in roles],
         'target_application': target_application.to_data_invite(include_internals = True),
         'target_type': target_type.value,
         'target_user': target_user.to_data(include_internals = True),
@@ -79,6 +85,7 @@ def test__Invite__set_attributes():
     vampytest.assert_is(invite.inviter, inviter)
     vampytest.assert_eq(invite.max_age, max_age)
     vampytest.assert_eq(invite.max_uses, max_uses)
+    vampytest.assert_eq(invite.roles, tuple(roles))
     vampytest.assert_is(invite.target_application, target_application)
     vampytest.assert_is(invite.target_type, target_type)
     vampytest.assert_is(invite.target_user, target_user)
@@ -150,6 +157,10 @@ def test__Invite__update_attributes():
     inviter = User.precreate(202308060026)
     max_age = 3600
     max_uses = 100
+    roles = [
+        Role.precreate(202604050006),
+        Role.precreate(202604050007),
+    ]
     target_application = Application.precreate(202308060027)
     target_type = InviteTargetType.stream
     target_user = User.precreate(202308060028)
@@ -171,6 +182,7 @@ def test__Invite__update_attributes():
         'inviter': inviter.to_data(include_internals = True),
         'max_age': max_age,
         'max_uses': max_uses,
+        'roles': [create_partial_role_data(role) for role in roles],
         'target_application': target_application.to_data_invite(include_internals = True),
         'target_type': target_type.value,
         'target_user': target_user.to_data(include_internals = True),
@@ -191,6 +203,7 @@ def test__Invite__update_attributes():
     vampytest.assert_is(invite.inviter, inviter)
     vampytest.assert_eq(invite.max_age, max_age)
     vampytest.assert_eq(invite.max_uses, max_uses)
+    vampytest.assert_eq(invite.roles, tuple(roles))
     vampytest.assert_is(invite.target_application, target_application)
     vampytest.assert_is(invite.target_type, target_type)
     vampytest.assert_is(invite.target_user, target_user)
@@ -392,6 +405,10 @@ def test__Invite__from_data():
     inviter = User.precreate(202308060042)
     max_age = 3600
     max_uses = 100
+    roles = [
+        Role.precreate(202604050008),
+        Role.precreate(202604050009),
+    ]
     target_application = Application.precreate(202308060043)
     target_type = InviteTargetType.stream
     target_user = User.precreate(202308060044)
@@ -414,6 +431,7 @@ def test__Invite__from_data():
         'inviter': inviter.to_data(include_internals = True),
         'max_age': max_age,
         'max_uses': max_uses,
+        'roles': [create_partial_role_data(role) for role in roles],
         'target_application': target_application.to_data_invite(include_internals = True),
         'target_type': target_type.value,
         'target_user': target_user.to_data(include_internals = True),
@@ -436,6 +454,7 @@ def test__Invite__from_data():
     vampytest.assert_is(invite.inviter, inviter)
     vampytest.assert_eq(invite.max_age, max_age)
     vampytest.assert_eq(invite.max_uses, max_uses)
+    vampytest.assert_eq(invite.roles, tuple(roles))
     vampytest.assert_is(invite.target_application, target_application)
     vampytest.assert_is(invite.target_type, target_type)
     vampytest.assert_is(invite.target_user, target_user)
@@ -493,6 +512,10 @@ def test__Invite__to_data__with_internals():
     inviter = User.precreate(202308060056)
     max_age = 3600
     max_uses = 100
+    roles = [
+        Role.precreate(202604050010),
+        Role.precreate(202604050011),
+    ]
     target_application = Application.precreate(202308060057)
     target_type = InviteTargetType.stream
     target_user = User.precreate(202308060058)
@@ -515,6 +538,7 @@ def test__Invite__to_data__with_internals():
         inviter = inviter,
         max_age = max_age,
         max_uses = max_uses,
+        roles = roles,
         target_application = target_application,
         target_type = target_type,
         target_user = target_user,
@@ -543,6 +567,7 @@ def test__Invite__to_data__with_internals():
         'profile': guild_activity_overview.to_data(defaults = True, include_internals = True),
         'guild_id': str(guild.id),
         'inviter': inviter.to_data(defaults = True, include_internals = True),
+        'roles': [create_partial_role_data(role) for role in roles],
         'target_application': target_application.to_data_invite(defaults = True, include_internals = True),
         'target_user': target_user.to_data(defaults = True, include_internals = True),
         'type': invite_type.value,
@@ -576,6 +601,10 @@ def test__Invite__to_data__without_internals():
     inviter = User.precreate(202308060062)
     max_age = 3600
     max_uses = 100
+    roles = [
+        Role.precreate(202604050012),
+        Role.precreate(202604050013),
+    ]
     target_application = Application.precreate(202308060063)
     target_type = InviteTargetType.stream
     target_user = User.precreate(202308060064)
@@ -598,6 +627,7 @@ def test__Invite__to_data__without_internals():
         inviter = inviter,
         max_age = max_age,
         max_uses = max_uses,
+        roles = roles,
         target_application = target_application,
         target_type = target_type,
         target_user = target_user,
@@ -615,6 +645,7 @@ def test__Invite__to_data__without_internals():
         'max_uses': max_uses,
         'target_type': target_type.value,
         'temporary': temporary,
+        'role_ids': [str(role.id) for role in roles],
         'target_application_id': str(target_application.id),
         'target_user_id': str(target_user.id),
     }

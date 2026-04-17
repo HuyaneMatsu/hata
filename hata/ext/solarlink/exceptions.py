@@ -23,4 +23,4 @@ class SolarAuthenticationError(SolarException):
     
     def __repr__(self):
         """Returns the exception's representation."""
-        return f'<{self.__class__.__name__} node={self.node!r}, response={self.response!r}>'
+        return f'<{type(self).__name__} node={self.node!r}, response={self.response!r}>'

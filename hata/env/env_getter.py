@@ -44,7 +44,7 @@ class EnvGetter(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the env getter's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         if self._entered:
             repr_parts.append(' entered')

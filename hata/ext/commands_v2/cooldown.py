@@ -36,7 +36,7 @@ class CooldownUnit:
     
     def __repr__(self):
         """Returns the object's representation."""
-        return f'{self.__class__.__name__}(expires_at={self.expires_at}, uses_left={self.uses_left})'
+        return f'{type(self).__name__}(expires_at = {self.expires_at}, uses_left = {self.uses_left})'
 
 
 def _check_user(cooldown_handler, command_context):
@@ -229,7 +229,7 @@ class CooldownHandler:
                 f'\'for_\' can be \'user\', \'channel\' or \'guild\', got {for_!r}'
             )
         
-        reset_type = reset.__class__
+        reset_type = type(reset)
         if (reset_type is not float):
             try:
                 __float__ = getattr(reset_type, '__float__')
@@ -241,7 +241,7 @@ class CooldownHandler:
             
             reset = __float__(reset)
             
-        limit_type = limit.__class__
+        limit_type = type(limit)
         if limit_type is int:
             pass
         elif issubclass(limit_type, int):
@@ -251,7 +251,7 @@ class CooldownHandler:
                 f'`limit` can be `int`, got {limit_type.__name__}; {limit!r}.'
             ) from None
         
-        weight_type = weight.__class__
+        weight_type = type(weight)
         if weight_type is int:
             pass
         elif issubclass(weight_type, int):

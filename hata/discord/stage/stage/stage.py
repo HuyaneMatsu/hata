@@ -281,7 +281,7 @@ class Stage(DiscordEntity, immortal = True):
         """Returns the stage's representation."""
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
         ]
         
         repr_parts.append(' guild_id = ')

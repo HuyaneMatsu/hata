@@ -22,9 +22,9 @@ from .qualpath import QualPath
 
 html_serialize_docs_extended = include('html_serialize_docs_extended')
 
-WrapperDescriptorType = object.__eq__.__class__
-MethodDescriptorType = int.bit_length.__class__
-SlotWrapperType = object.__lt__.__class__
+WrapperDescriptorType = type(object.__eq__)
+MethodDescriptorType = type(int.bit_length)
+SlotWrapperType = type(object.__lt__)
 
 METHOD_TYPES = {
     GetSetDescriptorType,
@@ -113,7 +113,7 @@ for func in (
     if func is None:
         continue
     
-    if (func.__class__ in METHOD_TYPES):
+    if (type(func) in METHOD_TYPES):
         converted = getattr(func, '__func__', None)
         if (converted is not None):
             func = converted
@@ -219,7 +219,7 @@ def map_types_and_functions(obj, references, path, from_type):
         except AttributeError:
             continue
         
-        attr_value_type = attr_value.__class__
+        attr_value_type = type(attr_value)
         
         # Process only hashables
         try:
@@ -243,7 +243,7 @@ def map_types_and_functions(obj, references, path, from_type):
             # Cpython, check. Let built in methods trough.
             if (attr_value_func is not None):
                 attr_value = attr_value_func
-                attr_value_type = attr_value.__class__
+                attr_value_type = type(attr_value)
         
         # Check types.
         if issubclass(attr_value_type, type):
@@ -305,7 +305,7 @@ def map_types_and_functions(obj, references, path, from_type):
 #            try:
 #                name = func.__name__
 #            except AttributeError:
-#                name = func.__class__.__name__
+#                name = type(func).__name__
 #
 #            if name == '<lambda>':
 #                name = attr_name
@@ -350,7 +350,7 @@ class UnitBase:
     
     def __repr__(self):
         """Returns the unit's representation."""
-        return f'<{self.__class__.__name__} name = {self.name}, path = {self.path!s}>'
+        return f'<{type(self).__name__} name = {self.name}, path = {self.path!s}>'
     
     @property
     def parent(self):
@@ -924,7 +924,7 @@ class DirectoryUnit(ObjectedUnitBase):
     def __repr__(self):
         """Returns the directory like unit's representation."""
         return (
-            f'<{self.__class__.__name__} name = {self.name!r}, path = {self.path!s}, reference count = '
+            f'<{type(self).__name__} name = {self.name!r}, path = {self.path!s}, reference count = '
             f'{len(self.references)!r}>'
         )
 

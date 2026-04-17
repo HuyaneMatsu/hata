@@ -32,7 +32,7 @@ def _assert__guild_user_search__query(query):
     """
     if not isinstance(query, str):
         raise TypeError(
-            f'`query` can be `str`, got {query.__class__.__name__}; {query!r}'
+            f'`query` can be `str`, got {type(query).__name__}; {query!r}'
         )
     
     query_length = len(query)
@@ -60,7 +60,7 @@ def _assert__guild_user_search__limit(limit):
     """
     if not isinstance(limit, int):
         raise TypeError(
-            f'`limit` can be `int`, got {limit.__class__.__name__}; {limit!r}'
+            f'`limit` can be `int`, got {type(limit).__name__}; {limit!r}'
         )
     
     return True

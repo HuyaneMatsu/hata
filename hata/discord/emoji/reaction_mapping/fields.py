@@ -42,7 +42,7 @@ def validate_reaction(reaction):
     
     raise TypeError(
         f'Reaction can be `{Reaction.__name__}`, `{Emoji.__name__}`, `str`, '
-        f'got {reaction.__class__.__name__}; {reaction!r}.'
+        f'got {type(reaction).__name__}; {reaction!r}.'
     )
 
 
@@ -109,7 +109,7 @@ def validate_lines(lines):
             if not isinstance(item, tuple):
                 raise TypeError(
                     f'`lines` items can be `tuple` instances, got '
-                    f'{item.__class__.__name__}; {item!r}; lines = {lines!r}.'
+                    f'{type(item).__name__}; {item!r}; lines = {lines!r}.'
                 )
             
             item_length = len(item)

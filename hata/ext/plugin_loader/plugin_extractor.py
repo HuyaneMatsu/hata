@@ -62,7 +62,7 @@ class PluginExtractor(RichAttributeErrorBaseType):
             if getattr(value, '__iter__', None) is None:
                 raise TypeError(
                     f'`{name}` can be either `None`, `str`, `{Plugin.__name__}`, `{PluginTree.__name__}`, `iterable`, '
-                    f'got {value.__class__.__name__}; {value!r}.'
+                    f'got {type(value).__name__}; {value!r}.'
                 )
             
             for iterated_value in value:
@@ -90,7 +90,7 @@ class PluginExtractor(RichAttributeErrorBaseType):
                 else:
                     raise TypeError(
                         f'`{name}` elements can be `None`, `str`, `{Plugin.__name__}`, `{PluginTree.__name__}`, '
-                        f'got {iterated_value.__class__.__name__}; {iterated_value!r}; value = {value!r}.'
+                        f'got {type(iterated_value).__name__}; {iterated_value!r}; value = {value!r}.'
                     )
         
         self = object.__new__(cls)
@@ -129,7 +129,7 @@ class PluginExtractor(RichAttributeErrorBaseType):
         else:
             if getattr(value, '__iter__', None) is None:
                 raise TypeError(
-                    f'`{name}` can be either `str`, `iterable`, got {value.__class__.__name__}; {value!r}.'
+                    f'`{name}` can be either `str`, `iterable`, got {type(value).__name__}; {value!r}.'
                 )
             
             for iterated_value in value:
@@ -141,7 +141,7 @@ class PluginExtractor(RichAttributeErrorBaseType):
                 else:
                     raise TypeError(
                         f'`{name}` elements can be `None`, `str`, `{Plugin.__name__}`, `{PluginTree.__name__}`, '
-                        f'got {iterated_value.__class__.__name__}; {iterated_value!r}; value = {value!r}.'
+                        f'got {type(iterated_value).__name__}; {iterated_value!r}; value = {value!r}.'
                     )
 
         self = object.__new__(cls)
@@ -154,7 +154,7 @@ class PluginExtractor(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the representation of the plugin extractor."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         repr_parts.append(' name = ')
         repr_parts.append(repr(self.name))
         

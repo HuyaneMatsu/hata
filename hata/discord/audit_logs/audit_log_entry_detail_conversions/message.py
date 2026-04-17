@@ -34,7 +34,7 @@ def count_deserializer(value):
 @COUNT_CONVERSION.set_value_validator
 def validate_count(value):
     if not isinstance(value, int):
-        raise TypeError(f'`count` can be `int`, got {value.__class__.__name__}; {value!r}.')
+        raise TypeError(f'`count` can be `int`, got {type(value).__name__}; {value!r}.')
     
     if value < 0:
         raise ValueError(f'`count` cannot be negative, got {value!r}.')

@@ -5,6 +5,7 @@ import vampytest
 from ....application import Application
 from ....channel import Channel
 from ....guild import Guild, GuildActivityOverview
+from ....role import Role
 from ....user import User
 
 from ..flags import InviteFlag
@@ -27,6 +28,10 @@ def test__Invite__repr():
     inviter = User.precreate(202308060080)
     max_age = 3600
     max_uses = 100
+    roles = [
+        Role.precreate(202604050014),
+        Role.precreate(202604050015),
+    ]
     target_application = Application.precreate(202308060081)
     target_type = InviteTargetType.stream
     target_user = User.precreate(202308060082)
@@ -46,6 +51,7 @@ def test__Invite__repr():
         inviter = inviter,
         max_age = max_age,
         max_uses = max_uses,
+        roles = roles,
         target_application = target_application,
         target_type = target_type,
         target_user = target_user,
@@ -72,6 +78,10 @@ def test__Invite__hash():
     inviter = User.precreate(202308070003)
     max_age = 3600
     max_uses = 100
+    roles = [
+        Role.precreate(202604050016),
+        Role.precreate(202604050017),
+    ]
     target_application = Application.precreate(202308070004)
     target_type = InviteTargetType.stream
     target_user = User.precreate(202308070005)
@@ -103,6 +113,7 @@ def test__Invite__hash():
         inviter = inviter,
         max_age = max_age,
         max_uses = max_uses,
+        roles = roles,
         target_application = target_application,
         target_type = target_type,
         target_user = target_user,
@@ -137,6 +148,10 @@ def _iter_options__eq():
     flags = InviteFlag(11)
     max_age = 3600
     max_uses = 100
+    roles = [
+        Role.precreate(202604050018),
+        Role.precreate(202604050019),
+    ]
     target_application = Application.precreate(202308070007)
     target_type = InviteTargetType.stream
     target_user = User.precreate(202308070008)
@@ -146,6 +161,7 @@ def _iter_options__eq():
         'flags': flags,
         'max_age': max_age,
         'max_uses': max_uses,
+        'roles': roles,
         'target_application': target_application,
         'target_type': target_type,
         'target_user': target_user,
@@ -181,6 +197,15 @@ def _iter_options__eq():
         {
             **keyword_parameters,
             'max_uses': 200,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'roles': None,
         },
         False,
     )

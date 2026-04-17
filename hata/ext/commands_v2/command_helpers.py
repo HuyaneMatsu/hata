@@ -416,7 +416,7 @@ def test_name_rule(rule, rule_name):
     
     if (type(result) is not str):
         raise TypeError(
-            f'{rule_name}: {rule!r} did not return `str`, meanwhile testing it, got {result.__class__.__name__}.'
+            f'{rule_name}: {rule!r} did not return `str`, meanwhile testing it, got {type(result).__name__}.'
         )
 
 
@@ -779,7 +779,7 @@ def get_prefix_parser(prefix, prefix_ignore_case):
         else:
             raise TypeError(
                 f'`prefix` can be `callable`, `async-callable`, `str`, `tuple` of `str`, got '
-                f'{prefix.__class__.__name__}; {prefix!r}.'
+                f'{type(prefix).__name__}; {prefix!r}.'
             )
         
         compiled_prefix = re_compile(escaped_prefix, re_flags)
@@ -817,7 +817,7 @@ def _unwrap_check(check):
     
     raise TypeError(
         f'`check` can be `{CheckBase.__name__}`, `{CommandCheckWrapper.__name__}`, got '
-        f'{check.__class__.__name__}; {check!r}.'
+        f'{type(check).__name__}; {check!r}.'
     )
 
 

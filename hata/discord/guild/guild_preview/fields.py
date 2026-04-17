@@ -130,13 +130,13 @@ def validate_emojis(emojis):
     if getattr(type(emojis), '__iter__', None) is None:
         raise TypeError(
             f'`emojis` can be `None` ot `iterable` of `{Emoji.__name__}`, '
-            f'got {emojis.__class__.__name__}; {emojis!r}.'
+            f'got {type(emojis).__name__}; {emojis!r}.'
         )
     
     for emoji in emojis:
         if not isinstance(emoji, Emoji):
             raise TypeError(
-                f'`emoji` can contain `{Emoji.__name__}` elements, got {emoji.__class__.__name__}; {emoji!r}; '
+                f'`emoji` can contain `{Emoji.__name__}` elements, got {type(emoji).__name__}; {emoji!r}; '
                 f'emojis = {emojis!r}.'
             )
         

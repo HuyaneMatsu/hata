@@ -240,7 +240,7 @@ class PaginationBase:
     def __repr__(self):
         """Returns the pagination instance's representation."""
         repr_parts = [
-            '<', self.__class__.__name__,
+            '<', type(self).__name__,
             ' client = ', repr(self.client),
             ', channel = ', repr(self.channel),
             ', state = '

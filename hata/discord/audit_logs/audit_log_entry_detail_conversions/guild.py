@@ -21,7 +21,7 @@ def days_value_deserializer(value):
 @DAYS_CONVERSION.set_value_validator
 def days_value_validator(value):
     if not isinstance(value, int):
-        raise TypeError(f'`days` can be `int`, got {value.__class__.__name__}; {value!r}.')
+        raise TypeError(f'`days` can be `int`, got {type(value).__name__}; {value!r}.')
     
     if value < 0:
         raise ValueError(f'`days` cannot be negative, got {value!r}.')
@@ -47,7 +47,7 @@ def users_removed_value_deserializer(value):
 @USERS_REMOVED_CONVERSION.set_value_validator
 def users_removed_value_validator(value):
     if not isinstance(value, int):
-        raise TypeError(f'`users_removed` can be `int`, got {value.__class__.__name__}; {value!r}.')
+        raise TypeError(f'`users_removed` can be `int`, got {type(value).__name__}; {value!r}.')
     
     if value < 0:
         raise ValueError(f'`users_removed` cannot be negative, got {value!r}.')

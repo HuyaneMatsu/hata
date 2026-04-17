@@ -362,7 +362,7 @@ class LocalAudio(AudioSource):
             
             except subprocess.SubprocessError as err:
                 raise ValueError(
-                    f'Opening subprocess failed: {err.__class__.__name__}: {err}'
+                    f'Opening subprocess failed: {type(err).__name__}: {err}'
                 ) from err
             
             self.process = process

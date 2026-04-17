@@ -29,4 +29,4 @@ class DiscordRPCError(BaseException):
     
     def __repr__(self):
         """Returns the representation of the error code."""
-        return f'{self.__class__.__name__}: [{self.code}] {self.message!r}'
+        return f'{type(self).__name__}: [{self.code}] {self.message!r}'

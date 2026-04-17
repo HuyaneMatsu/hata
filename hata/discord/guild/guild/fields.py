@@ -839,7 +839,7 @@ def put_users(users, data, defaults, *, guild_id = 0):
     
     Parameters
     ----------
-    users : `dict`, ``WeakValueDictionary``  of (`int`, ``ClientUserBase``) items
+    users : ``(dict | WeakValueDictionary)<int, ClientUserBase>``
         Resolved users.
     data : `dict<str, object>`
         Interaction resolved data.
@@ -1031,7 +1031,7 @@ def validate_channels_and_channel_datas(channels):
     else:
         raise TypeError(
             f'`channels` can be `None` or `dict` of `{Channel.__name__}`, `dict` elements. '
-            f'Got {channels.__class__.__name__}; {channels!r}.'
+            f'Got {type(channels).__name__}; {channels!r}.'
         )
     
     return validated
@@ -1077,7 +1077,7 @@ def validate_roles_and_role_datas(roles):
     else:
         raise TypeError(
             f'`roles` can be `None` or `dict` of `{Role.__name__}`, `dict` elements. '
-            f'Got {roles.__class__.__name__}; {roles!r}.'
+            f'Got {type(roles).__name__}; {roles!r}.'
         )
     
     return validated

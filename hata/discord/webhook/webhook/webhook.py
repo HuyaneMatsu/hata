@@ -105,7 +105,7 @@ class Webhook(WebhookBase):
         
         Parameters
         ----------
-        application_id : `int`, ``Application``, Optional (Keyword only)
+        application_id : ``None | int | Application``, Optional (Keyword only)
             The application's identifier what created the webhook.
         
         channel_id : `int`, Optional (Keyword only)
@@ -284,7 +284,7 @@ class Webhook(WebhookBase):
         
         Parameters
         ----------
-        application_id : `int`, ``Application``, Optional (Keyword only)
+        application_id : ``None | int | Application``, Optional (Keyword only)
             The application's identifier what created the webhook.
         
         channel_id : `int`, Optional (Keyword only)
@@ -471,10 +471,10 @@ class Webhook(WebhookBase):
         
         Other Parameters
         ----------------
-        application : `int`, ``Application``, Optional (Keyword only)
+        application : ``None | int | Application``, Optional (Keyword only)
             Alternative for `application_id`.
         
-        application_id : `int`, ``Application``, Optional (Keyword only)
+        application_id : ``None | int | Application``, Optional (Keyword only)
             The application's identifier what created the webhook.
         
         avatar : ``None | str | Icon``, Optional (Keyword only)

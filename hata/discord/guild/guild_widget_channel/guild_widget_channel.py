@@ -119,7 +119,7 @@ class GuildWidgetChannel(DiscordEntity):
     
     def __repr__(self):
         """Returns the guild widget channel's representation."""
-        return f'<{self.__class__.__name__} id = {self.id}, name = {self.name!r}>'
+        return f'<{type(self).__name__} id = {self.id}, name = {self.name!r}>'
     
     
     def __hash__(self):

@@ -1019,7 +1019,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        thread_users : `None`, `dict` of (`int`, ``ClientUserBase``) items
+        thread_users : ``None | dict<int, ClientUserBase>``
         """
     )
     

@@ -32,7 +32,7 @@ class EventHandlerDifference(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the event handler difference."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         field_added = False
         
@@ -318,7 +318,7 @@ class EventHandlerSnapshotType(BaseSnapshotType):
     
     @copy_docs(BaseSnapshotType.__repr__)
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         client = self.client
         if (client is not None):

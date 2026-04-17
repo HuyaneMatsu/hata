@@ -28,6 +28,7 @@ from .constants import NAME_LENGTH_MAX, NAME_LENGTH_MIN, ROLE_MANAGER_DEFAULT
 from .flags import RoleFlag
 from .preinstanced import RoleManagerType
 
+
 # color
 
 parse_color = flag_parser_factory('color', Color)
@@ -213,7 +214,7 @@ def validate_manager(manager):
     if (not isinstance(manager, tuple)) or (len(manager) != 2):
         raise TypeError(
             f'`manager` can be `None` or `tuple` (of length 2 as manager_type & manager_metadata), got '
-            f'{manager.__class__.__name__}; {manager!r}.'
+            f'{type(manager).__name__}; {manager!r}.'
         )
     
     manager_type, manager_metadata = manager

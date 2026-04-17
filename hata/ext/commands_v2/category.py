@@ -85,13 +85,13 @@ class Category:
         
         if not isinstance(hidden, bool):
             raise TypeError(
-                f'`hidden` can be `bool`, got {hidden.__class__.__name__}; {hidden!r}.'
+                f'`hidden` can be `bool`, got {type(hidden).__name__}; {hidden!r}.'
             )
         
         if not isinstance(hidden_if_checks_fail, bool):
             raise TypeError(
                 f'`hidden_if_checks_fail` can be `bool`, got '
-                f'{hidden_if_checks_fail.__class__.__name__}; {hidden_if_checks_fail!r}.'
+                f'{type(hidden_if_checks_fail).__name__}; {hidden_if_checks_fail!r}.'
             )
         
         name = raw_name_to_display(name)

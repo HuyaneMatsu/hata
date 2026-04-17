@@ -161,7 +161,7 @@ def validate_tags(tags):
     for tag in tags:
         if not isinstance(tag, str):
             raise TypeError(
-                f'`tags` can contain `str` instances, got {tag.__class__.__name__}; {tag!r}; tags = {tags!r}.'
+                f'`tags` can contain `str` instances, got {type(tag).__name__}; {tag!r}; tags = {tags!r}.'
             )
         
         if validated_tags is None:

@@ -144,7 +144,7 @@ class GuildIncidents(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the guild incidents' representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         field_added = False
         

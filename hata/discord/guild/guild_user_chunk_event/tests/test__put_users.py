@@ -52,7 +52,7 @@ def test__put_users(users, defaults, guild_id):
     
     Parameters
     ----------
-    users : `dict` of (`int`, ``ClientUserBase``) items
+    users : ``dict<int, ClientUserBase>``
         Users to pass.
     defaults : `bool`
         Whether fields with their default values should be included as well.

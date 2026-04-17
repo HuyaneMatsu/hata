@@ -164,7 +164,7 @@ class OnboardingPromptOption(DiscordEntity):
         """Returns the onboarding prompt option's representation."""
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
         ]
         
         option_id = self.id

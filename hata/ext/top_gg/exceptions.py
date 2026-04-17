@@ -72,7 +72,7 @@ class TopGGHttpException(Exception):
     
     def __repr__(self):
         """Returns the exception's representation."""
-        repr_parts = ['<', self.__class__.__name__, ' status = ', str(self.response.status)]
+        repr_parts = ['<', type(self).__name__, ' status = ', str(self.response.status)]
         
         message = self.message
         if message:

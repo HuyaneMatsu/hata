@@ -115,7 +115,7 @@ class EntitySelectDefaultValue(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the string select option's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         # id
         repr_parts.append(', id = ')

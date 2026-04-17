@@ -313,7 +313,7 @@ class ClientCompoundRoleEndpoints(Compound):
             if snowflake_pair is None:
                 raise TypeError(
                     f'`role` can be `{Role.__name__}`, `tuple` (`int`, `int`), got '
-                    f'{role.__class__.__name__}; {role!r}.'
+                    f'{type(role).__name__}; {role!r}.'
                 )
             
             guild_id, role_id = snowflake_pair
@@ -383,7 +383,7 @@ class ClientCompoundRoleEndpoints(Compound):
         """
         if not isinstance(item, tuple):
             raise TypeError(
-                f'`roles` item can be `tuple`, got {item.__class__.__name__}; {item!r}.'
+                f'`roles` item can be `tuple`, got {type(item).__name__}; {item!r}.'
             )
         
         item_length = len(item)
@@ -402,7 +402,7 @@ class ClientCompoundRoleEndpoints(Compound):
             if snowflake_pair is None:
                 raise TypeError(
                     f'`roles` item[0] can be `{Role.__name__}`, `tuple` (`int`, `int`), got '
-                    f'{role.__class__.__name__}; {role!r}.'
+                    f'{type(role).__name__}; {role!r}.'
                 )
             
             guild_id, role_id = snowflake_pair
@@ -417,7 +417,7 @@ class ClientCompoundRoleEndpoints(Compound):
         
         if not isinstance(position, int):
             raise TypeError(
-                f'`position` can be `int`, got {position.__class__.__name__}; {position!r}.'
+                f'`position` can be `int`, got {type(position).__name__}; {position!r}.'
             )
         
         return role, guild, position

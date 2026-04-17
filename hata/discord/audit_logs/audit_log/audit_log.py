@@ -42,7 +42,7 @@ class AuditLog(RichAttributeErrorBaseType):
         A dictionary that containing the mentioned scheduled events by the the audit log's entries.
     threads : `None`, `dict` of (`int`, ``Channel``) items
         A dictionary that containing the mentioned threads by the audit log's entries.
-    users : `None`, `dict` of (`int`, ``ClientUserBase``) items
+    users : ``None | dict<int, ClientUserBase>``
         A dictionary that contains the mentioned users by the audit log's entries. The keys are the `id`-s of the
         users, meanwhile the values are the users themselves.
     webhooks : `None`, `dict` of (`int`, ``Webhook``) items

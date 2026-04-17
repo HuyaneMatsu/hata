@@ -1390,7 +1390,7 @@ class Embed(RichAttributeErrorBaseType):
         """
         if not isinstance(field, EmbedField):
             raise TypeError(
-                f'`field` can be `{EmbedField.__name__}`, got {field.__class__.__name__}; {field!r}.'
+                f'`field` can be `{EmbedField.__name__}`, got {type(field).__name__}; {field!r}.'
             )
         
         fields = self.fields
@@ -1419,7 +1419,7 @@ class Embed(RichAttributeErrorBaseType):
         """
         if not isinstance(field, EmbedField):
             raise TypeError(
-                f'`field` can be `{EmbedField.__name__}`, got {field.__class__.__name__}; {field!r}.'
+                f'`field` can be `{EmbedField.__name__}`, got {type(field).__name__}; {field!r}.'
             )
         
         fields = self.fields

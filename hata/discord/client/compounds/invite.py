@@ -1,19 +1,20 @@
 __all__ = ()
 
-from scarletio import Compound
+from scarletio import Compound, to_json
+from scarletio.web_common import FormData
 
 from ...bases import maybe_snowflake
 from ...channel import Channel
 from ...exceptions import DiscordException, ERROR_CODES
 from ...guild import Guild
 from ...http import DiscordApiClient
-from ...invite import Invite
-from ...invite.invite.fields import validate_code
+from ...invite import Invite, InviteAllowedUserIdsStatus
+from ...invite.invite.fields import validate_code, validate_allowed_user_ids
 from ...invite.invite.utils import INVITE_GUILD_FIELD_CONVERTERS
 from ...payload_building import build_create_payload
 from ...permission.permission import PERMISSION_MASK_CREATE_INSTANT_INVITE
 
-from ..request_helpers import get_channel_id, get_guild_and_id, get_guild_id
+from ..request_helpers import get_channel_id, get_guild_and_id, get_guild_id, get_invite_and_code, get_invite_code
 
 
 def _iter_channels_in_preference_order(guild):
@@ -84,13 +85,13 @@ class ClientCompoundInviteEndpoints(Compound):
         
         Returns
         -------
-        invite : `None`, ``Invite``
+        invite : ``None | Invite``
             The vanity invite of the `guild`, `None` if it has no vanity invite.
         
         Raises
         ------
         TypeError
-            If `guild` was not given neither as ``Guild`` nor as `int`.
+            If `guild` was not given as invalid type.
         ConnectionError
             No internet connection.
         DiscordException
@@ -114,21 +115,24 @@ class ClientCompoundInviteEndpoints(Compound):
         ----------
         guild : ``Guild``
             The guild, what's invite will be edited.
+        
         vanity_code : `str`
             The new code of the guild's vanity invite.
-        reason : `None`, `str` = `None`, Optional (Keyword only)
+        
+        reason : `None | str` = `None`, Optional (Keyword only)
             Shows up at the guild's audit logs.
         
         Raises
         ------
         TypeError
-            If `guild` was not given neither as ``Guild`` nor as `int`.
+            - If `guild` was not given as invalid type.
+            - If `vanity_code` is given as an invalid type.
+        ValueError
+            - If `vanity_code` is given as an invalid value.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If `vanity_code` was not given as `str`.
         """
         guild_id = get_guild_id(guild)
         
@@ -137,7 +141,9 @@ class ClientCompoundInviteEndpoints(Compound):
         await self.api.invite_edit_vanity(guild_id, {'code': vanity_code}, reason)
     
     
-    async def invite_create(self, channel, invite_template = None, **keyword_parameters):
+    async def invite_create(
+        self, channel, invite_template = None, *, allowed_user_ids = ..., reason = None, **keyword_parameters
+    ):
         """
         Creates an invite at the given channel with the given parameters.
         
@@ -152,11 +158,17 @@ class ClientCompoundInviteEndpoints(Compound):
         
         Parameters
         ----------
-        channel : ``Channel``, `int`
+        channel : ``int | Channel``
             The channel of the created invite.
         
-        invite_template : `None`, ``Invite`` = `None`, Optional
+        invite_template : ``None | Invite`` = `None`, Optional
             Invite entity to use as a template.
+        
+        allowed_user_ids : ``None | iterable<int> | iterable<ClientUserBase>``, Optional (Keyword only)
+            The users who are allowed to accept this invite.
+        
+        reason : `None | str` = `None`, Optional (Keyword only)
+            Shows up at the guild's audit logs.
         
         **keyword_parameters : Keyword parameters
             Additional keyword parameters to create the invite with.
@@ -169,19 +181,25 @@ class ClientCompoundInviteEndpoints(Compound):
         max_uses : `int`, Optional (Keyword only)
             How much times can the invite be used. Defaults to unlimited.
         
-        target_application : `int`, ``Application``, Optional (Keyword only)
+        role_ids : ``None | iterable<int> | iterable<Role>``, Optional (Keyword only)
+            Roles that the invite grants upon using.
+        
+        roles : ``None | iterable<int> | iterable<Role>``, Optional (Keyword only)
+            Alternative for `role_ids`.
+        
+        target_application : ``None | int | Application``, Optional (Keyword only)
             Alternative for `target_application_id`.
         
-        target_application_id : `int`, ``Application``, Optional (Keyword only)
+        target_application_id : ``None | int | Application``, Optional (Keyword only)
             The invite's target application.
         
         target_type : ``None | int | InviteTargetType``, Optional (Keyword only)
             The invite's target type.
         
-        target_user : `int`, ``ClientUserBase``, Optional (Keyword only)
+        target_user : ``None | int | ClientUserBase``, Optional (Keyword only)
             Alternative for `target_user`.
         
-        target_user_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+        target_user_id : ``None | int | ClientUserBase``, Optional (Keyword only)
             The target of the invite if applicable.
         
         temporary : `bool`, Optional (Keyword only)
@@ -207,7 +225,26 @@ class ClientCompoundInviteEndpoints(Compound):
         """
         channel_id = get_channel_id(channel, Channel.is_in_group_invitable)
         data = build_create_payload(invite_template, INVITE_GUILD_FIELD_CONVERTERS, keyword_parameters)
-        invite_data = await self.api.invite_create(channel_id, data)
+        
+        if (allowed_user_ids is not ...):
+            allowed_user_ids = validate_allowed_user_ids(allowed_user_ids)
+            
+            form_data = FormData()
+            for key, value in data.items():
+                form_data.add_field(key, to_json(value))
+            
+            # Note:
+            # Sort `allowed_user_ids`, so we can reliable test it
+            form_data.add_field(
+                'target_users_file',
+                '\n'.join(str(user_id) for user_id in sorted(allowed_user_ids)),
+                content_type = 'text/csv',
+                file_name = f'file.csv',
+            )
+            
+            data = form_data
+        
+        invite_data = await self.api.invite_create(channel_id, data, reason)
         return Invite.from_data(invite_data)
     
     
@@ -227,17 +264,44 @@ class ClientCompoundInviteEndpoints(Compound):
         
         Other Parameters
         ----------------
-        max_age : `int` = `0`, Optional (Keyword only)
+            allowed_user_ids : ``None | iterable<int> | iterable<ClientUserBase>``, Optional (Keyword only)
+            The users who are allowed to accept this invite.
+        
+        max_age : `int`, Optional (Keyword only)
             After how much time (in seconds) will the invite expire. Defaults is never.
         
-        max_uses : `int` = `0`, Optional (Keyword only)
+        max_uses : `int`, Optional (Keyword only)
             How much times can the invite be used. Defaults to unlimited.
         
-        unique : `bool` = `True`, Optional (Keyword only)
-            Whether the created invite should be unique.
+        reason : `None | str` = `None`, Optional (Keyword only)
+            Shows up at the guild's audit logs.
         
-        temporary : `bool` = `False`, Optional (Keyword only)
+        role_ids : ``None | iterable<int> | iterable<Role>``, Optional (Keyword only)
+            Roles that the invite grants upon using.
+        
+        roles : ``None | iterable<int> | iterable<Role>``, Optional (Keyword only)
+            Alternative for `role_ids`.
+        
+        target_application : ``None | int | Application``, Optional (Keyword only)
+            Alternative for `target_application_id`.
+        
+        target_application_id : ``None | int | Application``, Optional (Keyword only)
+            The invite's target application.
+        
+        target_type : ``None | int | InviteTargetType``, Optional (Keyword only)
+            The invite's target type.
+        
+        target_user : ``None | int | ClientUserBase``, Optional (Keyword only)
+            Alternative for `target_user`.
+        
+        target_user_id : ``None | int | ClientUserBase``, Optional (Keyword only)
+            The target of the invite if applicable.
+        
+        temporary : `bool`, Optional (Keyword only)
             Whether the invite should give only temporary membership.
+        
+        unique : `bool`, Optional (Keyword only)
+            Whether the created invite should be unique.
         
         Returns
         -------
@@ -256,7 +320,7 @@ class ClientCompoundInviteEndpoints(Compound):
         """
         if not isinstance(guild, Guild):
             raise TypeError(
-                f'`guild` can be `{Guild.__name__}`, got {guild.__class__.__name__}; {guild!r}.'
+                f'`guild` can be `{Guild.__name__}`, got {type(guild).__name__}; {guild!r}.'
             )
         
         channel = _get_preferred_channel_for_invite(self, guild)
@@ -286,7 +350,7 @@ class ClientCompoundInviteEndpoints(Compound):
         
         Parameters
         ----------
-        invite : ``Invite``, `str`
+        invite : ``str | Invite``
             The invites code.
         
         Returns
@@ -296,26 +360,13 @@ class ClientCompoundInviteEndpoints(Compound):
         Raises
         ------
         TypeError
-            If `invite` was not given neither ``Invite`` nor `str`.
+            If `invite` was given as invalid type.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If `invite_code` was not given as `str`.
         """
-        if isinstance(invite, Invite):
-            invite_code = invite.code
-        
-        elif isinstance(invite, str):
-            invite_code = invite
-            invite = None
-        
-        else:
-            raise TypeError(
-                f'`invite`` can be `{Invite.__name__}`, `str`, got {type(invite).__name__}; '
-                f'{invite!r}.'
-            )
+        invite, invite_code = get_invite_and_code(invite)
         
         invite_data = await self.api.invite_get(invite_code, {'with_counts': True, 'with_permissions': True})
         
@@ -340,12 +391,12 @@ class ClientCompoundInviteEndpoints(Compound):
         
         Returns
         -------
-        invites : `list` of ``Invite`` objects
+        invites : ``list<Invite>``
         
         Raises
         ------
         TypeError
-            If `guild` was not given neither as ``Guild`` nor as `int`.
+            If `guild` was not given as invalid type.
         ConnectionError
             No internet connection.
         DiscordException
@@ -365,17 +416,17 @@ class ClientCompoundInviteEndpoints(Compound):
         
         Parameters
         ----------
-        channel : ``Channel``, `int`
+        channel : ``int | Channel``
             The channel, what's invites will be requested.
         
         Returns
         -------
-        invites : `list` of ``Invite`` objects
+        invites : ``list<Invite>``
         
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``Channel``, neither as `int`.
+            If `channel` was given as an invalid type.
         ConnectionError
             No internet connection.
         DiscordException
@@ -393,7 +444,7 @@ class ClientCompoundInviteEndpoints(Compound):
                     break
             
             raise TypeError(
-                f'`channel` can be an invitable ``Channel``, `int`, got {channel.__class__.__name__}; {channel!r}.'
+                f'`channel` can be an invitable ``int | Channel``, got {type(channel).__name__}; {channel!r}.'
             )
         
         invite_datas = await self.api.invite_get_all_channel(channel_id)
@@ -408,31 +459,22 @@ class ClientCompoundInviteEndpoints(Compound):
         
         Parameters
         ----------
-        invite : ``Invite``
+        invite : ``str | Invite``
             The invite to delete.
-        reason : `None`, `str` = `None`, Optional (Keyword only)
+        
+        reason : `None | str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
         ------
         TypeError
-            If `invite` was not given neither ``Invite`` nor `str`.
+            If `invite` was given as invalid type.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(invite, Invite):
-            invite_code = invite.code
-        
-        elif isinstance(invite, str):
-            invite_code = invite
-            invite = None
-        
-        else:
-            raise TypeError(
-                f'`invite`` can be `{Invite.__name__}`, `str`, got {invite.__class__.__name__}; {invite!r}.'
-            )
+        invite, invite_code = get_invite_and_code(invite)
         
         invite_data = await self.api.invite_delete(invite_code, reason)
         
@@ -442,3 +484,128 @@ class ClientCompoundInviteEndpoints(Compound):
             invite._update_attributes(invite_data)
         
         return invite
+    
+    
+    async def invite_allowed_user_ids_get(self, invite):
+        """
+        Requests the users' identifiers who are allowed to accept the invite.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        invite : ``str | Invite``
+            The invite to request for.
+        
+        Returns
+        -------
+        user_ids : `list<int>`
+        
+        Raises
+        ------
+        TypeError
+            If `invite` was given as invalid type.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        invite_code = get_invite_code(invite)
+        
+        data = await self.api.invite_allowed_user_ids_get(invite_code)
+        # Example output:
+        # 'user_id\r\n11111111111111111\r\n'
+        
+        user_ids = []
+        
+        for line in data.splitlines():
+            try:
+                user_id = int(line)
+            except ValueError:
+                pass
+            else:
+                user_ids.append(user_id)
+        
+        
+        return user_ids
+    
+    
+    async def invite_allowed_user_ids_get_status(self, invite):
+        """
+        Requests how were the users identifiers allowed to accept the invite processed.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        invite : ``str | Invite``
+            The invite to request for.
+        
+        Returns
+        -------
+        invite_allowed_user_ids_status : ``InviteAllowedUserIdsStatus``
+        
+        Raises
+        ------
+        TypeError
+            If `invite` was given as invalid type.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        invite_code = get_invite_code(invite)
+        
+        data = await self.api.invite_allowed_user_ids_get_status(invite_code)
+        # Example output:
+        # {
+        #     'status': 2,
+        #     'total_users': 1,
+        #     'processed_users': 1,
+        #     'created_at': '2026-04-07T18:06:52.154637+00:00',
+        #     'completed_at': '2026-04-07T18:06:52.738245+00:00',
+        #     'error_message': None,
+        # }
+        
+        return InviteAllowedUserIdsStatus.from_data(data)
+    
+    
+    async def invite_allowed_user_ids_edit(self, invite, allowed_user_ids):
+        """
+        Edits the users' identifiers who are allowed to accept the invite.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        invite : ``str | Invite``
+            The invite to request for.
+        
+        allowed_user_ids : ``None | iterable<int> | iterable<ClientUserBase>``
+            The new users who are allowed to accept this invite.
+        
+        Raises
+        ------
+        TypeError
+            If `invite` was given as invalid type.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        invite_code = get_invite_code(invite)
+        allowed_user_ids = validate_allowed_user_ids(allowed_user_ids)
+        
+        form_data = FormData()
+        form_data.add_field(
+            'target_users_file',
+            '\n'.join(str(user_id) for user_id in sorted(allowed_user_ids)),
+            content_type = 'text/csv',
+            file_name = f'file.csv',
+        )
+        
+        await self.api.invite_allowed_user_ids_edit(invite_code, form_data)
+        # No output.
+        # Example error:
+        # target_users_file.GUILD_INVITE_TARGET_USERS_NO_VALID_IDS('No valid user IDs found in CSV file')
+        # target_users_file.GUILD_INVITE_TARGET_USERS_INVALID_FORMAT('Line 2: invalid user ID format')

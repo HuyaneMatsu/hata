@@ -6,15 +6,30 @@ from ..emoji import Emoji
 from ..utils import create_emoji_from_exclusive_data
 
 
-def test__create_emoji_from_exclusive_data__unicode_emoji():
+def test__create_emoji_from_exclusive_data__unicode_emoji__as_unicode():
     """
     Tests whether ``create_emoji_from_exclusive_data`` works as intended.
     
-    Case: unicode emoji.
+    Case: unicode emoji as unicode.
     """
     emoji = BUILTIN_EMOJIS['heart']
     
     data = {'name': emoji.unicode}
+    
+    output_emoji = create_emoji_from_exclusive_data(data)
+    
+    vampytest.assert_is(emoji, output_emoji)
+
+
+def test__create_emoji_from_exclusive_data__unicode_emoji__as_name():
+    """
+    Tests whether ``create_emoji_from_exclusive_data`` works as intended.
+    
+    Case: unicode emoji as name.
+    """
+    emoji = BUILTIN_EMOJIS['heart']
+    
+    data = {'name': emoji.name}
     
     output_emoji = create_emoji_from_exclusive_data(data)
     

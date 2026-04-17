@@ -126,7 +126,7 @@ def _assert__interaction_event_type(interaction_event):
     if not isinstance(interaction_event, InteractionEvent):
         raise AssertionError(
             f'`interaction` can be `{InteractionEvent.__name__}`, got '
-            f'{interaction_event.__class__.__name__}; {interaction_event!r}.'
+            f'{type(interaction_event).__name__}; {interaction_event!r}.'
         )
     
     return True
@@ -1213,7 +1213,7 @@ class ClientCompoundInteractionEndpoints(Compound):
             message_id = maybe_snowflake(message)
             if (message_id is None):
                 raise TypeError(
-                    f'`message` can be `{Message.__name__}`, `int`, got {message.__class__.__name__}; {message!r}.'
+                    f'`message` can be `{Message.__name__}`, `int`, got {type(message).__name__}; {message!r}.'
                 )
         
         await self.api.interaction_followup_message_delete(

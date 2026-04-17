@@ -133,7 +133,7 @@ def get_bot_module_name(bot_name):
     module_name : `str`
     """
     return '_'.join([part.lower() for part in _split_bot_name_to_words(bot_name)])
-    
+
 
 def get_bot_variable_name(bot_name):
     """

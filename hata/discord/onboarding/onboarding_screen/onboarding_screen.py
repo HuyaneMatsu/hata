@@ -154,7 +154,7 @@ class OnboardingScreen(RichAttributeErrorBaseType):
         """Returns the onboarding screen's representation."""
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
         ]
         
         guild_id = self.guild_id

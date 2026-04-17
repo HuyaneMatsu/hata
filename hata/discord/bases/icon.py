@@ -92,7 +92,7 @@ class IconDetailsBase(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the icon details' representation."""
-        return f'<{self.__class__.__name__}>'
+        return f'<{type(self).__name__}>'
     
     
     def get_alternative_icon_type_for(self, prefix):
@@ -161,7 +161,7 @@ class IconDetailsPreinstanced(IconDetailsBase):
     
     @copy_docs(IconDetailsBase.__repr__)
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         repr_parts.append(' allowed_postfixes = ')
         repr_parts.append(repr(self.allowed_postfixes))
@@ -223,7 +223,7 @@ class IconDetailsCustom(IconDetailsBase):
     
     @copy_docs(IconDetailsBase.__repr__)
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         repr_parts.append(' data[length] = ')
         repr_parts.append(repr(len(self.data)))
@@ -618,7 +618,7 @@ class Icon(RichAttributeErrorBaseType):
     def __repr__(self):
         """Returns the representation of the icon."""
         return ''.join([
-            self.__class__.__name__,
+            type(self).__name__,
             '(type = ICON_TYPE_',
             self.type.name.upper().replace(' ', '_'),
             ', hash = ',
@@ -963,8 +963,8 @@ class IconSlot:
         
         else:
             raise TypeError(
-                f'`{instance.__class__.__name__}.{self.internal_name}` can only be `None`, `{Icon.__name__}`, '
-                f'got {icon.__class__.__name__}; {icon!r}.'
+                f'`{type(instance).__name__}.{self.internal_name}` can only be `None`, `{Icon.__name__}`, '
+                f'got {type(icon).__name__}; {icon!r}.'
             )
         
         icon_type_name, icon_hash_name = self.added_instance_attributes
@@ -975,7 +975,7 @@ class IconSlot:
     def __delete__(self, instance):
         """Can't delete attribute."""
         raise AttributeError(
-            f'Can\'t delete `{instance.__class__.__name__}.{self.internal_name}`.'
+            f'Can\'t delete `{type(instance).__name__}.{self.internal_name}`.'
         )
     
     
@@ -1021,7 +1021,7 @@ class IconSlot:
         if not allow_data:
             raise TypeError(
                 f'`{self.internal_name}` can be passed as `None`, `{Icon.__name__}`, `str` '
-                f'(or bytes-like if allowed), got {icon.__class__.__name__}; {short_repr(icon)}.'
+                f'(or bytes-like if allowed), got {type(icon).__name__}; {short_repr(icon)}.'
             )
         
         icon_type = IconType.from_data(icon)
@@ -1104,7 +1104,7 @@ class IconSlot:
             
             else:
                 raise TypeError(
-                    f'`{icon_hash_name}` can be `int`, got {icon_hash.__class__.__name__}; {icon_hash!r}.'
+                    f'`{icon_hash_name}` can be `int`, got {type(icon_hash).__name__}; {icon_hash!r}.'
                 )
             
             if icon_hash < 0 or icon_hash > ((1 << 128) - 1):
@@ -1123,7 +1123,7 @@ class IconSlot:
                 if (type(icon_type) is not IconType):
                     raise TypeError(
                         f'`{icon_type_name}` can be `{IconType.__name__}`, got '
-                        f'{icon_type.__class__.__name__}; {icon_type!r}.'
+                        f'{type(icon_type).__name__}; {icon_type!r}.'
                     )
                 
                 if (icon_type is ICON_TYPE_NONE) and icon_hash:
@@ -1156,7 +1156,7 @@ class IconSlot:
             else:
                 raise TypeError(
                     f'`{self.internal_name}` can be passed as `None`, `{Icon.__name__}`, `str` '
-                    f'(or bytes-like if allowed), got {icon.__class__.__name__}; {short_repr(icon)}.'
+                    f'(or bytes-like if allowed), got {type(icon).__name__}; {short_repr(icon)}.'
                 )
         
         return Icon(icon_type, icon_hash)

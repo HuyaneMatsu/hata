@@ -320,7 +320,7 @@ class Connection(DiscordEntity):
     
     def __repr__(self):
         """Returns the connection's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         connection_id = self.id
         if connection_id:

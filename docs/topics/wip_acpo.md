@@ -3,18 +3,18 @@
 Application command permissions are confusing, but what if you could test whether you set them correctly? Sounds scary?
 It is!
 
-Hata allows you to assert missmatch by dropping a warning (or more!) on startup.
+Hata allows you to assert mismatch by dropping a warning (or more!) on startup.
 
 ## Getting started
 
-When setting up the slash extension you can use the `assert_application_command_permission_missmatch_at` parameter to
-define in which guild(s) you want to test missmatch.
+When setting up the slash extension you can use the `assert_application_command_permission_mismatch_at` parameter to
+define in which guild(s) you want to test mismatch.
 
 ```py3
 Nitori = Client(
     TOKEN,
     extensions = 'slash',
-    assert_application_command_permission_missmatch_at = TEST_GUILD,
+    assert_application_command_permission_mismatch_at = TEST_GUILD,
 )
 ```
 
@@ -135,7 +135,7 @@ On the other hand, just because bots cannot do something, it does not mean it ca
 Nitori = Client(
     TOKEN,
     extensions = 'slash',
-    assert_application_command_permission_missmatch_at = TEST_GUILD,
+    assert_application_command_permission_mismatch_at = TEST_GUILD,
     enforce_application_command_permissions = True,
 )
 ```

@@ -70,7 +70,7 @@ class CommandContext:
     
     def __repr__(self):
         """Returns the context's representation."""
-        return f'<{self.__class__.__name__} client={self.client!r}, message={self.message!r}, command={self.command!r}>'
+        return f'<{type(self).__name__} client = {self.client!r}, message = {self.message!r}, command = {self.command!r}>'
     
     def __eq__(self, other):
         """Returns whether the two contexts are equal."""

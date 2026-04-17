@@ -126,7 +126,7 @@ class ApplicationExecutable(RichAttributeErrorBaseType):
         """Returns the executable's representation."""
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
             ' ',
             repr(self.name),
         ]

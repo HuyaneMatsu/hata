@@ -92,7 +92,7 @@ class ForumTagUpdate(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the representation of the forum tag update."""
-        return f'<{self.__class__.__name__} changes: {len(self.old_attributes)!r}, forum_tag = {self.forum_tag!r}>'
+        return f'<{type(self).__name__} changes: {len(self.old_attributes)!r}, forum_tag = {self.forum_tag!r}>'
     
     
     def __hash__(self):

@@ -201,7 +201,7 @@ class ClientCompoundThreadEndpoints(Compound):
                     raise TypeError(
                         f'`message_or_channel` can be `{Channel.__name__}`, `{Message.__name__}`, '
                         f'`int`, `tuple` (`int`, `int`), '
-                        f'got {message_or_channel.__class__.__name__}; {message_or_channel!r}.'
+                        f'got {type(message_or_channel).__name__}; {message_or_channel!r}.'
                     )
                 
                 channel_id, message_id = snowflake_pair

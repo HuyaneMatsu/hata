@@ -41,13 +41,64 @@ def _check_name_should_break(name):
         
     if type(name) is not str:
         raise TypeError(
-            f'`name` can be `None`, `str`, got {type(name).__name__}; {name!r}.'
+            f'`name` can be `None`, `str`, got `{type(name).__name__}`; `{name!r}`.'
         )
         
     if name:
         return True
     
     return False
+
+
+def normalise_name(name):
+    """
+    Normalises the given name.
+    
+    Parameters
+    ----------
+    name : `str`
+        The name to normalise.
+    
+    Returns
+    -------
+    name : `str`
+    """
+    words = []
+    characters = []
+    
+    for character in name:
+        if not characters:
+            if character not in ('_', '-'):
+                characters.append(character)
+            continue
+        
+        if character in ('_', '-'):
+            words.append(''.join(characters))
+            characters.clear()
+            continue
+        
+        previous_character = characters[-1]
+        if previous_character.isnumeric() != character.isnumeric():
+            words.append(''.join(characters))
+            characters.clear()
+        
+        elif character.isupper():
+            if previous_character.islower() or previous_character.isnumeric():
+                words.append(''.join(characters))
+                characters.clear()
+        
+        else:
+            if previous_character.isupper() and (len(characters) > 1):
+                words.append(''.join(characters[:-1]))
+                del characters[:-1]
+        
+        characters.append(character)
+        continue
+    
+    if characters:
+        words.append(''.join(characters))
+    
+    return '_'.join(word.lower() for word in words)
 
 
 def check_name(func, name):
@@ -93,7 +144,7 @@ def check_name(func, name):
             if _check_name_should_break(name):
                 break
         
-        #func or method
+        # func or method
         if hasattr(func, '__name__'):
             name = func.__name__
             if _check_name_should_break(name):
@@ -110,7 +161,7 @@ def check_name(func, name):
         )
     
     if not name.islower():
-        name = name.lower()
+        name = normalise_name(name)
     
     return name
 

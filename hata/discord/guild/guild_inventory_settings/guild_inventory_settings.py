@@ -83,7 +83,7 @@ class GuildInventorySettings(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the guild inventory settings' representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         emoji_pack_collectible = self.emoji_pack_collectible
         if emoji_pack_collectible:

@@ -67,7 +67,7 @@ class Team(DiscordEntity, immortal = True):
         name : `str`, Optional (Keyword only)
             The team's name.
         
-        owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+        owner_id : ``None | int | ClientUserBase``, Optional (Keyword only)
             The team's owner's identifier.
         
         Returns
@@ -187,7 +187,7 @@ class Team(DiscordEntity, immortal = True):
         name : `str`, Optional (Keyword only)
             The team's name.
         
-        owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+        owner_id : ``None | int | ClientUserBase``, Optional (Keyword only)
             The team's owner's identifier.
         
         Returns
@@ -491,7 +491,7 @@ class Team(DiscordEntity, immortal = True):
         name : `str`, Optional (Keyword only)
             The team's name.
         
-        owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+        owner_id : ``None | int | ClientUserBase``, Optional (Keyword only)
             The team's owner's identifier.
         
         Returns

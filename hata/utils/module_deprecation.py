@@ -34,7 +34,7 @@ def deprecated_import(obj = None, obj_name = None):
             try:
                 obj_name = obj.__name__
             except AttributeError:
-                obj_name = obj.__class__.__name__
+                obj_name = type(obj).__name__
     
     spec_name = sys._getframe().f_back.f_globals['__spec__'].name
     

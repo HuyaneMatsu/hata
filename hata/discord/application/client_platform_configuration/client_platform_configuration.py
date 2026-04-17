@@ -117,7 +117,7 @@ class ClientPlatformConfiguration(RichAttributeErrorBaseType):
         """Returns the client platform configuration's representation."""
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
         ]
         
         label_type = self.label_type

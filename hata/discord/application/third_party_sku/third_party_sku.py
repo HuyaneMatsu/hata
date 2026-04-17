@@ -111,7 +111,7 @@ class ThirdPartySKU(RichAttributeErrorBaseType):
         """Returns the sku's representation."""
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
         ]
         
         repr_parts.append(', distributor = ')

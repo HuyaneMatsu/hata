@@ -720,7 +720,7 @@ class TableConverter:
     
     def __repr__(self):
         """Returns the table's representation."""
-        to_extend = [self.__class__.__name__, ':\n']
+        to_extend = [type(self).__name__, ':\n']
         self.render_to(to_extend)
         to_extend.append('<<END>>')
         return ''.join(to_extend)
@@ -1114,7 +1114,7 @@ class CodeBlockConverter:
     
     def __repr__(self):
         """Returns the code block's representation."""
-        to_extend = [self.__class__.__name__, ':\n']
+        to_extend = [type(self).__name__, ':\n']
         self.render_to(to_extend)
         to_extend.append('<<END>>')
         return ''.join(to_extend)
@@ -1273,7 +1273,7 @@ class DescriptionConverter:
     
     def __repr__(self):
         """Returns the description's representation."""
-        to_extend = [self.__class__.__name__, ':\n']
+        to_extend = [type(self).__name__, ':\n']
         self.render_to(to_extend)
         to_extend.append('<<END>>')
         return ''.join(to_extend)
@@ -1510,7 +1510,7 @@ class BlockQuoteConverter:
     
     def __repr__(self):
         """Returns the block quote's representation."""
-        to_extend = [self.__class__.__name__, ':\n']
+        to_extend = [type(self).__name__, ':\n']
         self.render_to(to_extend)
         to_extend.append('<<END>>')
         return ''.join(to_extend)
@@ -2014,7 +2014,7 @@ class SectionConverter:
     
     def __repr__(self):
         """Returns the description's representation."""
-        to_extend = [self.__class__.__name__, ':\n']
+        to_extend = [type(self).__name__, ':\n']
         self.render_to(to_extend)
         to_extend.append('<<END>>')
         return ''.join(to_extend)

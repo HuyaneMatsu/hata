@@ -38,7 +38,7 @@ def _assert__redirect_url(redirect_url):
     """
     if not isinstance(redirect_url, str):
         raise AssertionError(
-            f'`redirect_url` can be `str`, got {redirect_url.__class__.__name__}; {redirect_url!r}.'
+            f'`redirect_url` can be `str`, got {type(redirect_url).__name__}; {redirect_url!r}.'
         )
     
     return True
@@ -60,7 +60,7 @@ def _assert__code(code):
     """
     if not isinstance(code, str):
         raise AssertionError(
-            f'`code` can be `str`, got {code.__class__.__name__}; {code!r}.'
+            f'`code` can be `str`, got {type(code).__name__}; {code!r}.'
         )
     
     return True
@@ -281,7 +281,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         if not isinstance(access, (Oauth2Access, Oauth2User)):
             raise TypeError(
                 f'`access` can be `{Oauth2Access.__name__}`, `{Oauth2User.__name__}`'
-                f', got {access.__class__.__name__}; {access!r}.'
+                f', got {type(access).__name__}; {access!r}.'
             )
         
         redirect_url = access.redirect_url
@@ -369,7 +369,7 @@ class ClientCompoundOauth2Endpoints(Compound):
             if (nick is not None):
                 if not isinstance(nick, str):
                     raise AssertionError(
-                        f'`nick` can be `None`, `str`, got {nick.__class__.__name__}; {nick!r}.'
+                        f'`nick` can be `None`, `str`, got {type(nick).__name__}; {nick!r}.'
                     )
                 
                 nick_length = len(nick)
@@ -387,7 +387,7 @@ class ClientCompoundOauth2Endpoints(Compound):
                 if not isinstance(roles, list):
                     raise AssertionError(
                         f'`roles` can be `list` of (`{Role.__name__}`, `int`), got '
-                        f'{roles.__class__.__name__}; {roles!r}.'
+                        f'{type(roles).__name__}; {roles!r}.'
                     )
             
             if roles:
@@ -401,7 +401,7 @@ class ClientCompoundOauth2Endpoints(Compound):
                         if role_id is None:
                             raise TypeError(
                                 f'`roles[{index}]` is neither `{Role.__name__}`, `int`, got '
-                                f'{role.__class__.__name__}; {role!r}; roles={roles!r}.'
+                                f'{type(role).__name__}; {role!r}; roles={roles!r}.'
                             )
                     
                     role_ids.add(role_id)
@@ -412,7 +412,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         if __debug__:
             if not isinstance(mute, bool):
                 raise AssertionError(
-                    f'`mute` can be `bool`, got {mute.__class__.__name__}; {mute!r}.'
+                    f'`mute` can be `bool`, got {type(mute).__name__}; {mute!r}.'
                 )
         
         if mute:
@@ -422,7 +422,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         if __debug__:
             if not isinstance(deaf, bool):
                 raise AssertionError(
-                    f'`deaf` can be `bool`, got {deaf.__class__.__name__}; {deaf!r}.'
+                    f'`deaf` can be `bool`, got {type(deaf).__name__}; {deaf!r}.'
                 )
         
         if deaf:

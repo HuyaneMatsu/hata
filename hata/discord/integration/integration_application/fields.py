@@ -91,7 +91,7 @@ def validate_bot(value):
     
     else:
         raise TypeError(
-            f'`bot` can be `None`, `{ClientUserBase.__name__}`, got {value.__class__.__name__}; {value!r}.'
+            f'`bot` can be `None`, `{ClientUserBase.__name__}`, got {type(value).__name__}; {value!r}.'
         )
     
     return bot

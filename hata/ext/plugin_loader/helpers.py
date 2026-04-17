@@ -123,13 +123,13 @@ def validate_plugin_parameters(
     if not _validate_entry_or_exit(entry_point):
         raise TypeError(
             f'`validate_plugin_parameters` expected `None`, `str` or a `callable` as `entry_point`, got '
-            f'{entry_point.__class__.__name__}; {entry_point!r}.'
+            f'{type(entry_point).__name__}; {entry_point!r}.'
         )
     
     if not _validate_entry_or_exit(exit_point):
         raise TypeError(
             f'`validate_plugin_parameters` expected `None`, `str` or a `callable` as `exit_point`, got '
-            f'{exit_point.__class__.__name__}; {exit_point!r}.'
+            f'{type(exit_point).__name__}; {exit_point!r}.'
         )
     
     if variables:
@@ -143,7 +143,7 @@ def validate_plugin_parameters(
     else:
         default_variables = None
     
-    extend_default_variables_type = extend_default_variables.__class__
+    extend_default_variables_type = type(extend_default_variables)
     if extend_default_variables_type is bool:
         pass
     elif issubclass(extend_default_variables_type, int):
@@ -233,7 +233,7 @@ def _get_plugin_name_and_path(name, allow_non_existent):
     """
     if not isinstance(name, str):
         raise TypeError(
-            f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
+            f'`name` can be `str`, got {type(name).__name__}; {name!r}.'
         )
     
     # Return first match

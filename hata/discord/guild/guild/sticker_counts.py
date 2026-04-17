@@ -150,7 +150,7 @@ class StickerCounts(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the sticker counts' representation"""
-        repr_parts = [self.__class__.__name__, '(']
+        repr_parts = [type(self).__name__, '(']
         field_added = False
         
         for field_name, field_value in zip(self.__slots__, self._iter_field_values()):

@@ -60,7 +60,7 @@ class QualPath:
                 continue
             
             raise TypeError(
-                f'`path` can be `str`, `{cls.__name__}`, got {path.__class__.__name__}; {path!r}.'
+                f'`path` can be `str`, `{cls.__name__}`, got {type(path).__name__}; {path!r}.'
             )
         
         self = object.__new__(cls)
@@ -82,7 +82,7 @@ class QualPath:
     def __repr__(self):
         """Returns the qual-path's representation."""
         repr_parts = [
-            self.__class__.__name__,
+            type(self).__name__,
             '(',
         ]
         

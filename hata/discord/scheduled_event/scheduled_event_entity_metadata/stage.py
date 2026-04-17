@@ -23,7 +23,7 @@ class ScheduledEventEntityMetadataStage(ScheduledEventEntityMetadataBase):
         
         Parameters
         ----------
-        speaker_ids : `None`, `iterable` of (`int`, ``ClientUserBase``), Optional (Keyword only)
+        speaker_ids : ``None | iterable<int> | iterable<ClientUserBase>``, Optional (Keyword only)
             The speakers' identifier of the stage channel.
         
         Raises
@@ -76,7 +76,7 @@ class ScheduledEventEntityMetadataStage(ScheduledEventEntityMetadataBase):
     
     @copy_docs(ScheduledEventEntityMetadataBase.__repr__)
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         speaker_ids = self.speaker_ids
         if (speaker_ids is not None):
@@ -141,7 +141,7 @@ class ScheduledEventEntityMetadataStage(ScheduledEventEntityMetadataBase):
         
         Parameters
         ----------
-        speaker_ids : `None`, `iterable` of (`int`, ``ClientUserBase``), Optional (Keyword only)
+        speaker_ids : ``None | iterable<int> | iterable<ClientUserBase>``, Optional (Keyword only)
             The speakers' identifier of the stage channel.
         
         Returns

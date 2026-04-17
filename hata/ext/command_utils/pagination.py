@@ -181,7 +181,7 @@ class Pagination(PaginationBase):
         else:
             raise TypeError(
                 f'`channel` can be `{Channel.__name__}`, `{Message.__name__}`, `{InteractionEvent.__name__}`, '
-                f'got {channel.__class__.__name__}; {channel!r}.'
+                f'got {type(channel).__name__}; {channel!r}.'
             )
         
         self = object.__new__(cls)
@@ -395,7 +395,7 @@ class Pagination(PaginationBase):
     @copy_docs(PaginationBase.__repr__)
     def __repr__(self):
         repr_parts = [
-            '<', self.__class__.__name__,
+            '<', type(self).__name__,
             ' client = ', repr(self.client),
             ', channel = ', repr(self.channel),
             ', state = '

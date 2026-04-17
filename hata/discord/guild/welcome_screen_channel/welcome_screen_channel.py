@@ -114,7 +114,7 @@ class WelcomeScreenChannel(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the welcome channel's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         # channel_id
         repr_parts.append(' channel_id = ')

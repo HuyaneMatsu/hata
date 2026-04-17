@@ -5,29 +5,38 @@ from ...channel import (
     Channel, ChannelType, create_partial_channel_data, create_partial_channel_from_data, create_partial_channel_from_id
 )
 from ...field_parsers import (
-    bool_parser_factory, default_entity_parser_factory, flag_parser_factory, force_string_parser_factory,
-    int_parser_factory, nullable_date_time_parser_factory, nullable_entity_parser_factory,
+    bool_parser_factory, default_entity_parser_factory, entity_id_array_parser_factory, flag_parser_factory,
+    force_string_parser_factory, int_parser_factory, nullable_date_time_parser_factory, nullable_entity_parser_factory,
     nullable_functional_parser_factory, nullable_int_parser_factory, preinstanced_parser_factory
 )
 from ...field_putters import (
     bool_optional_putter_factory, default_entity_putter_factory, entity_id_optional_putter_factory,
     entity_id_putter_factory, flag_optional_putter_factory, force_string_putter_factory, int_putter_factory,
     nullable_date_time_optional_putter_factory, nullable_entity_optional_putter_factory,
-    nullable_field_optional_putter_factory, preinstanced_putter_factory
+    nullable_field_optional_putter_factory, optional_entity_id_array_optional_putter_factory,
+    preinstanced_putter_factory
 )
 from ...field_validators import (
-    bool_validator_factory, default_entity_validator_factory, entity_id_validator_factory, flag_validator_factory,
-    force_string_validator_factory, int_conditional_validator_factory, nullable_date_time_validator_factory,
-    nullable_entity_validator_factory, preinstanced_validator_factory
+    bool_validator_factory, default_entity_validator_factory, entity_id_array_validator_factory,
+    entity_id_validator_factory, flag_validator_factory, force_string_validator_factory,
+    int_conditional_validator_factory, nullable_date_time_validator_factory, nullable_entity_array_validator_factory,
+    nullable_entity_validator_factory, preinstanced_validator_factory, entity_id_set_validator_factory
 )
 from ...guild import (
-    Guild, GuildActivityOverview, create_partial_guild_data, create_partial_guild_from_data, create_partial_guild_from_id
+    Guild, GuildActivityOverview, create_partial_guild_data, create_partial_guild_from_data,
+    create_partial_guild_from_id
 )
 from ...permission import Permission
+from ...role import Role, create_partial_role_data, create_partial_role_from_data
 from ...user import ClientUserBase, User, ZEROUSER
 
 from .flags import InviteFlag
 from .preinstanced import InviteTargetType, InviteType
+
+
+# allowed_user_ids
+
+validate_allowed_user_ids = entity_id_set_validator_factory('allowed_user_ids', ClientUserBase)
 
 
 # approximate_online_count
@@ -41,6 +50,7 @@ validate_approximate_online_count = int_conditional_validator_factory(
     '>= 0',
 )
 
+
 # approximate_user_count
 
 parse_approximate_user_count = int_parser_factory('approximate_member_count', 0)
@@ -51,6 +61,7 @@ validate_approximate_user_count = int_conditional_validator_factory(
     lambda approximate_user_count : approximate_user_count >= 0,
     '>= 0',
 )
+
 
 # channel
 
@@ -113,10 +124,12 @@ def put_channel(channel, data, defaults):
 
 validate_channel = nullable_entity_validator_factory('channel', Channel)
 
+
 # channel_id
 
 put_channel_id = entity_id_putter_factory('channel_id')
 validate_channel_id = entity_id_validator_factory('channel_id', Channel)
+
 
 # code
 
@@ -124,17 +137,20 @@ parse_code = force_string_parser_factory('code')
 put_code = force_string_putter_factory('code')
 validate_code = force_string_validator_factory('invite_code', 0, 1024)
 
+
 # created_at
 
 parse_created_at = nullable_date_time_parser_factory('created_at')
 put_created_at = nullable_date_time_optional_putter_factory('created_at')
 validate_created_at = nullable_date_time_validator_factory('created_at')
 
+
 # flags
 
 parse_flags = flag_parser_factory('flags', InviteFlag)
 put_flags = flag_optional_putter_factory('flags', InviteFlag())
 validate_flags = flag_validator_factory('flags', InviteFlag)
+
 
 # guild
 
@@ -171,8 +187,10 @@ def put_guild(guild, data, defaults):
     ----------
     guild : ``None | Guild``
         The guild to serialize.
+    
     data : `dict<str, object>`
         Json serializable dictionary.
+    
     defaults : `bool`
         Whether default values should be included as well.
     
@@ -209,15 +227,18 @@ validate_guild_activity_overview = nullable_entity_validator_factory('guild_acti
 
 put_guild_id = entity_id_putter_factory('guild_id')
 
+
 # inviter
 
 parse_inviter = default_entity_parser_factory('inviter', User, default = ZEROUSER)
 put_inviter = default_entity_putter_factory('inviter', ClientUserBase, ZEROUSER, force_include_internals = True)
 validate_inviter = default_entity_validator_factory('inviter', ClientUserBase, default = ZEROUSER)
 
+
 # inviter_id | extra for audit logs
 
 validate_inviter_id = entity_id_validator_factory('inviter_id', ClientUserBase)
+
 
 # max_age
 
@@ -230,6 +251,7 @@ validate_max_age = int_conditional_validator_factory(
     '>= 0',
 )
 
+
 # max_uses
 
 parse_max_uses = nullable_int_parser_factory('max_uses')
@@ -240,6 +262,117 @@ validate_max_uses = int_conditional_validator_factory(
     lambda max_uses : max_uses >= 0,
     '>= 0',
 )
+
+
+# role_ids
+
+parse_role_ids = entity_id_array_parser_factory('role_ids')
+put_role_ids = optional_entity_id_array_optional_putter_factory('role_ids')
+validate_role_ids = entity_id_array_validator_factory('role_ids', Role)
+
+
+# roles
+
+def parse_roles(data, guild_id = 0):
+    """
+    Parsers out the resolved roles from the given data.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Resolved data.
+    
+    guild_id : `int`, Optional (Keyword only)
+        The respective guild's identifier.
+    
+    Returns
+    -------
+    roles : ``None | tuple<Role>``
+    """
+    resolved_role_datas = data.get('roles', None)
+    if (resolved_role_datas is None) or (not resolved_role_datas):
+        return
+    
+    roles = None
+    
+    for role_data in resolved_role_datas:
+        role = create_partial_role_from_data(role_data, guild_id)
+        
+        if roles is None:
+            roles = []
+        
+        roles.append(role)
+        continue
+    
+    if (roles is not None):
+        roles.sort()
+        return tuple(roles)
+
+
+def put_roles(roles, data, defaults):
+    """
+    Puts the given `roles` into the given `data` json serializable object.
+    
+    Parameters
+    ----------
+    roles : ``None | tuple<Role>``
+        Resolved roles.
+    
+    data : `dict<str, object>`
+        Interaction resolved data.
+    
+    defaults : `bool`
+        Whether default fields values should be included as well.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    if defaults or (roles is not None):
+        role_datas = []
+        
+        if (roles is not None):
+            for role in roles:
+                role_datas.append(create_partial_role_data(role))
+        
+        data['roles'] = role_datas
+    
+    return data
+
+
+def put_roles_as_role_ids(roles, data, defaults):
+    """
+    Puts the given `roles` and `role_ids` into the given `data` json serializable object.
+    
+    Parameters
+    ----------
+    roles : ``None | tuple<Role>``
+        Resolved roles.
+    
+    data : `dict<str, object>`
+        Interaction resolved data.
+    
+    defaults : `bool`
+        Whether default fields values should be included as well.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    if defaults or (roles is not None):
+        role_ids = []
+        
+        if (roles is not None):
+            for role in roles:
+                role_ids.append(str(role.id))
+        
+        data['role_ids'] = role_ids
+    
+    return data
+
+
+validate_roles = nullable_entity_array_validator_factory('roles', Role)
+
 
 # target_application
 
@@ -254,8 +387,10 @@ def put_target_application(target_application, data, defaults):
     ----------
     target_application : ``None | Application``
         The application to serialize.
+    
     data : `dict<str, object>`
         Json serializable dictionary.
+    
     defaults : `bool`
         Whether default values should be included as well.
     
@@ -276,10 +411,12 @@ def put_target_application(target_application, data, defaults):
 
 validate_target_application = nullable_entity_validator_factory('target_application', Application)
 
+
 # put_target_application_id
 
 put_target_application_id = entity_id_optional_putter_factory('target_application_id')
 validate_target_application_id = entity_id_validator_factory('target_application_id', Application)
+
 
 # target_type
 
@@ -315,6 +452,7 @@ def put_target_type(target_type, data, defaults):
 
 validate_target_type = preinstanced_validator_factory('target_type', InviteTargetType)
 
+
 # target_user
 
 parse_target_user = nullable_entity_parser_factory('target_user', User)
@@ -323,10 +461,12 @@ put_target_user = nullable_entity_optional_putter_factory(
 )
 validate_target_user = nullable_entity_validator_factory('target_user', ClientUserBase)
 
+
 # put_target_user_id
 
 put_target_user_id = entity_id_optional_putter_factory('target_user_id')
 validate_target_user_id = entity_id_validator_factory('target_user_id', ClientUserBase)
+
 
 # temporary
 
@@ -334,11 +474,13 @@ parse_temporary = bool_parser_factory('temporary', False)
 put_temporary = bool_optional_putter_factory('temporary', False)
 validate_temporary = bool_validator_factory('temporary', False)
 
+
 # type
 
 parse_type = preinstanced_parser_factory('type', InviteType, InviteType.guild)
 put_type = preinstanced_putter_factory('type')
 validate_type = preinstanced_validator_factory('invite_type', InviteType)
+
 
 # validate_unique
 

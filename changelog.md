@@ -1,3 +1,41 @@
+## 1.3.93 *\[2026-04-17\]*
+
+### Improvements
+
+- Use a generic name normaliser for non-lower case event (or other) names.
+- Add `Client.guild_role_user_counts_get`.
+- Add `DiscordApiClient.guild_role_user_counts_get`.
+- Add `RATE_LIMIT_GROUPS.guild_role_user_counts_get`.
+- Add `Invite.roles`.
+- Add `create_partial_role_from_id`.
+- Add `create_partial_role_from_data`.
+- Add `RATE_LIMIT_GROUPS.invite_allowed_user_ids_get`.
+- Add `RATE_LIMIT_GROUPS.invite_allowed_user_ids_edit`.
+- Add `RATE_LIMIT_GROUPS.invite_allowed_user_ids_get_status`.
+- Add `DiscordApiClient.invite_allowed_user_ids_get`.
+- Add `DiscordApiClient.invite_allowed_user_ids_edit`.
+- Add `DiscordApiClient.invite_allowed_user_ids_get_status`.
+- Add `Client.invite_allowed_user_ids_get`.
+- Add `Client.invite_allowed_user_ids_edit`.
+- Add `Client.invite_allowed_user_ids_get_status`.
+- Add `ERROR_CODES.invite_allowed_users_ids_are_already_processing`.
+- Add `ERROR_CODES.invite_allowed_users_ids_are_being_processed`.
+- Due to `guild_activity_overview` now wrongly serialises unicode emojis, a workaround has been added to all emoji
+    deserialiser. 
+- `GuildJoinRequestStatus` now has a default instance.
+- Add `InviteAllowedUserIdsStatus`.
+- Add `InviteAllowedUserIdsStatusStatus`.
+- Add `reason` parameter to `Client.invite_create`.
+- Add `ERROR_CODES.action_requires_subscription`.
+- Add `ERROR_CODES.cannot_send_voice_effect_when_user_is_muted_deafen_or_suppressed`.
+- Add `ERROR_CODES.user_limited_access_guild_join`.
+- Add `ERROR_CODES.cannot_forward_message_whats_content_you_cannot_read`.
+
+### Bug fixes
+
+#### ext.slash
+- Fix typo in `assert_application_command_permission_mismatch_at` parameter. Typod version has been deprecated.
+
 ## 1.3.92 *\[2026-03-11\]*
 
 - Add `ERROR_CODES.cannot_message_user_1`.
@@ -4265,7 +4303,7 @@ A change like this was requested for a while...
 - `SlasherCommandWrapper` now support rich attribute errors.
 - `CommandChange` now support rich attribute errors.
 - `CommandState` now support rich attribute errors.
-- Add `assert_application_command_permission_missmatch_at` parameter to `Slasher.__new__`.
+- Add `assert_application_command_permission_mismatch_at` parameter to `Slasher.__new__`.
 - Add `enforce_application_command_permissions` parameter to `Slasher.__new__`.
 - `set_permission` now can be matmul-ed with null, type of self, client, slasher instances.
 

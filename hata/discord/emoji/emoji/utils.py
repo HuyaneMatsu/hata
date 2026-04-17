@@ -10,7 +10,7 @@ from scarletio import export, include
 from ....env import ALLOW_DEBUG_MESSAGES
 from ....utils.debug import call_debug_logger
 
-from ...core import EMOJIS, UNICODE_TO_EMOJI
+from ...core import BUILTIN_EMOJIS, EMOJIS, UNICODE_TO_EMOJI
 
 from .fields import put_name, put_role_ids, validate_name, validate_role_ids
 from .emoji import Emoji
@@ -116,10 +116,23 @@ def _create_partial_emoji_from_fields(emoji_name, emoji_id, emoji_animated):
         return None
     
     if emoji_id is None:
-        try:
-            emoji = UNICODE_TO_EMOJI[emoji_name]
-        except KeyError:
+        while True:
+            try:
+                emoji = UNICODE_TO_EMOJI[emoji_name]
+            except KeyError:
+                pass
+            else:
+                break
+            
+            try:
+                emoji = BUILTIN_EMOJIS[emoji_name]
+            except KeyError:
+                pass
+            else:
+                break
+            
             emoji = _create_new_unicode(emoji_name)
+            break
     
     else:
         # name can change
@@ -235,10 +248,23 @@ def create_emoji_from_exclusive_inline_data(data):
     emoji_id = data.get('emoji_id', None)
     
     if (emoji_name is not None):
-        try:
-            emoji = UNICODE_TO_EMOJI[emoji_name]
-        except KeyError:
+        while True:
+            try:
+                emoji = UNICODE_TO_EMOJI[emoji_name]
+            except KeyError:
+                pass
+            else:
+                break
+            
+            try:
+                emoji = BUILTIN_EMOJIS[emoji_name]
+            except KeyError:
+                pass
+            else:
+                break
+            
             emoji = _create_new_unicode(emoji_name)
+            break
     
     elif (emoji_id is not None):
         emoji = create_partial_emoji_from_id(int(emoji_id))
@@ -298,10 +324,23 @@ def create_emoji_from_exclusive_data(data):
     emoji_id = data.get('id', None)
     
     if (emoji_name is not None):
-        try:
-            emoji = UNICODE_TO_EMOJI[emoji_name]
-        except KeyError:
+        while True:
+            try:
+                emoji = UNICODE_TO_EMOJI[emoji_name]
+            except KeyError:
+                pass
+            else:
+                break
+            
+            try:
+                emoji = BUILTIN_EMOJIS[emoji_name]
+            except KeyError:
+                pass
+            else:
+                break
+                
             emoji = _create_new_unicode(emoji_name)
+            break
     
     elif (emoji_id is not None):
         emoji = create_partial_emoji_from_id(int(emoji_id))
@@ -356,9 +395,21 @@ def create_unicode_emoji(unicode):
     -------
     emoji : ``Emoji``
     """
-    try:
-        unicode_emoji = UNICODE_TO_EMOJI[unicode]
-    except KeyError:
+    while True:
+        try:
+            unicode_emoji = UNICODE_TO_EMOJI[unicode]
+        except KeyError:
+            pass
+        else:
+            break
+        
+        try:
+            unicode_emoji = BUILTIN_EMOJIS[unicode]
+        except KeyError:
+            pass
+        else:
+            break
+        
         unicode_bytes = unicode.encode()
         
         if ALLOW_DEBUG_MESSAGES:
@@ -371,5 +422,6 @@ def create_unicode_emoji(unicode):
             )
         
         unicode_emoji = Emoji._create_unicode(Unicode('', unicode, False, None, None, None), False)
+        break
     
     return unicode_emoji

@@ -319,7 +319,7 @@ class MessageApplication(DiscordEntity):
     
     def __repr__(self):
         """Returns the message application's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         message_application_id = self.id
         if message_application_id:

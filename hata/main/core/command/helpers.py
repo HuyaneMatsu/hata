@@ -182,7 +182,7 @@ def normalize_aliases(aliases, name):
     for alter in aliases:
         if not isinstance(alter, str):
             raise TypeError(
-                f'`aliases` elements can be `str`, got {alter.__class__.__name__}; {alter!r}; aliases={aliases!r}.'
+                f'`aliases` elements can be `str`, got {type(alter).__name__}; {alter!r}; aliases={aliases!r}.'
             )
         
         alter = normalize_command_name(aliases)

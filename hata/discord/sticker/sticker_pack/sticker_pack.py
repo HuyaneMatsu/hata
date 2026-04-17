@@ -304,7 +304,7 @@ class StickerPack(DiscordEntity, immortal = True):
     
     def __repr__(self):
         """Returns the sticker pack's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         emoji_id = self.id
         if emoji_id:

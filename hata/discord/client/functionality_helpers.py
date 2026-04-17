@@ -254,7 +254,7 @@ class DiscoveryCategoryRequestCacher:
         if client is None:
             return self
         
-        return BaseMethodType(self.__class__.execute, self, client)
+        return BaseMethodType(type(self).execute, self, client)
     
     
     def __set__(self, obj, value):
@@ -331,7 +331,7 @@ class DiscoveryCategoryRequestCacher:
     def __repr__(self):
         """Returns the cacher's representation."""
         result = [
-            self.__class__.__name__,
+            type(self).__name__,
             '(func = ',
             repr(self.func),
             ', timeout = ',
@@ -368,7 +368,7 @@ class TimedCacheUnit:
     def __repr__(self):
         """Returns the timed cache unit's representation."""
         return (
-            f'<{self.__class__.__name__} creation_time = {self.creation_time!r}, last_usage_time = '
+            f'<{type(self).__name__} creation_time = {self.creation_time!r}, last_usage_time = '
             f'{self.last_usage_time!r}, result = {self.result!r}>'
         )
 
@@ -432,7 +432,7 @@ class DiscoveryTermRequestCacher:
         if client is None:
             return self
         
-        return BaseMethodType(self.__class__.execute, self, client)
+        return BaseMethodType(type(self).execute, self, client)
     
     
     def __set__(self, obj, value):
@@ -470,14 +470,14 @@ class DiscoveryTermRequestCacher:
             If any exception was received from the Discord API.
         """
         # First check parameter
-        parameter_type = parameter.__class__
+        parameter_type = type(parameter)
         if parameter_type is str:
             pass
         elif issubclass(parameter_type, str):
             parameter = str(parameter)
         else:
             raise TypeError(
-                f'`parameter` can be `str`, got {parameter_type.__class__}; {parameter!r}.'
+                f'`parameter` can be `str`, got {(parameter_type).__name__}; {parameter!r}.'
             )
         
         # First check cache
@@ -580,7 +580,7 @@ class DiscoveryTermRequestCacher:
     def __repr__(self):
         """Returns the cacher's representation."""
         repr_parts = [
-            self.__class__.__name__,
+            type(self).__name__,
             '(func = ',
             repr(self.func),
             ', timeout = ',
@@ -962,7 +962,7 @@ class ForceUpdateCache:
     
     def __repr__(self):
         """Returns the cache's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         if self.synced:
             repr_parts.append(' value = ')
             repr_parts.append(repr(self.value))
@@ -1092,7 +1092,7 @@ def application_command_autocomplete_choice_parser(choices):
     else:
         raise TypeError(
             f'`choices` can be `None`, `list`, `tuple`, `set`, `dict`, `iterable`, got '
-            f'{choices.__class__.__name__}; {choices!r}.'
+            f'{type(choices).__name__}; {choices!r}.'
         )
     
     del choices_processed[25:]
@@ -1135,7 +1135,7 @@ def application_command_autocomplete_choice_validator(choice):
     else:
         raise TypeError(
             f'An autocomplete choice can be either a `name` - `value` pair or `str`, `int`, `float`, got '
-            f'{choice.__class__.__name__}; {choice!r}.'
+            f'{type(choice).__name__}; {choice!r}.'
         )
     
     return application_command_autocomplete_choice_builder(choice, choice)
@@ -1165,7 +1165,7 @@ def application_command_autocomplete_choice_validator_tuple_item(item):
     if not isinstance(name, str):
         raise TypeError(
             f'Tuple item autocomplete choice name can be `str`, got '
-            f'{name.__class__.__name__}; {name!r}.'
+            f'{type(name).__name__}; {name!r}.'
         )
     
     if isinstance(value, str):
@@ -1175,7 +1175,7 @@ def application_command_autocomplete_choice_validator_tuple_item(item):
     else:
         raise TypeError(
             f'Tuple item autocomplete choice value can be `str`, `int`, `float`, got '
-            f'{value.__class__.__name__}, {value!r}.'
+            f'{type(value).__name__}, {value!r}.'
         )
     
     return application_command_autocomplete_choice_builder(name, value)

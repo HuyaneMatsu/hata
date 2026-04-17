@@ -96,7 +96,7 @@ class PollChange(RichAttributeErrorBaseType):
     def __repr__(self):
         """Returns the representation of the poll change."""
         repr_parts = ['<',
-            self.__class__.__name__,
+            type(self).__name__,
         ]
         
         added = self.added

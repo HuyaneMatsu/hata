@@ -2,18 +2,20 @@ __all__ = ('create_partial_invite_data', 'create_partial_invite_from_data')
 
 from ...core import INVITES
 
-from .fields import parse_code, put_channel_id, put_code, put_guild_id,\
-    validate_max_age, put_max_age, validate_max_uses, put_temporary, \
-    put_max_uses, validate_temporary, validate_unique, put_unique, \
-    validate_target_type, validate_target_application_id, put_target_application_id, \
-    put_target_user_id, put_target_type, validate_target_user_id
-
+from .fields import (
+    parse_code, put_channel_id, put_code, put_guild_id, put_max_age, put_max_uses, put_role_ids,
+    put_target_application_id, put_target_type, put_target_user_id, put_temporary, put_unique, validate_max_age,
+    validate_max_uses, validate_role_ids, validate_target_application_id, validate_target_type, validate_target_user_id,
+    validate_temporary, validate_unique
+)
 from .invite import Invite
 
 
 INVITE_GUILD_FIELD_CONVERTERS = {
     'max_age': (validate_max_age, put_max_age),
     'max_uses': (validate_max_uses, put_max_uses),
+    'roles': (validate_role_ids, put_role_ids),
+    'role_ids': (validate_role_ids, put_role_ids),
     'target_application': (validate_target_application_id, put_target_application_id),
     'target_application_id': (validate_target_application_id, put_target_application_id),
     'target_type': (validate_target_type, put_target_type),

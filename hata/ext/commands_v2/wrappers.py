@@ -63,7 +63,7 @@ class CommandWrapper:
     
     def __repr__(self):
         """Returns the command wrapper's representation."""
-        return f'<{self.__class__.__name__} wrapped={self._wrapped!r}>'
+        return f'<{type(self).__name__} wrapped={self._wrapped!r}>'
     
     def fetch_function_and_wrappers_back(self):
         """
@@ -123,7 +123,7 @@ class CommandConverterConfigurerWrapper(CommandWrapper):
         detail = get_detail_for_value(annotation)
         if (detail is None):
             raise TypeError(
-                f'`annotation` can be `type`, `str`, got {annotation.__class__.__name__}; {annotation!r}.'
+                f'`annotation` can be `type`, `str`, got {type(annotation).__name__}; {annotation!r}.'
             )
         
         if (flags is not None) and not isinstance(flags, ConverterFlag):
@@ -132,7 +132,7 @@ class CommandConverterConfigurerWrapper(CommandWrapper):
             else:
                 raise TypeError(
                     f'`flag` can be `None`, `{ConverterFlag.__name__}` or as other `int` , got '
-                    f'{flags.__class__.__name__}.'
+                    f'{type(flags).__name__}.'
                 )
         
         if modifiers:
@@ -226,7 +226,7 @@ class CommandCheckWrapper(CommandWrapper):
     
     def __repr__(self):
         """Returns the command wrapper's representation."""
-        return f'<{self.__class__.__name__} wrapped={self._wrapped!r} check={self._check!r}>'
+        return f'<{type(self).__name__} wrapped={self._wrapped!r} check={self._check!r}>'
     
     def __invert__(self):
         """Inverts the condition of the wrapped checks and returns a new command check wrapper."""

@@ -119,7 +119,7 @@ def create_partial_guild_from_data(data):
     verification_level = parse_verification_level(data)
     if verification_level is not VerificationLevel.none:
         guild.verification_level = verification_level
-        
+    
     GUILDS[guild_id] = guild
     
     return guild

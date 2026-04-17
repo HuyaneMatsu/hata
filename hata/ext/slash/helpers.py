@@ -37,7 +37,7 @@ def validate_translation_table(translation_table):
     
     raise TypeError(
         f'`translation_table` can be either `None`, `str`, `dict`, got '
-        f'{translation_table.__class__.__name__}, {translation_table!r}'
+        f'{type(translation_table).__name__}, {translation_table!r}'
     )
 
 
@@ -83,7 +83,7 @@ def _validate_translation_table_from_file(file_name):
     
     raise TypeError(
         f'`translation_table` file can contain either `None` or `dict`, got '
-        f'{json_data.__class__.__name__}; {json_data!r}.'
+        f'{type(json_data).__name__}; {json_data!r}.'
     )
 
 
@@ -148,7 +148,7 @@ def _validate_translation_table_relations(relations):
     
     raise TypeError(
         f'`translation_table`\'s keys (also known as relations) can be `None`, `dict`, got '
-        f'{relations.__class__.__name__}; {relations!r}.'
+        f'{type(relations).__name__}; {relations!r}.'
     )
 
 
@@ -174,7 +174,7 @@ def _validate_translation_table_relations_dict(relations):
     for key, value in relations.items():
         if not isinstance(key, str):
             raise TypeError(
-                f'`relation` keys can be `str`, got {key.__class__.__name__}; {key!r}.'
+                f'`relation` keys can be `str`, got {type(key).__name__}; {key!r}.'
             )
         
         if value is None:
@@ -182,7 +182,7 @@ def _validate_translation_table_relations_dict(relations):
         
         if not isinstance(value, str):
             raise TypeError(
-                f'`relation` values can be `str`, got {value.__class__.__name__}; {value!r}.'
+                f'`relation` values can be `str`, got {type(value).__name__}; {value!r}.'
             )
         
         if (not key) or (not value):

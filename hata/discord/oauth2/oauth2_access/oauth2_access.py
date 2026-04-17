@@ -329,7 +329,7 @@ class Oauth2Access(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the representation of the oath2 access."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         if self.created_at.timestamp() + self.expires_after > time_now():
             state = 'active'

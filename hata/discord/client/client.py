@@ -1303,7 +1303,7 @@ class Client(
                 except DiscordGatewayException as err:
                     if err.code in RESHARD_ERROR_CODES:
                         sys.stderr.write(
-                            f'{err.__class__.__name__} occurred, at {self!r}._connect:\n'
+                            f'{type(err).__name__} occurred, at {self!r}._connect:\n'
                             f'{err!r}\n'
                             f'The client will reshard itself and reconnect.\n'
                         )
@@ -1351,7 +1351,7 @@ class Client(
                 )
             ):
                 sys.stderr.write(
-                    f'{err.__class__.__name__} occurred, at {self!r}._connect:\n'
+                    f'{type(err).__name__} occurred, at {self!r}._connect:\n'
                     f'{err!r}\n'
                 )
             else:
@@ -1494,7 +1494,7 @@ class Client(
         if __debug__:
             if not isinstance(name, str):
                 raise AssertionError(
-                    f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
+                    f'`name` can be `str`, got {type(name).__name__}; {name!r}.'
                 )
             
             name_length = len(name)
@@ -1591,7 +1591,7 @@ class Client(
             index += 1
             if not isinstance(user, (int, UserBase)):
                 raise TypeError(
-                    f'`users[{index}]` is not `int`, `{UserBase.__name__}`, got {user.__class__.__name__}; {user!r}; '
+                    f'`users[{index}]` is not `int`, `{UserBase.__name__}`, got {type(user).__name__}; {user!r}; '
                     f'users = {users!r}.'
                 )
             
@@ -1641,7 +1641,7 @@ class Client(
             index += 1
             if not isinstance(user, (int, UserBase)):
                 raise TypeError(
-                    f'`users[{index}]` is not `int`, `{UserBase.__name__}`, got {user.__class__.__name__}; {user!r}; '
+                    f'`users[{index}]` is not `int`, `{UserBase.__name__}`, got {type(user).__name__}; {user!r}; '
                     f'users = {users!r}.'
                 )
             

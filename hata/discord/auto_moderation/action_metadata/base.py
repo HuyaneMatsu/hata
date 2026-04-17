@@ -21,7 +21,7 @@ class AutoModerationActionMetadataBase(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the action metadata's representation."""
-        return f'<{self.__class__.__name__}>'
+        return f'<{type(self).__name__}>'
     
     
     @classmethod

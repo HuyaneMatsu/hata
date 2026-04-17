@@ -28,7 +28,7 @@ class Resolved(RichAttributeErrorBaseType):
     messages : `None`, `dict` of (`int`, ``Message``) items
         Resolved received messages stored by their identifier as keys if any.
     
-    users : `None`, `dict` of (`int`, ``ClientUserBase``) items
+    users : ``None | dict<int, ClientUserBase>``
         Resolved received users stored by their identifier as keys if any.
     """
     __slots__ = ('attachments', 'channels', 'roles', 'messages', 'users')
@@ -51,7 +51,7 @@ class Resolved(RichAttributeErrorBaseType):
         messages : `None`, `dict` of (`int`, ``Message``) items = `None`, Optional (Keyword only)
             Resolved received messages stored by their identifier as keys if any.
         
-        users : `None`, `dict` of (`int`, ``ClientUserBase``) items = `None`, Optional (Keyword only)
+        users : ``None | dict<int, ClientUserBase>`` = `None`, Optional (Keyword only)
             Resolved received users stored by their identifier as keys if any.
         
         Raises
@@ -189,7 +189,7 @@ class Resolved(RichAttributeErrorBaseType):
         messages : `None`, `dict` of (`int`, ``Message``) items, Optional (Keyword only)
             Resolved received messages stored by their identifier as keys if any.
         
-        users : `None`, `dict` of (`int`, ``ClientUserBase``) items, Optional (Keyword only)
+        users : ``None | dict<int, ClientUserBase>``, Optional (Keyword only)
             Resolved received users stored by their identifier as keys if any.
         
         Raises
@@ -251,7 +251,7 @@ class Resolved(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the resolved's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         field_added = False
         

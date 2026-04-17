@@ -46,3 +46,6 @@ class GuildJoinRequestStatus(PreinstancedBase, value_type = str):
     pending = P('PENDING', 'pending')
     rejected = P('REJECTED', 'rejected')
     started = P('STARTED', 'started')
+
+
+GuildJoinRequestStatus.INSTANCES[''] = GuildJoinRequestStatus.started

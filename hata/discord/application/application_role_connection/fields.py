@@ -93,7 +93,7 @@ def validate_metadata_values(metadata_values):
     
     if not isinstance(metadata_values, dict):
         raise TypeError(
-            f'`metadata_values` can be `dict`, got {metadata_values.__class__.__name__}; {metadata_values!r}.'
+            f'`metadata_values` can be `dict`, got {type(metadata_values).__name__}; {metadata_values!r}.'
         )
     
     if not metadata_values:
@@ -102,13 +102,13 @@ def validate_metadata_values(metadata_values):
     for key, value in metadata_values.items():
         if not isinstance(key, str):
             raise TypeError(
-                f'`metadata_values` keys can be `str`, got {key.__class__.__name__}; {key!r}, '
+                f'`metadata_values` keys can be `str`, got {type(key).__name__}; {key!r}, '
                 f'metadata_values = {metadata_values!r}.'
             )
         
         if not isinstance(value, str):
             raise TypeError(
-                f'`metadata_values` values can be `str`, got {value.__class__.__name__}; {value!r}, '
+                f'`metadata_values` values can be `str`, got {type(value).__name__}; {value!r}, '
                 f'metadata_values = {metadata_values!r}.'
             )
     

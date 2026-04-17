@@ -58,13 +58,13 @@ def import_plugin(plugin_name, *variable_names, **keyword_parameters):
     # Validate input types
     if not isinstance(plugin_name, str):
         raise TypeError(
-            f'plugin_name` can be `str`, got {plugin_name.__class__.__name__}; {plugin_name!r}.'
+            f'plugin_name` can be `str`, got {type(plugin_name).__name__}; {plugin_name!r}.'
         )
     
     for variable_name in variable_names:
         if not isinstance(variable_name, str):
             raise TypeError(
-                f'`variable_names` can contain only `str`, got {plugin_name.__class__.__name__}; '
+                f'`variable_names` can contain only `str`, got {type(plugin_name).__name__}; '
                 f'{plugin_name!r}; variable_names = {variable_names!r}.'
             )
         

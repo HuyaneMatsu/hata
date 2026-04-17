@@ -14,30 +14,38 @@ def _iter_options__passing():
         name = role_name,
     )
     
-    yield None, {}
-    yield [], {}
-    yield {}, {}
-    yield [role], {role_id: role}
-    yield {role_id: role}, {role_id: role}
-
+    yield (
+        None,
+        {},
+    )
     
-@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
-def test__validate_roles__passing(input_value):
-    """
-    Tests whether ``validate_roles`` works as intended.
+    yield (
+        [],
+        {},
+    )
     
-    Case: passing.
+    yield (
+        {},
+        {},
+    )
     
-    Parameters
-    ----------
-    input_value : `object`
-        Value to pass to the validators.
+    yield (
+        [
+            role,
+        ],
+        {
+            role_id: role,
+        },
+    )
     
-    Returns
-    -------
-    expected_output : `None | dict<int, Role>`
-    """
-    return validate_roles(input_value)
+    yield (
+        {
+            role_id: role,
+        },
+        {
+            role_id: role,
+        },
+    )
 
 
 def _iter_options__type_error():
@@ -46,22 +54,31 @@ def _iter_options__type_error():
     yield {12.6: 12.6}
 
 
-@vampytest.raising(TypeError)
-@vampytest.call_from(_iter_options__type_error())
-def test__validate_roles__type_error(input_value):
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_roles(input_value):
     """
     Tests whether ``validate_roles`` works as intended.
-    
-    Case: `TypeError`.
     
     Parameters
     ----------
     input_value : `object`
         Value to pass to the validators.
     
+    Returns
+    -------
+    output : ``None | dict<int, Role>``
+    
     Raises
     ------
     TypeError
-        The occurred exception.
     """
-    validate_roles(input_value)
+    output = validate_roles(input_value)
+    
+    vampytest.assert_instance(output, dict, nullable = True)
+    if (output is not None):
+        for key, value in output.items():
+            vampytest.assert_instance(key, int)
+            vampytest.assert_instance(value, Role)
+    
+    return output

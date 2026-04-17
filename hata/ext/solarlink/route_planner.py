@@ -76,7 +76,7 @@ def _route_planner_base_repr_generator(route_planner):
     return ''.join(repr_parts)
     ```
     """
-    repr_parts = ['<', route_planner.__class__.__name__]
+    repr_parts = ['<', type(route_planner).__name__]
     
     repr_parts.append(' ip_block_type = ')
     repr_parts.append(route_planner.ip_block_type)

@@ -349,7 +349,7 @@ class Sticker(DiscordEntity, immortal = True):
     
     def __repr__(self):
         """Returns the sticker's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         sticker_id = self.id
         if sticker_id:
@@ -404,7 +404,7 @@ class Sticker(DiscordEntity, immortal = True):
             return format(self.created_at, DATETIME_FORMAT_CODE)
         
         raise ValueError(
-            f'Unknown format code {code!r} for {self.__class__.__name__}; {self!r}. '
+            f'Unknown format code {code!r} for {type(self).__name__}; {self!r}. '
             f'Available format codes: {""!r}, {"c"!r}.'
         )
     

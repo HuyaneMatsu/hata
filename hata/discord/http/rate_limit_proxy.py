@@ -86,7 +86,7 @@ class RateLimitProxy:
         """
         if (type(group) is not RateLimitGroup):
             raise TypeError(
-                f'`group` can be `{RateLimitGroup.__name__}`, got {group.__class__.__name__}; {group!r}.'
+                f'`group` can be `{RateLimitGroup.__name__}`, got {type(group).__name__}; {group!r}.'
             )
         
         while True:

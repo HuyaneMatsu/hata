@@ -184,12 +184,12 @@ class SolarPlayer(SolarPlayerBase):
         if __debug__:
             if not isinstance(source_index, int):
                 raise AssertionError(
-                    f'`source_index` can be `int`, got {source_index.__class__.__name__}; {source_index!r}.'
+                    f'`source_index` can be `int`, got {type(source_index).__name__}; {source_index!r}.'
                 )
             
             if not isinstance(target_index, int):
                 raise AssertionError(
-                    f'`target_index` can be `int`, got {target_index.__class__.__name__}; {target_index!r}.'
+                    f'`target_index` can be `int`, got {type(target_index).__name__}; {target_index!r}.'
                 )
         
         queue = self.queue

@@ -31,7 +31,7 @@ class ChannelMetadataGuildThreadAnnouncements(ChannelMetadataGuildThreadBase):
     slowmode : `int`
         The amount of time in seconds what a user needs to wait between it's each message. Bots and user accounts with
         `manage_messages`, `manage_channels` permissions are unaffected.
-    thread_users : `None`, `dict` of (`int`, ``ClientUserBase``) items
+    thread_users : ``None | dict<int, ClientUserBase>``
         The users inside of the thread if any.
     
     Class Attributes

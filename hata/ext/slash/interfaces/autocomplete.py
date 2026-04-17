@@ -44,7 +44,7 @@ def validate_auto_complete_parameter_name(parameter_name):
     else:
         raise TypeError(
             f'`parameter_name` can be `str`, got '
-            f'{parameter_name.__class__.__name__}; {parameter_name!r}.'
+            f'{type(parameter_name).__name__}; {parameter_name!r}.'
         )
     
     if not parameter_name:

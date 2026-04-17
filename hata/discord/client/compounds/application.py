@@ -469,7 +469,7 @@ class ClientCompoundApplicationEndpoints(Compound):
         sku : ``int | SKU``
             Stock keeping unit to get subscriptions for.
         
-        user : `int`, ``ClientUserBase``
+        user : ``None | int | ClientUserBase``
             User to get the subscriptions for.
         
         Returns
@@ -532,7 +532,7 @@ class ClientCompoundApplicationEndpoints(Compound):
         sku : ``int | SKU``
             Stock keeping unit to get subscriptions for.
         
-        user : `int`, ``ClientUserBase``
+        user : ``None | int | ClientUserBase``
             User to get the subscriptions for.
         
         after : `int`, ``DiscordEntity``, `datetime`, Optional (Keyword only)

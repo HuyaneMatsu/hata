@@ -6,6 +6,8 @@ from ....bases import Icon, IconType
 from ....utils import datetime_to_timestamp
 
 from ...avatar_decoration import AvatarDecoration
+from ...name_plate import NamePlate
+from ...name_style import NameStyle, NameStyleFont
 
 from ..flags import GuildProfileFlag
 from ..guild_profile import GuildProfile
@@ -23,6 +25,13 @@ def test__GuildProfile__from_data():
     boosts_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     flags = GuildProfileFlag(3)
     joined_at = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202604200021,
+    )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     nick = 'Ayumi'
     pending = False
     role_ids = [2022100013, 2022100014]
@@ -34,6 +43,10 @@ def test__GuildProfile__from_data():
         'banner': banner.as_base_16_hash,
         'premium_since': datetime_to_timestamp(boosts_since),
         'joined_at': datetime_to_timestamp(joined_at),
+        'collectibles': {
+            'nameplate': name_plate.to_data(),
+        },
+        'display_name_styles': name_style.to_data(),
         'nick': nick,
         'pending': pending,
         'roles': [str(role_id) for role_id in role_ids],
@@ -50,6 +63,8 @@ def test__GuildProfile__from_data():
     vampytest.assert_eq(guild_profile.boosts_since, boosts_since)
     vampytest.assert_eq(guild_profile.flags, flags)
     vampytest.assert_eq(guild_profile.joined_at, joined_at)
+    vampytest.assert_eq(guild_profile.name_plate, name_plate)
+    vampytest.assert_eq(guild_profile.name_style, name_style)
     vampytest.assert_eq(guild_profile.nick, nick)
     vampytest.assert_eq(guild_profile.pending, pending)
     vampytest.assert_eq(guild_profile.role_ids, tuple(role_ids))
@@ -66,6 +81,13 @@ def test__GuildProfile__to_data():
     boosts_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     flags = GuildProfileFlag(3)
     joined_at = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202604200022,
+    )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     nick = 'Ayumi'
     pending = False
     role_ids = [2022100015, 2022100016]
@@ -78,6 +100,8 @@ def test__GuildProfile__to_data():
         boosts_since = boosts_since,
         flags = flags,
         joined_at = joined_at,
+        name_plate = name_plate,
+        name_style = name_style,
         nick = nick,
         pending = pending,
         role_ids = role_ids,
@@ -95,6 +119,10 @@ def test__GuildProfile__to_data():
             'banner': banner.as_base_16_hash,
             'premium_since': datetime_to_timestamp(boosts_since),
             'joined_at': datetime_to_timestamp(joined_at),
+            'collectibles': {
+                'nameplate': name_plate.to_data(defaults = True),
+            },
+            'display_name_styles': name_style.to_data(defaults = True),
             'nick': nick,
             'pending': pending,
             'roles': [str(role_id) for role_id in role_ids],
@@ -141,6 +169,13 @@ def test__GuildProfile__update_attributes():
     banner = Icon(IconType.static, 15)
     boosts_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     flags = GuildProfileFlag(3)
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202604200023,
+    )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     nick = 'Ayumi'
     pending = False
     role_ids = [2022100017, 2022100018]
@@ -151,6 +186,10 @@ def test__GuildProfile__update_attributes():
         'avatar_decoration_data': avatar_decoration.to_data(),
         'banner': banner.as_base_16_hash,
         'premium_since': datetime_to_timestamp(boosts_since),
+        'collectibles': {
+            'nameplate': name_plate.to_data(),
+        },
+        'display_name_styles': name_style.to_data(),
         'nick': nick,
         'pending': pending,
         'roles': [str(role_id) for role_id in role_ids],
@@ -166,6 +205,8 @@ def test__GuildProfile__update_attributes():
     vampytest.assert_eq(guild_profile.banner, banner)
     vampytest.assert_eq(guild_profile.boosts_since, boosts_since)
     vampytest.assert_eq(guild_profile.flags, flags)
+    vampytest.assert_eq(guild_profile.name_plate, name_plate)
+    vampytest.assert_eq(guild_profile.name_style, name_style)
     vampytest.assert_eq(guild_profile.nick, nick)
     vampytest.assert_eq(guild_profile.pending, pending)
     vampytest.assert_eq(guild_profile.role_ids, tuple(role_ids))
@@ -180,6 +221,13 @@ def test__GuildProfile__difference_update_attributes():
     old_avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202407150008)
     old_banner = Icon(IconType.static, 15)
     old_boosts_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    old_name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202604200024,
+    )
+    old_name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     old_nick = 'Ayumi'
     old_pending = False
     old_role_ids = [2022100019, 2022100020]
@@ -190,6 +238,13 @@ def test__GuildProfile__difference_update_attributes():
     new_avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 3), sku_id = 202407150009)
     new_banner = Icon(IconType.static, 16)
     new_boosts_since = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
+    new_name_plate = NamePlate(
+        asset_path = 'koishi/koishi/eye/',
+        sku_id = 202604200025,
+    )
+    new_name_style = NameStyle(
+        font = NameStyleFont.sakura,
+    )
     new_nick = 'Necrophantasia'
     new_pending = True
     new_role_ids = [2022100021, 2022100022]
@@ -201,6 +256,10 @@ def test__GuildProfile__difference_update_attributes():
         'avatar_decoration_data': new_avatar_decoration.to_data(),
         'banner': new_banner.as_base_16_hash,
         'premium_since': datetime_to_timestamp(new_boosts_since),
+        'collectibles': {
+            'nameplate': new_name_plate.to_data(),
+        },
+        'display_name_styles': new_name_style.to_data(),
         'nick': new_nick,
         'pending': new_pending,
         'roles': [str(role_id) for role_id in new_role_ids],
@@ -214,6 +273,8 @@ def test__GuildProfile__difference_update_attributes():
         banner = old_banner,
         boosts_since = old_boosts_since,
         flags = old_flags,
+        name_plate = old_name_plate,
+        name_style = old_name_style,
         nick = old_nick,
         pending = old_pending,
         role_ids = old_role_ids,
@@ -227,6 +288,8 @@ def test__GuildProfile__difference_update_attributes():
     vampytest.assert_eq(guild_profile.banner, new_banner)
     vampytest.assert_eq(guild_profile.boosts_since, new_boosts_since)
     vampytest.assert_eq(guild_profile.flags, new_flags)
+    vampytest.assert_eq(guild_profile.name_plate, new_name_plate)
+    vampytest.assert_eq(guild_profile.name_style, new_name_style)
     vampytest.assert_eq(guild_profile.nick, new_nick)
     vampytest.assert_eq(guild_profile.pending, new_pending)
     vampytest.assert_eq(guild_profile.role_ids, tuple(new_role_ids))
@@ -240,6 +303,8 @@ def test__GuildProfile__difference_update_attributes():
             'banner': old_banner,
             'boosts_since': old_boosts_since,
             'flags': old_flags,
+            'name_plate': old_name_plate,
+            'name_style': old_name_style,
             'nick': old_nick,
             'pending': old_pending,
             'role_ids': tuple(old_role_ids),

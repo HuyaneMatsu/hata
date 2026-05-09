@@ -48,7 +48,7 @@ def test__FlagDeprecation__new__all_fields():
     """
     use_instead = 'koishi'
     removed_after = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
-    trigger_after = DateTime.now(tz = TimeZone.utc) + TimeDelta(days = 5000)
+    trigger_after = DateTime.now(TimeZone.utc) + TimeDelta(days = 5000)
     
     flag_deprecation = FlagDeprecation(
         use_instead,
@@ -65,7 +65,7 @@ def test__FlagDeprecation__new__all_fields():
 def _iter_options__eq():
     use_instead = 'koishi'
     removed_after = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
-    trigger_after = DateTime.now(tz = TimeZone.utc) + TimeDelta(days = 5000)
+    trigger_after = DateTime.now(TimeZone.utc) + TimeDelta(days = 5000)
     
     keyword_parameters = {
         'use_instead': use_instead,
@@ -138,7 +138,7 @@ def test__FlagDeprecation__hash():
     """
     use_instead = 'koishi'
     removed_after = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
-    trigger_after = DateTime.now(tz = TimeZone.utc) + TimeDelta(days = 5000)
+    trigger_after = DateTime.now(TimeZone.utc) + TimeDelta(days = 5000)
     
     flag_deprecation = FlagDeprecation(
         use_instead,
@@ -156,7 +156,7 @@ def test__FlagDeprecation__repr():
     """
     use_instead = 'koishi'
     removed_after = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
-    trigger_after = DateTime.now(tz = TimeZone.utc) + TimeDelta(days = 5000)
+    trigger_after = DateTime.now(TimeZone.utc) + TimeDelta(days = 5000)
     
     flag_deprecation = FlagDeprecation(
         use_instead,
@@ -176,7 +176,7 @@ def test__FlagDeprecation__trigger__disallowed():
     """
     use_instead = 'koishi'
     removed_after = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
-    trigger_after = DateTime.now(tz = TimeZone.utc) + TimeDelta(days = 5000)
+    trigger_after = DateTime.now(TimeZone.utc) + TimeDelta(days = 5000)
     
     flag_deprecation = FlagDeprecation(
         use_instead,

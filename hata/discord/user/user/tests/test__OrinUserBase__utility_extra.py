@@ -85,7 +85,7 @@ def _iter_options__default_avatar_url():
 @vampytest._(vampytest.call_from(_iter_options__default_avatar_url()).returning_last())
 def test__OrinUserBase__default_avatar_url(user_id, discriminator):
     """
-    Tests whether ``Userbase.default_avatar_url`` works as intended.
+    Tests whether ``UserBase.default_avatar_url`` works as intended.
     
     Parameters
     ----------
@@ -126,7 +126,7 @@ def _iter_options__default_avatar():
 @vampytest._(vampytest.call_from(_iter_options__default_avatar()).returning_last())
 def test__OrinUserBase__default_avatar(user_id, discriminator):
     """
-    Tests whether ``Userbase.default_avatar`` works as intended.
+    Tests whether ``UserBase.default_avatar`` works as intended.
     
     Parameters
     ----------
@@ -391,7 +391,7 @@ def test__OrinUserBase__name_plate_url(name_plate):
     Parameters
     ----------
     name_plate : ``None | NamePlate``
-        Avatar decoration to create the user with.
+        Name plate to create the user with.
     
     Returns
     -------
@@ -401,5 +401,46 @@ def test__OrinUserBase__name_plate_url(name_plate):
         name_plate = name_plate,
     )
     output = user.name_plate_url
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__name_plate_url_at():
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202604200040,
+    )
+    
+    yield None, 0, None, False
+    yield name_plate, 0, None, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__name_plate_url_at()).returning_last())
+def test__OrinUserBase__name_plate_url_at(global_name_plate, guild_id, local_name_plate):
+    """
+    Tests whether ``OrinUserBase.name_plate_url_at`` work as intended.
+    
+    Parameters
+    ----------
+    global_name_plate : ``None | NamePlate``
+        Name plate to create the user with.
+    
+    guild_id : `int`
+        Guild identifier to add guild profile at.
+    
+    local_name_plate : ``None | NamePlate``
+        Name plate to create guild profile with.
+    
+    Returns
+    -------
+    has_name_plate_url_at : `bool`
+    """
+    assert guild_id == 0
+    assert local_name_plate is None
+    
+    user = OrinUserBase(
+        name_plate = global_name_plate,
+    )
+    output = user.name_plate_url_at(guild_id)
     vampytest.assert_instance(output, str, nullable = True)
     return (output is not None)

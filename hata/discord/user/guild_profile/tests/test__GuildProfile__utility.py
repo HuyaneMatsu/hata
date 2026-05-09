@@ -5,9 +5,10 @@ import vampytest
 from ....bases import Icon, IconType
 from ....color import Color
 from ....role import Role
-from ....utils import is_url
 
 from ...avatar_decoration import AvatarDecoration
+from ...name_plate import NamePlate
+from ...name_style import NameStyle, NameStyleFont
 
 from ..flags import GuildProfileFlag
 from ..guild_profile import GuildProfile
@@ -25,6 +26,13 @@ def test__GuildProfile__copy():
     boosts_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     flags = GuildProfileFlag(3)
     joined_at = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/eye/',
+        sku_id = 202604200029,
+    )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     nick = 'Ayumi'
     pending = False
     role_ids = [202211110023, 202211110024]
@@ -38,6 +46,8 @@ def test__GuildProfile__copy():
         boosts_since = boosts_since,
         flags = flags,
         joined_at = joined_at,
+        name_plate = name_plate,
+        name_style = name_style,
         nick = nick,
         pending = pending,
         role_ids = role_ids,
@@ -62,6 +72,13 @@ def test__GuildProfile__copy_with__no_fields():
     boosts_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     flags = GuildProfileFlag(3)
     joined_at = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/eye/',
+        sku_id = 202604200030,
+    )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     nick = 'Ayumi'
     pending = False
     role_ids = [202211110023, 202211110024]
@@ -75,6 +92,8 @@ def test__GuildProfile__copy_with__no_fields():
         boosts_since = boosts_since,
         flags = flags,
         joined_at = joined_at,
+        name_plate = name_plate,
+        name_style = name_style,
         nick = nick,
         pending = pending,
         role_ids = role_ids,
@@ -98,6 +117,13 @@ def test__GuildProfile__copy_with__all_fields():
     old_banner = Icon(IconType.static, 15)
     old_boosts_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     old_joined_at = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
+    old_name_plate = NamePlate(
+        asset_path = 'koishi/koishi/eye/',
+        sku_id = 202604200031,
+    )
+    old_name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     old_nick = 'Ayumi'
     old_pending = False
     old_role_ids = [202211110025, 202211110026]
@@ -109,6 +135,13 @@ def test__GuildProfile__copy_with__all_fields():
     new_banner = Icon(IconType.static, 15)
     new_boosts_since = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
     new_joined_at = DateTime(2017, 5, 15, tzinfo = TimeZone.utc)
+    new_name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202604200032,
+    )
+    new_name_style = NameStyle(
+        font = NameStyleFont.sakura,
+    )
     new_nick = 'Necrophantasia'
     new_pending = True
     new_role_ids = [202211110027, 202211110028]
@@ -123,6 +156,8 @@ def test__GuildProfile__copy_with__all_fields():
         boosts_since = old_boosts_since,
         flags = old_flags,
         joined_at = old_joined_at,
+        name_plate = old_name_plate,
+        name_style = old_name_style,
         nick = old_nick,
         pending = old_pending,
         role_ids = old_role_ids,
@@ -135,6 +170,8 @@ def test__GuildProfile__copy_with__all_fields():
         boosts_since = new_boosts_since,
         flags = new_flags,
         joined_at = new_joined_at,
+        name_plate = new_name_plate,
+        name_style = new_name_style,
         nick = new_nick,
         pending = new_pending,
         role_ids = new_role_ids,
@@ -150,6 +187,8 @@ def test__GuildProfile__copy_with__all_fields():
     vampytest.assert_eq(copy.boosts_since, new_boosts_since)
     vampytest.assert_eq(copy.flags, new_flags)
     vampytest.assert_eq(copy.joined_at, new_joined_at)
+    vampytest.assert_eq(copy.name_plate, new_name_plate)
+    vampytest.assert_eq(copy.name_style, new_name_style)
     vampytest.assert_eq(copy.nick, new_nick)
     vampytest.assert_eq(copy.pending, new_pending)
     vampytest.assert_eq(copy.role_ids, tuple(new_role_ids))
@@ -406,5 +445,37 @@ def test__GuildProfile__avatar_decoration_url_as(avatar_decoration, keyword_para
     """
     guild_profile = GuildProfile(avatar_decoration = avatar_decoration)
     output = guild_profile.avatar_decoration_url_as(**keyword_parameters)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__name_plate_url():
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202604200033,
+    )
+    
+    yield None, False
+    yield name_plate, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__name_plate_url()).returning_last())
+def test__GuildProfile__name_plate_url(name_plate):
+    """
+    Tests whether ``GuildProfile.name_plate_url`` work as intended.
+    
+    Parameters
+    ----------
+    name_plate : ``None | NamePlate``
+        Name plate to create the user with.
+    
+    Returns
+    -------
+    has_name_plate_url : `bool`
+    """
+    user = GuildProfile(
+        name_plate = name_plate,
+    )
+    output = user.name_plate_url
     vampytest.assert_instance(output, str, nullable = True)
     return (output is not None)

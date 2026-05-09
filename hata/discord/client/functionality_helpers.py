@@ -886,7 +886,7 @@ async def request_channel_thread_channels(client, guild_id, channel_id, request_
         The source guild's identifier.
     channel_id : `int`
         The respective guild text channel's identifier.
-    request_function : ``CoroutineFunctionType``
+    request_function : `CoroutineFunctionType`
         The function to request the threads with.
     
     Returns

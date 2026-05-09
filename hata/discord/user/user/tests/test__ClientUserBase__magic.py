@@ -6,6 +6,7 @@ from ....guild import GuildBadge
 
 from ...avatar_decoration import AvatarDecoration
 from ...name_plate import NamePlate
+from ...name_style import NameStyle, NameStyleFont
 
 from ..flags import UserFlag
 from ..client_user_base import ClientUserBase
@@ -29,6 +30,9 @@ def test__ClientUserBase__repr():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030025,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180035, tag = 'miau')
     
     user = ClientUserBase._create_empty(user_id)
@@ -45,6 +49,7 @@ def test__ClientUserBase__repr():
         flags = flags,
         name = name,
         name_plate = name_plate,
+        name_style = name_style,
         primary_guild_badge = primary_guild_badge,
     )
     vampytest.assert_instance(repr(user), str)
@@ -68,6 +73,9 @@ def test__ClientUserBase__hash():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030026,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180036, tag = 'miau')
     
     user = ClientUserBase._create_empty(user_id)
@@ -84,6 +92,7 @@ def test__ClientUserBase__hash():
         flags = flags,
         name = name,
         name_plate = name_plate,
+        name_style = name_style,
         primary_guild_badge = primary_guild_badge,
     )
     vampytest.assert_instance(repr(user), str)
@@ -122,6 +131,9 @@ def _iter_options__eq():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030027,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180009, tag = 'miau')
     
     keyword_parameters = {
@@ -135,6 +147,7 @@ def _iter_options__eq():
         'flags': flags,
         'name': name,
         'name_plate': name_plate,
+        'name_style': name_style,
         'primary_guild_badge': primary_guild_badge,
     }
     
@@ -238,6 +251,15 @@ def _iter_options__eq():
         keyword_parameters,
         {
             **keyword_parameters,
+            'name_style': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
             'primary_guild_badge': None,
         },
         False,
@@ -288,6 +310,9 @@ def test__ClientUserBase__format():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030028,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180038, tag = 'miau')
     
     user = ClientUserBase(
@@ -301,6 +326,7 @@ def test__ClientUserBase__format():
         flags = flags,
         name = name,
         name_plate = name_plate,
+        name_style = name_style,
         primary_guild_badge = primary_guild_badge,
     )
     

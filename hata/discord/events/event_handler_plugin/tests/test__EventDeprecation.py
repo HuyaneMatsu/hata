@@ -47,7 +47,7 @@ def test__EventDeprecation__new__all_fields():
     Case: all fields given.
     """
     removed_after = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
-    trigger_after = DateTime.now(tz = TimeZone.utc) + TimeDelta(days = 5000)
+    trigger_after = DateTime.now(TimeZone.utc) + TimeDelta(days = 5000)
     use_instead = 'koishi'
     
     event_deprecation = EventDeprecation(
@@ -64,7 +64,7 @@ def test__EventDeprecation__new__all_fields():
 
 def _iter_options__eq():
     removed_after = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
-    trigger_after = DateTime.now(tz = TimeZone.utc) + TimeDelta(days = 5000)
+    trigger_after = DateTime.now(TimeZone.utc) + TimeDelta(days = 5000)
     use_instead = 'koishi'
     
     keyword_parameters = {
@@ -137,7 +137,7 @@ def test__EventDeprecation__hash():
     Tests whether ``EventDeprecation.__hash__`` works as intended.
     """
     removed_after = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
-    trigger_after = DateTime.now(tz = TimeZone.utc) + TimeDelta(days = 5000)
+    trigger_after = DateTime.now(TimeZone.utc) + TimeDelta(days = 5000)
     use_instead = 'koishi'
     
     event_deprecation = EventDeprecation(
@@ -155,7 +155,7 @@ def test__EventDeprecation__repr():
     Tests whether ``EventDeprecation.__repr__`` works as intended.
     """
     removed_after = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
-    trigger_after = DateTime.now(tz = TimeZone.utc) + TimeDelta(days = 5000)
+    trigger_after = DateTime.now(TimeZone.utc) + TimeDelta(days = 5000)
     use_instead = 'koishi'
     
     event_deprecation = EventDeprecation(
@@ -175,7 +175,7 @@ def test__EventDeprecation__trigger__disallowed():
     Case: disallowed.
     """
     removed_after = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
-    trigger_after = DateTime.now(tz = TimeZone.utc) + TimeDelta(days = 5000)
+    trigger_after = DateTime.now(TimeZone.utc) + TimeDelta(days = 5000)
     use_instead = 'koishi'
     
     event_deprecation = EventDeprecation(

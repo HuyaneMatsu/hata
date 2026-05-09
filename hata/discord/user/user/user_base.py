@@ -15,11 +15,11 @@ from ...http.urls import (
 from ...localization.utils import LOCALE_DEFAULT
 from ...utils import DATETIME_FORMAT_CODE
 
-from ..status_by_platform import Status, SessionPlatformType
+from ..status_by_platform import SessionPlatformType, Status
 
 from .fields import (
     parse_name, put_avatar_decoration, put_banner_color, put_bot, put_discriminator, put_display_name, put_flags,
-    put_id, put_name, put_name_plate, put_primary_guild_badge, validate_name
+    put_id, put_name, put_name_plate, put_name_style, put_primary_guild_badge, validate_name,
 )
 from .flags import UserFlag
 from .helpers import _try_get_guild_id
@@ -138,7 +138,7 @@ class UserBase(DiscordEntity, immortal = True):
         +=======================+===============================+=======================+
         | avatar                | ``Icon``                      | all                   |
         +-----------------------+-------------------------------+-----------------------+
-        | avatar_decoration     | ``None | AvatarDecoration``    | ``Client``, ``User``  |
+        | avatar_decoration     | ``None | AvatarDecoration``   | ``Client``, ``User``  |
         +-----------------------+-------------------------------+-----------------------+
         | banner                | ``Icon``                      | ``Client``, ``User``  |
         +-----------------------+-------------------------------+-----------------------+
@@ -148,9 +148,9 @@ class UserBase(DiscordEntity, immortal = True):
         +-----------------------+-------------------------------+-----------------------+
         | discriminator         | `int`                         | ``Client``, ``User``  |
         +-----------------------+-------------------------------+-----------------------+
-        | display_name          | `None`, `str`                 | ``Client``, ``User``  |
+        | display_name          | `None | str`                  | ``Client``, ``User``  |
         +-----------------------+-------------------------------+-----------------------+
-        | email                 | `None`, `str`                 | ``Client``            |
+        | email                 | `None | str`                  | ``Client``            |
         +-----------------------+-------------------------------+-----------------------+
         | email_verified        | `bool`                        | ``Client``            |
         +-----------------------+-------------------------------+-----------------------+
@@ -163,6 +163,8 @@ class UserBase(DiscordEntity, immortal = True):
         | name                  | `str`                         | all                   |
         +-----------------------+-------------------------------+-----------------------+
         | name_plate            | ``None | NamePlate``          | ``Client``, ``User``  |
+        +-----------------------+-------------------------------+-----------------------+
+        | name_style            | ``None | NameStyle``          | ``Client``, ``User``  |
         +-----------------------+-------------------------------+-----------------------+
         | premium_type          | ``PremiumType``               | ``Client``            |
         +-----------------------+-------------------------------+-----------------------+
@@ -255,6 +257,7 @@ class UserBase(DiscordEntity, immortal = True):
         put_display_name(self.display_name, data, defaults)
         put_name(self.name, data, defaults)
         put_name_plate(self.name_plate, data, defaults)
+        put_name_style(self.name_style, data, defaults)
         
         if include_internals:
             put_bot(self.bot, data, defaults)
@@ -591,6 +594,10 @@ class UserBase(DiscordEntity, immortal = True):
         if (self.name_plate != other.name_plate):
             return False
         
+        # name_style
+        if (self.name_style != other.name_style):
+            return False
+        
         # premium_type
         if (self.premium_type is not other.premium_type):
             return False
@@ -727,7 +734,7 @@ class UserBase(DiscordEntity, immortal = True):
         
         Returns
         -------
-        display_name : `None`, `str`
+        display_name : `None | str`
         """,
     )
     
@@ -739,7 +746,7 @@ class UserBase(DiscordEntity, immortal = True):
         
         Returns
         -------
-        email : `None`, `str`
+        email : `None | str`
         """,
     )
     
@@ -812,7 +819,19 @@ class UserBase(DiscordEntity, immortal = True):
         
         Returns
         -------
-        name_plate : ``NamePlate``
+        name_plate : ``None | NamePlate``
+        """
+    )
+    
+    
+    name_style = PlaceHolder(
+        None,
+        """
+        Returns the user's name style.
+        
+        Returns
+        -------
+        name_style : ``None | NameStyle``
         """
     )
     
@@ -1465,9 +1484,13 @@ class UserBase(DiscordEntity, immortal = True):
             +-------------------+-------------------------------+
             | boosts_since      | `None | DateTime`             |
             +-------------------+-------------------------------+
-            | flags             | `None`, ``GuildProfileFlags`` |
+            | flags             | ``GuildProfileFlags``         |
             +-------------------+-------------------------------+
-            | nick              | `None`, `str`                 |
+            | name_plate        | ``None | NamePlate``          |
+            +-------------------+-------------------------------+
+            | name_style        | ``None | NameStyle``          |
+            +-------------------+-------------------------------+
+            | nick              | `None | str`                  |
             +-------------------+-------------------------------+
             | pending           | `bool`                        |
             +-------------------+-------------------------------+
@@ -1511,9 +1534,13 @@ class UserBase(DiscordEntity, immortal = True):
             +-------------------+-------------------------------+
             | boosts_since      | `None | DateTime`             |
             +-------------------+-------------------------------+
-            | flags             | `None`, ``GuildProfileFlags`` |
+            | flags             | ``GuildProfileFlags``         |
             +-------------------+-------------------------------+
-            | nick              | `None`, `str`                 |
+            | name_plate        | ``None | NamePlate``          |
+            +-------------------+-------------------------------+
+            | name_style        | ``None | NameStyle``          |
+            +-------------------+-------------------------------+
+            | nick              | `None | str`                  |
             +-------------------+-------------------------------+
             | pending           | `bool`                        |
             +-------------------+-------------------------------+
@@ -1689,6 +1716,11 @@ class UserBase(DiscordEntity, immortal = True):
         If the user has no guild specific avatar then returns its global avatar's url.
         If the user has no avatar then returns its default avatar's url.
         
+        Parameters
+        ----------
+        guild : ``None | int | Guild``
+            The guild's identifier to get the user's avatar url from.
+        
         Returns
         -------
         url : `str`
@@ -1708,6 +1740,9 @@ class UserBase(DiscordEntity, immortal = True):
         
         Parameters
         ----------
+        guild : ``None | int | Guild``
+            The guild's identifier to get the user's avatar url from.
+        
         ext : `None | str` = `None`, Optional
             The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
             If the user has animated avatar, it can be `'gif'` as well.
@@ -1815,6 +1850,11 @@ class UserBase(DiscordEntity, immortal = True):
         If the user has no guild specific banner then returns its global banner's url.
         If the user has no banner then returns `None`.
         
+        Parameters
+        ----------
+        guild : ``None | int | Guild``
+            The guild's identifier to get the user's banner url from.
+        
         Returns
         -------
         url : `None | str`
@@ -1834,6 +1874,9 @@ class UserBase(DiscordEntity, immortal = True):
         
         Parameters
         ----------
+        guild : ``None | int | Guild``
+            The guild's identifier to get the user's banner url from.
+        
         ext : `None | str` = `None`, Optional
             The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
             If the user has animated banner, it can be `'gif'` as well.
@@ -1864,3 +1907,36 @@ class UserBase(DiscordEntity, immortal = True):
         name_plate = self.name_plate
         if (name_plate is not None):
             return name_plate.url
+    
+    
+    def name_plate_url_at(self, guild):
+        """
+        Returns the user's name plate's url at the given guild.
+        If the user has no guild specific name plate, then returns its global name plate's url.
+        If the user has no name plate then returns `None`.
+        
+        Parameters
+        ----------
+        guild : ``None | int | Guild``
+            The guild's identifier to get the user's banner url from.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        guild_id = _try_get_guild_id(guild)
+        
+        while True:
+            try:
+                guild_profile = self.guild_profiles[guild_id]
+            except KeyError:
+                pass
+            else:
+                url = guild_profile.name_plate_url
+                if (url is not None):
+                    break
+            
+            url = self.name_plate_url
+            break
+        
+        return url

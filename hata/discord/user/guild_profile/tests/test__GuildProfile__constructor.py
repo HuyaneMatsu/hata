@@ -5,6 +5,8 @@ import vampytest
 from ....bases import Icon, IconType
 
 from ...avatar_decoration import AvatarDecoration
+from ...name_plate import NamePlate
+from ...name_style import NameStyle, NameStyleFont
 
 from ..flags import GuildProfileFlag
 from ..guild_profile import GuildProfile
@@ -25,6 +27,8 @@ def _assert_fields_set(guild_profile):
     vampytest.assert_instance(guild_profile.boosts_since, DateTime, nullable = True)
     vampytest.assert_instance(guild_profile.flags, GuildProfileFlag)
     vampytest.assert_instance(guild_profile.joined_at, DateTime, nullable = True)
+    vampytest.assert_instance(guild_profile.name_plate, NamePlate, nullable = True)
+    vampytest.assert_instance(guild_profile.name_style, NameStyle, nullable = True)
     vampytest.assert_instance(guild_profile.nick, str, nullable = True)
     vampytest.assert_instance(guild_profile.pending, bool)
     vampytest.assert_instance(guild_profile.role_ids, tuple, nullable = True)
@@ -54,6 +58,13 @@ def test__GuildProfile__new__all_fields():
     boosts_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     flags = GuildProfileFlag(3)
     joined_at = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202604200020,
+    )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     nick = 'Ayumi'
     pending = False
     role_ids = [2022100005, 2022100006]
@@ -67,6 +78,8 @@ def test__GuildProfile__new__all_fields():
         boosts_since = boosts_since,
         flags = flags,
         joined_at = joined_at,
+        name_plate = name_plate,
+        name_style = name_style,
         nick = nick,
         pending = pending,
         role_ids = role_ids,
@@ -80,6 +93,8 @@ def test__GuildProfile__new__all_fields():
     vampytest.assert_eq(guild_profile.boosts_since, boosts_since)
     vampytest.assert_eq(guild_profile.flags, flags)
     vampytest.assert_eq(guild_profile.joined_at, joined_at)
+    vampytest.assert_eq(guild_profile.name_plate, name_plate)
+    vampytest.assert_eq(guild_profile.name_style, name_style)
     vampytest.assert_eq(guild_profile.nick, nick)
     vampytest.assert_eq(guild_profile.pending, pending)
     vampytest.assert_eq(guild_profile.role_ids, tuple(role_ids))

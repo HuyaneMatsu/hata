@@ -138,58 +138,65 @@ class ChannelOutputStream:
             client = self._client
             while True:
                 try:
-                    message = self._last_message
-                    if (message is None):
-                        un_poll = None
-                        should_edit = False
-                    else:
-                        last_action = message.edited_at
-                        if last_action is None:
-                            last_action = message.created_at
-                        
-                        if (last_action + MESSAGE_EDIT_TIMEDELTA > DateTime.now(TimeZone.utc)):
-                            un_poll = self._last_chunk
-                            should_edit = True
-                        else:
+                    try:
+                        message = self._last_message
+                        if (message is None):
                             un_poll = None
                             should_edit = False
+                        else:
+                            last_action = message.edited_at
+                            if last_action is None:
+                                last_action = message.created_at
+                            
+                            if (last_action + MESSAGE_EDIT_TIMEDELTA > DateTime.now(TimeZone.utc)):
+                                un_poll = self._last_chunk
+                                should_edit = True
+                            else:
+                                un_poll = None
+                                should_edit = False
+                        
+                        raw_data = self._poll(un_poll)
+                        if raw_data is None:
+                            break
+                        
+                        if len(raw_data) < (self._chunk_size >> 1):
+                            maybe_update_next = True
+                        else:
+                            maybe_update_next = False
+                        
+                        if self._sanitize:
+                            data = sanitize_content(raw_data, guild = self._channel.guild)
+                        else:
+                            data = raw_data
+                        
+                        request_start = LOOP_TIME()
+                        if should_edit:
+                            await client.message_edit(message, data)
+                        else:
+                            message = await client.message_create(self._channel, data)
+                        
+                        if maybe_update_next:
+                            self._last_message = message
+                            self._last_chunk = raw_data
+                        else:
+                            self._last_message = None
+                            self._last_chunk = None
+                        
+                        sleep_time = request_start - LOOP_TIME() + REQUEST_RATE_LIMIT
+                        
+                        if sleep_time > 0.0:
+                            await sleep(sleep_time, KOKORO)
                     
-                    raw_data = self._poll(un_poll)
-                    if raw_data is None:
-                        break
-                    
-                    if len(raw_data) < (self._chunk_size >> 1):
-                        maybe_update_next = True
-                    else:
-                        maybe_update_next = False
-                    
-                    if self._sanitize:
-                        data = sanitize_content(raw_data, guild = self._channel.guild)
-                    else:
-                        data = raw_data
-                    
-                    request_start = LOOP_TIME()
-                    if should_edit:
-                        await client.message_edit(message, data)
-                    else:
-                        message = await client.message_create(self._channel, data)
-                    
-                    if maybe_update_next:
-                        self._last_message = message
-                        self._last_chunk = raw_data
-                    else:
+                    except:
                         self._last_message = None
                         self._last_chunk = None
-                    
-                    sleep_time = request_start - LOOP_TIME() + REQUEST_RATE_LIMIT
-                    
-                    if sleep_time > 0.0:
-                        await sleep(sleep_time, KOKORO)
+                        raise
                 
-                except BaseException as err:
-                    self._last_message = None
-                    self._last_chunk = None
-                    await client.events.error(client, f'{self!r}._do_transfer', err)
+                except GeneratorExit:
+                    raise
+                
+                except BaseException as exception:
+                    await client.events.error(client, f'{self!r}._do_transfer', exception)
         finally:
             self._transfer_task = None
     
@@ -408,33 +415,37 @@ class ChannelInputStream:
                 chunks.append(data)
                 continue
             
-            try:
-                payload_reader.send(data)
-            except StopIteration as err:
-                args = err.args
-                if not args:
-                    result = None
-                elif len(args) == 1:
-                    result = args[0]
-                else:
-                    result = args
+            while True:
+                try:
+                    payload_reader.send(data)
+                except StopIteration as exception:
+                    args = exception.args
+                    if not args:
+                        result = None
+                    elif len(args) == 1:
+                        result = args[0]
+                    else:
+                        result = args
+                    
+                    self._payload_waiter.set_result_if_pending(result)
                 
-                payload_waiter = self._payload_waiter
+                except GeneratorExit as exception:
+                    new_exception = CancelledError()
+                    new_exception.__cause__ = exception
+                    try:
+                        self._payload_waiter.set_exception_if_pending(new_exception)
+                    finally:
+                        new_exception = None
+                
+                except BaseException as exception:
+                    self._payload_waiter.set_exception_if_pending(exception)
+                
+                else:
+                    break
+                
                 self._payload_reader = None
                 self._payload_waiter = None
-                payload_waiter.set_result_if_pending(result)
-            except GeneratorExit as err:
-                payload_waiter = self._payload_waiter
-                self._payload_reader = None
-                self._payload_waiter = None
-                exception = CancelledError()
-                exception.__cause__ = err
-                payload_waiter.set_exception_if_pending(exception)
-            except BaseException as err:
-                payload_waiter = self._payload_waiter
-                self._payload_reader = None
-                self._payload_waiter = None
-                payload_waiter.set_exception_if_pending(err)
+                break
     
     def close(self):
         """
@@ -454,42 +465,45 @@ class ChannelInputStream:
         if payload_reader is None:
             return False
         
-        try:
-             payload_reader.throw(CancelledError())
-        except CancelledError as err:
-            new_exception = ConnectionError('Connection closed unexpectedly with EOF.')
-            new_exception.__cause__ = err
-            payload_waiter = self._payload_waiter
-            self._payload_reader = None
-            self._payload_waiter = None
-            payload_waiter.set_exception_if_pending(new_exception)
-        
-        except StopIteration as err:
-            args = err.args
-            if not args:
-                result = None
-            elif len(args) == 1:
-                result = args[0]
-            else:
-                result = args
+        while True:
+            try:
+                 payload_reader.throw(CancelledError())
+            except CancelledError as exception:
+                new_exception = ConnectionError('Connection closed unexpectedly with EOF.')
+                new_exception.__cause__ = exception
+                try:
+                    self._payload_waiter.set_exception_if_pending(new_exception)
+                finally:
+                    new_exception = None
             
-            payload_waiter = self._payload_waiter
+            except StopIteration as exception:
+                args = exception.args
+                if not args:
+                    result = None
+                elif len(args) == 1:
+                    result = args[0]
+                else:
+                    result = args
+                
+                self._payload_waiter.set_result_if_pending(result)
+            
+            except GeneratorExit as exception:
+                new_exception = CancelledError()
+                new_exception.__cause__ = exception
+                try:
+                    self._payload_waiter.set_exception_if_pending(new_exception)
+                finally:
+                    new_exception = None
+            
+            except BaseException as exception:
+                self._payload_waiter.set_exception_if_pending(exception)
+            
+            else:
+                break
+            
             self._payload_reader = None
             self._payload_waiter = None
-            payload_waiter.set_result_if_pending(result)
-        except GeneratorExit as err:
-            payload_waiter = self._payload_waiter
-            self._payload_reader = None
-            self._payload_waiter = None
-            exception = CancelledError()
-            exception.__cause__ = err
-            payload_waiter.set_exception_if_pending(exception)
-        except BaseException as err:
-            payload_waiter = self._payload_waiter
-            self._payload_reader = None
-            self._payload_waiter = None
-            payload_waiter.set_exception_if_pending(err)
-    
+            break
     
     async def wait_for_close(self, timeout = None):
         """
@@ -548,8 +562,8 @@ class ChannelInputStream:
         
         try:
             payload_reader.send(None)
-        except StopIteration as err:
-            args = err.args
+        except StopIteration as exception:
+            args = exception.args
             if not args:
                 result = None
             elif len(args) == 1:
@@ -558,12 +572,17 @@ class ChannelInputStream:
                 result = args
             
             payload_waiter.set_result_if_pending(result)
-        except GeneratorExit as err:
-            exception = CancelledError()
-            exception.__cause__ = err
+        
+        except GeneratorExit as exception:
+            new_exception = CancelledError()
+            new_exception.__cause__ = exception
+            try:
+                payload_waiter.set_exception_if_pending(new_exception)
+            finally:
+                new_exception = None
+        
+        except BaseException as exception:
             payload_waiter.set_exception_if_pending(exception)
-        except BaseException as err:
-            payload_waiter.set_exception_if_pending(err)
         
         else:
             self._payload_waiter = payload_waiter

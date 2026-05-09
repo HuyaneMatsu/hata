@@ -113,14 +113,7 @@ interrupt.*
 To install Hata simply do
 
 ```shell
-# Linux/OS X
 $ python3 -m pip install hata
-
-# Windows
-$ python -m pip install hata
-
-# Voice Support
-$ python -m pip install hata[voice]
 ```
 And you are good to go! Hata has native pypy support as well if you need some more speed!
 
@@ -132,13 +125,14 @@ And you are good to go! Hata has native pypy support as well if you need some mo
 
 #### Requirements
 
+- Linux
 - Python >= 3.6, < 3.12
 - [chardet](https://pypi.python.org/pypi/chardet) / [cchardet](https://pypi.org/project/cchardet/)
 
 #### Optional
 
 - [dateutil](https://pypi.org/project/python-dateutil/)
-- [PyNaCl](https://pypi.org/project/PyNaCl/) (for voice support)
+- [PyNaCl](https://pypi.org/project/PyNaCl/)
 
 <h1></h1>
 

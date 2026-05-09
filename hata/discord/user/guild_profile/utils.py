@@ -7,8 +7,9 @@ from ..voice_state.fields import (
 )
 
 from .fields import (
-    put_avatar_decoration, put_bio, put_nick, put_role_ids, put_timed_out_until, validate_avatar_decoration,
-    validate_bio, validate_nick, validate_role_ids, validate_timed_out_until, validate_timeout_duration
+    put_avatar_decoration, put_bio, put_name_style, put_nick, put_role_ids, put_timed_out_until,
+    validate_avatar_decoration, validate_bio, validate_name_style, validate_nick, validate_role_ids,
+    validate_timed_out_until, validate_timeout_duration
 )
 from .guild_profile import GUILD_PROFILE_AVATAR, GUILD_PROFILE_BANNER
 
@@ -36,5 +37,6 @@ GUILD_PROFILE_SELF_FIELD_CONVERTERS = {
         partial_func(GUILD_PROFILE_BANNER.put_into, as_data = True),
     ),
     'bio': (validate_bio, put_bio),
+    'name_style': (validate_name_style, put_name_style),
     'nick': (validate_nick, put_nick),
 }

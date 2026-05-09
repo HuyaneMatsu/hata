@@ -42,6 +42,7 @@ def test__UserBase__to_data():
         'collectibles': {
             'nameplate': None,
         },
+        'display_name_styles': None,
         'banner': None,
         'id': str(user_id),
         'public_flags': 0,
@@ -80,6 +81,7 @@ def test__UserBase__difference_update_attributes():
     """
     old_name = 'suika'
     old_avatar = Icon(IconType.static, 24)
+    
     new_name = 'ibuki'
     new_avatar = Icon(IconType.animated, 13)
     

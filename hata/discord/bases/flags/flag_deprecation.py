@@ -6,7 +6,7 @@ from warnings import warn
 from scarletio import RichAttributeErrorBaseType
 
 
-NOW = DateTime.now(tz = TimeZone.utc)
+NOW = DateTime.now(TimeZone.utc)
 FORMAT_CODE = '%Y %B'
 
 

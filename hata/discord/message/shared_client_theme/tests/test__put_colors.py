@@ -32,7 +32,7 @@ def _iter_options():
         {
             'colors': [
                 format(color_0, 'X'),
-                format(color_1, 'X')
+                format(color_1, 'X'),
             ],
         },
     )
@@ -46,7 +46,7 @@ def _iter_options():
         {
             'colors': [
                 format(color_0, 'X'),
-                format(color_1, 'X')
+                format(color_1, 'X'),
             ],
         },
     )

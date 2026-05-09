@@ -5,6 +5,8 @@ import vampytest
 from ....bases import Icon, IconType
 
 from ...avatar_decoration import AvatarDecoration
+from ...name_plate import NamePlate
+from ...name_style import NameStyle, NameStyleFont
 
 from ..flags import GuildProfileFlag
 from ..guild_profile import GuildProfile
@@ -20,6 +22,13 @@ def test__GuildProfile__repr():
     boosts_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     flags = GuildProfileFlag(3)
     joined_at = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/eye/',
+        sku_id = 202604200026,
+    )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     nick = 'Ayumi'
     pending = False
     role_ids = [2022100007, 2022100008]
@@ -33,6 +42,8 @@ def test__GuildProfile__repr():
         boosts_since = boosts_since,
         flags = flags,
         joined_at = joined_at,
+        name_plate = name_plate,
+        name_style = name_style,
         nick = nick,
         pending = pending,
         role_ids = role_ids,
@@ -52,6 +63,13 @@ def test__GuildProfile__hash():
     boosts_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     flags = GuildProfileFlag(3)
     joined_at = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/eye/',
+        sku_id = 202604200027,
+    )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     nick = 'Ayumi'
     pending = False
     role_ids = [2022100009, 2022100010]
@@ -65,6 +83,8 @@ def test__GuildProfile__hash():
         boosts_since = boosts_since,
         flags = flags,
         joined_at = joined_at,
+        name_plate = name_plate,
+        name_style = name_style,
         nick = nick,
         pending = pending,
         role_ids = role_ids,
@@ -81,6 +101,13 @@ def _iter_options__eq():
     boosts_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     flags = GuildProfileFlag(3)
     joined_at = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/eye/',
+        sku_id = 202604200028,
+    )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     nick = 'Ayumi'
     pending = False
     role_ids = [2022100011, 2022100012]
@@ -93,6 +120,8 @@ def _iter_options__eq():
         'boosts_since': boosts_since,
         'flags': flags,
         'joined_at': joined_at,
+        'name_plate': name_plate,
+        'name_style': name_style,
         'nick': nick,
         'pending': pending,
         'role_ids': role_ids,
@@ -161,6 +190,24 @@ def _iter_options__eq():
         {
             **keyword_parameters,
             'joined_at': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'name_plate': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'name_style': None,
         },
         False,
     )

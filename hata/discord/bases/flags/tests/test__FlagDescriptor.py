@@ -44,7 +44,7 @@ def test__flag_descriptors__new__deprecation_disallowed():
     deprecation = FlagDeprecation(
         'koishi',
         DateTime(2016, 5, 1, tzinfo = TimeZone.utc),
-        trigger_after = DateTime.now(tz = TimeZone.utc) + TimeDelta(days = 4000),
+        trigger_after = DateTime.now(TimeZone.utc) + TimeDelta(days = 4000),
     )
     
     flag_descriptor = FlagDescriptor(shift, deprecation = deprecation)

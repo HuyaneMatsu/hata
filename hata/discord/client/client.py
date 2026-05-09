@@ -34,7 +34,7 @@ from ..user.user.fields import (
     parse_email, parse_email_verified, parse_locale, parse_mfa_enabled, parse_premium_type, validate_avatar_decoration,
     validate_banner_color, validate_bot, validate_discriminator, validate_display_name, validate_email,
     validate_email_verified, validate_flags, validate_locale, validate_mfa_enabled, validate_name, validate_name_plate,
-    validate_premium_type, validate_primary_guild_badge, validate_status
+    validate_name_style, validate_premium_type, validate_primary_guild_badge, validate_status
 )
 
 from .compounds import CLIENT_COMPOUNDS
@@ -179,6 +179,9 @@ class Client(
     name_plate : ``None | NamePlate``
         The client's name plate.
     
+    name_style : ``None | NameStyle``
+        The client's name's style.
+    
     premium_type : ``PremiumType``
         The Nitro subscription type of the client.
     
@@ -287,6 +290,7 @@ class Client(
         mfa_enabled = ...,
         name = ...,
         name_plate = ...,
+        name_style = ...,
         premium_type = ...,
         primary_guild_badge = ...,
         secret = ...,
@@ -325,7 +329,7 @@ class Client(
         banner : ``None | str | Icon``, Optional (Keyword only)
             The client's banner.
         
-        banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
+        banner_color : ``None | int | Color``, Optional (Keyword only)
             The client's banner color.
         
         bot : `bool`, Optional (Keyword only)
@@ -377,6 +381,9 @@ class Client(
         
         name_plate : ``None | NamePlate``, Optional (Keyword only)
             The client's name plate.
+        
+        name_style : ``None | NameStyle``, Optional (Keyword only)
+            The client's name's style.
         
         premium_type : ``None | int | PremiumType``, Optional (Keyword only)
             The Nitro subscription type of the client.
@@ -563,6 +570,12 @@ class Client(
         else:
             name_plate = validate_name_plate(name_plate)
         
+        # name_style
+        if name_style is ...:
+            name_style = None
+        else:
+            name_style = validate_name_style(name_style)
+        
         # premium_type
         if premium_type is ...:
             premium_type = PremiumType.none
@@ -663,6 +676,7 @@ class Client(
         self.locale = locale
         self.mfa_enabled = mfa_enabled
         self.name_plate = name_plate
+        self.name_style = name_style
         self.premium_type = premium_type
         self.primary_guild_badge = primary_guild_badge
         self.private_channels = {}

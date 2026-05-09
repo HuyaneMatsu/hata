@@ -6,8 +6,9 @@ from ...bases import ICON_TYPE_NONE
 
 from .fields import (
     parse_avatar_decoration, parse_banner_color, parse_discriminator, parse_display_name, parse_flags, parse_name_plate,
-    parse_primary_guild_badge, validate_avatar_decoration, validate_banner_color, validate_discriminator,
-    validate_display_name, validate_flags, validate_name_plate, validate_primary_guild_badge
+    parse_name_style, parse_primary_guild_badge, validate_avatar_decoration, validate_banner_color,
+    validate_discriminator, validate_display_name, validate_flags, validate_name_plate, validate_name_style,
+    validate_primary_guild_badge
 )
 from .flags import UserFlag
 from .user_base import USER_BANNER, UserBase
@@ -55,11 +56,14 @@ class OrinUserBase(UserBase):
     name_plate : ``None | NamePlate``
         The user's name plate.
     
+    name_style : ``None | NameStyle``
+        The user's name's style.
+    
     primary_guild_badge : ``None | GuildBadge`
         The user's primary guild's badge.
     """
     __slots__ = (
-        'avatar_decoration', 'banner_color', 'discriminator', 'display_name', 'flags', 'name_plate',
+        'avatar_decoration', 'banner_color', 'discriminator', 'display_name', 'flags', 'name_plate', 'name_style',
         'primary_guild_badge'
     )
     
@@ -77,6 +81,7 @@ class OrinUserBase(UserBase):
         flags = ...,
         name = ...,
         name_plate = ...,
+        name_style = ...,
         primary_guild_badge = ...,
     ):
         """
@@ -93,7 +98,7 @@ class OrinUserBase(UserBase):
         banner : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The user's banner.
         
-        banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
+        banner_color : ``None | int | Color``, Optional (Keyword only)
             The user's banner color.
         
         discriminator : `str`, `int`, Optional (Keyword only)
@@ -110,6 +115,9 @@ class OrinUserBase(UserBase):
         
         name_plate : ``None | NamePlate``, Optional (Keyword only)
             The user's name plate.
+        
+        name_style : ``None | NameStyle``, Optional (Keyword only)
+            The user's name's style.
         
         primary_guild_badge : ``None | GuildBadge`, Optional (Keyword only)
             The user's primary guild's badge.
@@ -163,6 +171,12 @@ class OrinUserBase(UserBase):
         else:
             name_plate = validate_name_plate(name_plate)
         
+        # name_style
+        if name_style is ...:
+            name_style = None
+        else:
+            name_style = validate_name_style(name_style)
+        
         # primary_guild_badge
         if primary_guild_badge is ...:
             primary_guild_badge = None
@@ -182,6 +196,7 @@ class OrinUserBase(UserBase):
         self.display_name = display_name
         self.flags = flags
         self.name_plate = name_plate
+        self.name_style = name_style
         self.primary_guild_badge = primary_guild_badge
         return self
     
@@ -197,6 +212,7 @@ class OrinUserBase(UserBase):
         self.display_name = parse_display_name(data)
         self.flags = parse_flags(data)
         self.name_plate = parse_name_plate(data)
+        self.name_style = parse_name_style(data)
         self.primary_guild_badge = parse_primary_guild_badge(data)
         
     
@@ -243,6 +259,12 @@ class OrinUserBase(UserBase):
             old_attributes['name_plate'] = self.name_plate
             self.name_plate = name_plate
         
+        # name_style
+        name_style = parse_name_style(data)
+        if self.name_style != name_style:
+            old_attributes['name_style'] = self.name_style
+            self.name_style = name_style
+        
         # primary_guild_badge
         primary_guild_badge = parse_primary_guild_badge(data)
         if self.primary_guild_badge != primary_guild_badge:
@@ -263,6 +285,7 @@ class OrinUserBase(UserBase):
         self.display_name = None
         self.flags = UserFlag()
         self.name_plate = None
+        self.name_style = None
         self.primary_guild_badge = None
     
     
@@ -287,6 +310,12 @@ class OrinUserBase(UserBase):
             name_plate = name_plate.copy()
         new.name_plate = name_plate
         
+        # name_style
+        name_style = self.name_style
+        if (name_style is not None):
+            name_style = name_style.copy()
+        new.name_style = name_style
+        
         primary_guild_badge = self.primary_guild_badge
         if (primary_guild_badge is not None):
             primary_guild_badge = primary_guild_badge.copy()
@@ -307,6 +336,7 @@ class OrinUserBase(UserBase):
         flags = ...,
         name = ...,
         name_plate = ...,
+        name_style = ...,
         primary_guild_badge = ...,
     ):
         """
@@ -323,7 +353,7 @@ class OrinUserBase(UserBase):
         banner : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The user's banner.
         
-        banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
+        banner_color : ``None | int | Color``, Optional (Keyword only)
             The user's banner color.
         
         discriminator : `str`, `int`, Optional (Keyword only)
@@ -340,6 +370,9 @@ class OrinUserBase(UserBase):
         
         name_plate : ``None | NamePlate``, Optional (Keyword only)
             The user's name plate.
+        
+        name_style : ``None | NameStyle``, Optional (Keyword only)
+            The user's name's style.
         
         primary_guild_badge : ``None | GuildBadge`, Optional (Keyword only)
             The user's primary guild's badge.
@@ -396,8 +429,18 @@ class OrinUserBase(UserBase):
         # name_plate
         if name_plate is ...:
             name_plate = self.name_plate
+            if (name_plate is not None):
+                name_plate = name_plate.copy()
         else:
             name_plate = validate_name_plate(name_plate)
+        
+        # name_style
+        if name_style is ...:
+            name_style = self.name_style
+            if (name_style is not None):
+                name_style = name_style.copy()
+        else:
+            name_style = validate_name_style(name_style)
         
         # primary_guild_badge
         if primary_guild_badge is ...:
@@ -420,6 +463,7 @@ class OrinUserBase(UserBase):
         new.display_name = display_name
         new.flags = flags
         new.name_plate = name_plate
+        new.name_style = name_style
         new.primary_guild_badge = primary_guild_badge
         return new
     
@@ -457,6 +501,11 @@ class OrinUserBase(UserBase):
         name_plate = self.name_plate
         if (name_plate is not None):
             hash_value ^= hash(name_plate)
+        
+        # name_style
+        name_style = self.name_style
+        if (name_style is not None):
+            hash_value ^= hash(name_style)
         
         # primary_guild_badge
         primary_guild_badge = self.primary_guild_badge

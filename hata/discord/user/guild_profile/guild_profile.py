@@ -8,11 +8,11 @@ from ...core import ROLES
 from ...utils import DISCORD_EPOCH_START
 
 from .fields import (
-    parse_avatar_decoration, parse_boosts_since, parse_flags, parse_joined_at, parse_nick, parse_pending,
-    parse_role_ids, parse_timed_out_until, put_avatar_decoration, put_boosts_since, put_flags,
-    put_joined_at, put_nick, put_pending, put_role_ids, put_timed_out_until,
-    validate_avatar_decoration, validate_boosts_since, validate_flags, validate_joined_at, validate_nick,
-    validate_pending, validate_role_ids, validate_timed_out_until
+    parse_avatar_decoration, parse_boosts_since, parse_flags, parse_joined_at, parse_name_plate, parse_name_style,
+    parse_nick, parse_pending, parse_role_ids, parse_timed_out_until, put_avatar_decoration, put_boosts_since,
+    put_flags, put_joined_at, put_name_plate, put_name_style, put_nick, put_pending, put_role_ids, put_timed_out_until,
+    validate_avatar_decoration, validate_boosts_since, validate_flags, validate_joined_at, validate_name_plate,
+    validate_name_style, validate_nick, validate_pending, validate_role_ids, validate_timed_out_until
 )
 from .flags import GuildProfileFlag
 
@@ -56,8 +56,14 @@ class GuildProfile(metaclass = Slotted):
         The date, since the user is the member of the guild.
         If this field was not included with the initial data, then it is set to `None`.
     
-    nick : `None`, `str`
+    nick : `None | str`
         The user's nick at the guild if it has.
+    
+    name_plate : ``None | NamePlate``
+        The user's name's plate in the guild.
+    
+    name_style : ``None | NameStyle``
+        The user's name's style in the guild.
     
     pending : `bool`
         Whether the user has not yet passed the guild's membership screening requirements.
@@ -70,7 +76,8 @@ class GuildProfile(metaclass = Slotted):
         Till when the user is timed out, and cannot interact with the guild.
     """
     __slots__ = (
-        'avatar_decoration', 'boosts_since', 'flags', 'joined_at', 'nick', 'pending', 'role_ids', 'timed_out_until'
+        'avatar_decoration', 'boosts_since', 'flags', 'joined_at', 'name_plate', 'name_style', 'nick', 'pending',
+        'role_ids', 'timed_out_until'
     )
     
     avatar = GUILD_PROFILE_AVATAR
@@ -85,6 +92,8 @@ class GuildProfile(metaclass = Slotted):
         boosts_since = ...,
         flags = ...,
         joined_at = ...,
+        name_plate = ...,
+        name_style = ...,
         nick = ...,
         pending = ...,
         role_ids = ...,
@@ -113,7 +122,13 @@ class GuildProfile(metaclass = Slotted):
         joined_at : `None | DateTime`, Optional (Keyword only)
             The date, since the user is the member of the guild.
         
-        nick : `None`, `str`, Optional (Keyword only)
+        name_plate : ``None | NamePlate``, Optional (Keyword only)
+            The user's name's plate in the guild.
+        
+        name_style : ``None | NameStyle``, Optional (Keyword only)
+            The user's nick at the guild if it has.
+        
+        nick : `None | str`, Optional (Keyword only)
             The user's nick at the guild if it has.
         
         pending : `bool`, Optional (Keyword only)
@@ -168,6 +183,18 @@ class GuildProfile(metaclass = Slotted):
         else:
             joined_at = validate_joined_at(joined_at)
         
+        # name_plate
+        if name_plate is ...:
+            name_plate = None
+        else:
+            name_plate = validate_name_plate(name_plate)
+        
+        # name_style
+        if name_style is ...:
+            name_style = None
+        else:
+            name_style = validate_name_style(name_style)
+        
         # nick
         if nick is ...:
             nick = None
@@ -200,6 +227,8 @@ class GuildProfile(metaclass = Slotted):
         self.boosts_since = boosts_since
         self.flags = flags
         self.joined_at = joined_at
+        self.name_plate = name_plate
+        self.name_style = name_style
         self.nick = nick
         self.pending = pending
         self.role_ids = role_ids
@@ -239,6 +268,16 @@ class GuildProfile(metaclass = Slotted):
         joined_at = self.joined_at
         if (joined_at is not None):
             hash_value ^= hash(joined_at)
+        
+        # name_plate
+        name_plate = self.name_plate
+        if (name_plate is not None):
+            hash_value ^= hash(name_plate)
+        
+        # name_style
+        name_style = self.name_style
+        if (name_style is not None):
+            hash_value ^= hash(name_style)
         
         # nick
         nick = self.nick
@@ -290,6 +329,14 @@ class GuildProfile(metaclass = Slotted):
         
         # joined_at
         if self.joined_at != other.joined_at:
+            return False
+        
+        # name_plate
+        if self.name_plate != other.name_plate:
+            return False
+        
+        # name_style
+        if self.name_style != other.name_style:
             return False
         
         # nick
@@ -352,6 +399,8 @@ class GuildProfile(metaclass = Slotted):
         type(self).avatar.put_into(self.avatar, data, defaults, as_data = not include_internals)
         put_avatar_decoration(self.avatar_decoration, data, defaults)
         type(self).banner.put_into(self.banner, data, defaults, as_data = not include_internals)
+        put_name_plate(self.name_plate, data, defaults)
+        put_name_style(self.name_style, data, defaults)
         put_nick(self.nick, data, defaults)
         put_role_ids(self.role_ids, data, defaults)
         put_timed_out_until(self.timed_out_until, data, defaults)
@@ -392,6 +441,8 @@ class GuildProfile(metaclass = Slotted):
         self._set_banner(data)
         self.boosts_since = parse_boosts_since(data)
         self.flags = parse_flags(data)
+        self.name_plate = parse_name_plate(data)
+        self.name_style = parse_name_style(data)
         self.nick = parse_nick(data)
         self.pending = parse_pending(data)
         self.role_ids = parse_role_ids(data)
@@ -427,9 +478,13 @@ class GuildProfile(metaclass = Slotted):
         +-------------------+-------------------------------+
         | boosts_since      | `None | DateTime`             |
         +-------------------+-------------------------------+
-        | flags             | `None`, ``GuildProfileFlags`` |
+        | flags             | ``GuildProfileFlags``         |
         +-------------------+-------------------------------+
-        | nick              | `None`, `str`                 |
+        | name_plate        | ``None | NamePlate``          |
+        +-------------------+-------------------------------+
+        | name_style        | ``None | NameStyle``          |
+        +-------------------+-------------------------------+
+        | nick              | `None | str`                  |
         +-------------------+-------------------------------+
         | pending           | `bool`                        |
         +-------------------+-------------------------------+
@@ -463,7 +518,19 @@ class GuildProfile(metaclass = Slotted):
         if self.flags != flags:
             old_attributes['flags'] = self.flags
             self.flags = flags
-            
+        
+        # name_plate
+        name_plate = parse_name_plate(data)
+        if self.name_plate != name_plate:
+            old_attributes['name_plate'] = self.name_plate
+            self.name_plate = name_plate
+        
+        # name_style
+        name_style = parse_name_style(data)
+        if self.name_style != name_style:
+            old_attributes['name_style'] = self.name_style
+            self.name_style = name_style
+        
         # nick
         nick = parse_nick(data)
         if self.nick != nick:
@@ -501,6 +568,7 @@ class GuildProfile(metaclass = Slotted):
         """
         new = object.__new__(type(self))
         
+        # avatar_decoration
         avatar_decoration = self.avatar_decoration
         if (avatar_decoration is not None):
             avatar_decoration = avatar_decoration.copy()
@@ -515,6 +583,19 @@ class GuildProfile(metaclass = Slotted):
         new.boosts_since = self.boosts_since
         new.flags = self.flags
         new.joined_at = self.joined_at
+        
+        # name_plate
+        name_plate = self.name_plate
+        if (name_plate is not None):
+            name_plate = name_plate.copy()
+        new.name_plate = name_plate
+        
+        # name_style
+        name_style = self.name_style
+        if (name_style is not None):
+            name_style = name_style.copy()
+        new.name_style = name_style
+        
         new.nick = self.nick
         new.pending = self.pending
         
@@ -536,6 +617,8 @@ class GuildProfile(metaclass = Slotted):
         boosts_since = ...,
         flags = ...,
         joined_at = ...,
+        name_plate = ...,
+        name_style = ...,
         nick = ...,
         pending = ...,
         role_ids = ...,
@@ -564,7 +647,13 @@ class GuildProfile(metaclass = Slotted):
         joined_at : `None | DateTime`, Optional (Keyword only)
             The date, since the user is the member of the guild.
         
-        nick : `None`, `str`, Optional (Keyword only)
+        name_plate : ``None | NamePlate``, Optional (Keyword only)
+            The user's name's plate in the guild.
+        
+        name_style : ``None | NameStyle``, Optional (Keyword only)
+            The user's nick at the guild if it has.
+        
+        nick : `None | str`, Optional (Keyword only)
             The user's nick at the guild if it has.
         
         pending : `bool`, Optional (Keyword only)
@@ -625,6 +714,22 @@ class GuildProfile(metaclass = Slotted):
         else:
             joined_at = validate_joined_at(joined_at)
         
+        # name_plate
+        if name_plate is ...:
+            name_plate = self.name_plate
+            if (name_plate is not None):
+                name_plate = name_plate.copy()
+        else:
+            name_plate = validate_name_plate(name_plate)
+        
+        # name_style
+        if name_style is ...:
+            name_style = self.name_style
+            if (name_style is not None):
+                name_style = name_style.copy()
+        else:
+            name_style = validate_name_style(name_style)
+        
         # nick
         if nick is ...:
             nick = self.nick
@@ -659,6 +764,8 @@ class GuildProfile(metaclass = Slotted):
         new.boosts_since = boosts_since
         new.flags = flags
         new.joined_at = joined_at
+        new.name_plate = name_plate
+        new.name_style = name_style
         new.nick = nick
         new.pending = pending
         new.role_ids = role_ids
@@ -684,6 +791,8 @@ class GuildProfile(metaclass = Slotted):
         self.boosts_since = None
         self.flags = GuildProfileFlag()
         self.joined_at = None
+        self.name_plate = None
+        self.name_style = None
         self.nick = None
         self.pending = False
         self.role_ids = None
@@ -850,3 +959,17 @@ class GuildProfile(metaclass = Slotted):
         avatar_decoration = self.avatar_decoration
         if (avatar_decoration is not None):
             return avatar_decoration.url_as(ext = ext, size = size)
+    
+    
+    @property
+    def name_plate_url(self):
+        """
+        Returns the guild profile's name plate's url. If the guild profile has no name plate then returns `None`.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        name_plate = self.name_plate
+        if (name_plate is not None):
+            return name_plate.url

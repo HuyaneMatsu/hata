@@ -352,7 +352,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +---------------------------+-------------------------------------------------------------------+
         | Keys                      | Values                                                            |
         +===========================+===================================================================+
-        | description               | `None`, `str`                                                     |
+        | description               | `None | str`                                                      |
         +---------------------------+-------------------------------------------------------------------+
         | description_localizations | `None`, `dict` of (``Locale``, `str`) items                       |
         +---------------------------+-------------------------------------------------------------------+
@@ -488,9 +488,9 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +---------------------------------------+-----------------------------------------------------------+
         | slowmode                              | `int`                                                     |
         +---------------------------------------+-----------------------------------------------------------+
-        | status                                | `None`, `str`                                             |
+        | status                                | `None | str`                                              |
         +---------------------------------------+-----------------------------------------------------------+
-        | topic                                 | `None`, `str`                                             |
+        | topic                                 | `None | str`                                              |
         +---------------------------------------+-----------------------------------------------------------+
         | type                                  | ``ChannelType``                                           |
         +---------------------------------------+-----------------------------------------------------------+
@@ -529,9 +529,9 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-----------------------+-------------------------------+
         | discriminator         | `int`                         |
         +-----------------------+-------------------------------+
-        | display_name          | `None`, `str`                 |
+        | display_name          | `None | str`                  |
         +-----------------------+-------------------------------+
-        | email                 | `None`, `str`                 |
+        | email                 | `None | str`                  |
         +-----------------------+-------------------------------+
         | email_verified        | `bool`                        |
         +-----------------------+-------------------------------+
@@ -544,6 +544,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         | name                  | `str`                         |
         +-----------------------+-------------------------------+
         | name_plate            | ``None | NamePlate``          |
+        +-----------------------+-------------------------------+
+        | name_style            | ``None | NameStyle``          |
         +-----------------------+-------------------------------+
         | premium_type          | ``PremiumType``               |
         +-----------------------+-------------------------------+
@@ -591,7 +593,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-------------------+-----------------------------------+
         | created_at        | `DateTime`                        |
         +-------------------+-----------------------------------+
-        | details           | `None`, `str`                     |
+        | details           | `None | str`                      |
         +-------------------+-----------------------------------+
         | flags             | ``ActivityFlag``                  |
         +-------------------+-----------------------------------+
@@ -605,15 +607,15 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-------------------+-----------------------------------+
         | secrets           | ``None | ActivitySecrets``        |
         +-------------------+-----------------------------------+
-        | session_id        | `None`, `str`                     |
+        | session_id        | `None | str`                      |
         +-------------------+-----------------------------------+
-        | state             | `None`, `str`                     |
+        | state             | `None | str`                      |
         +-------------------+-----------------------------------+
-        | sync_id           | `None`, `str`                     |
+        | sync_id           | `None | str`                      |
         +-------------------+-----------------------------------+
         | timestamps        | ``None | ActivityTimestamps``     |
         +-------------------+-----------------------------------+
-        | url               | `None`, `str`                     |
+        | url               | `None | str`                      |
         +-------------------+-----------------------------------+
         
     embedded_activity_user_add(client: ``Client``, embedded_activity: ``EmbeddedActivity``,
@@ -731,7 +733,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +---------------------------------------+---------------------------------------+
         | default_message_notification_level    | ``MessageNotificationLevel``          |
         +---------------------------------------+---------------------------------------+
-        | description                           | `None`, `str`                         |
+        | description                           | `None | str`                          |
         +---------------------------------------+---------------------------------------+
         | discovery_splash                      | ``Icon``                              |
         +---------------------------------------+---------------------------------------+
@@ -777,7 +779,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +---------------------------------------+---------------------------------------+
         | system_channel_flags                  | ``SystemChannelFlag``                 |
         +---------------------------------------+---------------------------------------+
-        | vanity_code                           | `None`, `str`                         |
+        | vanity_code                           | `None | str`                          |
         +---------------------------------------+---------------------------------------+
         | verification_level                    | ``VerificationLevel``                 |
         +---------------------------------------+---------------------------------------+
@@ -827,9 +829,13 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-------------------+-------------------------------+
         | boosts_since      | `None | DateTime`             |
         +-------------------+-------------------------------+
-        | flags             | `None`, ``GuildProfileFlags`` |
+        | flags             | ``GuildProfileFlags``         |
         +-------------------+-------------------------------+
-        | nick              | `None`, `str`                 |
+        | name_plate        | ``None | NamePlate``          |
+        +-------------------+-------------------------------+
+        | name_style        | ``None | nameStyle``          |
+        +-------------------+-------------------------------+
+        | nick              | `None | str`                  |
         +-------------------+-------------------------------+
         | pending           | `bool`                        |
         +-------------------+-------------------------------+
@@ -895,7 +901,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-----------------------------------+-----------------------------------------------------------------------+
         | components                        | ``None | tuple<Component>``                                           |
         +-----------------------------------+-----------------------------------------------------------------------+
-        | content                           | `None`, `str`                                                         |
+        | content                           | `None | str`                                                          |
         +-----------------------------------+-----------------------------------------------------------------------+
         | edited_at                         | `None | DateTime`                                                     |
         +-----------------------------------+-----------------------------------------------------------------------+
@@ -1015,7 +1021,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +===========================+===============================================+
         | channel_id                | `int`                                         |
         +---------------------------+-----------------------------------------------+
-        | description               | `None`, `str`                                 |
+        | description               | `None | str`                                  |
         +---------------------------+-----------------------------------------------+
         | end                       | `None | DateTime`                             |
         +---------------------------+-----------------------------------------------+
@@ -1125,11 +1131,11 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +===============+=======================+
         | discoverable  | `bool`                |
         +---------------+-----------------------+
-        | invite_code   | `None`, `str`         |
+        | invite_code   | `None | str`          |
         +---------------+-----------------------+
         | privacy_level | ``PrivacyLevel``      |
         +---------------+-----------------------+
-        | topic         | `None`, `str`         |
+        | topic         | `None | str`          |
         +---------------+-----------------------+
     
     sticker_create(client: ``Client``, sticker: ``Sticker``):
@@ -1149,7 +1155,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +=======================+===================================+
         | available             | `bool`                            |
         +-----------------------+-----------------------------------+
-        | description           | `None`, `str`                     |
+        | description           | `None | str`                      |
         +-----------------------+-----------------------------------+
         | name                  | `str`                             |
         +-----------------------+-----------------------------------+
@@ -1176,7 +1182,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +===========================+===============================================+
         | cancelled_at              | `None | DateTime`                             |
         +---------------------------+-----------------------------------------------+
-        | country_code              | `None`, `str`                                 |
+        | country_code              | `None | str`                                  |
         +---------------------------+-----------------------------------------------+
         | current_period_end        | `None | DateTime`                             |
         +---------------------------+-----------------------------------------------+
@@ -1238,9 +1244,9 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-----------------------+-------------------------------+
         | discriminator         | `int`                         |
         +-----------------------+-------------------------------+
-        | display_name          | `None`, `str`                 |
+        | display_name          | `None | str`                  |
         +-----------------------+-------------------------------+
-        | email                 | `None`, `str`                 |
+        | email                 | `None | str`                  |
         +-----------------------+-------------------------------+
         | email_verified        | `bool`                        |
         +-----------------------+-------------------------------+
@@ -1253,6 +1259,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         | name                  | `str`                         |
         +-----------------------+-------------------------------+
         | name_plate            | ``None | NamePlate``          |
+        +-----------------------+-------------------------------+
+        | name_style            | ``None | NameStyle``          |
         +-----------------------+-------------------------------+
         | premium_type          | ``PremiumType``               |
         +-----------------------+-------------------------------+
@@ -1441,7 +1449,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
             
             If given as `None` will return a decorator.
         
-        name : `None`, `str`, Optional (Keyword only)
+        name : `None | str` , Optional (Keyword only)
             A name to be used instead of the passed `func`'s when adding it.
         
         overwrite : `bool`, Optional (Keyword only)
@@ -1791,7 +1799,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         ----------
         func : `object`
             The event handler to remove.
-        name : `None`, `str` = `None`, Optional
+        name : `None | str`  = `None`, Optional
             The event's name.
         by_type : `bool` = `False`, Optional
             Whether `func` was given as the type of the real event handler. Defaults to `False`.

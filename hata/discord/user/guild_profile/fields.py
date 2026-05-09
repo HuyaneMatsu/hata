@@ -15,6 +15,8 @@ from ...field_validators import (
 )
 
 from ..avatar_decoration import AvatarDecoration
+from ..name_plate import NamePlate
+from ..name_style import NameStyle
 
 from .constants import BIO_LENGTH_MAX, NICK_LENGTH_MAX, NICK_LENGTH_MIN
 from .flags import GuildProfileFlag
@@ -54,6 +56,78 @@ validate_flags = flag_validator_factory('flags', GuildProfileFlag)
 parse_joined_at = nullable_date_time_parser_factory('joined_at')
 put_joined_at = nullable_date_time_optional_putter_factory('joined_at')
 validate_joined_at = nullable_date_time_validator_factory('joined_at')
+
+
+# name_plate
+
+def parse_name_plate(data):
+    """
+    Parses out a name plate from the given data.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    name_plate : ``None | NamePlate``
+    """
+    nested_data = data.get('collectibles', None)
+    if nested_data is None:
+        return
+    
+    name_plate_data = nested_data.get('nameplate', None)
+    if name_plate_data is None:
+        return
+    
+    return NamePlate.from_data(name_plate_data)
+
+
+def put_name_plate(name_plate, data, defaults):
+    """
+    Serializes the name plate value into the given data.
+    
+    Parameters
+    ----------
+    name_plate : ``None | NamePlate``
+        Name plate to serialize.
+    
+    data : `dict<str, object>`
+        Json serializable dictionary.
+    
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    if (name_plate is not None) or defaults:
+        try:
+            nested_data = data['collectibles']
+        except KeyError:
+            nested_data = {}
+            data['collectibles'] = nested_data
+        
+        if name_plate is None:
+            name_plate_data = None
+        else:
+            name_plate_data = name_plate.to_data(defaults = defaults)
+        
+        nested_data['nameplate'] = name_plate_data
+    
+    return data
+
+
+validate_name_plate = nullable_entity_validator_factory('name_plate', NamePlate)
+
+# name_style
+
+parse_name_style = nullable_entity_parser_factory('display_name_styles', NameStyle)
+put_name_style = nullable_entity_optional_putter_factory('display_name_styles', NameStyle)
+validate_name_style = nullable_entity_validator_factory('name_style', NameStyle)
+
 
 # nick
 

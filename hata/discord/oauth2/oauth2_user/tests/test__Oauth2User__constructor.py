@@ -4,7 +4,7 @@ from ....bases import Icon, IconType
 from ....color import Color
 from ....localization import Locale
 from ....guild import GuildBadge
-from ....user import AvatarDecoration, NamePlate, PremiumType, UserFlag
+from ....user import AvatarDecoration, NamePlate, NameStyle, NameStyleFont, PremiumType, UserFlag
 
 from ...oauth2_access import Oauth2Access
 
@@ -36,6 +36,7 @@ def _assert_fields_set(user):
     vampytest.assert_instance(user.mfa_enabled, bool)
     vampytest.assert_instance(user.name, str)
     vampytest.assert_instance(user.name_plate, NamePlate, nullable = True)
+    vampytest.assert_instance(user.name_style, NameStyle, nullable = True)
     vampytest.assert_instance(user.premium_type, PremiumType)
     vampytest.assert_instance(user.primary_guild_badge, GuildBadge, nullable = True)
 
@@ -72,6 +73,9 @@ def test__Oauth2User__new__all_fields():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030040,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     premium_type = PremiumType.nitro
     primary_guild_badge = GuildBadge(guild_id = 202405180015, tag = 'miau')
     
@@ -89,6 +93,7 @@ def test__Oauth2User__new__all_fields():
         mfa_enabled = mfa_enabled,
         name = name,
         name_plate = name_plate,
+        name_style = name_style,
         premium_type = premium_type,
         primary_guild_badge = primary_guild_badge,
     )
@@ -107,6 +112,7 @@ def test__Oauth2User__new__all_fields():
     vampytest.assert_eq(user.mfa_enabled, mfa_enabled)
     vampytest.assert_eq(user.name, name)
     vampytest.assert_eq(user.name_plate, name_plate)
+    vampytest.assert_eq(user.name_style, name_style)
     vampytest.assert_is(user.premium_type, premium_type)
     vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
 

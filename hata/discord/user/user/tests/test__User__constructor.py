@@ -9,6 +9,7 @@ from ....guild import GuildBadge
 
 from ...avatar_decoration import AvatarDecoration
 from ...name_plate import NamePlate
+from ...name_style import NameStyle, NameStyleFont
 from ...status_by_platform import Status, StatusByPlatform
 
 from ..flags import UserFlag
@@ -37,6 +38,7 @@ def _assert_fields_set(user):
     vampytest.assert_instance(user.id, int)
     vampytest.assert_instance(user.name, str)
     vampytest.assert_instance(user.name_plate, NamePlate, nullable = True)
+    vampytest.assert_instance(user.name_style, NameStyle, nullable = True)
     vampytest.assert_instance(user.primary_guild_badge, GuildBadge, nullable = True)
     vampytest.assert_instance(user.thread_profiles, dict, nullable = True)
     
@@ -80,6 +82,9 @@ def test__User__precreate__all_fields():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030080,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180054, tag = 'meow')
     status = Status.online
     status_by_platform = StatusByPlatform(
@@ -107,6 +112,7 @@ def test__User__precreate__all_fields():
         flags = flags,
         name = name,
         name_plate = name_plate,
+        name_style = name_style,
         primary_guild_badge = primary_guild_badge,
         **presence_keyword_parameters,
     )
@@ -123,6 +129,7 @@ def test__User__precreate__all_fields():
     vampytest.assert_eq(user.flags, flags)
     vampytest.assert_eq(user.name, name)
     vampytest.assert_eq(user.name_plate, name_plate)
+    vampytest.assert_eq(user.name_style, name_style)
     vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
     
     if CACHE_PRESENCE:

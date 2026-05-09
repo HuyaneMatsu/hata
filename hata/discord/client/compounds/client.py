@@ -36,25 +36,28 @@ class ClientCompoundClientEndpoints(Compound):
         
         Other Parameters
         ----------------
-        avatar : `None`, `bytes-like`, Optional (Keyword only)
+        avatar : `None | bytes-like`, Optional (Keyword only)
             An `'jpg'`, `'png'`, `'webp'` image's raw data. If the client is premium account, then it can be
             `'gif'` as well. By passing `None` you can remove the client's current avatar.
         
         avatar_decoration : ``None | AvatarDecoration``, Optional (Keyword only)
             The client's new avatar decoration.
         
-        banner : `None`, `bytes-like`, Optional (Keyword only)
+        banner : `None | bytes-like`, Optional (Keyword only)
             An `'jpg'`, `'png'`, `'webp'`, 'gif'` image's raw data. By passing `None` you can remove the client's
             current avatar.
         
-        banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
+        banner_color : ``None | int | Color``, Optional (Keyword only)
             The new banner color of the client. By passing it as `None` you can remove the client's current one.
         
-        display_name : `None`, `str`, Optional (Keyword only)
+        display_name : `None | str`, Optional (Keyword only)
             The client's non-unique display name.
         
         name : `str`, Optional (Keyword only)
             The client's new name.
+        
+        name_style : ``None | NameStyle``
+            The client's new name style.
         
         Raises
         ------
@@ -96,12 +99,12 @@ class ClientCompoundClientEndpoints(Compound):
         **keyword_parameters : Keyword parameters
             Additional keyword parameters representing which field of the guild profile should be edited.
         
-        reason : `None`, `str` = `None`, Optional (Keyword only)
+        reason : `None | str` = `None`, Optional (Keyword only)
             Will show up at the respective guild's audit logs.
         
         Other Parameters
         ----------------
-        avatar : `None`, `bytes-like`, Optional (Keyword only)
+        avatar : `None | bytes-like`, Optional (Keyword only)
             The client's new guild specific avatar.
             
             Can be a `'jpg'`, `'png'`, `'webp'` image's raw data. If the client is premium account, then it can be
@@ -110,7 +113,7 @@ class ClientCompoundClientEndpoints(Compound):
         avatar_decoration : ``None | AvatarDecoration``, Optional (Keyword only)
             The client's new avatar decoration.
         
-        banner : `None`, `bytes-like`, Optional (Keyword only)
+        banner : `None | bytes-like`, Optional (Keyword only)
             The client's new guild specific banner.
             
             Can be a `'jpg'`, `'png'`, `'webp'` and `'gif'`image's raw data.
@@ -119,7 +122,10 @@ class ClientCompoundClientEndpoints(Compound):
         bio : `None | str`, Optional (Keyword only)
             The client's new guild specific bio.
         
-        nick : `None`, `str`, Optional (Keyword only)
+        name_style : ``None | NameStyle``
+            The client's new name style.
+        
+        nick : `None | str`, Optional (Keyword only)
             The client's new nickname. Pass it as `None` to remove it. Empty strings are interpreted as `None`.
         
         Raises
@@ -275,13 +281,13 @@ class ClientCompoundClientEndpoints(Compound):
         
         Other Parameters
         ----------------
-        cover : `None`, `bytes-like`, Optional (Keyword only)
+        cover : `None | bytes-like`, Optional (Keyword only)
             The application's cover.
         
-        custom_install_url : `None`, `str`, Optional (Keyword only)
+        custom_install_url : `None | str`, Optional (Keyword only)
             The application's default custom authorization link if enabled.
         
-        description : `None`, `str`, Optional (Keyword only)
+        description : `None | str`, Optional (Keyword only)
             The description of the application.
         
         flags : `int`, ``ApplicationFlag``, Optional (Keyword only)
@@ -293,10 +299,10 @@ class ClientCompoundClientEndpoints(Compound):
         install_parameters : `None`, ``ApplicationInstallParameters``, Optional (Keyword only)
             Settings for the application's default in-app authorization link, if enabled.
         
-        interaction_endpoint_url : `None`, `str`, Optional (Keyword only)
+        interaction_endpoint_url : `None | str`, Optional (Keyword only)
             Whether and to which url should interaction events be sent to.
         
-        role_connection_verification_url : `None`, `str`, Optional (Keyword only)
+        role_connection_verification_url : `None | str`, Optional (Keyword only)
             The application's role connection verification entry point
         
         tags : `None`, `iterable` of `str`, Optional (Keyword only)

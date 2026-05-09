@@ -14,7 +14,9 @@ from ...gateway.client_base import DiscordGatewayClientBase
 from ...guild import GuildBadge
 from ...http import DiscordApiClient
 from ...localization import Locale
-from ...user import AvatarDecoration, NamePlate, PremiumType, Status, StatusByPlatform, UserFlag
+from ...user import (
+    AvatarDecoration, NamePlate, NameStyle, NameStyleFont, PremiumType, Status, StatusByPlatform, UserFlag
+)
 
 from ..client import Client
 from ..ready_state import ReadyState
@@ -45,6 +47,7 @@ def _assert_fields_set(client):
     vampytest.assert_instance(client.avatar, Icon)
     vampytest.assert_instance(client.avatar_decoration, AvatarDecoration, nullable = True)
     vampytest.assert_instance(client.name_plate, NamePlate, nullable = True)
+    vampytest.assert_instance(client.name_style, NameStyle, nullable = True)
     vampytest.assert_instance(client.banner_color, int, nullable = True)
     vampytest.assert_instance(client.banner, Icon)
     vampytest.assert_instance(client.bot, bool)
@@ -121,6 +124,9 @@ def test__Client__new__all_fields():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030090,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     premium_type = PremiumType.nitro_basic
     primary_guild_badge = GuildBadge(guild_id = 202405180059, tag = 'meow')
 
@@ -144,6 +150,7 @@ def test__Client__new__all_fields():
         mfa_enabled = mfa_enabled,
         name = name,
         name_plate = name_plate,
+        name_style = name_style,
         premium_type = premium_type,
         primary_guild_badge = primary_guild_badge,
         
@@ -168,6 +175,7 @@ def test__Client__new__all_fields():
         vampytest.assert_eq(client.mfa_enabled, mfa_enabled)
         vampytest.assert_eq(client.name, name)
         vampytest.assert_eq(client.name_plate, name_plate)
+        vampytest.assert_eq(client.name_style, name_style)
         vampytest.assert_is(client.premium_type, premium_type)
         vampytest.assert_eq(client.primary_guild_badge, primary_guild_badge)
     

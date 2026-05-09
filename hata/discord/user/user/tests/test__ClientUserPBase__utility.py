@@ -7,6 +7,7 @@ from ....guild import GuildBadge
 
 from ...avatar_decoration import AvatarDecoration
 from ...name_plate import NamePlate
+from ...name_style import NameStyle, NameStyleFont
 from ...status_by_platform import Status, StatusByPlatform
 
 from ..flags import UserFlag
@@ -33,6 +34,9 @@ def test__ClientUserPBase__copy():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030067,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180050, tag = 'miau')
     status = Status.online
     status_by_platform = StatusByPlatform(
@@ -51,6 +55,7 @@ def test__ClientUserPBase__copy():
         flags = flags,
         name = name,
         name_plate = name_plate,
+        name_style = name_style,
         primary_guild_badge = primary_guild_badge,
         status = status,
         status_by_platform = status_by_platform,
@@ -83,6 +88,9 @@ def test__ClientUserPBase__copy_with__no_fields():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030068,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180051, tag = 'miau')
     status = Status.online
     status_by_platform = StatusByPlatform(
@@ -101,6 +109,7 @@ def test__ClientUserPBase__copy_with__no_fields():
         flags = flags,
         name = name,
         name_plate = name_plate,
+        name_style = name_style,
         primary_guild_badge = primary_guild_badge,
         status = status,
         status_by_platform = status_by_platform,
@@ -133,6 +142,9 @@ def test__ClientUserPBase__copy_with__all_fields():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030069,
     )
+    old_name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     old_primary_guild_badge = GuildBadge(guild_id = 202405180052, tag = 'miau')
     old_status = Status.online
     old_status_by_platform = StatusByPlatform(
@@ -153,6 +165,9 @@ def test__ClientUserPBase__copy_with__all_fields():
         asset_path = 'koishi/koishi/eye/',
         sku_id = 202506030070,
     )
+    new_name_style = NameStyle(
+        font = NameStyleFont.sakura,
+    )
     new_primary_guild_badge = GuildBadge(guild_id = 202405180053, tag = 'meow')
     new_status = Status.idle
     new_status_by_platform = StatusByPlatform(
@@ -171,6 +186,7 @@ def test__ClientUserPBase__copy_with__all_fields():
         flags = old_flags,
         name = old_name,
         name_plate = old_name_plate,
+        name_style = old_name_style,
         primary_guild_badge = old_primary_guild_badge,
         status = old_status,
         status_by_platform = old_status_by_platform,
@@ -188,6 +204,7 @@ def test__ClientUserPBase__copy_with__all_fields():
         bot = new_bot,
         name = new_name,
         name_plate = new_name_plate,
+        name_style = new_name_style,
         primary_guild_badge = new_primary_guild_badge,
         status = new_status,
         status_by_platform = new_status_by_platform,
@@ -205,6 +222,7 @@ def test__ClientUserPBase__copy_with__all_fields():
     vampytest.assert_eq(copy.flags, new_flags)
     vampytest.assert_eq(copy.name, new_name)
     vampytest.assert_eq(copy.name_plate, new_name_plate)
+    vampytest.assert_eq(copy.name_style, new_name_style)
     vampytest.assert_eq(copy.primary_guild_badge, new_primary_guild_badge)
     vampytest.assert_eq(copy.status, new_status)
     vampytest.assert_eq(copy.status_by_platform, new_status_by_platform)

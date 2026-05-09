@@ -8,6 +8,7 @@ from ....guild import GuildBadge
 
 from ...avatar_decoration import AvatarDecoration
 from ...name_plate import NamePlate
+from ...name_style import NameStyle, NameStyleFont
 
 from ...guild_profile import GuildProfile
 from ...status_by_platform import Status, StatusByPlatform
@@ -40,6 +41,7 @@ def _assert_fields_set(user):
     vampytest.assert_instance(user.id, int)
     vampytest.assert_instance(user.name, str)
     vampytest.assert_instance(user.name_plate, NamePlate, nullable = True)
+    vampytest.assert_instance(user.name_style, NameStyle, nullable = True)
     vampytest.assert_instance(user.primary_guild_badge, GuildBadge, nullable = True)
     vampytest.assert_instance(user.thread_profiles, dict, nullable = True)
     vampytest.assert_instance(user.status, Status)
@@ -76,6 +78,9 @@ def test__ClientUserPBase__new__all_fields():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030060,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180043, tag = 'miau')
     status = Status.online
     status_by_platform = StatusByPlatform(
@@ -94,6 +99,7 @@ def test__ClientUserPBase__new__all_fields():
         flags = flags,
         name = name,
         name_plate = name_plate,
+        name_style = name_style,
         primary_guild_badge = primary_guild_badge,
         status = status,
         status_by_platform = status_by_platform,
@@ -111,6 +117,7 @@ def test__ClientUserPBase__new__all_fields():
     vampytest.assert_eq(user.flags, flags)
     vampytest.assert_eq(user.name, name)
     vampytest.assert_eq(user.name_plate, name_plate)
+    vampytest.assert_eq(user.name_style, name_style)
     vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
     vampytest.assert_is(user.status, status)
     vampytest.assert_eq(user.status_by_platform, status_by_platform)
@@ -127,7 +134,7 @@ def test__ClientUserPBase__create_empty():
     vampytest.assert_eq(user.id, user_id)
 
 
-def test_ClientUserPBase___from_client__0():
+def test_ClientUserPBase___from_client__include_internals():
     """
     Tests whether ``ClientUserPBase._from_client`` works as intended.
     
@@ -145,6 +152,9 @@ def test_ClientUserPBase___from_client__0():
     name_plate = NamePlate(
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030061,
+    )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
     )
     primary_guild_badge = GuildBadge(guild_id = 202405180044, tag = 'miau')
     
@@ -171,9 +181,10 @@ def test_ClientUserPBase___from_client__0():
         flags = flags,
         name = name,
         name_plate = name_plate,
+        name_style = name_style,
         primary_guild_badge = primary_guild_badge,
     )
-
+    
     client.activities = activities
     client.status = status
     client.status_by_platform = status_by_platform
@@ -196,6 +207,7 @@ def test_ClientUserPBase___from_client__0():
         vampytest.assert_eq(user.flags, flags)
         vampytest.assert_eq(user.name, name)
         vampytest.assert_eq(user.name_plate, name_plate)
+        vampytest.assert_eq(user.name_style, name_style)
         vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
         
         vampytest.assert_eq(user.id, user_id)
@@ -213,7 +225,7 @@ def test_ClientUserPBase___from_client__0():
         client = None
 
 
-def test_ClientUserPBase___from_client__1():
+def test_ClientUserPBase___from_client__do_not_include_internals():
     """
     Tests whether ``ClientUserPBase._from_client`` works as intended.
     
@@ -232,12 +244,15 @@ def test_ClientUserPBase___from_client__1():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030062,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180045, tag = 'miau')
     
     user_id = 202302070004
     guild_profiles = {202302070005: GuildProfile(nick = 'hello')}
     thread_profiles = {202302070006: ThreadProfile(flags = 2)}
-
+    
     activities = [Activity('orin dance', activity_type = ActivityType.playing)]
     status = Status.online
     status_by_platform = StatusByPlatform(
@@ -257,6 +272,7 @@ def test_ClientUserPBase___from_client__1():
         flags = flags,
         name = name,
         name_plate = name_plate,
+        name_style = name_style,
         primary_guild_badge = primary_guild_badge,
     )
     
@@ -280,6 +296,8 @@ def test_ClientUserPBase___from_client__1():
         vampytest.assert_eq(user.display_name, display_name)
         vampytest.assert_eq(user.flags, flags)
         vampytest.assert_eq(user.name, name)
+        vampytest.assert_eq(user.name_plate, name_plate)
+        vampytest.assert_eq(user.name_style, name_style)
         vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
         vampytest.assert_eq(user.bot, bot)
         

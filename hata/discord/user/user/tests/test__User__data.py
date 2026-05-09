@@ -8,6 +8,7 @@ from ....guild import Guild, GuildBadge
 from ...avatar_decoration import AvatarDecoration
 from ...guild_profile import GuildProfile
 from ...name_plate import NamePlate
+from ...name_style import NameStyle, NameStyleFont
 
 from ..flags import UserFlag
 from ..user import User
@@ -35,6 +36,9 @@ def test__User__from_data__user_data_only():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030081,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180056, tag = 'meow')
     
     user_data = {
@@ -51,6 +55,7 @@ def test__User__from_data__user_data_only():
         'collectibles': {
             'nameplate': name_plate.to_data(),
         },
+        'display_name_styles': name_style.to_data(),
         'primary_guild': primary_guild_badge.to_data(),
     }
     
@@ -69,6 +74,7 @@ def test__User__from_data__user_data_only():
     vampytest.assert_eq(user.flags, flags)
     vampytest.assert_eq(user.name, name)
     vampytest.assert_eq(user.name_plate, name_plate)
+    vampytest.assert_eq(user.name_style, name_style)
     vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
 
 
@@ -163,6 +169,9 @@ def test__User__from_data_and_difference_update_profile__user_missing():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030082,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180057, tag = 'meow')
     
     guild_profile = GuildProfile(nick = 'ibuki')
@@ -181,6 +190,7 @@ def test__User__from_data_and_difference_update_profile__user_missing():
         'collectibles': {
             'nameplate': name_plate.to_data(),
         },
+        'display_name_styles': name_style.to_data(),
         'primary_guild': primary_guild_badge.to_data(),
     }
     
@@ -317,6 +327,9 @@ def test__User__from_data_and_update_profile__user_missing_cache():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030083,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180058, tag = 'meow')
     
     guild = Guild.precreate(guild_id)
@@ -336,6 +349,7 @@ def test__User__from_data_and_update_profile__user_missing_cache():
         'collectibles': {
             'nameplate': name_plate.to_data(),
         },
+        'display_name_styles': name_style.to_data(),
         'primary_guild': primary_guild_badge.to_data(),
         'id': str(user_id),
     }
@@ -363,6 +377,7 @@ def test__User__from_data_and_update_profile__user_missing_cache():
     vampytest.assert_eq(user.display_name, display_name)
     vampytest.assert_eq(user.name, name)
     vampytest.assert_eq(user.name_plate, name_plate)
+    vampytest.assert_eq(user.name_style, name_style)
     vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
 
 

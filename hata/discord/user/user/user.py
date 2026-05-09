@@ -17,7 +17,7 @@ from .client_user_presence_base import ClientUserPBase
 from .fields import (
     parse_bot, parse_id, validate_activities, validate_avatar_decoration, validate_banner_color, validate_bot,
     validate_discriminator, validate_display_name, validate_flags, validate_id, validate_name, validate_name_plate,
-    validate_primary_guild_badge, validate_status, validate_status_by_platform
+    validate_name_style, validate_primary_guild_badge, validate_status, validate_status_by_platform
 )
 from .flags import UserFlag
 from .orin_user_base import USER_BANNER
@@ -65,6 +65,7 @@ PRECREATE_FIELDS = {
     'flags': ('flags', validate_flags),
     'name': ('name', validate_name),
     'name_plate': ('name_plate', validate_name_plate),
+    'name_style': ('name_style', validate_name_style),
     'primary_guild_badge': ('primary_guild_badge', validate_primary_guild_badge),
 }
 
@@ -136,6 +137,9 @@ class User(USER_BASE_TYPE):
     
     name_plate : ``None | NamePlate``
         The user's name plate.
+    
+    name_style : ``None | NameStyle``
+        The user's name's style.
     
     primary_guild_badge : ``None | GuildBadge``
         The user's primary guild's badge.
@@ -301,9 +305,6 @@ class User(USER_BASE_TYPE):
         avatar_decoration : ``None | AvatarDecoration``, Optional (Keyword only)
             The user's avatar decoration.
         
-        name_plate : ``None | NamePlate``, Optional (Keyword only)
-            The user's name plate.
-        
         banner : ``None | str | Icon``, Optional (Keyword only)
             The user's banner.
             
@@ -315,20 +316,26 @@ class User(USER_BASE_TYPE):
         bot : `bool`, Optional (Keyword only)
             Whether the user is a bot account.
         
+        discriminator : `int`, `str`, Optional (Keyword only)
+            The user's discriminator.
+        
+        display_name : `None`, `str`, Optional (Keyword only)
+            The user's non-unique display name.
+        
         flags : ``UserFlag``, `int`, Optional (Keyword only)
             The user's ``.flags``. If not passed as ``UserFlag``, then will be converted to it.
         
         name : `str`, Optional (Keyword only)
             The user's ``.name``.
         
+        name_plate : ``None | NamePlate``, Optional (Keyword only)
+            The user's name plate.
+        
+        name_style : ``None | NameStyle``, Optional (Keyword only)
+            The user's name's style.
+        
         primary_guild_badge : ``None | GuildBadge``, Optional (Keyword only)
             The user's primary guild's badge.
-        
-        discriminator : `int`, `str`, Optional (Keyword only)
-            The user's discriminator.
-        
-        display_name : `None`, `str`, Optional (Keyword only)
-            The user's non-unique display name.
         
         status : `Status`, `str`, Optional (Keyword only)
             The user's display status.

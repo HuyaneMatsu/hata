@@ -7,6 +7,7 @@ from ....guild import GuildBadge
 
 from ...avatar_decoration import AvatarDecoration
 from ...name_plate import NamePlate
+from ...name_style import NameStyle, NameStyleFont
 from ...status_by_platform import Status, StatusByPlatform
 
 from ..flags import UserFlag
@@ -33,6 +34,9 @@ def test__ClientUserPBase__repr():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030063,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180046, tag = 'miau')
     status = Status.online
     status_by_platform = StatusByPlatform(
@@ -54,6 +58,7 @@ def test__ClientUserPBase__repr():
         flags = flags,
         name = name,
         name_plate = name_plate,
+        name_style = name_style,
         primary_guild_badge = primary_guild_badge,
         status = status,
         status_by_platform = status_by_platform,
@@ -81,6 +86,9 @@ def test__ClientUserPBase__hash():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030064,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180047, tag = 'miau')
     status = Status.online
     status_by_platform = StatusByPlatform(
@@ -102,6 +110,7 @@ def test__ClientUserPBase__hash():
         flags = flags,
         name = name,
         name_plate = name_plate,
+        name_style = name_style,
         primary_guild_badge = primary_guild_badge,
         status = status,
         status_by_platform = status_by_platform,
@@ -143,6 +152,9 @@ def _iter_options__eq():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030065,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180009, tag = 'miau')
     status = Status.online
     status_by_platform = StatusByPlatform(
@@ -161,6 +173,7 @@ def _iter_options__eq():
         'flags': flags,
         'name': name,
         'name_plate': name_plate,
+        'name_style': name_style,
         'primary_guild_badge': primary_guild_badge,
         'status': status,
         'status_by_platform': status_by_platform,
@@ -275,6 +288,15 @@ def _iter_options__eq():
         keyword_parameters,
         {
             **keyword_parameters,
+            'name_style': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
             'primary_guild_badge': None,
         },
         False,
@@ -344,6 +366,9 @@ def test__ClientUserPBase__format():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030066,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180049, tag = 'miau')
     status = Status.online
     status_by_platform = StatusByPlatform(
@@ -362,6 +387,7 @@ def test__ClientUserPBase__format():
         flags = flags,
         name = name,
         name_plate = name_plate,
+        name_style = name_style,
         primary_guild_badge = primary_guild_badge,
         status = status,
         status_by_platform = status_by_platform,

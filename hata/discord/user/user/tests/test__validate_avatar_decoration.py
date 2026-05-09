@@ -22,7 +22,7 @@ def _iter_options__type_error():
 @vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
 def test__validate_avatar_decoration(input_value):
     """
-    Tests whether `validate_avatar_decoration` works as intended.
+    Tests whether ``validate_avatar_decoration`` works as intended.
     
     Parameters
     ----------
@@ -31,10 +31,12 @@ def test__validate_avatar_decoration(input_value):
     
     Returns
     -------
-    output : `None | AvatarDecoration`
+    output : ``None | AvatarDecoration``
     
     Raises
     ------
     TypeError
     """
-    return validate_avatar_decoration(input_value)
+    output = validate_avatar_decoration(input_value)
+    vampytest.assert_instance(output, AvatarDecoration, nullable = True)
+    return output

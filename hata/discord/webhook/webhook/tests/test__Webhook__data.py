@@ -119,6 +119,7 @@ def test__Webhook__to_data():
         'collectibles': {
             'nameplate': None,
         },
+        'display_name_styles': None,
         'primary_guild': None,
     }
     

@@ -1,3 +1,17 @@
+## 1.3.94 *\[2026-05-09\]*
+
+### Improvements
+
+- Add `NameStyleEffect`.
+- Add `NameStyleFont`.
+- Add `NameStyle`.
+- Add `UserBase.name_style`.
+- Add `GuildProfile.name_style`.
+- Add `GuildProfile.name_plate`.
+- Add `GuildProfile.name_plate_url`.
+- Add `UserBase.name_plate_url_at`.
+- Handle out of bound values in `id_to_datetime`.
+
 ## 1.3.93 *\[2026-04-17\]*
 
 ### Improvements
@@ -2872,7 +2886,7 @@
 ### Improvements
 
 - Add `UserBase.mfa`.
-- Add `Userbase.copy`.
+- Add `UserBase.copy`.
 - Add `userBase.email`.
 - Add `VoiceState.copy`.
 - Add `userBase.locale`.
@@ -6678,7 +6692,7 @@ Redo guild user syncing.
 - Improve startup time of more clients by synchronizing guild member requests.
 - If a client is removed from a guild meanwhile connecting, it's members wont be requested.
 - Add `skip_ready_cycle`.
-- `ClientUserbase.partial` is not a property (reduces ram usage).
+- `ClientUserBase.partial` is not a property (reduces ram usage).
 - Do not request users if the client cannot.
 - Cancel ready state on reconnect.
 - `Client.events.sticker_delete` now accepts only 2 parameters (client, sticker) from 3 (client, sticker, guild).

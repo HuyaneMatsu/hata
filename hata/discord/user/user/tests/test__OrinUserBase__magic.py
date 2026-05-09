@@ -6,6 +6,7 @@ from ....guild import GuildBadge
 
 from ...avatar_decoration import AvatarDecoration
 from ...name_plate import NamePlate
+from ...name_style import NameStyle, NameStyleFont
 
 from ..flags import UserFlag
 from ..orin_user_base import OrinUserBase
@@ -28,6 +29,9 @@ def test__OrinUserBase__repr():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030008,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180007, tag = 'miau')
     
     user = OrinUserBase._create_empty(user_id)
@@ -43,6 +47,7 @@ def test__OrinUserBase__repr():
         flags = flags,
         name = name,
         name_plate = name_plate,
+        name_style = name_style,
         primary_guild_badge = primary_guild_badge,
     )
     vampytest.assert_instance(repr(user), str)
@@ -65,6 +70,9 @@ def test__OrinUserBase__hash():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030008,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180008, tag = 'miau')
     
     user = OrinUserBase._create_empty(user_id)
@@ -80,6 +88,7 @@ def test__OrinUserBase__hash():
         flags = flags,
         name = name,
         name_plate = name_plate,
+        name_style = name_style,
         primary_guild_badge = primary_guild_badge,
     )
     vampytest.assert_instance(repr(user), str)
@@ -117,6 +126,9 @@ def _iter_options__eq():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030009,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180009, tag = 'miau')
     
     keyword_parameters = {
@@ -129,6 +141,7 @@ def _iter_options__eq():
         'display_name': display_name,
         'flags': flags,
         'name_plate': name_plate,
+        'name_style': name_style,
         'primary_guild_badge': primary_guild_badge,
     }
     
@@ -223,6 +236,15 @@ def _iter_options__eq():
         keyword_parameters,
         {
             **keyword_parameters,
+            'name_style': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
             'primary_guild_badge': None,
         },
         False,
@@ -272,6 +294,9 @@ def test__OrinUserBase__format():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030010,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180010, tag = 'miau')
     
     user = OrinUserBase(
@@ -284,6 +309,7 @@ def test__OrinUserBase__format():
         flags = flags,
         name = name,
         name_plate = name_plate,
+        name_style = name_style,
         primary_guild_badge = primary_guild_badge,
     )
     

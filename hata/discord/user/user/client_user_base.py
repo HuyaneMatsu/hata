@@ -65,6 +65,9 @@ class ClientUserBase(OrinUserBase):
     name_plate : ``None | NamePlate``
         The user's name plate.
     
+    name_style : ``None | NameStyle``
+        The user's name's style.
+    
     primary_guild_badge : `None | GuildBadge`
         The user's primary guild's badge.
     
@@ -88,6 +91,7 @@ class ClientUserBase(OrinUserBase):
         flags = ...,
         name = ...,
         name_plate = ...,
+        name_style = ...,
         primary_guild_badge = ...,
     ):
         """
@@ -104,7 +108,7 @@ class ClientUserBase(OrinUserBase):
         banner : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The user's banner.
         
-        banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
+        banner_color : ``None | int | Color``, Optional (Keyword only)
             The user's banner color.
         
         bot : `bool`, Optional (Keyword only)
@@ -124,6 +128,9 @@ class ClientUserBase(OrinUserBase):
         
         name_plate : ``None | NamePlate``, Optional (Keyword only)
             The user's name plate.
+        
+        name_style : ``None | NameStyle``, Optional (Keyword only)
+            The user's name's style.
         
         primary_guild_badge : `None | GuildBadge`, Optional (Keyword only)
             The user's primary guild's badge.
@@ -152,6 +159,7 @@ class ClientUserBase(OrinUserBase):
             flags = flags,
             name = name,
             name_plate = name_plate,
+            name_style = name_style,
             primary_guild_badge = primary_guild_badge,
         )
         self.bot = bot
@@ -342,6 +350,12 @@ class ClientUserBase(OrinUserBase):
             name_plate = name_plate.copy()
         self.name_plate = name_plate
         
+        # name_style
+        name_style = client.name_style
+        if (name_style is not None):
+            name_style = name_style.copy()
+        self.name_style = name_style
+        
         primary_guild_badge = client.primary_guild_badge
         if (primary_guild_badge is not None):
             primary_guild_badge = primary_guild_badge.copy()
@@ -391,6 +405,7 @@ class ClientUserBase(OrinUserBase):
         flags = ...,
         name = ...,
         name_plate = ...,
+        name_style = ...,
         primary_guild_badge = ...,
     ):
         """
@@ -407,7 +422,7 @@ class ClientUserBase(OrinUserBase):
         banner : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The user's banner.
         
-        banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
+        banner_color : ``None | int | Color``, Optional (Keyword only)
             The user's banner color.
         
         bot : `bool`, Optional (Keyword only)
@@ -427,6 +442,9 @@ class ClientUserBase(OrinUserBase):
         
         name_plate : ``None | NamePlate``, Optional (Keyword only)
             The user's name plate.
+        
+        name_style : ``None | NameStyle``, Optional (Keyword only)
+            The user's name's style.
         
         primary_guild_badge : `None | GuildBadge`, Optional (Keyword only)
             The user's primary guild's badge.
@@ -460,6 +478,7 @@ class ClientUserBase(OrinUserBase):
             flags = flags,
             name = name,
             name_plate = name_plate,
+            name_style = name_style,
             primary_guild_badge = primary_guild_badge,
         )
         new.bot = bot

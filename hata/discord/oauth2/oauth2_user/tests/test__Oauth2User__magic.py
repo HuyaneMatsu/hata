@@ -4,7 +4,7 @@ from ....bases import Icon, IconType
 from ....color import Color
 from ....localization import Locale
 from ....guild import GuildBadge
-from ....user import AvatarDecoration, NamePlate, PremiumType, UserFlag
+from ....user import AvatarDecoration, NamePlate, NameStyle, NameStyleFont, PremiumType, UserFlag
 
 from ..oauth2_user import Oauth2User
 
@@ -30,6 +30,9 @@ def test__Oauth2User__repr():
         asset_path = 'koishi/koishi/eye/',
         sku_id = 202506030046,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     premium_type = PremiumType.nitro
     primary_guild_badge = GuildBadge(guild_id = 202405180021, tag = 'miau')
     
@@ -50,6 +53,7 @@ def test__Oauth2User__repr():
         mfa_enabled = mfa_enabled,
         name = name,
         name_plate = name_plate,
+        name_style = name_style,
         premium_type = premium_type,
         primary_guild_badge = primary_guild_badge,
     )
@@ -77,6 +81,9 @@ def test__Oauth2User__hash():
         asset_path = 'koishi/koishi/eye/',
         sku_id = 202506030047,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     premium_type = PremiumType.nitro
     primary_guild_badge = GuildBadge(guild_id = 202405180022, tag = 'miau')
     
@@ -97,6 +104,7 @@ def test__Oauth2User__hash():
         mfa_enabled = mfa_enabled,
         name = name,
         name_plate = name_plate,
+        name_style = name_style,
         premium_type = premium_type,
         primary_guild_badge = primary_guild_badge,
     )
@@ -139,6 +147,9 @@ def _iter_options__eq():
         asset_path = 'koishi/koishi/eye/',
         sku_id = 202506030048,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     premium_type = PremiumType.nitro
     primary_guild_badge = GuildBadge(guild_id = 202405180009, tag = 'miau')
     
@@ -156,6 +167,7 @@ def _iter_options__eq():
         'mfa_enabled': mfa_enabled,
         'name': name,
         'name_plate': name_plate,
+        'name_style': name_style,
         'premium_type': premium_type,
         'primary_guild_badge': primary_guild_badge,
     }
@@ -287,6 +299,15 @@ def _iter_options__eq():
         keyword_parameters,
         {
             **keyword_parameters,
+            'name_style': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
             'premium_type': PremiumType.none,
         },
         False,
@@ -349,6 +370,9 @@ def test__Oauth2User__format():
         asset_path = 'koishi/koishi/eye/',
         sku_id = 202506030049,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     premium_type = PremiumType.nitro
     primary_guild_badge = GuildBadge(guild_id = 202405180024, tag = 'miau')
     
@@ -366,6 +390,7 @@ def test__Oauth2User__format():
         mfa_enabled = mfa_enabled,
         name = name,
         name_plate = name_plate,
+        name_style = name_style,
         premium_type = premium_type,
         primary_guild_badge = primary_guild_badge,
     )

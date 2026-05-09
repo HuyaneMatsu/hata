@@ -73,6 +73,9 @@ class ClientUserPBase(ClientUserBase):
     name_plate : ``None | NamePlate``
         The user's name plate.
     
+    name_style : ``None | NameStyle``
+        The user's name's style.
+    
     primary_guild_badge : ``None | GuildBadge``
         The user's primary guild's badge.
     
@@ -102,6 +105,7 @@ class ClientUserPBase(ClientUserBase):
         flags = ...,
         name = ...,
         name_plate = ...,
+        name_style = ...,
         primary_guild_badge = ...,
         status = ...,
         status_by_platform = ...,
@@ -123,7 +127,7 @@ class ClientUserPBase(ClientUserBase):
         banner : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The user's banner.
         
-        banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
+        banner_color : ``None | int | Color``, Optional (Keyword only)
             The user's banner color.
         
         bot : `bool`, Optional (Keyword only)
@@ -143,6 +147,9 @@ class ClientUserPBase(ClientUserBase):
         
         name_plate : ``None | NamePlate``, Optional (Keyword only)
             The user's name plate.
+        
+        name_style : ``None | NameStyle``, Optional (Keyword only)
+            The user's name's style.
         
         primary_guild_badge : ``None | GuildBadge``, Optional (Keyword only)
             The user's primary guild's badge.
@@ -194,6 +201,7 @@ class ClientUserPBase(ClientUserBase):
             flags = flags,
             name = name,
             name_plate = name_plate,
+            name_style = name_style,
             primary_guild_badge = primary_guild_badge,
         )
         
@@ -378,6 +386,7 @@ class ClientUserPBase(ClientUserBase):
         flags = ...,
         name = ...,
         name_plate = ...,
+        name_style = ...,
         primary_guild_badge = ...,
         status = ...,
         status_by_platform = ...,
@@ -399,7 +408,7 @@ class ClientUserPBase(ClientUserBase):
         banner : ``None | str | bytes-like | Icon``, Optional (Keyword only)
             The user's banner.
         
-        banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
+        banner_color : ``None | int | Color``, Optional (Keyword only)
             The user's banner color.
         
         bot : `bool`, Optional (Keyword only)
@@ -419,6 +428,9 @@ class ClientUserPBase(ClientUserBase):
         
         name_plate : ``None | NamePlate``, Optional (Keyword only)
             The user's name plate.
+        
+        name_style : ``None | NameStyle``, Optional (Keyword only)
+            The user's name's style.
         
         primary_guild_badge : ``None | GuildBadge``, Optional (Keyword only)
             The user's primary guild's badge.
@@ -474,6 +486,7 @@ class ClientUserPBase(ClientUserBase):
             flags = flags,
             name = name,
             name_plate = name_plate,
+            name_style = name_style,
             primary_guild_badge = primary_guild_badge,
         )
         

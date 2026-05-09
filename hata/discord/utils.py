@@ -273,7 +273,15 @@ def id_to_datetime(id_):
     -------
     date_time : `DateTime`
     """
-    return DateTime.fromtimestamp(((id_ >> 22) + DISCORD_EPOCH) / 1000.0, TimeZone.utc)
+    try:
+        return DateTime.fromtimestamp(((id_ >> 22) + DISCORD_EPOCH) / 1000.0, TimeZone.utc)
+    except (OverflowError, ValueError):
+        pass
+    
+    if id_ > 0:
+        return DATETIME_MAX
+    else:
+        return DATETIME_MIN
 
 
 DISCORD_EPOCH_START = id_to_datetime(0)

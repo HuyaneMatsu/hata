@@ -10,10 +10,35 @@ from ..fields import put_avatar_decoration
 def _iter_options():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160013)
     
-    yield (None, False, {})
-    yield (None, True, {'avatar_decoration_data': None})
-    yield (avatar_decoration, False, {'avatar_decoration_data': avatar_decoration.to_data()})
-    yield (avatar_decoration, True, {'avatar_decoration_data': avatar_decoration.to_data(defaults = True)})
+    yield (
+        None,
+        False,
+        {},
+    )
+    
+    yield (
+        None,
+        True,
+        {
+            'avatar_decoration_data': None,
+        },
+    )
+    
+    yield (
+        avatar_decoration,
+        False,
+        {
+            'avatar_decoration_data': avatar_decoration.to_data(defaults = False),
+        },
+    )
+    
+    yield (
+        avatar_decoration,
+        True,
+        {
+            'avatar_decoration_data': avatar_decoration.to_data(defaults = True),
+        },
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
@@ -23,8 +48,9 @@ def test__put_avatar_decoration(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `None | AvatarDecoration`
+    input_value : ``None | AvatarDecoration``
         Value to serialise.
+    
     defaults : `bool`
         Whether fields with their default value should be included.
     

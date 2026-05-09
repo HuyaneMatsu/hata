@@ -4,7 +4,7 @@ from ....bases import IconType, Icon
 from ....color import Color
 from ....localization import Locale
 from ....guild import GuildBadge
-from ....user import AvatarDecoration, NamePlate, PremiumType, UserFlag
+from ....user import AvatarDecoration, NamePlate, NameStyle, NameStyleFont, PremiumType, UserFlag
 
 from ...oauth2_access import Oauth2Access
 
@@ -36,6 +36,9 @@ def test__Oauth2User__from_data():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030041,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     premium_type = PremiumType.nitro
     primary_guild_badge = GuildBadge(guild_id = 202405180016, tag = 'miau')
     
@@ -57,6 +60,7 @@ def test__Oauth2User__from_data():
         'collectibles': {
             'nameplate': name_plate.to_data(),
         },
+        'display_name_styles': name_style.to_data(),
         'premium_type': premium_type.value,
         'primary_guild': primary_guild_badge.to_data(),
         'public_flags': int(flags),
@@ -80,6 +84,7 @@ def test__Oauth2User__from_data():
     vampytest.assert_eq(user.mfa_enabled, mfa_enabled)
     vampytest.assert_eq(user.name, name)
     vampytest.assert_eq(user.name_plate, name_plate)
+    vampytest.assert_eq(user.name_style, name_style)
     vampytest.assert_is(user.premium_type, premium_type)
     vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
 
@@ -107,6 +112,9 @@ def test__Oauth2User__to_data():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030042,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     premium_type = PremiumType.nitro
     primary_guild_badge = GuildBadge(guild_id = 202405180017, tag = 'miau')
     
@@ -124,6 +132,7 @@ def test__Oauth2User__to_data():
         mfa_enabled = mfa_enabled,
         name = name,
         name_plate = name_plate,
+        name_style = name_style,
         premium_type = premium_type,
         primary_guild_badge = primary_guild_badge,
     )
@@ -147,6 +156,7 @@ def test__Oauth2User__to_data():
         'collectibles': {
             'nameplate': name_plate.to_data(defaults = True),
         },
+        'display_name_styles': name_style.to_data(defaults = True),
         'premium_type': premium_type.value,
         'primary_guild': primary_guild_badge.to_data(defaults = True),
         'public_flags': int(flags),
@@ -178,6 +188,9 @@ def test__Oauth2User__update_attributes():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030043,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     premium_type = PremiumType.nitro_basic
     primary_guild_badge = GuildBadge(guild_id = 202405180018, tag = 'miau')
     
@@ -200,6 +213,7 @@ def test__Oauth2User__update_attributes():
         'collectibles': {
             'nameplate': name_plate.to_data(),
         },
+        'display_name_styles': name_style.to_data(),
         'premium_type': premium_type.value,
         'primary_guild': primary_guild_badge.to_data(),
         'public_flags': int(flags),
@@ -220,6 +234,7 @@ def test__Oauth2User__update_attributes():
     vampytest.assert_eq(user.mfa_enabled, mfa_enabled)
     vampytest.assert_eq(user.name, name)
     vampytest.assert_eq(user.name_plate, name_plate)
+    vampytest.assert_eq(user.name_style, name_style)
     vampytest.assert_is(user.premium_type, premium_type)
     vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
 
@@ -244,6 +259,9 @@ def test__Oauth2User__difference_update_attributes():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030044,
     )
+    old_name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     old_premium_type = PremiumType.nitro
     old_primary_guild_badge = GuildBadge(guild_id = 202405180019, tag = 'miau')
     
@@ -263,6 +281,9 @@ def test__Oauth2User__difference_update_attributes():
         asset_path = 'koishi/koishi/eye/',
         sku_id = 202506030045,
     )
+    new_name_style = NameStyle(
+        font = NameStyleFont.sakura,
+    )
     new_premium_type = PremiumType.nitro_classic
     new_primary_guild_badge = GuildBadge(guild_id = 202405180020, tag = 'meow')
     
@@ -280,6 +301,7 @@ def test__Oauth2User__difference_update_attributes():
         mfa_enabled = old_mfa_enabled,
         name = old_name,
         name_plate = old_name_plate,
+        name_style = old_name_style,
         premium_type = old_premium_type,
         primary_guild_badge = old_primary_guild_badge,
     )
@@ -301,6 +323,7 @@ def test__Oauth2User__difference_update_attributes():
         'collectibles': {
             'nameplate': new_name_plate.to_data(),
         },
+        'display_name_styles': new_name_style.to_data(),
         'premium_type': new_premium_type.value,
         'primary_guild': new_primary_guild_badge.to_data(),
         'public_flags': int(new_flags),
@@ -321,6 +344,7 @@ def test__Oauth2User__difference_update_attributes():
     vampytest.assert_eq(user.mfa_enabled, new_mfa_enabled)
     vampytest.assert_eq(user.name, new_name)
     vampytest.assert_eq(user.name_plate, new_name_plate)
+    vampytest.assert_eq(user.name_style, new_name_style)
     vampytest.assert_is(user.premium_type, new_premium_type)
     vampytest.assert_eq(user.primary_guild_badge, new_primary_guild_badge)
     
@@ -340,6 +364,7 @@ def test__Oauth2User__difference_update_attributes():
             'mfa_enabled': old_mfa_enabled,
             'name': old_name,
             'name_plate': old_name_plate,
+            'name_style': old_name_style,
             'premium_type': old_premium_type,
             'primary_guild_badge': old_primary_guild_badge,
         },

@@ -4,7 +4,7 @@ from ...bases import Icon, IconType
 from ...color import Color
 from ...guild import GuildBadge
 
-from ...user import AvatarDecoration, NamePlate, User, UserFlag
+from ...user import AvatarDecoration, NamePlate, NameStyle, NameStyleFont, User, UserFlag
 from ...client import Client
 
 
@@ -25,6 +25,9 @@ def test__Client__copy():
         asset_path = 'koishi/koishi/eye/',
         sku_id = 202506030095,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180064, tag = 'meow')
     
     client = Client(
@@ -39,6 +42,7 @@ def test__Client__copy():
         flags = flags,
         name = name,
         name_plate = name_plate,
+        name_style = name_style,
         primary_guild_badge = primary_guild_badge,
     )
     
@@ -60,6 +64,7 @@ def test__Client__copy():
         vampytest.assert_eq(copy.flags, flags)
         vampytest.assert_eq(copy.name, name)
         vampytest.assert_eq(copy.name_plate, name_plate)
+        vampytest.assert_eq(copy.name_style, name_style)
         vampytest.assert_eq(copy.primary_guild_badge, primary_guild_badge)
     
     # Cleanup
@@ -87,6 +92,9 @@ def test__Client__copy_with__no_fields():
         asset_path = 'koishi/koishi/eye/',
         sku_id = 202506030096,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180065, tag = 'meow')
     
     client = Client(
@@ -101,6 +109,7 @@ def test__Client__copy_with__no_fields():
         flags = flags,
         name = name,
         name_plate = name_plate,
+        name_style = name_style,
         primary_guild_badge = primary_guild_badge,
     )
     
@@ -122,6 +131,7 @@ def test__Client__copy_with__no_fields():
         vampytest.assert_eq(copy.flags, flags)
         vampytest.assert_eq(copy.name, name)
         vampytest.assert_eq(copy.name_plate, name_plate)
+        vampytest.assert_eq(copy.name_style, name_style)
         vampytest.assert_eq(copy.primary_guild_badge, primary_guild_badge)
     
     # Cleanup
@@ -150,6 +160,9 @@ def test__Client__copy_with__1():
         asset_path = 'koishi/koishi/eye/',
         sku_id = 202506030096,
     )
+    old_name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     old_primary_guild_badge = GuildBadge(guild_id = 202405180066, tag = 'meow')
     
     new_avatar = Icon(IconType.animated, 23)
@@ -165,6 +178,9 @@ def test__Client__copy_with__1():
         asset_path = 'koishi/koishi/eye/',
         sku_id = 202506030097,
     )
+    new_name_style = NameStyle(
+        font = NameStyleFont.sakura,
+    )
     new_primary_guild_badge = GuildBadge(guild_id = 202405180067, tag = 'miau')
     
     client = Client(
@@ -179,6 +195,7 @@ def test__Client__copy_with__1():
         flags = old_flags,
         name = old_name,
         name_plate = old_name_plate,
+        name_style = old_name_style,
         primary_guild_badge = old_primary_guild_badge,
     )
     
@@ -194,6 +211,7 @@ def test__Client__copy_with__1():
             flags = new_flags,
             name = new_name,
             name_plate = new_name_plate,
+            name_style = new_name_style,
             primary_guild_badge = new_primary_guild_badge,
         )
         vampytest.assert_instance(copy, User)
@@ -209,6 +227,7 @@ def test__Client__copy_with__1():
         vampytest.assert_eq(copy.flags, new_flags)
         vampytest.assert_eq(copy.name, new_name)
         vampytest.assert_eq(copy.name_plate, new_name_plate)
+        vampytest.assert_eq(copy.name_style, new_name_style)
         vampytest.assert_eq(copy.primary_guild_badge, new_primary_guild_badge)
 
     # Cleanup

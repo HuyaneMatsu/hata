@@ -6,6 +6,7 @@ from ....guild import GuildBadge
 
 from ...avatar_decoration import AvatarDecoration
 from ...name_plate import NamePlate
+from ...name_style import NameStyle, NameStyleFont
 
 from ..flags import UserFlag
 from ..orin_user_base import OrinUserBase
@@ -40,6 +41,9 @@ def test__OrinUserBase__to_data():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030004,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180003, tag = 'miau')
     
     user = OrinUserBase(
@@ -52,6 +56,7 @@ def test__OrinUserBase__to_data():
         flags = flags,
         name = name,
         name_plate = name_plate,
+        name_style = name_style,
         primary_guild_badge = primary_guild_badge,
     )
     user.id = user_id
@@ -70,6 +75,7 @@ def test__OrinUserBase__to_data():
         'collectibles': {
             'nameplate': name_plate.to_data(defaults = True),
         },
+        'display_name_styles': name_style.to_data(defaults = True),
         'primary_guild': primary_guild_badge.to_data(defaults = True),
     }
     
@@ -95,6 +101,9 @@ def test__OrinUserBase__update_attributes():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030005,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180004, tag = 'miau')
     
     user = OrinUserBase()
@@ -111,6 +120,7 @@ def test__OrinUserBase__update_attributes():
         'collectibles': {
             'nameplate': name_plate.to_data(),
         },
+        'display_name_styles': name_style.to_data(),
         'primary_guild': primary_guild_badge.to_data(),
     }
     
@@ -125,6 +135,7 @@ def test__OrinUserBase__update_attributes():
     vampytest.assert_eq(user.flags, flags)
     vampytest.assert_eq(user.name, name)
     vampytest.assert_eq(user.name_plate, name_plate)
+    vampytest.assert_eq(user.name_style, name_style)
     vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
 
 
@@ -144,6 +155,9 @@ def test__OrinUserBase__difference_update_attributes():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030006,
     )
+    old_name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     old_primary_guild_badge = GuildBadge(guild_id = 202405180005, tag = 'miau')
     
     new_avatar = Icon(IconType.animated, 13)
@@ -158,6 +172,9 @@ def test__OrinUserBase__difference_update_attributes():
         asset_path = 'koishi/koishi/eye/',
         sku_id = 202506030004,
     )
+    new_name_style = NameStyle(
+        font = NameStyleFont.sakura,
+    )
     new_primary_guild_badge = GuildBadge(guild_id = 202405180006, tag = 'meow')
     
     user = OrinUserBase(
@@ -170,6 +187,7 @@ def test__OrinUserBase__difference_update_attributes():
         flags = old_flags,
         name = old_name,
         name_plate = old_name_plate,
+        name_style = old_name_style,
         primary_guild_badge = old_primary_guild_badge,
     )
     
@@ -185,6 +203,7 @@ def test__OrinUserBase__difference_update_attributes():
         'collectibles': {
             'nameplate': new_name_plate.to_data(),
         },
+        'display_name_styles': new_name_style.to_data(),
         'primary_guild': new_primary_guild_badge.to_data(),
     }
     
@@ -199,6 +218,7 @@ def test__OrinUserBase__difference_update_attributes():
     vampytest.assert_eq(user.flags, new_flags)
     vampytest.assert_eq(user.name, new_name)
     vampytest.assert_eq(user.name_plate, new_name_plate)
+    vampytest.assert_eq(user.name_style, new_name_style)
     vampytest.assert_eq(user.primary_guild_badge, new_primary_guild_badge)
     
     vampytest.assert_eq(
@@ -213,6 +233,7 @@ def test__OrinUserBase__difference_update_attributes():
             'flags': old_flags,
             'name': old_name,
             'name_plate': old_name_plate,
+            'name_style': old_name_style,
             'primary_guild_badge': old_primary_guild_badge,
         },
     )

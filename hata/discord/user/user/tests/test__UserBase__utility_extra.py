@@ -11,6 +11,7 @@ from ....role import Role
 
 from ...avatar_decoration import AvatarDecoration
 from ...name_plate import NamePlate
+from ...name_style import NameStyle
 from ...status_by_platform import SessionPlatformType, Status, StatusByPlatform
 
 from ..flags import UserFlag
@@ -39,6 +40,7 @@ def test__UserBase__placeholders():
     vampytest.assert_instance(user.locale, Locale)
     vampytest.assert_instance(user.mfa_enabled, bool)
     vampytest.assert_instance(user.name_plate, NamePlate, nullable = True)
+    vampytest.assert_instance(user.name_style, NameStyle, nullable = True)
     vampytest.assert_instance(user.premium_type, PremiumType)
     vampytest.assert_instance(user.primary_guild_badge, GuildBadge, nullable = True)
     vampytest.assert_instance(user.status, Status)
@@ -48,7 +50,7 @@ def test__UserBase__placeholders():
 
 def test__UserBase__full_name():
     """
-    Tests whether ``Userbase.full_name`` works as intended.
+    Tests whether ``UserBase.full_name`` works as intended.
     """
     user = UserBase()
     vampytest.assert_instance(user.full_name, str)
@@ -56,7 +58,7 @@ def test__UserBase__full_name():
 
 def test__UserBase__mention():
     """
-    Tests whether ``Userbase.mention`` works as intended.
+    Tests whether ``UserBase.mention`` works as intended.
     """
     user = UserBase()
     vampytest.assert_instance(user.mention, str)
@@ -64,7 +66,7 @@ def test__UserBase__mention():
 
 def test__UserBase__mention_nick():
     """
-    Tests whether ``Userbase.mention_nick`` works as intended.
+    Tests whether ``UserBase.mention_nick`` works as intended.
     """
     user = UserBase()
     vampytest.assert_instance(user.mention_nick, str)
@@ -72,7 +74,7 @@ def test__UserBase__mention_nick():
 
 def test__UserBase__iter_activities():
     """
-    Tests whether ``Userbase.iter_activities`` works as intended.
+    Tests whether ``UserBase.iter_activities`` works as intended.
     """
     user = UserBase()
     vampytest.assert_eq([*user.iter_activities()], [])
@@ -80,7 +82,7 @@ def test__UserBase__iter_activities():
 
 def test__UserBase__partial():
     """
-    Tests whether ``Userbase.partial`` works as intended.
+    Tests whether ``UserBase.partial`` works as intended.
     """
     user = UserBase()
     vampytest.assert_eq(user.partial, True)
@@ -88,7 +90,7 @@ def test__UserBase__partial():
 
 def test__UserBase__activity():
     """
-    Tests whether ``Userbase.activity`` works as intended.
+    Tests whether ``UserBase.activity`` works as intended.
     """
     user = UserBase()
     vampytest.assert_is(user.activity, None)
@@ -96,7 +98,7 @@ def test__UserBase__activity():
 
 def test__UserBase__custom_activity():
     """
-    Tests whether ``Userbase.custom_activity`` works as intended.
+    Tests whether ``UserBase.custom_activity`` works as intended.
     """
     user = UserBase()
     vampytest.assert_is(user.custom_activity, None)
@@ -104,7 +106,7 @@ def test__UserBase__custom_activity():
 
 def test__UserBase__platform():
     """
-    Tests whether ``Userbase.platform`` works as intended.
+    Tests whether ``UserBase.platform`` works as intended.
     """
     user = UserBase()
     output = user.platform
@@ -114,7 +116,7 @@ def test__UserBase__platform():
 
 def test__UserBase__color_at():
     """
-    Tests whether ``Userbase.color_at`` works as intended.
+    Tests whether ``UserBase.color_at`` works as intended.
     """
     user = UserBase()
     guild_id = 202302040000
@@ -125,7 +127,7 @@ def test__UserBase__color_at():
 
 def test__UserBase__name_at():
     """
-    Tests whether ``Userbase.name_at`` works as intended.
+    Tests whether ``UserBase.name_at`` works as intended.
     """
     user = UserBase()
     guild_id = 202302040001
@@ -136,7 +138,7 @@ def test__UserBase__name_at():
 
 def test__UserBase__has_name_like():
     """
-    Tests whether ``Userbase.has_name_like`` works as intended.
+    Tests whether ``UserBase.has_name_like`` works as intended.
     """
     name = 'orin'
     user_id = 202302040002
@@ -160,7 +162,7 @@ def test__UserBase__has_name_like():
 
 def test__UserBase__has_name_like_at():
     """
-    Tests whether ``Userbase.has_name_like_at`` works as intended.
+    Tests whether ``UserBase.has_name_like_at`` works as intended.
     """
     name = 'orin'
     user_id = 202302040003
@@ -186,7 +188,7 @@ def test__UserBase__has_name_like_at():
 
 def test__UserBase__mentioned_in():
     """
-    Tests whether ``Userbase.mentioned_in`` works as intended.
+    Tests whether ``UserBase.mentioned_in`` works as intended.
     """
     user = UserBase()
     
@@ -200,7 +202,7 @@ def test__UserBase__mentioned_in():
 
 def test__UserBase__has_role():
     """
-    Tests whether ``Userbase.has_role`` works as intended.
+    Tests whether ``UserBase.has_role`` works as intended.
     """
     user = UserBase()
     
@@ -215,7 +217,7 @@ def test__UserBase__has_role():
 
 def test__UserBase__top_role_at():
     """
-    Tests whether ``Userbase.top_role_at`` works as intended.
+    Tests whether ``UserBase.top_role_at`` works as intended.
     """
     user = UserBase()
     guild_id = 202302040010
@@ -226,7 +228,7 @@ def test__UserBase__top_role_at():
 
 def test__UserBase__can_use_emoji__unicode():
     """
-    Tests whether ``Userbase.can_use_emoji`` works as intended.
+    Tests whether ``UserBase.can_use_emoji`` works as intended.
     
     Case: unicode.
     """
@@ -241,7 +243,7 @@ def test__UserBase__can_use_emoji__unicode():
 
 def test__UserBase__can_use_emoji__custom():
     """
-    Tests whether ``Userbase.can_use_emoji`` works as intended.
+    Tests whether ``UserBase.can_use_emoji`` works as intended.
     
     Case: custom.
     """
@@ -256,7 +258,7 @@ def test__UserBase__can_use_emoji__custom():
 
 def test__UserBase__has_higher_role_than():
     """
-    Tests whether ``Userbase.has_higher_role_than`` works as intended.
+    Tests whether ``UserBase.has_higher_role_than`` works as intended.
     """
     user = UserBase()
     
@@ -271,7 +273,7 @@ def test__UserBase__has_higher_role_than():
 
 def test__UserBase__has_higher_role_than_at():
     """
-    Tests whether ``Userbase.has_higher_role_than_at`` works as intended.
+    Tests whether ``UserBase.has_higher_role_than_at`` works as intended.
     """
     user_0 = UserBase()
     user_1 = UserBase()
@@ -283,7 +285,7 @@ def test__UserBase__has_higher_role_than_at():
 
 def test__UserBase__get_guild_profile_for():
     """
-    Tests whether ``Userbase.get_guild_profile_for`` works as intended.
+    Tests whether ``UserBase.get_guild_profile_for`` works as intended.
     """
     user = UserBase()
     
@@ -294,7 +296,7 @@ def test__UserBase__get_guild_profile_for():
 
 def test__UserBase__iter_guilds_and_profiles():
     """
-    Tests whether ``Userbase.iter_guilds_and_profiles`` works as intended.
+    Tests whether ``UserBase.iter_guilds_and_profiles`` works as intended.
     """
     user = UserBase()
     
@@ -303,7 +305,7 @@ def test__UserBase__iter_guilds_and_profiles():
 
 def test__UserBase__iter_guilds():
     """
-    Tests whether ``Userbase.iter_guilds`` works as intended.
+    Tests whether ``UserBase.iter_guilds`` works as intended.
     """
     user = UserBase()
     
@@ -312,7 +314,7 @@ def test__UserBase__iter_guilds():
 
 def test__UserBase__is_boosting():
     """
-    Tests whether ``Userbase.is_boosting`` works as intended.
+    Tests whether ``UserBase.is_boosting`` works as intended.
     """
     user = UserBase()
     
@@ -323,7 +325,7 @@ def test__UserBase__is_boosting():
 
 def test__UserBase__delete():
     """
-    Tests whether ``Userbase._delete`` works as intended.
+    Tests whether ``UserBase._delete`` works as intended.
     """
     user = UserBase()
     user._delete()
@@ -331,7 +333,7 @@ def test__UserBase__delete():
 
 def test__UserBase__difference_update_presence():
     """
-    Tests whether ``Userbase._difference_update_presence`` works as intended.
+    Tests whether ``UserBase._difference_update_presence`` works as intended.
     """
     user = UserBase()
     
@@ -344,7 +346,7 @@ def test__UserBase__difference_update_presence():
 
 def test__UserBase__update_presence():
     """
-    Tests whether ``Userbase._update_presence`` works as intended.
+    Tests whether ``UserBase._update_presence`` works as intended.
     """
     user = UserBase()
     
@@ -355,7 +357,7 @@ def test__UserBase__update_presence():
 
 def test__UserBase__from_data_and_update_profile():
     """
-    Tests whether ``Userbase._from_data_and_update_profile`` works as intended.
+    Tests whether ``UserBase._from_data_and_update_profile`` works as intended.
     """
     guild_id = 2023020400020
     guild = Guild.precreate(guild_id)
@@ -368,7 +370,7 @@ def test__UserBase__from_data_and_update_profile():
 
 def test__UserBase__from_data_and_difference_update_profile():
     """
-    Tests whether ``Userbase._from_data_and_difference_update_profile`` works as intended.
+    Tests whether ``UserBase._from_data_and_difference_update_profile`` works as intended.
     """
     guild_id = 2023020400021
     guild = Guild.precreate(guild_id)
@@ -381,7 +383,7 @@ def test__UserBase__from_data_and_difference_update_profile():
 
 def test__UserBase__update_profile():
     """
-    Tests whether ``Userbase._update_profile`` works as intended.
+    Tests whether ``UserBase._update_profile`` works as intended.
     """
     user = UserBase()
     guild_id = 202312060000
@@ -395,7 +397,7 @@ def test__UserBase__update_profile():
 
 def test__UserBase__difference_update_profile():
     """
-    Tests whether ``Userbase._difference_update_profile`` works as intended.
+    Tests whether ``UserBase._difference_update_profile`` works as intended.
     """
     user = UserBase()
     guild_id = 202312060001
@@ -484,7 +486,7 @@ def _iter_options__default_avatar_url():
 @vampytest._(vampytest.call_from(_iter_options__default_avatar_url()).returning_last())
 def test__UserBase__default_avatar_url(user_id, discriminator):
     """
-    Tests whether ``Userbase.default_avatar_url`` works as intended.
+    Tests whether ``UserBase.default_avatar_url`` works as intended.
     
     Parameters
     ----------
@@ -520,7 +522,7 @@ def _iter_options__default_avatar():
 @vampytest._(vampytest.call_from(_iter_options__default_avatar()).returning_last())
 def test__UserBase__default_avatar(user_id, discriminator):
     """
-    Tests whether ``Userbase.default_avatar`` works as intended.
+    Tests whether ``UserBase.default_avatar`` works as intended.
     
     Parameters
     ----------
@@ -1000,7 +1002,7 @@ def test__UserBase__name_plate_url(name_plate):
     Parameters
     ----------
     name_plate : ``None | NamePlate``
-        Avatar decoration to create the user with.
+        Name plate to create the user with.
     
     Returns
     -------
@@ -1009,5 +1011,39 @@ def test__UserBase__name_plate_url(name_plate):
     assert name_plate is None
     user = UserBase()
     output = user.name_plate_url
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__name_plate_url_at():
+    yield None, 0, None, False
+
+
+@vampytest._(vampytest.call_from(_iter_options__name_plate_url_at()).returning_last())
+def test__UserBase__name_plate_url_at(global_name_plate, guild_id, local_name_plate):
+    """
+    Tests whether ``UserBase.name_plate_url_at`` work as intended.
+    
+    Parameters
+    ----------
+    global_name_plate : ``None | NamePlate``
+        Name plate to create the user with.
+    
+    guild_id : `int`
+        Guild identifier to add guild profile at.
+    
+    local_name_plate : ``None | NamePlate``
+        Name plate to create guild profile with.
+    
+    Returns
+    -------
+    has_name_plate_url_at : `bool`
+    """
+    assert guild_id == 0
+    assert global_name_plate is None
+    assert local_name_plate is None
+    
+    user = UserBase()
+    output = user.name_plate_url_at(guild_id)
     vampytest.assert_instance(output, str, nullable = True)
     return (output is not None)

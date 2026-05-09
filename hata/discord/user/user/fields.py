@@ -20,6 +20,7 @@ from ...localization.utils import LOCALE_DEFAULT
 
 from ..avatar_decoration import AvatarDecoration
 from ..name_plate import NamePlate
+from ..name_style import NameStyle
 from ..status_by_platform import Status, StatusByPlatform
 
 from .constants import (
@@ -185,7 +186,7 @@ def validate_banner_color(banner_color):
     
     Parameters
     ----------
-    banner_color : `None`, ``Color``, `int`
+    banner_color : ``None | int | Color``
         The banner color to validate.
     
     Returns
@@ -479,17 +480,27 @@ def put_name_plate(name_plate, data, defaults):
 
 validate_name_plate = nullable_entity_validator_factory('name_plate', NamePlate)
 
+
+# name_style
+
+parse_name_style = nullable_entity_parser_factory('display_name_styles', NameStyle)
+put_name_style = nullable_entity_optional_putter_factory('display_name_styles', NameStyle)
+validate_name_style = nullable_entity_validator_factory('name_style', NameStyle)
+
+
 # premium_type
 
 parse_premium_type = preinstanced_parser_factory('premium_type', PremiumType, PremiumType.none)
 put_premium_type = preinstanced_putter_factory('premium_type')
 validate_premium_type = preinstanced_validator_factory('premium_type', PremiumType)
 
+
 # status
 
 parse_status = preinstanced_parser_factory('status', Status, Status.offline)
 put_status = preinstanced_putter_factory('status')
 validate_status = preinstanced_validator_factory('status', Status)
+
 
 # status_by_platform
 

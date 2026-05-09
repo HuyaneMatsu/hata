@@ -5,8 +5,24 @@ from ..preinstanced import Palette
 
 
 def _iter_options():
-    yield {}, Palette.black
-    yield {'palette': Palette.violet.value}, Palette.violet
+    yield (
+        {},
+        Palette.black,
+    )
+    
+    yield (
+        {
+            'palette': None,
+        },
+        Palette.black,
+    )
+    
+    yield (
+        {
+            'palette': Palette.violet.value,
+        },
+        Palette.violet,
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

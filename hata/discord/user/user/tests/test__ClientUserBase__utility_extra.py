@@ -11,6 +11,7 @@ from ....guild import Guild
 from ....role import Role
 
 from ...guild_profile import GuildProfile
+from ...name_plate import NamePlate
 
 from ..client_user_base import ClientUserBase
 
@@ -1256,5 +1257,51 @@ def test__ClientUserBase__banner_url_at_as(user_id, global_icon, guild_id, local
         user.guild_profiles[guild_id] = GuildProfile(banner = local_icon)
     
     output = user.banner_url_at_as(guild_id, **keyword_parameters)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__name_plate_url_at():
+    name_plate = NamePlate(
+        asset_path = 'koishi/koishi/hat/',
+        sku_id = 202604200041,
+    )
+    
+    yield None, 0, None, False
+    yield name_plate, 0, None, True
+    yield name_plate, 202604200042, None, True
+    yield None, 202604200043, None, False
+    yield None, 202604200044, name_plate, True
+    yield name_plate, 202604200045, name_plate, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__name_plate_url_at()).returning_last())
+def test__ClientUserBase__name_plate_url_at(global_name_plate, guild_id, local_name_plate):
+    """
+    Tests whether ``ClientUserBase.name_plate_url_at`` work as intended.
+    
+    Parameters
+    ----------
+    global_name_plate : ``None | NamePlate``
+        Name plate to create the user with.
+    
+    guild_id : `int`
+        Guild identifier to add guild profile at.
+    
+    local_name_plate : ``None | NamePlate``
+        Name plate to create guild profile with.
+    
+    Returns
+    -------
+    has_name_plate_url_at : `bool`
+    """
+    user = ClientUserBase(
+        name_plate = global_name_plate,
+    )
+    
+    if guild_id:
+        user.guild_profiles[guild_id] = GuildProfile(name_plate = local_name_plate)
+    
+    output = user.name_plate_url_at(guild_id)
     vampytest.assert_instance(output, str, nullable = True)
     return (output is not None)

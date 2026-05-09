@@ -12,7 +12,7 @@ def _iter_options__passing():
         EventDeprecation(
             'koishi',
             DateTime(2016, 5, 14, tzinfo = TimeZone.utc),
-            trigger_after = DateTime.now(tz = TimeZone.utc) + TimeDelta(days = 5000),
+            trigger_after = DateTime.now(TimeZone.utc) + TimeDelta(days = 5000),
         ),
         None,
     )

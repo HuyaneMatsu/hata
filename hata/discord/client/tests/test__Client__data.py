@@ -4,7 +4,7 @@ from ...bases import IconType, Icon
 from ...color import Color
 from ...guild import Guild, GuildBadge
 from ...localization import Locale
-from ...user import AvatarDecoration, NamePlate, GuildProfile, PremiumType, UserFlag
+from ...user import AvatarDecoration, NamePlate, NameStyle, NameStyleFont, GuildProfile, PremiumType, UserFlag
 
 from ..client import Client
 
@@ -29,6 +29,9 @@ def test__Client__to_data():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030091,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180060, tag = 'meow')
     
     expected_output = {
@@ -45,6 +48,7 @@ def test__Client__to_data():
         'collectibles': {
             'nameplate': name_plate.to_data(defaults = True),
         },
+        'display_name_styles': name_style.to_data(defaults = True),
         'primary_guild': primary_guild_badge.to_data(defaults = True),
     }
     
@@ -61,6 +65,7 @@ def test__Client__to_data():
         flags = flags,
         name = name,
         name_plate = name_plate,
+        name_style = name_style,
         primary_guild_badge = primary_guild_badge,
     )
 
@@ -92,6 +97,9 @@ def test__Client__update_attributes():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030092,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180061, tag = 'meow')
     email = 'rin@orindance.party'
     email_verified = True
@@ -115,6 +123,7 @@ def test__Client__update_attributes():
         'collectibles': {
             'nameplate': name_plate.to_data(),
         },
+        'display_name_styles': name_style.to_data(),
         'premium_type': premium_type.value,
         'primary_guild': primary_guild_badge.to_data(),
     }
@@ -139,6 +148,7 @@ def test__Client__update_attributes():
         vampytest.assert_eq(client.mfa_enabled, mfa_enabled)
         vampytest.assert_eq(client.name, name)
         vampytest.assert_eq(client.name_plate, name_plate)
+        vampytest.assert_eq(client.name_style, name_style)
         vampytest.assert_is(client.premium_type, premium_type)
         vampytest.assert_eq(client.primary_guild_badge, primary_guild_badge)
     
@@ -164,6 +174,9 @@ def test__Client__difference_update_attributes():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030093,
     )
+    old_name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     old_primary_guild_badge = GuildBadge(guild_id = 202405180062, tag = 'meow')
     old_email = 'rin@orindance.party'
     old_email_verified = True
@@ -182,6 +195,9 @@ def test__Client__difference_update_attributes():
     new_name_plate = NamePlate(
         asset_path = 'koishi/koishi/eye/',
         sku_id = 202506030094,
+    )
+    new_name_style = NameStyle(
+        font = NameStyleFont.sakura,
     )
     new_primary_guild_badge = GuildBadge(guild_id = 202405180063, tag = 'miau')
     new_email = 'okuu@orindance.party'
@@ -206,6 +222,7 @@ def test__Client__difference_update_attributes():
         'collectibles': {
             'nameplate': new_name_plate.to_data(),
         },
+        'display_name_styles': new_name_style.to_data(),
         'premium_type': new_premium_type.value,
         'primary_guild': new_primary_guild_badge.to_data(),
     }
@@ -224,6 +241,7 @@ def test__Client__difference_update_attributes():
         'mfa_enabled': old_mfa_enabled,
         'name': old_name,
         'name_plate': old_name_plate,
+        'name_style': old_name_style,
         'premium_type': old_premium_type,
         'primary_guild_badge': old_primary_guild_badge,
     }
@@ -243,6 +261,7 @@ def test__Client__difference_update_attributes():
         mfa_enabled = old_mfa_enabled,
         name = old_name,
         name_plate = old_name_plate,
+        name_style = old_name_style,
         premium_type = old_premium_type,
         primary_guild_badge = old_primary_guild_badge,
     )
@@ -263,6 +282,7 @@ def test__Client__difference_update_attributes():
         vampytest.assert_eq(client.mfa_enabled, new_mfa_enabled)
         vampytest.assert_eq(client.name, new_name)
         vampytest.assert_eq(client.name_plate, new_name_plate)
+        vampytest.assert_eq(client.name_style, new_name_style)
         vampytest.assert_is(client.premium_type, new_premium_type)
         vampytest.assert_eq(client.primary_guild_badge, new_primary_guild_badge)
         

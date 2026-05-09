@@ -6,6 +6,7 @@ from ....guild import GuildBadge
 
 from ...avatar_decoration import AvatarDecoration
 from ...name_plate import NamePlate
+from ...name_style import NameStyle, NameStyleFont
 
 from ..flags import UserFlag
 from ..orin_user_base import OrinUserBase
@@ -29,6 +30,9 @@ def test__OrinUserBase__copy():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030011,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180011, tag = 'miau')
     
     user = OrinUserBase(
@@ -41,6 +45,7 @@ def test__OrinUserBase__copy():
         flags = flags,
         name = name,
         name_plate = name_plate,
+        name_style = name_style,
         primary_guild_badge = primary_guild_badge,
     )
     
@@ -69,6 +74,9 @@ def test__OrinUserBase__copy_with__0():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030012,
     )
+    name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     primary_guild_badge = GuildBadge(guild_id = 202405180012, tag = 'miau')
     
     user = OrinUserBase(
@@ -81,6 +89,7 @@ def test__OrinUserBase__copy_with__0():
         flags = flags,
         name = name,
         name_plate = name_plate,
+        name_style = name_style,
         primary_guild_badge = primary_guild_badge,
     )
     
@@ -109,6 +118,9 @@ def test__OrinUserBase__copy_with__1():
         asset_path = 'koishi/koishi/hat/',
         sku_id = 202506030013,
     )
+    old_name_style = NameStyle(
+        font = NameStyleFont.tempo,
+    )
     old_primary_guild_badge = GuildBadge(guild_id = 202405180013, tag = 'miau')
     
     new_avatar = Icon(IconType.animated, 23)
@@ -123,6 +135,9 @@ def test__OrinUserBase__copy_with__1():
         asset_path = 'koishi/koishi/eye/',
         sku_id = 202506030014,
     )
+    new_name_style = NameStyle(
+        font = NameStyleFont.sakura,
+    )
     new_primary_guild_badge = GuildBadge(guild_id = 202405180014, tag = 'meow')
     
     user = OrinUserBase(
@@ -135,6 +150,7 @@ def test__OrinUserBase__copy_with__1():
         flags = old_flags,
         name = old_name,
         name_plate = old_name_plate,
+        name_style = old_name_style,
         primary_guild_badge = old_primary_guild_badge,
     )
     
@@ -148,6 +164,7 @@ def test__OrinUserBase__copy_with__1():
         flags = new_flags,
         name = new_name,
         name_plate = new_name_plate,
+        name_style = new_name_style,
         primary_guild_badge = new_primary_guild_badge,
     )
     _assert_fields_set(copy)
@@ -162,4 +179,5 @@ def test__OrinUserBase__copy_with__1():
     vampytest.assert_eq(copy.flags, new_flags)
     vampytest.assert_eq(copy.name, new_name)
     vampytest.assert_eq(copy.name_plate, new_name_plate)
+    vampytest.assert_eq(copy.name_style, new_name_style)
     vampytest.assert_eq(copy.primary_guild_badge, new_primary_guild_badge)

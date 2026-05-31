@@ -100,11 +100,13 @@ def test__Message__from_data__all_fields():
     
     message_id = 202305030055
     channel_id = 202305030056
+    channel_type = ChannelType.guild_text
     guild_id = 202305030057
     
     input_data = {
         'author': author.to_data(include_internals = True),
         'channel_id': str(channel_id),
+        'channel_type': channel_type.value,
         'guild_id': str(guild_id),
         'id': str(message_id),
         'type': message_type.value,
@@ -179,6 +181,7 @@ def test__Message__from_data__all_fields():
 
     vampytest.assert_eq(message.id, message_id)
     vampytest.assert_eq(message.channel_id, channel_id)
+    vampytest.assert_is(message.channel_type, channel_type)
     vampytest.assert_eq(message.guild_id, guild_id)
 
 
@@ -402,6 +405,7 @@ def test__Message__to_data():
     
     message_id = 202310110027
     channel_id = 202310110028
+    channel_type = ChannelType.guild_text
     guild_id = 202310110029
     
     expected_output = {
@@ -416,6 +420,7 @@ def test__Message__to_data():
         'author': author.to_data(defaults = True, include_internals = True),
         'call': call.to_data(defaults = True),
         'channel_id': str(channel_id),
+        'channel_type': channel_type.guild_text.value,
         'edited_timestamp': datetime_to_timestamp(edited_at),
         'interaction_metadata': interaction.to_data(defaults = True, include_internals = True),
         'mention_channels': [create_partial_channel_data(channel) for channel in mentioned_channels_cross_guild],
@@ -450,6 +455,7 @@ def test__Message__to_data():
     message = Message.precreate(
         message_id,
         channel_id = channel_id,
+        channel_type = channel_type,
         guild_id = guild_id,
         
         activity = activity,

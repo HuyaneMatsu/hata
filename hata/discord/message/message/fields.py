@@ -18,7 +18,7 @@ from ...field_putters import (
     nullable_entity_array_optional_putter_factory, nullable_entity_optional_putter_factory,
     nullable_functional_array_optional_putter_factory, nullable_object_array_optional_putter_factory,
     nullable_string_optional_putter_factory, optional_entity_id_array_optional_putter_factory,
-    preinstanced_putter_factory, url_optional_putter_factory
+    preinstanced_optional_putter_factory, preinstanced_putter_factory, url_optional_putter_factory
 )
 from ...field_validators import (
     bool_validator_factory, default_entity_validator_factory, entity_id_array_validator_factory,
@@ -204,6 +204,21 @@ validate_call = nullable_entity_validator_factory('call', MessageCall)
 parse_channel_id = entity_id_parser_factory('channel_id')
 put_channel_id = entity_id_putter_factory('channel_id')
 validate_channel_id = entity_id_validator_factory('channel_id', NotImplemented, include = 'Channel')
+
+
+# channel_type
+
+parse_channel_type = preinstanced_parser_factory(
+    'channel_type', NotImplemented, NotImplemented, include = 'ChannelType', include_default_attribute_name = 'unknown'
+)
+put_channel_type = preinstanced_optional_putter_factory(
+    'channel_type',
+    NotImplemented,
+    include_default_type = 'ChannelType',
+    include_default_attribute_name = 'unknown',
+)
+validate_channel_type = preinstanced_validator_factory('channel_type', NotImplemented, include = 'ChannelType')
+
 
 # components
 

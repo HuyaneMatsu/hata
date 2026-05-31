@@ -12,7 +12,9 @@ UNICODES = (
         False,
         None,
         None,
-        None,
+        (
+            '\ud83c\udffb',
+        ),
     ),
     Unicode(
         'skin_tone_2',
@@ -20,7 +22,9 @@ UNICODES = (
         False,
         None,
         None,
-        None,
+        (
+            '\ud83c\udffc',
+        ),
     ),
     Unicode(
         'skin_tone_3',
@@ -28,7 +32,9 @@ UNICODES = (
         False,
         None,
         None,
-        None,
+        (
+            '\ud83c\udffd',
+        ),
     ),
     Unicode(
         'skin_tone_4',
@@ -36,7 +42,9 @@ UNICODES = (
         False,
         None,
         None,
-        None,
+        (
+            '\ud83c\udffe',
+        ),
     ),
     Unicode(
         'skin_tone_5',
@@ -44,7 +52,9 @@ UNICODES = (
         False,
         None,
         None,
-        None,
+        (
+            '\ud83c\udfff',
+        ),
     ),
     Unicode(
         'sweat',
@@ -16331,6 +16341,7 @@ UNICODES = (
         False,
         (
             'soccer_ball',
+            'actual_football'
         ),
         None,
         None,
@@ -41430,6 +41441,86 @@ UNICODES = (
         None,
         (
             '\u26d3\ufe0f\u200d\ud83d\udca5',
+        ),
+    ),
+    Unicode(
+        'face_with_bags_under_eyes',
+        b'\xf0\x9f\xab\xa9'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\udee9',
+        ),
+    ),
+    Unicode(
+        'fingerprint',
+        b'\xf0\x9f\xab\x86'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\udec6',
+        ),
+    ),
+    Unicode(
+        'leafless_tree',
+        b'\xf0\x9f\xaa\xbe'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\udebe',
+        ),
+    ),
+    Unicode(
+        'root_vegetable',
+        b'\xf0\x9f\xab\x9c'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\udedc',
+        ),
+    ),
+    Unicode(
+        'splatter',
+        b'\xf0\x9f\xab\x9f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\udedf',
+        ),
+    ),
+    Unicode(
+        'harp',
+        b'\xf0\x9f\xaa\x89'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\ude89',
+        ),
+    ),
+    Unicode(
+        'shovel',
+        b'\xf0\x9f\xaa\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\ude8f',
+        ),
+    ),
+    Unicode(
+        'flag_sark',
+        b'\xf0\x9f\x87\xa8\xf0\x9f\x87\xb6'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83c\udde8\ud83c\uddf6',
         ),
     ),
 )

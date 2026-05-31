@@ -76,7 +76,7 @@ class StickerPack(DiscordEntity, immortal = True):
             The name of the sticker pack.
         sku_id : `int`, Optional (Keyword only)
             The Stock Keeping Unit identifier of the sticker pack.
-        stickers : `None`, `iterable` of ``Sticker``, Optional (Keyword only)
+        stickers : ``None | iterable<Sticker>``, Optional (Keyword only)
             The stickers of the pack.
         
         Raises
@@ -239,7 +239,7 @@ class StickerPack(DiscordEntity, immortal = True):
             The name of the sticker pack.
         sku_id : `int`, Optional (Keyword only)
             The Stock Keeping Unit identifier of the sticker pack.
-        stickers : `None`, `iterable` of ``Sticker``, Optional (Keyword only)
+        stickers : ``None | iterable<Sticker>``, Optional (Keyword only)
             The stickers of the pack.
         
         Returns
@@ -474,7 +474,7 @@ class StickerPack(DiscordEntity, immortal = True):
             The name of the sticker pack.
         sku_id : `int`, Optional (Keyword only)
             The Stock Keeping Unit identifier of the sticker pack.
-        stickers : `None`, `iterable` of ``Sticker``, Optional (Keyword only)
+        stickers : ``None | iterable<Sticker>``, Optional (Keyword only)
             The stickers of the pack.
         
         Returns

@@ -47,6 +47,7 @@ def _assert_fields_set(message):
     vampytest.assert_instance(message.author, UserBase)
     vampytest.assert_instance(message.call, MessageCall, nullable = True)
     vampytest.assert_instance(message.channel_id, int)
+    vampytest.assert_instance(message.channel_type, ChannelType)
     vampytest.assert_instance(message.components, tuple, nullable = True)
     vampytest.assert_instance(message.content, str, nullable = True)
     vampytest.assert_instance(message.edited_at, DateTime, nullable = True)
@@ -317,11 +318,13 @@ def test__Message__precreate__all_fields():
     
     message_id = 202305030036
     channel_id = 202305030037
+    channel_type = ChannelType.guild_text
     guild_id = 202305030038
     
     message = Message.precreate(
         message_id,
         channel_id = channel_id,
+        channel_type = channel_type,
         guild_id = guild_id,
         
         activity = activity,
@@ -391,4 +394,5 @@ def test__Message__precreate__all_fields():
     
     vampytest.assert_eq(message.id, message_id)
     vampytest.assert_eq(message.channel_id, channel_id)
+    vampytest.assert_is(message.channel_type, channel_type)
     vampytest.assert_eq(message.guild_id, guild_id)

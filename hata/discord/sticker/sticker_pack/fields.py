@@ -98,7 +98,7 @@ def validate_stickers(stickers):
     
     Parameters
     ----------
-    stickers : `None`, `iterable` of ``Sticker``
+    stickers : ``None | iterable<Sticker>``
         The stickers to validate.
     
     Returns
@@ -109,7 +109,7 @@ def validate_stickers(stickers):
     Raises
     ------
     TypeError
-        - If `sticker` is not `None`, `iterable` of ``Sticker``.
+        - If `sticker` is not ``None | iterable<Sticker>``.
         - If `sticker` contains a non-``Sticker`` element. 
     """
     if stickers is None:

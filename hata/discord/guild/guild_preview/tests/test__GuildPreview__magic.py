@@ -19,9 +19,10 @@ def test__GuildPreview__repr():
     discovery_splash = Icon(IconType.static, 12)
     emojis = [Emoji.precreate(202301080019, name = 'Koishi')]
     features = [GuildFeature.banner]
+    home_splash = Icon(IconType.static, 12)
     guild_id = 202301080020
     icon = Icon(IconType.static, 11)
-    invite_splash = Icon(IconType.animated, 12)
+    invite_splash = Icon(IconType.animated, 14)
     stickers = [Sticker.precreate(202301080021, name = 'Satori')]
     name = 'Yurica'
     
@@ -32,6 +33,7 @@ def test__GuildPreview__repr():
         discovery_splash = discovery_splash,
         emojis = emojis,
         features = features,
+        home_splash = home_splash,
         guild_id = guild_id,
         icon = icon,
         invite_splash = invite_splash,
@@ -52,9 +54,10 @@ def test__GuildPreview__hash():
     discovery_splash = Icon(IconType.static, 12)
     emojis = [Emoji.precreate(202301080022, name = 'Koishi')]
     features = [GuildFeature.banner]
+    home_splash = Icon(IconType.static, 12)
     guild_id = 202301080023
     icon = Icon(IconType.static, 11)
-    invite_splash = Icon(IconType.animated, 12)
+    invite_splash = Icon(IconType.animated, 14)
     stickers = [Sticker.precreate(202301080024, name = 'Satori')]
     name = 'Yurica'
     
@@ -65,6 +68,7 @@ def test__GuildPreview__hash():
         discovery_splash = discovery_splash,
         emojis = emojis,
         features = features,
+        home_splash = home_splash,
         guild_id = guild_id,
         icon = icon,
         invite_splash = invite_splash,
@@ -75,19 +79,17 @@ def test__GuildPreview__hash():
     vampytest.assert_instance(hash(guild_preview), int)
 
 
-def test__GuildPreview__eq():
-    """
-    Tests whether ``GuildPreview.__eq__`` works as intended.
-    """
+def _iter_options__eq():
     approximate_online_count = 13
     approximate_user_count = 14
     description = 'cordelia'
     discovery_splash = Icon(IconType.static, 12)
     emojis = [Emoji.precreate(202301080025, name = 'Koishi')]
     features = [GuildFeature.banner]
+    home_splash = Icon(IconType.static, 12)
     guild_id = 202301080026
     icon = Icon(IconType.static, 11)
-    invite_splash = Icon(IconType.animated, 12)
+    invite_splash = Icon(IconType.animated, 14)
     stickers = [Sticker.precreate(202301080027, name = 'Satori')]
     name = 'Yurica'
     
@@ -98,6 +100,7 @@ def test__GuildPreview__eq():
         'discovery_splash': discovery_splash,
         'emojis': emojis,
         'features': features,
+        'home_splash': home_splash,
         'guild_id': guild_id,
         'icon': icon,
         'invite_splash': invite_splash,
@@ -105,26 +108,144 @@ def test__GuildPreview__eq():
         'name': name,
     }
     
-    guild_preview = GuildPreview(**keyword_parameters)
+    yield (
+        keyword_parameters,
+        keyword_parameters,
+        True,
+    )
     
-    vampytest.assert_eq(guild_preview, guild_preview)
-    vampytest.assert_ne(guild_preview, object())
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'approximate_online_count': 111,
+        },
+        False,
+    )
     
-    for field_name, field_value in (
-        ('approximate_online_count', 111),
-        ('approximate_user_count', 112),
-        ('description', None),
-        ('discovery_splash', None),
-        ('emojis', None),
-        ('features', None),
-        ('guild_id', 202301080028),
-        ('icon', None),
-        ('invite_splash', None),
-        ('stickers', None),
-        ('name', 'Flower'),
-    ):
-        test_guild_preview = GuildPreview(**{**keyword_parameters, field_name: field_value})
-        vampytest.assert_ne(guild_preview, test_guild_preview)
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'approximate_user_count': 112,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'description': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'discovery_splash': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'emojis': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'features': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'home_splash': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'guild_id': 202301080028,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'icon': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'invite_splash': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'stickers': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'name': 'Flower',
+        },
+        False,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__eq()).returning_last())
+def test__GuildPreview__eq(keyword_parameters_0, keyword_parameters_1):
+    """
+    Tests whether ``GuildPreview.__eq__`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters_0 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    keyword_parameters_1 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    guild_preview_0 = GuildPreview(**keyword_parameters_0)
+    guild_preview_1 = GuildPreview(**keyword_parameters_1)
+    
+    output = guild_preview_0 == guild_preview_1
+    vampytest.assert_instance(output, bool)
+    return output
 
 
 def test__GuildPreview__format():

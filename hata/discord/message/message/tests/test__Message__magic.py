@@ -125,11 +125,13 @@ def test__Message__repr():
     
     message_id = 202305040036
     channel_id = 202305040037
+    channel_type = ChannelType.guild_text
     guild_id = 202305040038
     
     message = Message.precreate(
         message_id,
         channel_id = channel_id,
+        channel_type = channel_type,
         guild_id = guild_id,
         **keyword_parameters,
     )
@@ -241,11 +243,13 @@ def test__Message__hash():
     
     message_id = 202305040054
     channel_id = 202305040055
+    channel_type = ChannelType.guild_text
     guild_id = 202305040056
     
     message = Message.precreate(
         message_id,
         channel_id = channel_id,
+        channel_type = channel_type,
         guild_id = guild_id,
         **keyword_parameters,
     )

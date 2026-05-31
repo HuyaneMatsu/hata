@@ -1,13 +1,14 @@
 import vampytest
 
-from ..fields import validate_type
-from ..preinstanced import MessageType
+from ....channel import ChannelType
+
+from ..fields import validate_channel_type
 
 
 def _iter_options__passing():
-    yield None, MessageType.default
-    yield MessageType.call, MessageType.call
-    yield MessageType.call.value, MessageType.call
+    yield None, ChannelType.guild_text
+    yield ChannelType.guild_text, ChannelType.guild_text
+    yield ChannelType.guild_text.value, ChannelType.guild_text
 
 
 def _iter_options__type_error():
@@ -17,9 +18,9 @@ def _iter_options__type_error():
 
 @vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
 @vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
-def test__validate_type__passing(input_value):
+def test__validate_channel_type__passing(input_value):
     """
-    Tests whether ``validate_type`` works as intended.
+    Tests whether ``validate_channel_type`` works as intended.
     
     Case: passing.
     
@@ -30,12 +31,12 @@ def test__validate_type__passing(input_value):
     
     Returns
     -------
-    output : ``MessageType``
+    output : ``ChannelType``
     
     Raises
     ------
     TypeError
     """
-    output = validate_type(input_value)
-    vampytest.assert_instance(output, MessageType)
+    output = validate_channel_type(input_value)
+    vampytest.assert_instance(output, ChannelType)
     return output

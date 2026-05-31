@@ -20,23 +20,24 @@ from .constants import (
 )
 from .fields import (
     parse_activity, parse_application, parse_application_id, parse_attachments, parse_author, parse_call,
-    parse_channel_id, parse_components, parse_content, parse_edited_at, parse_embeds, parse_flags, parse_guild_id,
-    parse_id, parse_interaction, parse_mentioned_channels_cross_guild, parse_mentioned_everyone,
+    parse_channel_id, parse_channel_type, parse_components, parse_content, parse_edited_at, parse_embeds, parse_flags,
+    parse_guild_id, parse_id, parse_interaction, parse_mentioned_channels_cross_guild, parse_mentioned_everyone,
     parse_mentioned_role_ids, parse_mentioned_users, parse_message_id, parse_nonce, parse_pinned, parse_poll,
     parse_poll_and_change, parse_reactions, parse_referenced_message, parse_resolved, parse_role_subscription,
     parse_shared_client_theme, parse_snapshots, parse_soundboard_sounds, parse_stickers, parse_thread, parse_tts,
     parse_type, put_activity, put_application, put_application_id, put_attachments, put_author, put_call,
-    put_channel_id, put_components, put_content, put_edited_at, put_embeds, put_flags, put_guild_id, put_id,
-    put_interaction, put_mentioned_channels_cross_guild, put_mentioned_everyone, put_mentioned_role_ids,
+    put_channel_id, put_channel_type, put_components, put_content, put_edited_at, put_embeds, put_flags, put_guild_id,
+    put_id, put_interaction, put_mentioned_channels_cross_guild, put_mentioned_everyone, put_mentioned_role_ids,
     put_mentioned_users, put_message_id, put_nonce, put_pinned, put_poll, put_reactions, put_referenced_message_into,
     put_resolved, put_role_subscription, put_shared_client_theme, put_snapshots, put_soundboard_sounds, put_stickers,
     put_thread, put_tts, put_type, validate_activity, validate_application, validate_application_id,
-    validate_attachments, validate_author, validate_call, validate_channel_id, validate_components, validate_content,
-    validate_edited_at, validate_embeds, validate_flags, validate_guild_id, validate_id, validate_interaction,
-    validate_mentioned_channels_cross_guild, validate_mentioned_everyone, validate_mentioned_role_ids,
-    validate_mentioned_users, validate_nonce, validate_pinned, validate_poll, validate_reactions,
-    validate_referenced_message, validate_resolved, validate_role_subscription, validate_shared_client_theme,
-    validate_snapshots, validate_soundboard_sounds, validate_stickers, validate_thread, validate_tts, validate_type
+    validate_attachments, validate_author, validate_call, validate_channel_id, validate_channel_type,
+    validate_components, validate_content, validate_edited_at, validate_embeds, validate_flags, validate_guild_id,
+    validate_id, validate_interaction, validate_mentioned_channels_cross_guild, validate_mentioned_everyone,
+    validate_mentioned_role_ids, validate_mentioned_users, validate_nonce, validate_pinned, validate_poll,
+    validate_reactions, validate_referenced_message, validate_resolved, validate_role_subscription,
+    validate_shared_client_theme, validate_snapshots, validate_soundboard_sounds, validate_stickers, validate_thread,
+    validate_tts, validate_type
 )
 from .flags import MessageFlag
 from .preinstanced import MESSAGE_DEFAULT_CONVERTER, MessageType
@@ -62,6 +63,7 @@ PRECREATE_FIELDS = {
     'author': ('author', validate_author),
     'call': ('call', validate_call),
     'channel': ('channel_id', validate_channel_id),
+    'channel_type': ('channel_type', validate_channel_type),
     'channel_id': ('channel_id', validate_channel_id),
     'components': ('components', validate_components),
     'content': ('content', validate_content),
@@ -128,6 +130,9 @@ class Message(DiscordEntity, immortal = True):
     
     channel_id : `int`
         The channel's identifier where the message is sent. Defaults to `0`
+    
+    channel_type : ``ChannelType``
+        The channel's type. Only included in received messages.
     
     components : ``None | tuple<Component>``
         Components attached to the message. Defaults to `None`.
@@ -233,10 +238,10 @@ class Message(DiscordEntity, immortal = True):
     """
     __slots__ = (
         '_cache_mentioned_channels', '_state', 'activity', 'application', 'application_id', 'attachments', 'author',
-        'call', 'channel_id', 'components', 'content', 'edited_at', 'embeds', 'flags', 'guild_id', 'interaction',
-        'mentioned_channels_cross_guild', 'mentioned_everyone', 'mentioned_role_ids', 'mentioned_users', 'nonce',
-        'pinned', 'poll', 'reactions', 'referenced_message', 'resolved', 'role_subscription', 'shared_client_theme',
-        'snapshots', 'soundboard_sounds', 'stickers', 'thread', 'tts', 'type'
+        'call', 'channel_id', 'channel_type', 'components', 'content', 'edited_at', 'embeds', 'flags', 'guild_id',
+        'interaction', 'mentioned_channels_cross_guild', 'mentioned_everyone', 'mentioned_role_ids', 'mentioned_users',
+        'nonce', 'pinned', 'poll', 'reactions', 'referenced_message', 'resolved', 'role_subscription',
+        'shared_client_theme', 'snapshots', 'soundboard_sounds', 'stickers', 'thread', 'tts', 'type'
     )
     
     
@@ -361,7 +366,7 @@ class Message(DiscordEntity, immortal = True):
         soundboard_sounds : `None | iterable<SoundboardSound>`, Optional (Keyword only)
             Soundboard sounds attached to the message.
         
-        stickers : `None`, `iterable` of ``Sticker``, Optional (Keyword only)
+        stickers : ``None | iterable<Sticker>``, Optional (Keyword only)
             The stickers sent with the message.
         
         thread : ``None | Channel``, Optional (Keyword only)
@@ -569,6 +574,7 @@ class Message(DiscordEntity, immortal = True):
         self.author = author
         self.call = call
         self.channel_id = 0
+        self.channel_type = ChannelType.unknown
         self.components = components
         self.content = content
         self.edited_at = edited_at
@@ -753,8 +759,10 @@ class Message(DiscordEntity, immortal = True):
         ----------
         message_id : `int`
             The unique identifier number of the represented message.
+        
         channel_id : `int`
             The respective message's channel's identifier.
+        
         guild_id : `int`
             The respective message's guild's identifier.
         
@@ -816,6 +824,8 @@ class Message(DiscordEntity, immortal = True):
         
         # Set default fields
         self.channel_id = channel_id
+        if creation:
+            self.channel_type = parse_channel_type(data)
         self.guild_id = guild_id
         self.type = parse_type(data)
         self.author = parse_author(data, guild_id, channel_id)
@@ -1035,6 +1045,7 @@ class Message(DiscordEntity, immortal = True):
             return False
         
         # channel_id -> skip
+        # channel_type -> skip
         
         # components
         if self.components != other.components:
@@ -1787,6 +1798,7 @@ class Message(DiscordEntity, immortal = True):
         if include_internals:
             put_author(self.author, data, defaults, guild_id = self.guild_id)
             put_channel_id(self.channel_id, data, defaults)
+            put_channel_type(self.channel_type, data, defaults)
             put_guild_id(self.guild_id, data, defaults)
             put_id(self.id, data, defaults)
             put_type(self.type, data, defaults)
@@ -1869,6 +1881,7 @@ class Message(DiscordEntity, immortal = True):
         self.author = ZEROUSER
         self.call = None
         self.channel_id = channel_id
+        self.channel_type = ChannelType.unknown
         self.components = None
         self.content = None
         self.edited_at = None
@@ -1936,11 +1949,14 @@ class Message(DiscordEntity, immortal = True):
         call : `None`, ``MessageCall``, Optional (Keyword only)
             Call information of the message.
         
-        channel : `int`, ``Channel``, Optional (Keyword only)
+        channel : ``None | int | Channel``, Optional (Keyword only)
             Alternative for `channel_id`.
         
-        channel_id : `int`, ``Channel``, Optional (Keyword only)
+        channel_id : ``None | int | Channel``, Optional (Keyword only)
             The channel's identifier where the message was created at.
+        
+        channel_type : ``None | int | ChannelType``, Optional (Keyword only)
+            The channel's type where the message was created at.
         
         components : ``None | iterable<Component>``, Optional (Keyword only)
             Components attached to the message.
@@ -2015,7 +2031,7 @@ class Message(DiscordEntity, immortal = True):
         soundboard_sounds : `None | iterable<SoundboardSound>`, Optional (Keyword only)
             Soundboard sounds attached to the message.
         
-        stickers : `None`, `iterable` of ``Sticker``, Optional (Keyword only)
+        stickers : ``None | iterable<Sticker>``, Optional (Keyword only)
             The stickers sent with the message.
         
         thread : ``None | Channel``, Optional (Keyword only)
@@ -2096,6 +2112,7 @@ class Message(DiscordEntity, immortal = True):
         new.call = call
         
         new.channel_id = 0
+        new.channel_type = ChannelType.unknown
         
         components = self.components
         if (components is not None):
@@ -2309,7 +2326,7 @@ class Message(DiscordEntity, immortal = True):
         soundboard_sounds : `None | iterable<SoundboardSound>`, Optional (Keyword only)
             Soundboard sounds attached to the message.
         
-        stickers : `None`, `iterable` of ``Sticker``, Optional (Keyword only)
+        stickers : ``None | iterable<Sticker>``, Optional (Keyword only)
             The stickers sent with the message.
         
         thread : ``None | Channel``, Optional (Keyword only)
@@ -2557,6 +2574,7 @@ class Message(DiscordEntity, immortal = True):
         new.author = author
         new.call = call
         new.channel_id = 0
+        new.channel_type = ChannelType.unknown
         new.components = components
         new.content = content
         new.edited_at = edited_at
@@ -2686,7 +2704,7 @@ class Message(DiscordEntity, immortal = True):
         -------
         guild : ``Channel``
         """
-        return create_partial_channel_from_id(self.channel_id, ChannelType.unknown, self.guild_id)
+        return create_partial_channel_from_id(self.channel_id, self.channel_type, self.guild_id)
     
     
     @property

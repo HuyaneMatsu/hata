@@ -25,7 +25,7 @@ class GuildBoostPerks(RichAttributeErrorBaseType):
     emoji_limit : `int`
         The maximal amount of emojis.
     
-    features : `None`, `tuple` of ``GuildFeature``
+    features : ``None | tuple<GuildFeature>``
         The guild features acquired with the boost level.
     
     level : `int`

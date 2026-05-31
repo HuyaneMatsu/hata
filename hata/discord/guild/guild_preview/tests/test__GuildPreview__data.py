@@ -23,9 +23,10 @@ def test__GuildPreview__from_data():
     discovery_splash = Icon(IconType.static, 12)
     emojis = [Emoji.precreate(202301080013, name = 'Koishi')]
     features = [GuildFeature.banner]
+    home_splash = Icon(IconType.static, 13)
     guild_id = 202301080014
     icon = Icon(IconType.static, 11)
-    invite_splash = Icon(IconType.animated, 12)
+    invite_splash = Icon(IconType.animated, 14)
     stickers = [Sticker.precreate(202301080015, name = 'Satori')]
     name = 'Yurica'
     
@@ -36,6 +37,7 @@ def test__GuildPreview__from_data():
         'discovery_splash': discovery_splash.as_base_16_hash,
         'emojis': [emoji.to_data(defaults = True, include_internals = True) for emoji in emojis],
         'features': [feature.value for feature in features],
+        'home_header': home_splash.as_base_16_hash,
         'id': str(guild_id),
         'icon': icon.as_base_16_hash,
         'splash': invite_splash.as_base_16_hash,
@@ -52,6 +54,7 @@ def test__GuildPreview__from_data():
     vampytest.assert_eq(guild_preview.discovery_splash, discovery_splash)
     vampytest.assert_eq(guild_preview.emojis, {emoji.id: emoji for emoji in emojis})
     vampytest.assert_eq(guild_preview.features, tuple(features))
+    vampytest.assert_eq(guild_preview.home_splash, home_splash)
     vampytest.assert_eq(guild_preview.icon, icon)
     vampytest.assert_eq(guild_preview.id, guild_id)
     vampytest.assert_eq(guild_preview.invite_splash, invite_splash)
@@ -71,9 +74,10 @@ def test__GuildPreview__to_data():
     discovery_splash = Icon(IconType.static, 12)
     emojis = [Emoji.precreate(202301080016, name = 'Koishi')]
     features = [GuildFeature.banner]
+    home_splash = Icon(IconType.static, 13)
     guild_id = 202301080017
     icon = Icon(IconType.static, 11)
-    invite_splash = Icon(IconType.animated, 12)
+    invite_splash = Icon(IconType.animated, 14)
     stickers = [Sticker.precreate(202301080018, name = 'Satori')]
     name = 'Yurica'
     
@@ -84,6 +88,7 @@ def test__GuildPreview__to_data():
         discovery_splash = discovery_splash,
         emojis = emojis,
         features = features,
+        home_splash = home_splash,
         guild_id = guild_id,
         icon = icon,
         invite_splash = invite_splash,
@@ -98,6 +103,7 @@ def test__GuildPreview__to_data():
         'discovery_splash': discovery_splash.as_base_16_hash,
         'emojis': [emoji.to_data(defaults = True, include_internals = True) for emoji in emojis],
         'features': [feature.value for feature in features],
+        'home_header': home_splash.as_base_16_hash,
         'id': str(guild_id),
         'icon': icon.as_base_16_hash,
         'splash': invite_splash.as_base_16_hash,

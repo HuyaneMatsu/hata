@@ -327,8 +327,10 @@ class BuilderMeta(type):
         ----------
         type_name : `str`
             The created type's name.
+        
         base_types : `tuple<type>`
             The parent types.
+        
         type_attributes : `dict<str, object>`
             The type attributes of the type to be created.
         """

@@ -2,17 +2,18 @@ __all__ = ('GuildPreview', )
 
 from ...bases import DiscordEntity, IconSlot
 from ...http.urls import (
-    build_guild_discovery_splash_url, build_guild_discovery_splash_url_as,  build_guild_icon_url,
-    build_guild_icon_url_as, build_guild_invite_splash_url, build_guild_invite_splash_url_as
+    build_guild_discovery_splash_url, build_guild_discovery_splash_url_as, build_guild_home_splash_url,
+    build_guild_home_splash_url_as, build_guild_icon_url, build_guild_icon_url_as, build_guild_invite_splash_url,
+    build_guild_invite_splash_url_as
 )
 from ...utils import DATETIME_FORMAT_CODE
 
 from .fields import (
     parse_approximate_online_count, parse_approximate_user_count, parse_description, parse_emojis, parse_features,
-    parse_id, parse_name, parse_stickers, put_approximate_online_count, put_approximate_user_count,
-    put_description, put_emojis, put_features, put_id, put_name, put_stickers,
-    validate_approximate_online_count, validate_approximate_user_count, validate_description, validate_emojis,
-    validate_features, validate_id, validate_name, validate_stickers
+    parse_id, parse_name, parse_stickers, put_approximate_online_count, put_approximate_user_count, put_description,
+    put_emojis, put_features, put_id, put_name, put_stickers, validate_approximate_online_count,
+    validate_approximate_user_count, validate_description, validate_emojis, validate_features, validate_id,
+    validate_name, validate_stickers
 )
 
 
@@ -24,30 +25,49 @@ class GuildPreview(DiscordEntity):
     ----------
     approximate_online_count : `int`
         Approximate amount of online users at the represented guild.
+    
     approximate_user_count : `int`
         Approximate amount of users at the represented guild.
-    description : `None`, `str`
+    
+    description : `None | str`
         Description of the guild.
+    
     discovery_splash_hash : `int`
         The guild's discovery splash's hash in `uint128`.
+    
     discovery_splash_type : ``IconType``
         The guild discovery splash's type.
-    emojis : `dict` of (`int`, ``Emoji``) items
+    
+    emojis : ``dict<int, Emoji>``
         The emojis of the guild stored in `emoji_id` - `emoji` relation.
-    features : `None`, `tuple` of ``GuildFeature``
+    
+    features : ``None | tuple<GuildFeature>``
         The guild's features.
+    
+    home_splash_hash : `int`
+        The guild's home splash's hash in `uint128`.
+    
+    home_splash_type : ``IconType``
+        The guild home splash's type.
+    
     icon_hash : `int`
         The guild's icon's hash in `uint128`.
+    
     icon_type : ``IconType``
         The guild's icon's type.
+    
     id : `int`
         The represented guild's identifier.
+    
     invite_splash_hash : `int`
         The guild's invite splash's hash in `uint128`.
+    
     invite_splash_type : ``IconType``
         the guild's invite splash's type.
+    
     stickers : ``dict<int, Sticker>``
         The stickers of the guild stored in `sticker_id` - `sticker` relation.
+    
     name : `str`
         The name of the guild.
     """
@@ -55,9 +75,10 @@ class GuildPreview(DiscordEntity):
         'approximate_online_count', 'approximate_user_count','description', 'emojis', 'features', 'name', 'stickers'
     )
     
+    discovery_splash = IconSlot('discovery_splash', 'discovery_splash')
+    home_splash = IconSlot('home_splash', 'home_header')
     icon = IconSlot('icon', 'icon')
     invite_splash = IconSlot('invite_splash', 'splash')
-    discovery_splash = IconSlot('discovery_splash', 'discovery_splash')
     
     
     def __new__(
@@ -69,6 +90,7 @@ class GuildPreview(DiscordEntity):
         discovery_splash = ...,
         emojis = ...,
         features = ...,
+        home_splash = ...,
         guild_id = ...,
         icon = ...,
         invite_splash = ...,
@@ -82,24 +104,37 @@ class GuildPreview(DiscordEntity):
         ----------
         approximate_online_count : `int`, Optional (Keyword only)
             Approximate amount of online users at the represented guild.
+        
         approximate_user_count : `int`, Optional (Keyword only)
             Approximate amount of users at the represented guild.
-        description : `None`, `str`, Optional (Keyword only)
+        
+        description : `None | str`, Optional (Keyword only)
             Description of the guild.
+        
         discovery_splash : ``None | str | Icon``, Optional (Keyword only)
             The guild's discovery splash.
-        emojis : `None`, `iterable` of ``Emoji``, Optional (Keyword only)
+        
+        emojis : ``None | iterable<Emoji>``, Optional (Keyword only)
             The emojis of the guild.
+        
         features : `None`, `iterable` of ``GuildFeature``, Optional (Keyword only)
             The guild's features.
-        guild_id : `int`, ``Guild``, Optional (Keyword only)
+        
+        home_splash : ``None | str | Icon``, Optional (Keyword only)
+            The guild's home splash.
+        
+        guild_id : ``None | int | Guild``, Optional (Keyword only)
             The represented guild's identifier.
+        
         icon : ``None | str | Icon``, Optional (Keyword only)
             The guild's icon.
+        
         invite_splash : ``None | str | Icon``, Optional (Keyword only)
             The guild's invite splash.
-        stickers : `None`, `iterable` of ``Sticker``, Optional (Keyword only)
+        
+        stickers : ``None | iterable<Sticker>``, Optional (Keyword only)
             The stickers of the guild.
+        
         name : `str`, Optional (Keyword only)
             The name of the guild.
         
@@ -146,6 +181,12 @@ class GuildPreview(DiscordEntity):
         else:
             features = validate_features(features)
         
+        # home_splash
+        if home_splash is ...:
+            home_splash = None
+        else:
+            home_splash = cls.home_splash.validate_icon(home_splash)
+        
         # guild_id
         if guild_id is ...:
             guild_id = 0
@@ -184,6 +225,7 @@ class GuildPreview(DiscordEntity):
         self.discovery_splash = discovery_splash
         self.emojis = emojis
         self.features = features
+        self.home_splash = home_splash
         self.icon = icon
         self.id = guild_id
         self.invite_splash = invite_splash
@@ -215,6 +257,7 @@ class GuildPreview(DiscordEntity):
         self._set_discovery_splash(data)
         self.emojis = parse_emojis(data, {}, guild_id)
         self.features = parse_features(data)
+        self._set_home_splash(data)
         self._set_icon(data)
         self.id = guild_id
         self._set_invite_splash(data)
@@ -243,6 +286,7 @@ class GuildPreview(DiscordEntity):
         type(self).discovery_splash.put_into(self.discovery_splash, data, defaults)
         put_emojis(self.emojis, data, defaults)
         put_features(self.features, data, defaults)
+        type(self).home_splash.put_into(self.home_splash, data, defaults)
         type(self).icon.put_into(self.icon, data, defaults)
         put_id(self.id, data, defaults)
         type(self).invite_splash.put_into(self.invite_splash, data, defaults)
@@ -285,24 +329,6 @@ class GuildPreview(DiscordEntity):
         ------
         ValueError
             Unknown format code.
-        
-        Examples
-        --------
-        ```py
-        >>> from hata import Client, KOKORO
-        >>> TOKEN = 'a token goes here'
-        >>> client = Client(TOKEN)
-        >>> guild_id = 302094807046684672
-        >>> guild_preview = KOKORO.run(client.guild_preview_get(guild_id))
-        >>> guild_preview
-        <GuildPreview id = 302094807046684672, name = 'MINECRAFT'>
-        >>> # no code stands for `guild_preview.name`.
-        >>> f'{guild_preview}'
-        'MINECRAFT'
-        >>> # 'c' stands for created at.
-        >>> f'{guild_preview:c}'
-        '2017.04.13-14:56:54'
-        ```
         """
         if not code:
             return self.name
@@ -373,6 +399,14 @@ class GuildPreview(DiscordEntity):
         if self.features != other.features:
             return False
         
+        # home_splash_hash
+        if self.home_splash_hash != other.home_splash_hash:
+            return False
+        
+        # home_splash_type
+        if self.home_splash_type != other.home_splash_type:
+            return False
+        
         # icon_hash
         if self.icon_hash != other.icon_hash:
             return False
@@ -434,6 +468,9 @@ class GuildPreview(DiscordEntity):
         for feature in features:
             hash_value ^= hash(feature)
         
+        # home_splash
+        hash_value ^= hash(self.home_splash)
+        
         # icon
         hash_value ^= hash(self.icon)
         
@@ -476,6 +513,8 @@ class GuildPreview(DiscordEntity):
         if (features is not None):
             features = (*features,)
         new.features = features
+        new.home_splash_hash = self.home_splash_hash
+        new.home_splash_type = self.home_splash_type
         new.icon_hash = self.icon_hash
         new.icon_type = self.icon_type
         new.id = self.id
@@ -495,6 +534,7 @@ class GuildPreview(DiscordEntity):
         discovery_splash = ...,
         emojis = ...,
         features = ...,
+        home_splash = ...,
         guild_id = ...,
         icon = ...,
         invite_splash = ...,
@@ -508,24 +548,37 @@ class GuildPreview(DiscordEntity):
         ----------
         approximate_online_count : `int`, Optional (Keyword only)
             Approximate amount of online users at the represented guild.
+        
         approximate_user_count : `int`, Optional (Keyword only)
             Approximate amount of users at the represented guild.
-        description : `None`, `str`, Optional (Keyword only)
+        
+        description : `None | str`, Optional (Keyword only)
             Description of the guild.
+        
         discovery_splash : ``None | str | Icon``, Optional (Keyword only)
             The guild's discovery splash.
-        emojis : `None`, `iterable` of ``Emoji``, Optional (Keyword only)
+        
+        emojis : ``None | iterable<Emoji>``, Optional (Keyword only)
             The emojis of the guild.
+        
         features : `None`, `iterable` of ``GuildFeature``, Optional (Keyword only)
             The guild's features.
-        guild_id : `int`, ``Guild``, Optional (Keyword only)
+        
+        home_splash : ``None | str | Icon``, Optional (Keyword only)
+            The guild's home splash.
+        
+        guild_id : ``None | int | Guild``, Optional (Keyword only)
             The represented guild's identifier.
+        
         icon : ``None | str | Icon``, Optional (Keyword only)
             The guild's icon.
+        
         invite_splash : ``None | str | Icon``, Optional (Keyword only)
             The guild's invite splash.
-        stickers : `None`, `iterable` of ``Sticker``, Optional (Keyword only)
+        
+        stickers : ``None | iterable<Sticker>``, Optional (Keyword only)
             The stickers of the guild.
+        
         name : `str`, Optional (Keyword only)
             The name of the guild.
         
@@ -578,6 +631,12 @@ class GuildPreview(DiscordEntity):
         else:
             features = validate_features(features)
         
+        # home_splash
+        if home_splash is ...:
+            home_splash = self.home_splash
+        else:
+            home_splash = type(self).home_splash.validate_icon(home_splash)
+        
         # guild_id
         if guild_id is ...:
             guild_id = self.id
@@ -616,6 +675,7 @@ class GuildPreview(DiscordEntity):
         new.discovery_splash = discovery_splash
         new.emojis = emojis
         new.features = features
+        new.home_splash = home_splash
         new.icon = icon
         new.id = guild_id
         new.invite_splash = invite_splash
@@ -688,7 +748,41 @@ class GuildPreview(DiscordEntity):
         -------
         url : `None | str`
         """
-        return build_guild_discovery_splash_url_as(self.id, self.discovery_splash_type, self.discovery_splash_hash, ext, size)
+        return build_guild_discovery_splash_url_as(
+            self.id, self.discovery_splash_type, self.discovery_splash_hash, ext, size
+        )
+    
+    
+    @property
+    def home_splash_url(self):
+        """
+        Returns the guild's home splash's url. If the guild has no home_splash, then returns `None`.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_guild_home_splash_url(self.id, self.home_splash_type, self.home_splash_hash)
+    
+    
+    def home_splash_url_as(self, ext = None, size = None):
+        """
+        Returns the guild's home splash's url. If the guild has no home splash, then returns `None`.
+        
+        Parameters
+        ----------
+        ext : `None | str` = `None`, Optional
+            The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+            If the guild has animated home splash, it can be `'gif'` as well.
+        
+        size : `None | int` = `None`, Optional
+            The preferred minimal size of the image's url.
+        
+        Returns
+        -------
+        url : `None | str`
+        """
+        return build_guild_home_splash_url_as(self.id, self.home_splash_type, self.home_splash_hash, ext, size)
     
     
     @property

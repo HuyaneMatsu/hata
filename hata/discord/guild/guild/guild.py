@@ -267,13 +267,13 @@ class Guild(DiscordEntity, immortal = True):
     embedded_activities : `None`, `set` of ``EmbeddedActivity``
         Embedded activity states to keep them alive in cache.
     
-    emojis : `dict` of (`int`, ``Emoji``) items
+    emojis : ``dict<int, Emoji>``
         The emojis of the guild stored in `emoji_id` - `emoji` relation.
     
     explicit_content_filter_level : ``ExplicitContentFilterLevel``
         The explicit content filter level of the guild.
     
-    features : `None`, `tuple` of ``GuildFeature``
+    features : ``None | tuple<GuildFeature>``
         The guild's features.
     
     home_splash_hash : `int`
@@ -865,7 +865,7 @@ class Guild(DiscordEntity, immortal = True):
         embedded_activities : `None`, `iterable` of ``EmbeddedActivity``, Optional (Keyword only)
             Embedded activity states to keep them alive in cache.
         
-        emojis : `None`, `iterable` of ``Emoji``, `dict` of (`int`, ``Emoji``) items, Optional (Keyword only)
+        emojis : ``None | iterable<Emoji> | dict<int, Emoji>``, Optional (Keyword only)
             The emojis of the guild.
         
         explicit_content_filter_level : ``ExplicitContentFilterLevel``, `int`, Optional (Keyword only)
@@ -959,7 +959,7 @@ class Guild(DiscordEntity, immortal = True):
             
             Defaults to `None` if would be empty.
         
-        stickers : `None`, `iterable` of ``Sticker``, ``dict<int, Sticker>``, Optional (Keyword only)
+        stickers : ``None | iterable<Sticker> | dict<int, Sticker>``, Optional (Keyword only)
             The stickers of the guild.
         
         system_channel_flags : ``SystemChannelFlag``, `int`, Optional (Keyword only)
@@ -1418,7 +1418,7 @@ class Guild(DiscordEntity, immortal = True):
         +---------------------------------------+---------------------------------------+
         | discovery_splash                      | ``Icon``                              |
         +---------------------------------------+---------------------------------------+
-        | features                              | `None`, `tuple` of ``GuildFeature``   |
+        | features                              | ``None | tuple<GuildFeature>``        |
         +---------------------------------------+---------------------------------------+
         | home_splash                           | ``Icon``                              |
         +---------------------------------------+---------------------------------------+

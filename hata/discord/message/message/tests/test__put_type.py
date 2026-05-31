@@ -5,8 +5,37 @@ from ..preinstanced import MessageType
 
 
 def _iter_options():
-    yield MessageType.call, False, {'type': MessageType.call.value}
-    yield MessageType.call, True, {'type': MessageType.call.value}
+    yield (
+        MessageType.default,
+        False,
+        {
+            'type': MessageType.default.value,
+        },
+    )
+    
+    yield (
+        MessageType.default,
+        True,
+        {
+            'type': MessageType.default.value,
+        },
+    )
+    
+    yield (
+        MessageType.call,
+        False,
+        {
+            'type': MessageType.call.value,
+        },
+    )
+    
+    yield (
+        MessageType.call,
+        True,
+        {
+            'type': MessageType.call.value,
+        },
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
@@ -18,6 +47,7 @@ def test__put_type(input_value, defaults):
     ----------
     input_value : ``MessageType``
         Input value.
+    
     defaults : `bool`
         Whether fields with their default values should be included as well.
     

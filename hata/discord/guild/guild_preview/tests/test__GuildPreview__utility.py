@@ -21,9 +21,10 @@ def test__GuildPreview__copy():
     discovery_splash = Icon(IconType.static, 12)
     emojis = [Emoji.precreate(202301080029, name = 'Koishi')]
     features = [GuildFeature.banner]
+    home_splash = Icon(IconType.static, 12)
     guild_id = 202301080030
     icon = Icon(IconType.static, 11)
-    invite_splash = Icon(IconType.animated, 12)
+    invite_splash = Icon(IconType.animated, 14)
     stickers = [Sticker.precreate(202301080031, name = 'Satori')]
     name = 'Yurica'
     
@@ -34,6 +35,7 @@ def test__GuildPreview__copy():
         discovery_splash = discovery_splash,
         emojis = emojis,
         features = features,
+        home_splash = home_splash,
         guild_id = guild_id,
         icon = icon,
         invite_splash = invite_splash,
@@ -60,9 +62,10 @@ def test__GuildPreview__copy_with__no_fields():
     discovery_splash = Icon(IconType.static, 12)
     emojis = [Emoji.precreate(202301080032, name = 'Koishi')]
     features = [GuildFeature.banner]
+    home_splash = Icon(IconType.static, 12)
     guild_id = 202301080033
     icon = Icon(IconType.static, 11)
-    invite_splash = Icon(IconType.animated, 12)
+    invite_splash = Icon(IconType.animated, 14)
     stickers = [Sticker.precreate(202301080034, name = 'Satori')]
     name = 'Yurica'
     
@@ -73,6 +76,7 @@ def test__GuildPreview__copy_with__no_fields():
         discovery_splash = discovery_splash,
         emojis = emojis,
         features = features,
+        home_splash = home_splash,
         guild_id = guild_id,
         icon = icon,
         invite_splash = invite_splash,
@@ -99,9 +103,10 @@ def test__GuildPreview__copy_with__all_fields():
     old_discovery_splash = Icon(IconType.static, 12)
     old_emojis = [Emoji.precreate(202301080035, name = 'Koishi')]
     old_features = [GuildFeature.banner]
+    old_home_splash = Icon(IconType.static, 12)
     old_guild_id = 202301080036
     old_icon = Icon(IconType.static, 11)
-    old_invite_splash = Icon(IconType.animated, 12)
+    old_invite_splash = Icon(IconType.animated, 14)
     old_stickers = [Sticker.precreate(202301080037, name = 'Satori')]
     old_name = 'Yurica'
     
@@ -111,6 +116,7 @@ def test__GuildPreview__copy_with__all_fields():
     new_discovery_splash = Icon(IconType.animated, 3)
     new_emojis = [Emoji.precreate(202301080038, name = 'Orin')]
     new_features = [GuildFeature.icon_animated]
+    new_home_splash = Icon(IconType.static, 52)
     new_guild_id = 202301080039
     new_icon = Icon(IconType.static, IconType.animated)
     new_invite_splash = Icon(IconType.static, 4)
@@ -124,6 +130,7 @@ def test__GuildPreview__copy_with__all_fields():
         discovery_splash = old_discovery_splash,
         emojis = old_emojis,
         features = old_features,
+        home_splash = old_home_splash,
         guild_id = old_guild_id,
         icon = old_icon,
         invite_splash = old_invite_splash,
@@ -138,6 +145,7 @@ def test__GuildPreview__copy_with__all_fields():
         discovery_splash = new_discovery_splash,
         emojis = new_emojis,
         features = new_features,
+        home_splash = new_home_splash,
         guild_id = new_guild_id,
         icon = new_icon,
         invite_splash = new_invite_splash,
@@ -154,6 +162,7 @@ def test__GuildPreview__copy_with__all_fields():
     vampytest.assert_eq(copy.discovery_splash, new_discovery_splash)
     vampytest.assert_eq(copy.emojis, {emoji.id: emoji for emoji in new_emojis})
     vampytest.assert_eq(copy.features, tuple(new_features))
+    vampytest.assert_eq(copy.home_splash, new_home_splash)
     vampytest.assert_eq(copy.id, new_guild_id)
     vampytest.assert_eq(copy.icon, new_icon)
     vampytest.assert_eq(copy.invite_splash, new_invite_splash)
@@ -427,5 +436,72 @@ def test__GuildPreview__discovery_splash_url_as(guild_id, icon, keyword_paramete
     )
     
     output = guild.discovery_splash_url_as(**keyword_parameters)
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__home_splash_url():
+    yield 202605160000, None, False
+    yield 202605160001, Icon(IconType.animated, 5), True
+
+
+@vampytest._(vampytest.call_from(_iter_options__home_splash_url()).returning_last())
+def test__GuildPreview__home_splash_url(guild_id, icon):
+    """
+    Tests whether ``GuildPreview.home_splash_url`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Identifier to create guild with.
+    
+    icon : ``None | Icon``
+        Icon to create the guild with.
+    
+    Returns
+    -------
+    has_home_splash_url : `bool`
+    """
+    guild = GuildPreview(
+        guild_id = guild_id,
+        home_splash = icon,
+    )
+    
+    output = guild.home_splash_url
+    vampytest.assert_instance(output, str, nullable = True)
+    return (output is not None)
+
+
+def _iter_options__home_splash_url_as():
+    yield 202605160002, None, {'ext': 'webp', 'size': 128}, False
+    yield 202605160003, Icon(IconType.animated, 5), {'ext': 'webp', 'size': 128}, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__home_splash_url_as()).returning_last())
+def test__GuildPreview__home_splash_url_as(guild_id, icon, keyword_parameters):
+    """
+    Tests whether ``GuildPreview.home_splash_url_as`` works as intended.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        Identifier to create guild with.
+    
+    icon : ``None | Icon``
+        Icon to create the guild with.
+    
+    keyword_parameters : `dict<str, object>`
+        Additional keyword parameters to pass.
+    
+    Returns
+    -------
+    has_home_splash_url : `bool`
+    """
+    guild = GuildPreview(
+        guild_id = guild_id,
+        home_splash = icon,
+    )
+    
+    output = guild.home_splash_url_as(**keyword_parameters)
     vampytest.assert_instance(output, str, nullable = True)
     return (output is not None)

@@ -256,7 +256,14 @@ def preinstanced_putter_factory(field_key):
     return putter
 
 
-def preinstanced_optional_putter_factory(field_key, default):
+def preinstanced_optional_putter_factory(
+    field_key,
+    default,
+    *,
+    include_default = None,
+    include_default_type = None,
+    include_default_attribute_name = None,
+):
     """
     Returns an optional preinstanced putter.
     
@@ -264,6 +271,7 @@ def preinstanced_optional_putter_factory(field_key, default):
     ----------
     field_key : `str`
         The field's key used in payload.
+    
     default : `object`
         Default value to exclude when default values are not required.
     
@@ -281,8 +289,10 @@ def preinstanced_optional_putter_factory(field_key, default):
         ----------
         preinstanced : ``PreinstancedBase``
             The preinstanced object.
+        
         data : `dict<str, object>`
             Json serializable dictionary.
+        
         defaults : `bool`
             Whether default values should be included as well.
         
@@ -297,6 +307,40 @@ def preinstanced_optional_putter_factory(field_key, default):
             data[field_key] = preinstanced.value
         
         return data
+    
+    while True:
+        if (include_default is None) and (include_default_type is None) and (include_default_attribute_name is None):
+            break
+        
+        if (include_default_type is None) ^ (include_default_attribute_name is None):
+            raise RuntimeError(
+                f'`include_default_type` and `include_default_attribute_name` must be defined together; '
+                f'include_default_type = {include_default_type!r}; '
+                f'include_default_attribute_name = {include_default_attribute_name!r}'
+            )
+        
+        if (include_default is not None) and (include_default_type is not None):
+            raise RuntimeError(
+                f'`include_default` and `include_default_type` are mutually exclusive; '
+                f'include_default_type = {include_default_type!r}; include_default_type = {include_default_type!r}.'
+            )
+        
+        if (include_default is not None):
+            @include_with_callback(include_default)
+            def include_object_type(value):
+                nonlocal default
+                default = value
+            break
+        
+        if (include_default_type is not None):
+            @include_with_callback(include_default_type)
+            def include_object_type(value):
+                nonlocal default
+                nonlocal include_default_attribute_name
+                default = getattr(value, include_default_attribute_name)
+            break
+        
+        raise RuntimeError('unreachable')
     
     return putter
 

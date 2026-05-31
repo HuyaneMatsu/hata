@@ -5,8 +5,24 @@ from ..preinstanced import MessageType
 
 
 def _iter_options():
-    yield {}, MessageType.default
-    yield {'type': MessageType.call.value}, MessageType.call
+    yield (
+        {},
+        MessageType.default,
+    )
+    
+    yield (
+        {
+            'type': None,
+        },
+        MessageType.default,
+    )
+    
+    yield (
+        {
+            'type': MessageType.call.value,
+        },
+        MessageType.call,
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

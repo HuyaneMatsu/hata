@@ -25,6 +25,7 @@ def _assert_fields_set(guild_preview):
     vampytest.assert_instance(guild_preview.discovery_splash, Icon)
     vampytest.assert_instance(guild_preview.emojis, dict)
     vampytest.assert_instance(guild_preview.features, tuple, nullable = True)
+    vampytest.assert_instance(guild_preview.home_splash, Icon)
     vampytest.assert_instance(guild_preview.icon, Icon)
     vampytest.assert_instance(guild_preview.id, int)
     vampytest.assert_instance(guild_preview.invite_splash, Icon, nullable = True)
@@ -54,9 +55,10 @@ def test__GuildPreview__new__1():
     discovery_splash = Icon(IconType.static, 12)
     emojis = [Emoji.precreate(202301080013, name = 'Koishi')]
     features = [GuildFeature.banner]
+    home_splash = Icon(IconType.static, 13)
     guild_id = 202301080014
     icon = Icon(IconType.static, 11)
-    invite_splash = Icon(IconType.animated, 12)
+    invite_splash = Icon(IconType.animated, 14)
     stickers = [Sticker.precreate(202301080015, name = 'Satori')]
     name = 'Yurica'
     
@@ -67,6 +69,7 @@ def test__GuildPreview__new__1():
         discovery_splash = discovery_splash,
         emojis = emojis,
         features = features,
+        home_splash = home_splash,
         guild_id = guild_id,
         icon = icon,
         invite_splash = invite_splash,
@@ -81,8 +84,9 @@ def test__GuildPreview__new__1():
     vampytest.assert_eq(guild_preview.discovery_splash, discovery_splash)
     vampytest.assert_eq(guild_preview.emojis, {emoji.id: emoji for emoji in emojis})
     vampytest.assert_eq(guild_preview.features, tuple(features))
-    vampytest.assert_eq(guild_preview.id, guild_id)
+    vampytest.assert_eq(guild_preview.home_splash, home_splash)
     vampytest.assert_eq(guild_preview.icon, icon)
+    vampytest.assert_eq(guild_preview.id, guild_id)
     vampytest.assert_eq(guild_preview.invite_splash, invite_splash)
     vampytest.assert_eq(guild_preview.stickers, {sticker.id: sticker for sticker in stickers})
     vampytest.assert_eq(guild_preview.name, name)

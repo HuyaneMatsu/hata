@@ -879,14 +879,16 @@ def test__Message__channel():
     Tests whether ``Message.channel`` works as intended.
     """
     channel_id = 202305050005
+    channel_type = ChannelType.guild_text
     message_id = 202305050006
     guild_id = 202305050007
     
-    message = Message.precreate(message_id, channel_id = channel_id, guild_id = guild_id)
+    message = Message.precreate(message_id, channel_id = channel_id, channel_type = channel_type, guild_id = guild_id)
     
     output = message.channel
     vampytest.assert_instance(output, Channel)
     vampytest.assert_eq(output.id, channel_id)
+    vampytest.assert_is(output.type, channel_type)
     vampytest.assert_eq(output.guild_id, guild_id)
 
 
@@ -896,7 +898,7 @@ def test__Message__clean_content__default():
     
     Case: default.
     """
-    content = 'arara'
+    content = 'aya'
     
     message = Message(content = content)
     
@@ -911,7 +913,7 @@ def test__Message__clean_content__non_default():
     
     Case: Non-default.
     """
-    content = 'arara'
+    content = 'aya'
     
     message = Message(content = content, message_type = MessageType.call)
     

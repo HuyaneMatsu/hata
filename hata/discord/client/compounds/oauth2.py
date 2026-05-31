@@ -174,7 +174,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         put_oauth2_scopes(scopes, data, True)
         
         headers = IgnoreCaseMultiValueDictionary()
-        headers[AUTHORIZATION] = BasicAuthorization(str(self.id), self.secret).encode()
+        headers[AUTHORIZATION] = BasicAuthorization(str(self.id), self.secret).to_header()
         data = await self.api.oauth2_token(data, headers)
         return Oauth2Access.from_data(data, '')
     

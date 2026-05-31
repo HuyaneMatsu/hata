@@ -1,3 +1,12 @@
+## 1.3.95 *\[2026-05-30\]*
+
+- Add `GuildPreview.home_splash`.
+- Add `GuildPreview.home_splash_url`.
+- Add `GuildPreview.home_splash_url_as`.
+- Add `Message.channel_type`.
+- Fix `Client.owners_access` used an already removed method to create authorisation headers. (gilgameshpromax)
+- Add `8` new unicode emojis.
+
 ## 1.3.94 *\[2026-05-09\]*
 
 ### Improvements

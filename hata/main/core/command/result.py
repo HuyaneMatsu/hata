@@ -2,7 +2,7 @@ __all__ = ('CommandResult',)
 
 from math import floor, log10
 
-from scarletio import RichAttributeErrorBaseType, render_exception_into
+from scarletio import RichAttributeErrorBaseType, write_exception_sync
 
 from ..helpers import render_main_call_into
 
@@ -376,7 +376,7 @@ def _ignore_command_call_frame(frame):
     
     if file_name == __file__:
         if name == 'command_result_processor_call':
-            if line == 'result = function(*positional_parameters, **keyword_parameters)':
+            if line == 'result = command_function._function(*positional_parameters, **keyword_parameters)':
                 should_show_frame = False
     
     return should_show_frame
@@ -406,22 +406,21 @@ def command_result_processor_call(command_function, positional_parameters, keywo
     except (KeyboardInterrupt, SystemExit):
         raise
     
-    except BaseException as err:
-        result = ''.join(
-            render_exception_into(
-                err,
-                [
-                    'Exception occurred while invoking "',
-                    command_function.get_full_name(),
-                    '".\n'
-                ],
-                filter = _ignore_command_call_frame,
-            ),
+    except BaseException as exception:
+        write_exception_sync(
+            exception,
+            [
+                'Exception occurred while invoking "',
+                command_function.get_full_name(),
+                '".\n'
+            ],
+            filter = _ignore_command_call_frame,
         )
+        result = None
     
     else:
         if (result is not None) and (not isinstance(result, str)):
-            result = str(result)
+            result = None
     
     return result
 

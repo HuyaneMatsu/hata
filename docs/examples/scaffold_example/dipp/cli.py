@@ -11,7 +11,7 @@ def main():
         ) from err
 
     from hata.ext.plugin_auto_reloader import start_auto_reloader, warn_auto_reloader_availability
-    from hata.ext.plugin_loader import load_all_plugin, frame_filter, register_plugin
+    from hata.ext.plugin_loader import frame_filter, load_all_plugin, register_plugin
     from scarletio import get_event_loop, write_exception_sync
 
     from . import bots
@@ -20,8 +20,8 @@ def main():
 
     try:
         load_all_plugin()
-    except BaseException as err:
-        write_exception_sync(err, filter = frame_filter)
+    except BaseException as exception:
+        write_exception_sync(exception, filter = frame_filter)
         get_event_loop().stop()
         raise SystemExit(1) from None
 

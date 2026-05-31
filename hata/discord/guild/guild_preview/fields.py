@@ -55,14 +55,14 @@ def parse_emojis(data, entities, guild_id):
     ----------
     data : `dict<str, object>`
         Guild preview data.
-    entities : `dict` of (`int`, ``Emoji``) items
+    entities : ``dict<int, Emoji>``
         The entity container to populate.
     guild_id : `int`
         The respective guild's identifier.
     
     Returns
     -------
-    entities : `dict` of (`int`, ``Emoji``) items
+    entities : ``dict<int, Emoji>``
     """
     emoji_datas = data.get('emojis', None)
     if emoji_datas is None:
@@ -85,7 +85,7 @@ def put_emojis(entities, data, defaults):
     
     Parameters
     ----------
-    entities : `dict` of (`int`, ``Emoji``) items
+    entities : ``dict<int, Emoji>``
         Emojis to put into the given data.
     data : `dict<str, object>`
         Guild preview data.
@@ -108,18 +108,18 @@ def validate_emojis(emojis):
     
     Parameters
     ----------
-    emojis : `None`, `iterable` of ``Emoji``
+    emojis : ``None | iterable<Emoji>``
         The emojis to validate.
     
     Returns
     -------
-    emojis : `dict` of (`int`, ``Emoji``) items
+    emojis : ``dict<int, Emoji>``
         The validated emojis.
     
     Raises
     ------
     TypeError
-        - If `emojis` is not `None`, `iterable` of ``Emoji``.
+        - If `emojis` is not ``None | iterable<Emoji>``.
         - If `emojis` contains a non-``Emoji`` element. 
     """
     validated_emojis = {}
@@ -217,7 +217,7 @@ def validate_stickers(stickers):
     
     Parameters
     ----------
-    stickers : `None`, `iterable` of ``Sticker``
+    stickers : ``None | iterable<Sticker>``
         The stickers to validate.
     
     Returns
@@ -228,7 +228,7 @@ def validate_stickers(stickers):
     Raises
     ------
     TypeError
-        - If `stickers` is not `None`, `iterable` of ``Sticker``.
+        - If `stickers` is not ``None | iterable<Sticker>``.
         - If `stickers` contains a non-``Sticker`` element. 
     """
     validated_stickers = {}

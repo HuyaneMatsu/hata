@@ -350,7 +350,7 @@ class InteractionResponse(
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
             for details.
         
-        attachments : `None | object`, Optional (Keyword only)
+        attachments : ``None | object | AttachmentRequest | iterable<AttachmentRequest>``, Optional (Keyword only)
             Attachments to send.
         
         components : `None`, ``Component``, `(tuple | list)<Component, (tuple | list)<Component>>`
@@ -611,7 +611,7 @@ def abort(
         Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
         for details.
     
-    attachments : `None | object`, Optional (Keyword only)
+    attachments : ``None | object | AttachmentRequest | iterable<AttachmentRequest>``, Optional (Keyword only)
         Attachments to send.
     
     components : `None`, ``Component``, `(tuple | list)<Component, (tuple | list)<Component>>`
@@ -697,7 +697,7 @@ class InteractionAbortedError(BaseException):
     
     def __new__(cls, response):
         """
-        Creates a new ``InteractionAbortedError`` with the given response.
+        Creates a new instance with the given response.
         
         Parameters
         ----------

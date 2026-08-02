@@ -206,7 +206,7 @@ class AutoModerationActionExecutionEvent(EventBase):
     @classmethod
     def from_data(cls, data):
         """
-        Creates a new ``AutoModerationActionExecutionEvent`` from the given data.
+        Creates a new instance from the given data.
         
         Parameters
         ----------

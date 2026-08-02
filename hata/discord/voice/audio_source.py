@@ -381,7 +381,7 @@ class LocalAudio(AudioSource):
         title = None,
     ):
         """
-        Creates a new ``LocalAudio``.
+        Creates a new instance.
         
         This method is a coroutine.
         
@@ -584,7 +584,7 @@ else:
         
         async def __new__(cls, url, stream = True):
             """
-            Creates a new ``YTAudio``.
+            Creates a new instance.
             
             This method is a coroutine.
             

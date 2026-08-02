@@ -14,6 +14,7 @@ from ....sticker import Sticker
 from ....user import User
 
 from ...attachment import Attachment
+from ...mention_game import MentionGame
 from ...message_activity import MessageActivity
 from ...message_application import MessageApplication
 from ...message_call import MessageCall
@@ -57,6 +58,10 @@ def test__Message__repr():
         Channel.precreate(202305040027, channel_type = ChannelType.guild_text, name = 'Yuugi'),
     ]
     mentioned_everyone = True
+    mentioned_games = [
+        MentionGame.precreate(202607040038),
+        MentionGame.precreate(202607040039),
+    ]
     mentioned_role_ids = [202305040028, 202305040029]
     mentioned_users = [
         User.precreate(202305040030, name = 'Scarlet'),
@@ -105,6 +110,7 @@ def test__Message__repr():
         'interaction': interaction,
         'mentioned_channels_cross_guild': mentioned_channels_cross_guild,
         'mentioned_everyone': mentioned_everyone,
+        'mentioned_games': mentioned_games,
         'mentioned_role_ids': mentioned_role_ids,
         'mentioned_users': mentioned_users,
         'message_type': message_type,
@@ -175,6 +181,10 @@ def test__Message__hash():
         Channel.precreate(202305040046, channel_type = ChannelType.guild_text, name = 'Yuugi'),
     ]
     mentioned_everyone = True
+    mentioned_games = [
+        MentionGame.precreate(202607040040),
+        MentionGame.precreate(202607040041),
+    ]
     mentioned_role_ids = [202305040046, 202305040047]
     mentioned_users = [
         User.precreate(202305040048, name = 'Scarlet'),
@@ -223,6 +233,7 @@ def test__Message__hash():
         'interaction': interaction,
         'mentioned_channels_cross_guild': mentioned_channels_cross_guild,
         'mentioned_everyone': mentioned_everyone,
+        'mentioned_games': mentioned_games,
         'mentioned_role_ids': mentioned_role_ids,
         'mentioned_users': mentioned_users,
         'message_type': message_type,
@@ -390,6 +401,10 @@ def _iter_options__eq__same_type():
         Channel.precreate(202305040067, channel_type = ChannelType.guild_text, name = 'Yuugi'),
     ]
     mentioned_everyone = True
+    mentioned_games = [
+        MentionGame.precreate(202607040044),
+        MentionGame.precreate(202607040045),
+    ]
     mentioned_role_ids = [202305040068, 202305040069]
     mentioned_users = [
         User.precreate(202305040070, name = 'Scarlet'),
@@ -438,6 +453,7 @@ def _iter_options__eq__same_type():
         'interaction': interaction,
         'mentioned_channels_cross_guild': mentioned_channels_cross_guild,
         'mentioned_everyone': mentioned_everyone,
+        'mentioned_games': mentioned_games,
         'mentioned_role_ids': mentioned_role_ids,
         'mentioned_users': mentioned_users,
         'message_type': message_type,
@@ -596,6 +612,18 @@ def _iter_options__eq__same_type():
         {
             **keyword_parameters,
             'mentioned_everyone': False,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'mentioned_games': [
+                MentionGame.precreate(202607040046),
+                MentionGame.precreate(202607040047),
+            ],
         },
         False,
     )

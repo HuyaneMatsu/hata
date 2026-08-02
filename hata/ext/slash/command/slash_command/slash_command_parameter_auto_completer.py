@@ -47,7 +47,7 @@ class SlashCommandParameterAutoCompleter(CommandInterface, ExceptionHandlerInter
     
     def __new__(cls, function, parameter_names, deepness, parent):
         """
-        Creates a new ``SlashCommandParameterAutoCompleter`` with the given parameters.
+        Creates a new instance with the given parameters.
         
         Parameters
         ----------

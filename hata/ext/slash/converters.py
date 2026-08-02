@@ -793,7 +793,7 @@ class RegexMatch(RichAttributeErrorBaseType):
     
     def __new__(cls, group_dict, groups):
         """
-        Creates a new ``RegexMatcher`` from the given parameters.
+        Creates a new instance from the given parameters.
     
         Parameters
         ----------
@@ -892,7 +892,7 @@ class SlashParameter(RichAttributeErrorBaseType):
         min_value = None,
     ):
         """
-        Creates a new ``Parameter``.
+        Creates a new instance.
         
         Parameters
         ----------

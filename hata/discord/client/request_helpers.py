@@ -1452,7 +1452,7 @@ def get_oauth2_access_token(access, required_scope = None):
     
     Parameters
     ----------
-    access : ``Oauth2Access``, ``Oauth2User``, `str`
+    access : ``str | Oauth2Access | Oauth2User``
         Oauth2 access to the respective user or it's access token.
     required_scope : `None`, ``Oauth2Scope`` = `None`, Optional
         Required scope of the access if any.
@@ -1464,7 +1464,7 @@ def get_oauth2_access_token(access, required_scope = None):
     Raises
     ------
     TypeError
-        - If `access` is not ``Oauth2Access``, ``Oauth2User``, `str`.
+        - If `access` is not ``str | Oauth2Access | Oauth2User``.
     ValueError
         - If the given `access` is not providing the required scope.
     """
@@ -1490,7 +1490,7 @@ def get_oauth2_access_token_and_user_id(access, user, required_scope = None):
     
     Parameters
     ----------
-    access : ``Oauth2Access``, ``Oauth2User``, `str`
+    access : ``str | Oauth2Access | Oauth2User``
         Oauth2 access to the respective user or it's access token.
     required_scope : `None`, ``Oauth2Scope`` = `None`, Optional
         Required scope of the access if any.
@@ -1498,7 +1498,7 @@ def get_oauth2_access_token_and_user_id(access, user, required_scope = None):
     Raises
     ------
     TypeError
-        - If `access` is not ``Oauth2Access``, ``Oauth2User``, `str`.
+        - If `access` is not ``str | Oauth2Access | Oauth2User``.
         - If `user` is not ``None | ClientUserBase``.
         - If `user.id` could not be determined.
     ValueError

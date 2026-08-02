@@ -200,7 +200,7 @@ class ReactionMappingLine(RichAttributeErrorBaseType):
         count : `int`, Optional (Keyword only)
             The amount of reactors.
         
-        users : `None`, `iterable` of ``ClientUserBase``, Optional (Keyword only)
+        users : ``None | iterable<ClientUserBase>``, Optional (Keyword only)
             The known users.
         
         Returns

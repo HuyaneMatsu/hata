@@ -28,7 +28,7 @@ class CommandResult(RichAttributeErrorBaseType):
     
     def __new__(cls, error_code, *detail_parameters):
         """
-        Creates a new ``CommandResult`` with the given parameters.
+        Creates a new instance with the given parameters.
         
         Parameters
         ----------

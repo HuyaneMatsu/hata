@@ -29,7 +29,7 @@ class TrackStartEvent(EventBase):
     
     def __new__(cls, player, data):
         """
-        Creates a new ``TrackStartEvent`` event from the given parameters.
+        Creates a new instance event from the given parameters.
         
         Parameters
         ----------
@@ -111,7 +111,7 @@ class TrackEndEvent(EventBase):
     
     def __new__(cls, player, data):
         """
-        Creates a new ``TrackEndEvent`` event from the given parameters.
+        Creates a new instance event from the given parameters.
         
         Parameters
         ----------
@@ -219,7 +219,7 @@ class TrackStuckEvent(EventBase):
     
     def __new__(cls, player, data):
         """
-        Creates a new ``TrackStuckEvent`` event from the given parameters.
+        Creates a new instance event from the given parameters.
         
         Parameters
         ----------
@@ -325,7 +325,7 @@ class TrackExceptionEvent(EventBase):
     
     def __new__(cls, player, data):
         """
-        Creates a new ``TrackExceptionEvent`` event from the given parameters.
+        Creates a new instance event from the given parameters.
         
         Parameters
         ----------
@@ -454,7 +454,7 @@ class PlayerWebSocketClosedEvent(EventBase):
     
     def __new__(cls, player, data):
         """
-        Creates a new ``PlayerWebSocketClosedEvent`` event from the given parameters.
+        Creates a new instance event from the given parameters.
         
         Parameters
         ----------

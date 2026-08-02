@@ -34,6 +34,7 @@ from ...user import ClientUserBase, User, UserBase, ZEROUSER
 from ...webhook import WebhookBase, WebhookRepr, WebhookType, create_partial_webhook_from_id
 
 from ..attachment import Attachment
+from ..mention_game import MentionGame
 from ..message_activity import MessageActivity
 from ..message_application import MessageApplication
 from ..message_call import MessageCall
@@ -360,6 +361,7 @@ put_interaction = nullable_entity_optional_putter_factory(
 )
 validate_interaction = nullable_entity_validator_factory('interaction', MessageInteraction)
 
+
 # mentioned_channels_cross_guild
 
 parse_mentioned_channels_cross_guild = nullable_functional_array_parser_factory(
@@ -377,17 +379,27 @@ validate_mentioned_channels_cross_guild = nullable_entity_array_validator_factor
     'mentioned_channels_cross_guild', NotImplemented, include = 'Channel', sort_key = id_sort_key,
 )
 
+
 # mentioned_everyone
 
 parse_mentioned_everyone = bool_parser_factory('mention_everyone', False)
 put_mentioned_everyone = bool_optional_putter_factory('mention_everyone', False)
 validate_mentioned_everyone = bool_validator_factory('mention_everyone', False)
 
+
+# mentioned_games
+
+parse_mentioned_games = nullable_entity_array_parser_factory('mention_games', MentionGame)
+put_mentioned_games = nullable_entity_array_optional_putter_factory('mention_games', MentionGame)
+validate_mentioned_games = nullable_entity_array_validator_factory('mentioned_games', MentionGame)
+
+
 # mentioned_role_ids
 
 parse_mentioned_role_ids = entity_id_array_parser_factory('mention_roles')
 put_mentioned_role_ids = optional_entity_id_array_optional_putter_factory('mention_roles')
 validate_mentioned_role_ids = entity_id_array_validator_factory('mentioned_role_ids', Role)
+
 
 # mentioned_users
 
@@ -404,7 +416,7 @@ def parse_mentioned_users(data, guild_id = 0):
     
     Returns
     -------
-    mentioned_users : `None`, `tuple` of ``ClientUserBase``
+    mentioned_users : ``None | tuple<ClientUserBase>``
     """
     user_mention_datas = data.get('mentions', None)
     if (user_mention_datas is None) or (not user_mention_datas):
@@ -425,12 +437,15 @@ def put_mentioned_users(mentioned_users, data, defaults, *, guild_id = 0):
     
     Parameters
     ----------
-    mentioned_users : `None`, `tuple` of ``ClientUserBase``
+    mentioned_users : ``None | tuple<ClientUserBase>``
         The mentioned users.
+    
     data : `dict<str, object>`
         Json serializable dictionary.
+    
     defaults : `bool`
         Whether default values should be included as well.
+    
     guild_id : `int` = `0`, Optional (Keyword only)
         The guild's id where the message was created at.
     

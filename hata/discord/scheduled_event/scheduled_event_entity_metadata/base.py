@@ -222,7 +222,7 @@ class ScheduledEventEntityMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        speakers : `None`, `tuple` of ``ClientUserBase``
+        speakers : ``None | tuple<ClientUserBase>``
         """
         speaker_ids = self.speaker_ids
         if (speaker_ids is not None):

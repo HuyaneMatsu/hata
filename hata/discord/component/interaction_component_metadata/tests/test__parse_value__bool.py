@@ -20,14 +20,14 @@ def _iter_options():
         {
             'value': False,
         },
-        '\00',
+        '\000',
     )
     
     yield (
         {
             'value': True,
         },
-        '\01',
+        '\001',
     )
 
 

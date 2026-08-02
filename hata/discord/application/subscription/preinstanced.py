@@ -24,13 +24,13 @@ class SubscriptionStatus(PreinstancedBase, value_type = int):
     +=======================+===============+=======+
     | active                | active        | 0     |
     +-----------------------+---------------+-------+
-    | ending                | ending        | 1     |
+    | inactive              | inactive      | 1     |
     +-----------------------+---------------+-------+
-    | inactive              | inactive      | 2     |
+    | ending                | ending        | 2     |
     +-----------------------+---------------+-------+
     """
     __slots__ = ()
     
     active = P(0, 'active')
-    ending = P(1, 'ending')
-    inactive = P(2, 'inactive')
+    inactive = P(1, 'inactive')
+    ending = P(2, 'ending')

@@ -30,7 +30,7 @@ class InteractionResponseContext:
     
     def __new__(cls, interaction_event, deferring, ephemeral):
         """
-        Creates a new ``InteractionResponseContext`` with the given parameters.
+        Creates a new instance with the given parameters.
         
         Parameters
         ----------

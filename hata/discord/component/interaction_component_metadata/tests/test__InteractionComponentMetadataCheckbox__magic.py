@@ -10,7 +10,7 @@ def test__InteractionComponentMetadataCheckbox__repr():
     Tests whether ``InteractionComponentMetadataCheckbox.__repr__`` works as intended.
     """
     custom_id = 'koishi'
-    value = '\01'
+    value = '\001'
     
     interaction_component_metadata = InteractionComponentMetadataCheckbox(
         custom_id = custom_id,
@@ -26,7 +26,7 @@ def test__InteractionComponentMetadataCheckbox__hash():
     Tests whether ``InteractionComponentMetadataCheckbox.__hash__`` works as intended.
     """
     custom_id = 'koishi'
-    value = '\01'
+    value = '\001'
     
     interaction_component_metadata = InteractionComponentMetadataCheckbox(
         custom_id = custom_id,
@@ -50,7 +50,7 @@ def test__InteractionComponentMetadataCheckbox__eq__different_type():
 
 def _iter_options__eq():
     custom_id = 'koishi'
-    value = '\01'
+    value = '\001'
     
     keyword_parameters = {
         'custom_id': custom_id,
@@ -76,7 +76,7 @@ def _iter_options__eq():
         keyword_parameters,
         {
             **keyword_parameters,
-            'value': '\00'
+            'value': '\000'
         },
         False,
     )

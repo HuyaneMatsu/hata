@@ -53,7 +53,7 @@ class GuildUserChunkEvent(EventBase):
             The guild's identifier, what received the user chunk.
         nonce : `None`, `str`, Optional (Keyword only)
             A nonce to identify guild user chunk response.
-        users : `None`, `iterable` of ``ClientUserBase``, Optional (Keyword only)
+        users : ``None | iterable<ClientUserBase>``, Optional (Keyword only)
             The received users.
         
         Raises
@@ -270,7 +270,7 @@ class GuildUserChunkEvent(EventBase):
             The guild's identifier, what received the user chunk.
         nonce : `None`, `str`, Optional (Keyword only)
             A nonce to identify guild user chunk response.
-        users : `None`, `iterable` of ``ClientUserBase``, Optional (Keyword only)
+        users : ``None | iterable<ClientUserBase>``, Optional (Keyword only)
             The received users.
         
         Returns

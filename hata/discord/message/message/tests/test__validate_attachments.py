@@ -6,16 +6,42 @@ from ..fields import validate_attachments
 
 
 def _iter_options__passing():
-    attachment_id_0 = 202304290009
-    attachment_id_1 = 202304290010
+    attachment_0 = Attachment.precreate(
+        202304290009,
+    )
+    attachment_1 = Attachment.precreate(
+        202304290010,
+    )
     
-    attachment_0 = Attachment.precreate(attachment_id_0)
-    attachment_1 = Attachment.precreate(attachment_id_1)
+    yield (
+        None,
+        None,
+    )
     
-    yield None, None
-    yield [], None
-    yield [attachment_0], (attachment_0,)
-    yield [attachment_1, attachment_0], (attachment_0, attachment_1)
+    yield (
+        [],
+        None,
+    )
+    
+    yield (
+        [
+            attachment_0,
+        ],
+        (
+            attachment_0,
+        ),
+    )
+    
+    yield (
+        [
+            attachment_1,
+            attachment_0,
+        ],
+        (
+            attachment_0,
+            attachment_1,
+        ),
+    )
 
 
 def _iter_options__type_error():
@@ -44,4 +70,7 @@ def test__validate_attachments(input_value):
     """
     output = validate_attachments(input_value)
     vampytest.assert_instance(output, tuple, nullable = True)
+    if (output is not None):
+        for element in output:
+            vampytest.assert_instance(element, Attachment)
     return output

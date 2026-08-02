@@ -1,5 +1,7 @@
 import vampytest
 
+from .....env import API_VERSION
+
 from ....application import Application
 
 from ..fields import put_target_application
@@ -35,7 +37,7 @@ def _iter_options():
             'bot_require_code_grant': False,
             'cover_image': None,
             'description': '',
-            'flags': 0,
+            **({'flags': 0} if API_VERSION < 10 else {'flags_new': '0'}),
             'hook': False,
             'id': str(application_id),
             'icon': None,

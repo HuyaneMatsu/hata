@@ -138,7 +138,7 @@ class StickerPack(DiscordEntity, immortal = True):
     @classmethod
     def from_data(cls, data, *, force_update = False):
         """
-        Creates a new ``StickerPack`` from the received data.
+        Creates a new instance from the received data.
         
         Parameters
         ----------
@@ -216,7 +216,8 @@ class StickerPack(DiscordEntity, immortal = True):
         will be picked up and its fields will be populated.
         
         > Since sticker-packs are not bound to any other objects, it cannot be determined whether they are up-to-date.
-        > Meaning their attributes are not locked if the sticker is already loaded and can be changed with `.precreate`.
+        > Meaning their attributes are not locked if the sticker pack is already loaded and can be changed with
+        >`.precreate`.
         
         Parameters
         ----------
@@ -342,7 +343,7 @@ class StickerPack(DiscordEntity, immortal = True):
         Parameters
         ----------
         other : `instance<type<self>>`
-            The other sticker ack to compare self to.
+            The other sticker pack to compare self to.
         
         Returns
         -------
@@ -382,9 +383,9 @@ class StickerPack(DiscordEntity, immortal = True):
     
     def __hash__(self):
         """Returns the sticker pack's hash."""
-        emoji_id = self.id
-        if emoji_id:
-            return emoji_id
+        sticker_pack_id = self.id
+        if sticker_pack_id:
+            return sticker_pack_id
         
         return self._get_hash_partial()
     

@@ -402,7 +402,7 @@ class DiscoveryTermRequestCacher:
     
     def __init__(self, func, timeout, rate_limit_group, rate_limit_limiter = None):
         """
-        Creates a new ``DiscoveryTermRequestCacher`` object with the given parameters.
+        Creates a new instance object with the given parameters.
         
         Parameters
         ----------
@@ -953,7 +953,7 @@ class ForceUpdateCache:
     
     def __new__(cls):
         """
-        Creates a new ``ForceUpdateCache``.
+        Creates a new instance.
         """
         self = object.__new__(cls)
         self.synced = False

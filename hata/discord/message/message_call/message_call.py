@@ -252,7 +252,7 @@ class MessageCall(RichAttributeErrorBaseType):
         
         Returns
         -------
-        users : `None`, `tuple` of ``ClientUserBase``
+        users : ``None | tuple<ClientUserBase>``
         """
         user_ids = self.user_ids
         if (user_ids is not None):

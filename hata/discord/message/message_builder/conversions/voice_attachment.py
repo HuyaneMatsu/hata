@@ -1,5 +1,7 @@
 __all__ = ('CONVERSION_VOICE_ATTACHMENT',)
 
+from warnings import warn
+
 from scarletio.web_common import FormData
 
 from .....env import API_VERSION
@@ -22,6 +24,9 @@ def _preprocess_data_and_check_empty(data, voice_attachment):
     ----------
     data : ``dict<str, object> | FormData>``
         The data to preprocess.
+    
+    voice_attachment : ``VoiceAttachment``
+        Attachment to add.
     
     Returns
     -------
@@ -93,6 +98,17 @@ class CONVERSION_VOICE_ATTACHMENT(Conversion):
         ------
         voice_attachment : ``None | VoiceAttachment``
         """
+        warn(
+            (
+                '`voice_attachment` field is deprecated and will be removed in 2027 august, p'
+                'lease use the `attachments` field instead. '
+                'Like: attachments = [attachment_request_create_voice_create(name, io, duration, description = ..., '
+                'waveform = ...)]'
+            ),
+            FutureWarning,
+            stacklevel = 5,
+        )
+        
         # None
         if value is None:
             yield None

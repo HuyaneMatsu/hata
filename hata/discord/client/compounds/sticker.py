@@ -234,7 +234,7 @@ class ClientCompoundStickerEndpoints(Compound):
         
         if not isinstance(image, (bytes, bytearray, memoryview)):
             raise TypeError(
-                f'`image` can be `None`, `bytes-like`, got {type(image).__name__}; {short_repr(image)}.'
+                f'`image` can be `None | bytes-like`, got {type(image).__name__}; {short_repr(image)}.'
             )
         
         media_type = get_image_media_type(image)

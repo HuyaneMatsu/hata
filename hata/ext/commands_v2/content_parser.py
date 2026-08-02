@@ -59,7 +59,7 @@ class ContentParameterParserContextBase(RichAttributeErrorBaseType):
     
     def __new__(cls, parsed):
         """
-        Creates a new ``ContentParameterParserContext`` with the given match.
+        Creates a new instance with the given match.
         
         Parameters
         ----------
@@ -251,7 +251,7 @@ class ContentParameterParser(RichAttributeErrorBaseType):
     
     def __new__(cls, separator, assigner):
         """
-        Creates a new ``ContentParameterSeparator``. If one already exists with the given parameters, returns
+        Creates a new instance. If one already exists with the given parameters, returns
         that instead.
         
         Parameters
@@ -680,7 +680,7 @@ class ConverterSetting(RichAttributeErrorBaseType):
     def __new__(cls, converter, uses_flags, default_flags, all_flags, alternative_type_name, default_type,
             alternative_types, requires_part, *, alternative_checked_types = None):
         """
-        Creates a new ``ConverterSetting`` to store settings related to a converter function.
+        Creates a new instance to store settings related to a converter function.
         
         Parameters
         ----------
@@ -2036,7 +2036,7 @@ class ContentParserParameterDetail(RichAttributeErrorBaseType):
     
     def __new__(cls, converter_setting, type_, type_checker):
         """
-        Creates a new ``ContentParserParameterDetail`` with the given parameters.
+        Creates a new instance with the given parameters.
         
         Parameters
         ----------
@@ -2163,7 +2163,7 @@ class ContentParserParameter(RichAttributeErrorBaseType):
     
     def __new__(cls, parameter, index):
         """
-        Creates a new ``ContentParserParameter`` with the given parameters.
+        Creates a new instance with the given parameters.
         
         Parameters
         ----------
@@ -2676,7 +2676,7 @@ class CommandContentParser(RichAttributeErrorBaseType):
     
     def __new__(cls, func, separator, assigner):
         """
-        Creates a new ``CommandContentParser`` returning the parser for the function and the function itself
+        Creates a new instance returning the parser for the function and the function itself
         as well.
         
         Parameters
@@ -3019,7 +3019,7 @@ class ParameterParsingStateBase:
     
     def __new__(cls, content_parser_parameter):
         """
-        Creates a new ``ParameterParsingState`` from the given ``content_parser_parameter``.
+        Creates a new instance from the given ``content_parser_parameter``.
         
         Parameters
         ----------

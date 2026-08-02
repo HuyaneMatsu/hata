@@ -238,7 +238,7 @@ def test__InteractionComponent__proxies__read_checkbox():
     Case: reading text input fields.
     """
     custom_id = 'rabbit'
-    value = '\01'
+    value = '\001'
     
     interaction_component = InteractionComponent(
         ComponentType.checkbox,
@@ -469,7 +469,7 @@ def test__InteractionComponent__proxies__write_checkbox():
     Case: writing text input fields.
     """
     custom_id = 'rabbit'
-    value = '\01'
+    value = '\001'
     
     interaction_component = InteractionComponent(
         ComponentType.checkbox,

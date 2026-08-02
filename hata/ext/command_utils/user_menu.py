@@ -791,7 +791,7 @@ class UserPagination:
     
     def __init__(self, menu, pages):
         """
-        Creates a new ``UserMenuRunner`` with the given parameters.
+        Creates a new instance with the given parameters.
         
         Parameters
         ----------

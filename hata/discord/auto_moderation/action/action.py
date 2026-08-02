@@ -65,7 +65,7 @@ class AutoModerationAction(RichAttributeErrorBaseType):
     @classmethod
     def from_data(cls, data):
         """
-        Creates a new ``AutoModerationAction`` from the given data.
+        Creates a new instance from the given data.
         
         Parameters
         ----------

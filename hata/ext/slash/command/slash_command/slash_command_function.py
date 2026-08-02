@@ -69,7 +69,7 @@ class SlashCommandFunction(
     
     def __new__(cls, function, parameter_converters, name, description, response_modifier, default):
         """
-        Creates a new ``SlashCommandFunction`` with the given parameters.
+        Creates a new instance with the given parameters.
         
         Parameters
         ----------

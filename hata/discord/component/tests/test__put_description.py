@@ -38,13 +38,13 @@ def _iter_options():
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__put_description(input_description, defaults):
+def test__put_description(input_value, defaults):
     """
     Tests whether ``put_description`` works as intended.
     
     Parameters
     ----------
-    input_description : `str`
+    input_value : `str`
         The description to serialise.
     
     defaults : `bool`
@@ -54,4 +54,4 @@ def test__put_description(input_description, defaults):
     -------
     output : `dict<str, object>`
     """
-    return put_description(input_description, {}, defaults)
+    return put_description(input_value, {}, defaults)

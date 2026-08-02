@@ -1,15 +1,16 @@
 ﻿__all__ = (
     'CHANNEL_MENTION_RP', 'DATETIME_FORMAT_CODE', 'DISCORD_EPOCH', 'EMAIL_MENTION_RP', 'EMOJI_NAME_RP', 'EMOJI_RP',
-    'Gift', 'ID_RP', 'IS_MENTION_RP', 'REACTION_RP', 'ROLE_MENTION_RP', 'Relationship', 'TIMESTAMP_STYLES',
-    'USER_MENTION_RP', 'Unknown', 'cchunkify', 'chunkify', 'datetime_to_id', 'datetime_to_timestamp',
+    'GAME_MENTION_RP', 'Gift', 'ID_RP', 'IS_MENTION_RP', 'REACTION_RP', 'ROLE_MENTION_RP', 'Relationship',
+    'TIMESTAMP_STYLES', 'USER_MENTION_RP', 'Unknown', 'cchunkify', 'chunkify', 'datetime_to_id', 'datetime_to_timestamp',
     'datetime_to_unix_time', 'elapsed_time', 'escape_markdown', 'filter_content', 'format_datetime', 'format_id',
     'format_loop_time', 'format_unix_time', 'id_difference_to_seconds', 'id_difference_to_timedelta', 'id_to_datetime',
     'id_to_unix_time', 'is_id', 'is_invite_code', 'is_mention', 'is_role_mention', 'is_url', 'is_user_mention',
-    'mention_channel_and_roles_screen', 'mention_channel_browse_screen', 'mention_channel_by_id',
-    'mention_guild_guide_screen', 'mention_linked_roles_screen', 'mention_role_by_id', 'mention_user_by_id',
-    'mention_user_nick_by_id', 'now_as_id', 'parse_message_reference', 'parse_rdelta', 'parse_signed_url',
-    'parse_tdelta', 'random_id', 'sanitize_content', 'sanitise_links', 'sanitize_mentions', 'seconds_to_elapsed_time',
-    'seconds_to_id_difference', 'timedelta_to_id_difference', 'unix_time_to_datetime', 'unix_time_to_id'
+    'mention_application_game_by_id', 'mention_channel_and_roles_screen', 'mention_channel_browse_screen',
+    'mention_channel_by_id', 'mention_guild_guide_screen', 'mention_linked_roles_screen', 'mention_role_by_id',
+    'mention_user_by_id', 'mention_user_nick_by_id', 'now_as_id', 'parse_message_reference', 'parse_rdelta',
+    'parse_signed_url', 'parse_tdelta', 'random_id', 'sanitize_content', 'sanitise_links', 'sanitize_mentions',
+    'seconds_to_elapsed_time', 'seconds_to_id_difference', 'timedelta_to_id_difference', 'unix_time_to_datetime',
+    'unix_time_to_id'
 )
 
 import reprlib, sys
@@ -19,14 +20,14 @@ from email._parseaddr import _parsedate_tz as parse_date_timezone
 from functools import partial as partial_func
 from math import floor
 from random import random
-from re import I as re_ignore_case, U as re_unicode, compile as re_compile
+from re import I as re_ignore_case, U as re_unicode, compile as re_compile, escape as re_escape
 from time import time as time_now
 
 from scarletio import LOOP_TIME, RichAttributeErrorBaseType, export, include, modulize
 from scarletio.web_common import URL
 
 from .bases import DiscordEntity
-from .core import CHANNELS, ROLES, USERS
+from .core import APPLICATIONS, CHANNELS, ROLES, MENTION_GAMES, USERS
 
 
 try:
@@ -610,6 +611,7 @@ IS_MENTION_RP = re_compile('@(?:everyone|here)|<(?:@[!&]?|#|/[a-zA-Z0-9_\\-]{3,3
 
 USER_MENTION_RP = re_compile('<@!?(\\d{7,21})>')
 CHANNEL_MENTION_RP = re_compile('<#(\\d{7,21})>')
+GAME_MENTION_RP = re_compile('<\\$(\\d{7,21})>')
 ROLE_MENTION_RP = re_compile('<@&(\\d{7,21})>')
 APPLICATION_COMMAND_MENTION_RP = re_compile('</([a-zA-Z0-9_\\-]{3,32}):(\\d{7,21})>')
 EMAIL_MENTION_RP = re_compile(
@@ -662,7 +664,7 @@ def mention_role_by_id(role_id):
     
     Returns
     -------
-    role_mention : `str`
+    mention : `str`
     """
     return f'<@&{role_id}>'
 
@@ -678,7 +680,7 @@ def mention_user_by_id(user_id):
     
     Returns
     -------
-    user_mention : `str`
+    mention : `str`
     """
     return f'<@{user_id}>'
 
@@ -694,9 +696,25 @@ def mention_user_nick_by_id(user_id):
     
     Returns
     -------
-    user_nick_mention : `str`
+    mention : `str`
     """
     return f'<@!{user_id}>'
+
+
+def mention_application_game_by_id(application_id):
+    """
+    Mentions the application by its identifier. The application must be a game.
+    
+    Parameters
+    ----------
+    application_id : `int`
+        The application's identifier.
+    
+    Returns
+    -------
+    mention : `str`
+    """
+    return f'<@${application_id}>'
 
 
 def is_valid_application_command_name(name):
@@ -1199,7 +1217,7 @@ class Unknown(DiscordEntity):
     
     def __init__(self, type_, id_, name = None):
         """
-        Creates a new ``Unknown`` object from the given parameters.
+        Creates a new instance object from the given parameters.
         
         Parameters
         ----------
@@ -1319,7 +1337,7 @@ class Gift:
     
     def __init__(self, data):
         """
-        Creates a new ``Gift`` object from the given data.
+        Creates a new instance object from the given data.
         
         Parameters
         ----------
@@ -1575,7 +1593,8 @@ def sanitize_mentions(content, guild = None):
     Parameters
     ----------
     content : `None | str`
-        The content to sanitize.
+        The content to sanitise.
+    
     guild : ``None | Guild`` = `None`, Optional
         Respective context to look up guild specific names of entities.
     
@@ -1630,6 +1649,34 @@ def sanitize_mentions(content, guild = None):
         
         transformations[f'<{middle}>'] = middle
     
+    for entity_id in GAME_MENTION_RP.findall(content):
+        entity_id = int(entity_id)
+        while True:
+            try:
+                mention_game = MENTION_GAMES[entity_id]
+            except KeyError:
+                pass
+            else:
+                name = mention_game.name
+                break
+            
+            try:
+                application = APPLICATIONS[entity_id]
+            except KeyError:
+                pass
+            else:
+                name = application.name
+                break
+            
+            name = None
+            break
+        
+        if name is None:
+            sanitised_mention = '@unknown_game'
+        else:
+            sanitised_mention = '@' + name
+        transformations[f'<@${entity_id}>'] = sanitised_mention
+    
     for screen in SCREEN_MENTION_RP.findall(content):
         if screen == 'customize':
             screen_name = 'Channels & Roles'
@@ -1644,7 +1691,9 @@ def sanitize_mentions(content, guild = None):
         
         transformations[f'<id:{screen}>'] = screen_name
     
-    content = re_compile('|'.join(transformations)).sub(partial_func(sanitize_mention_escaper, transformations), content)
+    content = re_compile('|'.join([re_escape(key) for key in transformations])).sub(
+        partial_func(sanitize_mention_escaper, transformations), content
+    )
     return EVERYONE_MENTION_RP.sub(partial_func(sanitize_mention_escaper, EVERY_MENTION_TRANSLATION_TABLE), content)
 
 

@@ -1,12 +1,63 @@
 import vampytest
 
+from .....env import API_VERSION
+
 from ..fields import parse_flags
 from ..flags import ApplicationFlag
 
 
 def _iter_options():
-    yield {}, ApplicationFlag(0)
-    yield {'flags': 1}, ApplicationFlag(1)
+    yield (
+        {},
+        ApplicationFlag(0),
+    )
+    
+    yield (
+        {
+            'flags': None,
+        },
+        ApplicationFlag(0),
+    )
+    
+    yield (
+        {
+            'flags': 1,
+        },
+        ApplicationFlag(1),
+    )
+    
+    if API_VERSION < 10:
+        return
+    
+    yield (
+        {
+            'flags_new': None,
+        },
+        ApplicationFlag(0),
+    )
+    
+    yield (
+        {
+            'flags_new': '1',
+        },
+        ApplicationFlag(1),
+    )
+    
+    yield (
+        {
+            'flags_new': None,
+            'flags': 2,
+        },
+        ApplicationFlag(2),
+    )
+    
+    yield (
+        {
+            'flags_new': '1',
+            'flags': 2,
+        },
+        ApplicationFlag(1),
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

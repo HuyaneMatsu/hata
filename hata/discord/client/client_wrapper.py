@@ -209,7 +209,7 @@ class ClientWrapper(RichAttributeErrorBaseType):
     
     def __new__(cls, *clients):
         """
-        Creates a new ``ClientWrapper`` with the given clients. If no clients are given, then will wrap
+        Creates a new instance with the given clients. If no clients are given, then will wrap
         all the clients.
         
         Parameters

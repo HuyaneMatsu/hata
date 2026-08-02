@@ -177,7 +177,7 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | max_friends                                                       | 30001     | 10000     |
 +-------------------------------------------------------------------+-----------+-----------+
-| max_pins                                                          | 30003     | 50        |
+| max_pins                                                          | 30003     | 250       |
 +-------------------------------------------------------------------+-----------+-----------+
 | max_recipients                                                    | 30004     | 10        |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -276,6 +276,8 @@ Error Codes
 | message_entity_empty                                              | 40006     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | user_banned                                                       | 40007     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| only_one_parent_id_can_be_modified_at_once                        | 40009     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | connection_revoked                                                | 40012     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -633,6 +635,10 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | max_active_announcement_threads                                   | 160007    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| cannot_reference_without_permission_read_message_history          | 160009    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| cannot_reference_nsfw_channel                                     | 160010    | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | cannot_forward_message_whats_content_you_cannot_read              | 160014    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | invalid_lottie_json                                               | 170001    | -         |
@@ -650,6 +656,8 @@ Error Codes
 | exactly_one_guild_id_parameter_is_required                        | 180001    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | failed_to_create_stage_needed_for_scheduled_event                 | 180002    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| scheduled_event_with_schedule_required                            | 180004    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | scheduled_event_occurrence_overwrite_must_change_something        | 180005    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -681,7 +689,13 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | user_limited_access_default                                       | 340000    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| user_limited_access_create_message_in_private_channel             | 340002    | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | user_limited_access_friend_request                                | 340007    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| user_limited_access_create_message_in_guild_channel               | 340013    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| user_limited_access_upload_attachment                             | 340014    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | user_limited_access_guild_join                                    | 340015    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -752,6 +766,14 @@ Error Codes
 | failed_to_generate_unique_name_within_timeout                     | 530006    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | invalid_client_secret                                             | 530007    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| invalid_merge_source_user_not_provisional                         | 530014    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| invalid_merge_destination_user_provisional                        | 530016    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| invalid_merge_source_user_banned                                  | 530017    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| invalid_merge_too_many_application_identities                     | 530023    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | content_inventory_entry_invalid_permissions                       | 560006    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -886,6 +908,7 @@ send_message_temporarily_disabled = 40004
 message_entity_too_large = 40005
 message_entity_empty = 40006
 user_banned = 40007
+only_one_parent_id_can_be_modified_at_once = 40009
 connection_revoked = 40012
 cannot_consume_non_consumable_sku = 40018
 cannot_delete_non_test_entitlement = 40019
@@ -1075,6 +1098,8 @@ message_has_thread = 160004
 thread_locked = 160005
 max_active_threads = 160006
 max_active_announcement_threads = 160007
+cannot_reference_without_permission_read_message_history = 160009
+cannot_reference_nsfw_channel = 160010
 cannot_forward_message_whats_content_you_cannot_read = 160014
 
 invalid_lottie_json = 170001
@@ -1086,6 +1111,7 @@ poggermode_temporarily_disabled = 170008
 cannot_update_finished_scheduled_event = 180000
 exactly_one_guild_id_parameter_is_required = 180001
 failed_to_create_stage_needed_for_scheduled_event = 180002
+scheduled_event_with_schedule_required = 180004
 scheduled_event_occurrence_overwrite_must_change_something = 180005
 
 privacy_policy_required = 190001
@@ -1108,7 +1134,10 @@ harmful_link_message_blocked = 240000
 clyde_consent_required = 310000
 
 user_limited_access_default = 340000
+user_limited_access_create_message_in_private_channel = 340002
 user_limited_access_friend_request = 340007
+user_limited_access_create_message_in_guild_channel = 340013
+user_limited_access_upload_attachment = 340014
 user_limited_access_guild_join = 340015
 user_limited_access_max = 349999
 
@@ -1151,6 +1180,10 @@ json_web_token_audience_configuration_mismatch = 530003
 json_web_token_too_old = 530004
 failed_to_generate_unique_name_within_timeout = 530006
 invalid_client_secret = 530007
+invalid_merge_source_user_not_provisional = 530014
+invalid_merge_destination_user_provisional = 530016
+invalid_merge_source_user_banned = 530017
+invalid_merge_too_many_application_identities = 530023
 
 content_inventory_entry_invalid_permissions = 560006
 

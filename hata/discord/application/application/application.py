@@ -40,20 +40,20 @@ from .fields import (
     put_bot_public, put_bot_requires_code_grant, put_creator_monetization_state, put_custom_install_url,
     put_deeplink_url, put_description, put_developers, put_discoverability_state, put_discovery_eligibility_flags,
     put_embedded_activity_configuration, put_eula_id, put_event_webhook_event_types, put_event_webhook_state,
-    put_event_webhook_url, put_executables, put_explicit_content_filter_level, put_flags, put_guild_id, put_hook,
-    put_id, put_install_parameters, put_integration_public, put_integration_requires_code_grant, put_integration_types,
-    put_integration_types_configuration, put_interaction_endpoint_url, put_interaction_event_types,
-    put_interaction_version, put_internal_guild_restriction, put_max_participants, put_monetization_eligibility_flags,
-    put_monetization_state, put_monetized, put_name, put_overlay, put_overlay_compatibility_hook,
-    put_overlay_method_flags, put_owner, put_primary_sku_id, put_privacy_policy_url, put_publishers, put_redirect_urls,
-    put_role_connection_verification_url, put_rpc_origins, put_rpc_state, put_slug, put_store_state, put_tags,
-    put_terms_of_service_url, put_themes, put_third_party_skus, put_type, put_verification_state, put_verify_key,
-    validate_aliases, validate_approximate_guild_count, validate_approximate_user_authorization_count,
-    validate_approximate_user_install_count, validate_bot_public, validate_bot_requires_code_grant,
-    validate_creator_monetization_state, validate_custom_install_url, validate_deeplink_url, validate_description,
-    validate_developers, validate_discoverability_state, validate_discovery_eligibility_flags,
-    validate_embedded_activity_configuration, validate_eula_id, validate_event_webhook_event_types,
-    validate_event_webhook_state, validate_event_webhook_url, validate_executables,
+    put_event_webhook_url, put_executables, put_explicit_content_filter_level, put_flags__request,
+    put_flags__serialisation, put_guild_id, put_hook, put_id, put_install_parameters, put_integration_public,
+    put_integration_requires_code_grant, put_integration_types, put_integration_types_configuration,
+    put_interaction_endpoint_url, put_interaction_event_types, put_interaction_version, put_internal_guild_restriction,
+    put_max_participants, put_monetization_eligibility_flags, put_monetization_state, put_monetized, put_name,
+    put_overlay, put_overlay_compatibility_hook, put_overlay_method_flags, put_owner, put_primary_sku_id,
+    put_privacy_policy_url, put_publishers, put_redirect_urls, put_role_connection_verification_url, put_rpc_origins,
+    put_rpc_state, put_slug, put_store_state, put_tags, put_terms_of_service_url, put_themes, put_third_party_skus,
+    put_type, put_verification_state, put_verify_key, validate_aliases, validate_approximate_guild_count,
+    validate_approximate_user_authorization_count, validate_approximate_user_install_count, validate_bot_public,
+    validate_bot_requires_code_grant, validate_creator_monetization_state, validate_custom_install_url,
+    validate_deeplink_url, validate_description, validate_developers, validate_discoverability_state,
+    validate_discovery_eligibility_flags, validate_embedded_activity_configuration, validate_eula_id,
+    validate_event_webhook_event_types, validate_event_webhook_state, validate_event_webhook_url, validate_executables,
     validate_explicit_content_filter_level, validate_flags, validate_guild_id, validate_hook, validate_id,
     validate_install_parameters, validate_integration_public, validate_integration_requires_code_grant,
     validate_integration_types, validate_integration_types_configuration, validate_interaction_endpoint_url,
@@ -1117,7 +1117,7 @@ class Application(DiscordEntity, immortal = True):
         type(self).cover.put_into(self.cover, data, defaults, as_data = not include_internals)
         put_custom_install_url(self.custom_install_url, data, defaults)
         put_description(self.description, data, defaults)
-        put_flags(self.flags, data, defaults)
+        put_flags__request(self.flags, data, defaults)
         type(self).icon.put_into(self.icon, data, defaults, as_data = not include_internals)
         put_install_parameters(self.install_parameters, data, defaults)
         put_interaction_endpoint_url(self.interaction_endpoint_url, data, defaults)
@@ -1143,7 +1143,7 @@ class Application(DiscordEntity, immortal = True):
         data : `dict<str, object>`
         """
         data = {}
-        put_flags(self.flags, data, defaults)
+        put_flags__serialisation(self.flags, data, defaults)
         if include_internals:
             put_id(self.id, data, defaults)
         return data
@@ -1285,7 +1285,7 @@ class Application(DiscordEntity, immortal = True):
         put_bot_requires_code_grant(self.bot_requires_code_grant, data, defaults)
         type(self).cover.put_into(self.cover, data, defaults, as_data = not include_internals)
         put_description(self.description, data, defaults)
-        put_flags(self.flags, data, defaults)
+        put_flags__serialisation(self.flags, data, defaults)
         put_hook(self.hook, data, defaults)
         if include_internals:
             put_id(self.id, data, defaults)
@@ -1967,7 +1967,7 @@ class Application(DiscordEntity, immortal = True):
             The end-user license agreement's id of the application.
         
         event_webhook_event_types : `None | iterable<ApplicationEventWebhookEventType | str>`, Optional (Keyword only)
-            The type event of eventy received through event webhook.
+            The type of events received through event webhook.
         
         event_webhook_state : ApplicationEventWebhookState | int`, Optional (Keyword only)
             The state of the event webhook.
@@ -2192,7 +2192,7 @@ class Application(DiscordEntity, immortal = True):
             The end-user license agreement's id of the application.
         
         event_webhook_event_types : `None | iterable<ApplicationEventWebhookEventType | str>`, Optional (Keyword only)
-            The type event of eventy received through event webhook.
+            The type of events received through event webhook.
         
         event_webhook_state : ApplicationEventWebhookState | int`, Optional (Keyword only)
             The state of the event webhook.
@@ -2428,7 +2428,7 @@ class Application(DiscordEntity, immortal = True):
             The end-user license agreement's id of the application.
         
         event_webhook_event_types : `None | iterable<ApplicationEventWebhookEventType | str>`, Optional (Keyword only)
-            The type event of eventy received through event webhook.
+            The type of events received through event webhook.
         
         event_webhook_state : ApplicationEventWebhookState | int`, Optional (Keyword only)
             The state of the event webhook.
@@ -2733,7 +2733,7 @@ class Application(DiscordEntity, immortal = True):
         
         return False
     
-    
+
     def iter_aliases(self):
         """
         Iterates over the aliases of the application.

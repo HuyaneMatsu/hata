@@ -14,6 +14,7 @@ from ....sticker import Sticker
 from ....user import User, UserBase
 
 from ...attachment import Attachment
+from ...mention_game import MentionGame
 from ...message_activity import MessageActivity
 from ...message_application import MessageApplication
 from ...message_call import MessageCall
@@ -58,6 +59,7 @@ def _assert_fields_set(message):
     vampytest.assert_instance(message.interaction, MessageInteraction, nullable = True)
     vampytest.assert_instance(message.mentioned_channels_cross_guild, tuple, nullable = True)
     vampytest.assert_instance(message.mentioned_everyone, bool)
+    vampytest.assert_instance(message.mentioned_games, tuple, nullable = True)
     vampytest.assert_instance(message.mentioned_role_ids, tuple, nullable = True)
     vampytest.assert_instance(message.mentioned_users, tuple, nullable = True)
     vampytest.assert_instance(message.nonce, str, nullable = True)
@@ -118,6 +120,10 @@ def test__Message__new__all_fields():
         Channel.precreate(202305030007, channel_type = ChannelType.guild_text, name = 'Yuugi'),
     ]
     mentioned_everyone = True
+    mentioned_games = [
+        MentionGame.precreate(202607040021),
+        MentionGame.precreate(202607040022),
+    ]
     mentioned_role_ids = [202305030008, 202305030009]
     mentioned_users = [
         User.precreate(202305030010, name = 'Scarlet'),
@@ -167,6 +173,7 @@ def test__Message__new__all_fields():
         interaction = interaction,
         mentioned_channels_cross_guild = mentioned_channels_cross_guild,
         mentioned_everyone = mentioned_everyone,
+        mentioned_games = mentioned_games,
         mentioned_role_ids = mentioned_role_ids,
         mentioned_users = mentioned_users,
         message_type = message_type,
@@ -201,6 +208,7 @@ def test__Message__new__all_fields():
     vampytest.assert_eq(message.interaction, interaction)
     vampytest.assert_eq(message.mentioned_channels_cross_guild, tuple(mentioned_channels_cross_guild))
     vampytest.assert_eq(message.mentioned_everyone, mentioned_everyone)
+    vampytest.assert_eq(message.mentioned_games, tuple(mentioned_games))
     vampytest.assert_eq(message.mentioned_role_ids, tuple(mentioned_role_ids))
     vampytest.assert_eq(message.mentioned_users, tuple(mentioned_users))
     vampytest.assert_eq(message.nonce, nonce)
@@ -283,6 +291,10 @@ def test__Message__precreate__all_fields():
         Channel.precreate(202305030027, channel_type = ChannelType.guild_text, name = 'Yuugi'),
     ]
     mentioned_everyone = True
+    mentioned_games = [
+        MentionGame.precreate(202607040026),
+        MentionGame.precreate(202607040027),
+    ]
     mentioned_role_ids = [202305030028, 202305030029]
     mentioned_users = [
         User.precreate(202305030030, name = 'Scarlet'),
@@ -341,6 +353,7 @@ def test__Message__precreate__all_fields():
         interaction = interaction,
         mentioned_channels_cross_guild = mentioned_channels_cross_guild,
         mentioned_everyone = mentioned_everyone,
+        mentioned_games = mentioned_games,
         mentioned_role_ids = mentioned_role_ids,
         mentioned_users = mentioned_users,
         message_type = message_type,
@@ -375,6 +388,7 @@ def test__Message__precreate__all_fields():
     vampytest.assert_eq(message.interaction, interaction)
     vampytest.assert_eq(message.mentioned_channels_cross_guild, tuple(mentioned_channels_cross_guild))
     vampytest.assert_eq(message.mentioned_everyone, mentioned_everyone)
+    vampytest.assert_eq(message.mentioned_games, tuple(mentioned_games))
     vampytest.assert_eq(message.mentioned_role_ids, tuple(mentioned_role_ids))
     vampytest.assert_eq(message.mentioned_users, tuple(mentioned_users))
     vampytest.assert_eq(message.nonce, nonce)

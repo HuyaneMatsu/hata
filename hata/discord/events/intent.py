@@ -395,7 +395,7 @@ class IntentFlag(FlagBase):
     
     def __new__(cls, integer = -1):
         """
-        Creates a new ``IntentFlag`` from the passed `integer`. If any invalid intent flag is passed, those
+        Creates a new instance from the passed `integer`. If any invalid intent flag is passed, those
         will be removed. If the wrapper is started up without presence caching, then `.guild_presences` will be
         set to `False` by default.
         

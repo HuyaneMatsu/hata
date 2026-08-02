@@ -1,4 +1,5 @@
 from base64 import b64encode as base_64_encode
+from warnings import catch_warnings, simplefilter as apply_simple_filter
 
 import vampytest
 from scarletio.web_common import FormData
@@ -45,7 +46,14 @@ def test__CONVERSION_VOICE_ATTACHMENT__set_validator(input_value):
     -------
     output : ```list<None | VoiceAttachment>```
     """
-    return [*CONVERSION_VOICE_ATTACHMENT.set_validator(input_value)]
+    with catch_warnings(record = True) as warnings:
+        apply_simple_filter('always')
+        
+        output = [*CONVERSION_VOICE_ATTACHMENT.set_validator(input_value)]
+        
+        vampytest.assert_eq(len(warnings), 1)
+    
+    return output
 
 
 def _iter_options__serializer_putter():

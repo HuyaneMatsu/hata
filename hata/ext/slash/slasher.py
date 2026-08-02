@@ -192,7 +192,7 @@ class CommandState(RichAttributeErrorBaseType):
     
     def __init__(self, is_non_global):
         """
-        Creates a new ``CommandState``.
+        Creates a new instance.
         
         Parameters
         ----------

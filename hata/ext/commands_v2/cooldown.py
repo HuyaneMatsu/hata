@@ -22,7 +22,7 @@ class CooldownUnit:
     
     def __init__(self, expires_at, uses_left):
         """
-        Creates a new ``CooldownUnit`` with the given parameters.
+        Creates a new instance with the given parameters.
         
         Parameters
         ----------
@@ -177,7 +177,7 @@ class CooldownHandler:
     
     def __new__(cls, for_, reset, limit = 1, weight = 1):
         """
-        Creates a new ``CooldownHandler`` from the given parameters.
+        Creates a new instance from the given parameters.
         
         Parameters
         ----------

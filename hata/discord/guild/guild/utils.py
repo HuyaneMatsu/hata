@@ -213,7 +213,7 @@ def create_new_guild_data(
     explicit_content_filter_level : ``ExplicitContentFilterLevel``, `int`, Optional (Keyword only)
         The content filter level of the guild.
     
-    icon : `None`, `bytes-like`, Optional (Keyword only)
+    icon : `None | bytes-like`, Optional (Keyword only)
         The icon of the new guild.
     
     name : `str`, Optional (Keyword only)

@@ -434,6 +434,16 @@ class DiscordApiClient(RichAttributeErrorBaseType):
             headers = headers,
         )
     
+    
+    async def user_application_role_connection_delete(self, application_id, headers):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.user_application_role_connection_delete, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_DELETE,
+            f'{API_ENDPOINT}/users/@me/applications/{application_id}/role-connection',
+            headers = headers,
+        )
+    
+    
     # channel
     async def channel_private_create(self, data):
         return await self.discord_request(

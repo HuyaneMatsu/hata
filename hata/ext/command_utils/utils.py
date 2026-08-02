@@ -73,7 +73,7 @@ class Timeouter:
     
     def __init__(self, owner, timeout):
         """
-        Creates a new ``Timeouter`` with the given `owner` and `timeout`.
+        Creates a new instance with the given `owner` and `timeout`.
         
         Parameters
         ----------

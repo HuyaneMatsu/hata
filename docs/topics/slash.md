@@ -732,6 +732,7 @@ content type and resolution, all the same.
 Here is a simple message of downloading the passed attachment and sending it back.
 
 ```py3
+from hata import attachment_request_create_regular_create
 from hata.ext.slash import InteractionResponse
 
 @Nitori.interactions(guild = TEST_GUILD)
@@ -740,8 +741,12 @@ async def resend(
     attachment: ('attachment', 'File!'),
 ):
     yield
-    file = await client.download_attachment(attachment)
-    yield InteractionResponse(file = (attachment.name, file))
+    data = await client.download_attachment(attachment)
+    yield InteractionResponse(
+        attachments = [
+            attachment_request_create_regular_create(attachment.name, data),
+        ],
+    )
 ```
 
 ### Capturing messages & exceptions

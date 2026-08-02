@@ -46,7 +46,7 @@ class ChannelOutputStream:
     
     def __init__(self, client, channel, chunk_size, sanitize):
         """
-        Creates a new ``ChannelOutputStream`` with the given parameters.
+        Creates a new instance with the given parameters.
         
         Parameters
         ----------
@@ -361,7 +361,7 @@ class ChannelInputStream:
     
     def __init__(self, client, channel, check):
         """
-        Creates a new ``ChannelInputStream`` with the given parameters.
+        Creates a new instance with the given parameters.
         
         Parameters
         ----------

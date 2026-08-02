@@ -30,7 +30,7 @@ class DocWarning:
     
     def __new__(cls, path, reason):
         """
-        Creates a new ``DocWarning`` with the given parameters.
+        Creates a new instance with the given parameters.
         
         Parameters
         ----------
@@ -194,7 +194,7 @@ class Grave:
     
     def __init__(self, content, type_):
         """
-        Creates a new ``Grave`` from the given parameters.
+        Creates a new instance from the given parameters.
         
         Parameters
         ----------

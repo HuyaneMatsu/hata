@@ -24,7 +24,7 @@ def _boolean_resolve_single(resolved, value):
     if value is None:
         return
     
-    return (value == '\01')
+    return (value == '\001')
 
 
 def _boolean_iter_resolve_single(resolved, value):
@@ -48,7 +48,7 @@ def _boolean_iter_resolve_single(resolved, value):
     if value is None:
         return
     
-    yield (value == '\01')
+    yield (value == '\001')
 
 
 def _boolean_resolve_multiple(resolved, values):
@@ -70,7 +70,7 @@ def _boolean_resolve_multiple(resolved, values):
     if values is None:
         return
     
-    return (*((value == '\01') for value in values),)
+    return (*((value == '\001') for value in values),)
 
 
 def _iter_resolve_boolean_multiple(resolved, values):
@@ -95,7 +95,7 @@ def _iter_resolve_boolean_multiple(resolved, values):
         return
     
     for value in values:
-        yield (value == '\01')
+        yield (value == '\001')
 
 
 def _string_resolve_single(resolved, value):

@@ -6,20 +6,14 @@ from ..fields import parse_attachments
 
 
 def _iter_options():
-    attachment_id_0 = 202304290006
-    attachment_name_0 = 'Primrose'
-    
-    attachment_id_1 = 202304290007
-    attachment_name_1 = 'Flower'
-    
     attachment_0 = Attachment.precreate(
-        attachment_id_0,
-        name = attachment_name_0,
+        202304290006,
+        name = 'Primrose',
     )
     
     attachment_1 = Attachment.precreate(
-        attachment_id_1,
-        name = attachment_name_1,
+        202304290007,
+        name = 'Flower',
     )
     
     yield (
@@ -57,7 +51,10 @@ def _iter_options():
                 attachment_1.to_data(include_internals = True),
             ],
         },
-        (attachment_0, attachment_1),
+        (
+            attachment_0,
+            attachment_1,
+        ),
     )
     
 
@@ -77,4 +74,7 @@ def test__parse_attachments(input_data):
     """
     output = parse_attachments(input_data)
     vampytest.assert_instance(output, tuple, nullable = True)
+    if (output is not None):
+        for element in output:
+            vampytest.assert_instance(element, Attachment)
     return output

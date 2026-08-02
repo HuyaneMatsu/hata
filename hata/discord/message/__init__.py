@@ -1,4 +1,6 @@
 from .attachment import *
+from .attachment_request import *
+from .mention_game import *
 from .message import *
 from .message_activity import *
 from .message_application import *
@@ -18,6 +20,8 @@ from .voice_attachment import *
 
 __all__ = (
     *attachment.__all__,
+    *attachment_request.__all__,
+    *mention_game.__all__,
     *message.__all__,
     *message_activity.__all__,
     *message_application.__all__,

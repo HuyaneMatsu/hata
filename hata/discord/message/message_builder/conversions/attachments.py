@@ -12,6 +12,16 @@ from ....builder.conversion import Conversion
 from ....utils import random_id
 
 from ...attachment import Attachment
+from ...attachment_request import (
+    ATTACHMENT_REQUEST_ACTION_CREATE, ATTACHMENT_REQUEST_MASK_ACTION, ATTACHMENT_REQUEST_MASK_TYPE,
+    ATTACHMENT_REQUEST_SHIFT_ACTION, ATTACHMENT_REQUEST_SHIFT_TYPE, ATTACHMENT_REQUEST_TYPE_VOICE, AttachmentRequest,
+    attachment_request_copy_with_attachment_id, attachment_request_create_keep,
+    attachment_request_create_regular_create, attachment_request_serialise
+)
+from ...message import MessageFlag
+
+
+MESSAGE_FLAG_VOICE_MESSAGE = MessageFlag().update_by_keys(voice_message = True)
 
 
 def _is_attachments(value):
@@ -22,14 +32,13 @@ def _is_attachments(value):
     
     Parameters
     ----------
-    value : `None`, `(str, object)`, `dict<str, object>, \
-            `(list | Deque)<(object,) | (None | str, object) | (None | str, object, None | str)>)`
+    value : ``None | Attachment | AttachmentRequest | (str, object) | (str, object, None | str), (list | Deque | dict)<...>``
         The value to check.
     
     Yields
     ------
-    attachments : `None | list<(bool<True>, int) | (bool<False>, (str, object, None | str))>`
-        The processed attachments:
+    attachment_requests: ``None | list<AttachmentRequest>``
+        The processed attachments.
     """
     # None
     if value is None:
@@ -38,49 +47,78 @@ def _is_attachments(value):
     
     # tuple
     if isinstance(value, tuple):
-        for attachment in _is_valid_tuple_attachment(value):
-            yield [attachment]
+        for attachment_request in _is_valid_tuple_attachment(value):
+            yield [attachment_request]
+        return
+    
+    # AttachmentRequest
+    if isinstance(value, AttachmentRequest):
+        yield [attachment_request_copy_with_attachment_id(value, 0)]
         return
     
     # Attachment
     if isinstance(value, Attachment):
-        yield [(True, value.id)]
+        yield [attachment_request_create_keep(value.id)]
         return
     
     # list | Deque
     if isinstance(value, list) or isinstance(value, Deque):
-        attachments = None
+        attachment_requests = None
+        attachment_index = 0
         
         for element in value:
-            for attachment in _is_single_attachment(element):
+            for attachment_request in _is_single_attachment(element):
                 break
             else:
                 return
             
-            if attachments is None:
-                attachments = []
+            if (
+                ((attachment_request.attachment_request_flags >> ATTACHMENT_REQUEST_SHIFT_ACTION) & ATTACHMENT_REQUEST_MASK_ACTION)
+                == ATTACHMENT_REQUEST_ACTION_CREATE
+            ):
+                if attachment_request.attachment_id != attachment_index:
+                    attachment_request = attachment_request_copy_with_attachment_id(
+                        attachment_request, attachment_index
+                    )
+                attachment_index += 1
             
-            attachments.append(attachment)
+            if attachment_requests is None:
+                attachment_requests = []
+            
+            attachment_requests.append(attachment_request)
             continue
         
-        yield attachments
+        yield attachment_requests
         return
     
     # dict-like
     if hasattr(type(value), 'items'):
-        attachments = None
+        attachment_requests = None
+        attachment_index = 0
         
         for item in value.items():
-            if attachments is None:
-                attachments = []
+            attachment_request = attachment_request_create_regular_create(*item)
             
-            attachments.append((False, (*item, None)))
+            if (
+                ((attachment_request.attachment_request_flags >> ATTACHMENT_REQUEST_SHIFT_ACTION) & ATTACHMENT_REQUEST_MASK_ACTION)
+                == ATTACHMENT_REQUEST_ACTION_CREATE
+            ):
+                if attachment_request.attachment_id != attachment_index:
+                    attachment_request = attachment_request_copy_with_attachment_id(
+                        attachment_request, attachment_index
+                    )
+                attachment_index += 1
+            
+            if attachment_requests is None:
+                attachment_requests = []
+            
+            attachment_requests.append(attachment_request)
         
-        yield attachments
+        yield attachment_requests
         return
     
     # rest
-    yield [(False, (_get_or_create_io_name(value), value, None))]
+    yield [attachment_request_create_regular_create(_get_or_create_io_name(value), value)]
     return
 
 
@@ -92,24 +130,27 @@ def _is_single_attachment(value):
     
     Parameters
     ----------
-    value : `None`, `(str, object)`, `dict<str, object>, \
-            `(list | Deque)<(object,) | (None | str, object) | (None | str, object, None | str)>)`
-        The value to check
+    value : ``Attachment | AttachmentRequest | (str, object) | (str, object, None | str)``
+        The value to check.
     
     Yields
     ------
-    attachments : `(bool<True>, int) | (bool<False>, (str, object, None | str))`
-        The processed attachments
+    attachment_request : ``AttachmentRequest``
+        The processed attachment.
     """
     if isinstance(value, tuple):
         yield from _is_valid_tuple_attachment(value)
         return
     
-    if isinstance(value, Attachment):
-        yield (True, value.id)
+    if isinstance(value, AttachmentRequest):
+        yield value
         return
     
-    yield (False, (_get_or_create_io_name(value), value, None))
+    if isinstance(value, Attachment):
+        yield attachment_request_create_keep(value.id)
+        return
+    
+    yield attachment_request_create_regular_create(_get_or_create_io_name(value), value)
     return
 
 
@@ -143,12 +184,12 @@ def _is_valid_tuple_attachment(value):
     
     Parameters
     ----------
-    value : `(None | str, object) | (None | str, object, None | str)`
+    value : `(str, object) | (str, object, None | str)`
         The value to check.
     
     Yields
     ------
-    attachment : `(bool<False>, (str, object, None | str))`
+    attachment_request : ``AttachmentRequest``
     """
     length = len(value)
     if length < 1 or length > 3:
@@ -173,30 +214,7 @@ def _is_valid_tuple_attachment(value):
     if (name is None) or (not name):
         name = _get_or_create_io_name(io)
     
-    yield False, (name, io, description)
-
-
-def _build_partial_attachment_data(attachment_id, description):
-    """
-    Builds a partial attachment data to be sent to Discord.
-    
-    Parameters
-    ----------
-    attachment_id : `int`
-        The attachment's identifier.
-    description : `None | str`
-        Description for the attachment.
-    
-    Returns
-    -------
-    data : `dict<str, object>
-    """
-    data = {'id': str(attachment_id)}
-    
-    if (description is not None):
-        data['description'] = description
-    
-    return data
+    yield attachment_request_create_regular_create(name, io, description = description)
 
 
 class CONVERSION_ATTACHMENTS(Conversion):
@@ -237,26 +255,13 @@ class CONVERSION_ATTACHMENTS(Conversion):
     
     if API_VERSION >= 9:
         def serializer_putter(data, required, value):
-            
-            file_attachment_index = 0
-            
             if value is None:
                 attachment_datas = None
             
             else:
-                attachment_datas = []
-                
-                for is_attachment, details in value:
-                    if is_attachment:
-                        attachment_id = details
-                        description = None
-                    else:
-                        attachment_id = file_attachment_index
-                        file_attachment_index += 1
-                        description = details[2]
-                    
-                    attachment_datas.append(_build_partial_attachment_data(attachment_id, description))
-            
+                attachment_datas = [
+                    attachment_request_serialise(attachment_request) for attachment_request in value
+                ]
             
             if (not required) and (attachment_datas is None):
                 return data
@@ -266,17 +271,63 @@ class CONVERSION_ATTACHMENTS(Conversion):
             else:
                 data['attachments'] = attachment_datas
             
-            if not file_attachment_index:
+            if (value is None) or all(
+                (
+                    (attachment_request.attachment_request_flags >> ATTACHMENT_REQUEST_SHIFT_ACTION) & ATTACHMENT_REQUEST_MASK_ACTION
+                    != ATTACHMENT_REQUEST_ACTION_CREATE
+                )
+                for attachment_request in value
+            ):
                 return data
+            
+            # Check whether we are creating a voice attachment message.
+            while True:
+                # It can have only 1 attachment.
+                if len(value) != 1:
+                    break
+                
+                # It must be a new attachment.
+                attachment_request = value[0]
+                if (
+                    (attachment_request.attachment_request_flags >> ATTACHMENT_REQUEST_SHIFT_ACTION) & ATTACHMENT_REQUEST_MASK_ACTION
+                    != ATTACHMENT_REQUEST_ACTION_CREATE
+                ):
+                    break
+                
+                # It must be a voice attachment.
+                if (
+                    (attachment_request.attachment_request_flags >> ATTACHMENT_REQUEST_SHIFT_TYPE) & ATTACHMENT_REQUEST_MASK_TYPE
+                    != ATTACHMENT_REQUEST_TYPE_VOICE
+                ):
+                    break
+                
+                # It must not have content fields.
+                if (
+                    ('content' in data) or
+                    ('embed' in data) or
+                    ('components' in data) or
+                    ('poll' in data)
+                ):
+                    break
+                
+                data['flags'] = data.get('flags', 0) | MESSAGE_FLAG_VOICE_MESSAGE
+                break
             
             form = FormData()
             form.add_json('payload_json', data)
             
-            for file_attachment_index, (name, io, description) in enumerate(
-                details for is_attachment, details in value if not is_attachment
-            ):
+            for attachment_request in value:
+                if (
+                    ((attachment_request.attachment_request_flags >> ATTACHMENT_REQUEST_SHIFT_ACTION) & ATTACHMENT_REQUEST_MASK_ACTION)
+                    != ATTACHMENT_REQUEST_ACTION_CREATE
+                ):
+                    continue
+                
                 form.add_field(
-                    f'files[{file_attachment_index}]', io, file_name = name, content_type = 'application/octet-stream'
+                    f'files[{attachment_request.attachment_id}]',
+                    attachment_request.io,
+                    file_name = attachment_request.name,
+                    content_type = 'application/octet-stream',
                 )
             
             return form
@@ -286,7 +337,13 @@ class CONVERSION_ATTACHMENTS(Conversion):
             if value is None:
                 return data
             
-            file_attachments = [details for is_attachment, details in value if not is_attachment]
+            file_attachments = [
+                attachment_request_serialise(attachment_request) for attachment_request in value
+                if  (
+                    (attachment_request.attachment_request_flags >> ATTACHMENT_REQUEST_SHIFT_ACTION) & ATTACHMENT_REQUEST_MASK_ACTION
+                    == ATTACHMENT_REQUEST_ACTION_CREATE
+                )
+            ]
             if not file_attachments:
                 return data
             
@@ -294,12 +351,20 @@ class CONVERSION_ATTACHMENTS(Conversion):
             form.add_json('payload_json', data)
             
             if len(file_attachments) == 1:
-                name, io, description = file_attachments
-                form.add_field('file', io, file_name = name, content_type = 'application/octet-stream')
+                attachment_request = file_attachments[0]
+                form.add_field(
+                    'file',
+                    attachment_request.io,
+                    file_name = attachment_request.name,
+                    content_type = 'application/octet-stream',
+                )
             else:
-                for file_attachment_index, (name, io, description) in enumerate(file_attachments):
+                for attachment_request in file_attachments:
                     form.add_field(
-                        f'file{file_attachment_index}s', io, file_name = name, content_type = 'application/octet-stream'
+                        f'file{attachment_request.attachment_id}s',
+                        attachment_request.id,
+                        file_name = attachment_request.name,
+                        content_type = 'application/octet-stream',
                     )
             
             return form

@@ -16,6 +16,7 @@ from ....user import User
 from ....utils import datetime_to_timestamp
 
 from ...attachment import Attachment
+from ...mention_game import MentionGame
 from ...message_activity import MessageActivity
 from ...message_application import MessageApplication
 from ...message_call import MessageCall
@@ -65,6 +66,10 @@ def test__Message__from_data__all_fields():
         Channel.precreate(202305030046, channel_type = ChannelType.guild_text, name = 'Yuugi'),
     ]
     mentioned_everyone = True
+    mentioned_games = [
+        MentionGame.precreate(202607040024),
+        MentionGame.precreate(202607040025),
+    ]
     mentioned_role_ids = [202305030047, 202305030048]
     mentioned_users = [
         User.precreate(202305030049, name = 'Scarlet'),
@@ -119,6 +124,7 @@ def test__Message__from_data__all_fields():
         'interaction_metadata': interaction.to_data(include_internals = True),
         'mention_channels': [create_partial_channel_data(channel) for channel in mentioned_channels_cross_guild],
         'mention_everyone': mentioned_everyone,
+        'mention_games': [mention_game.to_data() for mention_game in mentioned_games],
         'mention_roles': [str(role_id) for role_id in mentioned_role_ids],
         'mentions': [user.to_data(include_internals = True) for user in mentioned_users],
         'pinned': pinned,
@@ -162,6 +168,7 @@ def test__Message__from_data__all_fields():
     vampytest.assert_eq(message.interaction, interaction)
     vampytest.assert_eq(message.mentioned_channels_cross_guild, tuple(mentioned_channels_cross_guild))
     vampytest.assert_eq(message.mentioned_everyone, mentioned_everyone)
+    vampytest.assert_eq(message.mentioned_games, tuple(mentioned_games))
     vampytest.assert_eq(message.mentioned_role_ids, tuple(mentioned_role_ids))
     vampytest.assert_eq(message.mentioned_users, tuple(mentioned_users))
     vampytest.assert_eq(message.nonce, nonce)
@@ -370,6 +377,10 @@ def test__Message__to_data():
         Channel.precreate(202310110017, channel_type = ChannelType.guild_text, name = 'Yuugi'),
     ]
     mentioned_everyone = True
+    mentioned_games = [
+        MentionGame.precreate(202607040028),
+        MentionGame.precreate(202607040029),
+    ]
     mentioned_role_ids = [202310110018, 202310110019]
     mentioned_users = [
         User.precreate(202310110020, name = 'Scarlet'),
@@ -425,6 +436,7 @@ def test__Message__to_data():
         'interaction_metadata': interaction.to_data(defaults = True, include_internals = True),
         'mention_channels': [create_partial_channel_data(channel) for channel in mentioned_channels_cross_guild],
         'mention_everyone': mentioned_everyone,
+        'mention_games': [mention_game.to_data(defaults = True) for mention_game in mentioned_games],
         'mention_roles': [str(role_id) for role_id in mentioned_role_ids],
         'mentions': [user.to_data(defaults = True, include_internals = True) for user in mentioned_users],
         'pinned': pinned,
@@ -472,6 +484,7 @@ def test__Message__to_data():
         interaction = interaction,
         mentioned_channels_cross_guild = mentioned_channels_cross_guild,
         mentioned_everyone = mentioned_everyone,
+        mentioned_games = mentioned_games,
         mentioned_role_ids = mentioned_role_ids,
         mentioned_users = mentioned_users,
         message_type = message_type,
@@ -788,6 +801,10 @@ def test__Message__difference_update_attributes():
         Channel.precreate(202305030086, channel_type = ChannelType.guild_text, name = 'Yuugi'),
     ]
     old_mentioned_everyone = True
+    old_mentioned_games = [
+        MentionGame.precreate(202607040030),
+        MentionGame.precreate(202607040031),
+    ]
     old_mentioned_role_ids = [202305030130, 202305030131]
     old_mentioned_users = [
         User.precreate(202305030087, name = 'Scarlet'),
@@ -818,6 +835,10 @@ def test__Message__difference_update_attributes():
         Channel.precreate(202305030092, channel_type = ChannelType.guild_text, name = 'Reisen'),
     ]
     new_mentioned_everyone = False
+    new_mentioned_games = [
+        MentionGame.precreate(202607040032),
+        MentionGame.precreate(202607040033),
+    ]
     new_mentioned_role_ids = [202305030093, 202305030094]
     new_mentioned_users = [
         User.precreate(202305030095, name = 'Hecatia'),
@@ -841,6 +862,7 @@ def test__Message__difference_update_attributes():
         flags = old_flags,
         mentioned_channels_cross_guild = old_mentioned_channels_cross_guild,
         mentioned_everyone = old_mentioned_everyone,
+        mentioned_games = old_mentioned_games,
         mentioned_role_ids = old_mentioned_role_ids,
         mentioned_users = old_mentioned_users,
         pinned = old_pinned,
@@ -859,6 +881,7 @@ def test__Message__difference_update_attributes():
         'pinned': new_pinned,
         'poll': new_poll.to_data(include_internals = True),
         'mention_channels': [create_partial_channel_data(channel) for channel in new_mentioned_channels_cross_guild],
+        'mention_games': [mention_game.to_data() for mention_game in new_mentioned_games],
         'mention_everyone': new_mentioned_everyone,
         'mention_roles': [str(role_id) for role_id in new_mentioned_role_ids],
         'mentions': [user.to_data(include_internals = True) for user in new_mentioned_users],
@@ -876,6 +899,7 @@ def test__Message__difference_update_attributes():
     vampytest.assert_eq(message.flags, new_flags)
     vampytest.assert_eq(message.mentioned_channels_cross_guild, tuple(new_mentioned_channels_cross_guild))
     vampytest.assert_eq(message.mentioned_everyone, new_mentioned_everyone)
+    vampytest.assert_eq(message.mentioned_games, tuple(new_mentioned_games))
     vampytest.assert_eq(message.mentioned_role_ids, tuple(new_mentioned_role_ids))
     vampytest.assert_eq(message.mentioned_users, tuple(new_mentioned_users))
     vampytest.assert_eq(message.pinned, new_pinned)
@@ -892,6 +916,7 @@ def test__Message__difference_update_attributes():
         'flags': old_flags,
         'mentioned_channels_cross_guild': tuple(old_mentioned_channels_cross_guild),
         'mentioned_everyone': old_mentioned_everyone,
+        'mentioned_games': tuple(old_mentioned_games),
         'mentioned_role_ids': tuple(old_mentioned_role_ids),
         'mentioned_users': tuple(old_mentioned_users),
         'pinned': old_pinned,
@@ -961,6 +986,10 @@ def test__Message__update_attributes():
         Channel.precreate(202305030101, channel_type = ChannelType.guild_text, name = 'Yuugi'),
     ]
     old_mentioned_everyone = True
+    old_mentioned_games = [
+        MentionGame.precreate(202607040034),
+        MentionGame.precreate(202607040035),
+    ]
     old_mentioned_role_ids = [202305030102, 202305030103]
     old_mentioned_users = [
         User.precreate(202305030104, name = 'Scarlet'),
@@ -991,6 +1020,10 @@ def test__Message__update_attributes():
         Channel.precreate(202305030109, channel_type = ChannelType.guild_text, name = 'Reisen'),
     ]
     new_mentioned_everyone = False
+    new_mentioned_games = [
+        MentionGame.precreate(202607040036),
+        MentionGame.precreate(202607040037),
+    ]
     new_mentioned_role_ids = [202305030110, 202305030111]
     new_mentioned_users = [
         User.precreate(202305030112, name = 'Hecatia'),
@@ -1014,6 +1047,7 @@ def test__Message__update_attributes():
         flags = old_flags,
         mentioned_channels_cross_guild = old_mentioned_channels_cross_guild,
         mentioned_everyone = old_mentioned_everyone,
+        mentioned_games = old_mentioned_games,
         mentioned_role_ids = old_mentioned_role_ids,
         mentioned_users = old_mentioned_users,
         pinned = old_pinned,
@@ -1033,6 +1067,7 @@ def test__Message__update_attributes():
         'poll': new_poll.to_data(include_internals = True),
         'mention_channels': [create_partial_channel_data(channel) for channel in new_mentioned_channels_cross_guild],
         'mention_everyone': new_mentioned_everyone,
+        'mention_games': [mention_game.to_data() for mention_game in new_mentioned_games],
         'mention_roles': [str(role_id) for role_id in new_mentioned_role_ids],
         'mentions': [user.to_data(include_internals = True) for user in new_mentioned_users],
         'resolved': new_resolved.to_data(),
@@ -1049,6 +1084,7 @@ def test__Message__update_attributes():
     vampytest.assert_eq(message.flags, new_flags)
     vampytest.assert_eq(message.mentioned_channels_cross_guild, tuple(new_mentioned_channels_cross_guild))
     vampytest.assert_eq(message.mentioned_everyone, new_mentioned_everyone)
+    vampytest.assert_eq(message.mentioned_games, tuple(new_mentioned_games))
     vampytest.assert_eq(message.mentioned_role_ids, tuple(new_mentioned_role_ids))
     vampytest.assert_eq(message.mentioned_users, tuple(new_mentioned_users))
     vampytest.assert_eq(message.pinned, new_pinned)

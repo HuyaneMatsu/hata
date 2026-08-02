@@ -272,10 +272,12 @@ def put_entries(entries, data, defaults):
     
     Parameters
     ----------
-    entries : `None | dict<int, AutoModerationRule>`
+    entries : ``None | dict<int, AutoModerationRule>``
         The entries to serialise.
+    
     data : `dict<str, object>`
         Json serializable dictionary.
+    
     defaults : `bool`
         Whether default values should be included as well.
     

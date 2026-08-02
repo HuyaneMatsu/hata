@@ -85,7 +85,7 @@ class AuditLog(RichAttributeErrorBaseType):
             The mentioned scheduled events mentioned by the audit log's entries.
         threads : `None`, `iterable` of ``Channel``, Optional (Keyword only)
             The mentioned threads inside of the audit log's entries.
-        users : `None`, `iterable` of ``ClientUserBase``, Optional (Keyword only)
+        users : ``None | iterable<ClientUserBase>``, Optional (Keyword only)
             The mentioned users by the audit log's entries.
         webhooks : `None`, `iterable` of ``Webhook`, Optional (Keyword only)
             The mentioned webhook by the audit log's entries.
@@ -358,7 +358,7 @@ class AuditLog(RichAttributeErrorBaseType):
             The mentioned scheduled events mentioned by the audit log's entries.
         threads : `None`, `iterable` of ``Channel``, Optional (Keyword only)
             The mentioned threads inside of the audit log's entries.
-        users : `None`, `iterable` of ``ClientUserBase``, Optional (Keyword only)
+        users : ``None | iterable<ClientUserBase>``, Optional (Keyword only)
             The mentioned users by the audit log's entries.
         webhooks : `None`, `iterable` of ``Webhook`, Optional (Keyword only)
             The mentioned webhook by the audit log's entries.

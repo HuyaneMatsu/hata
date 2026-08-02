@@ -1538,7 +1538,7 @@ class ParserIdentifier(ParserBase):
     
     def __new__(cls, parser, identifier):
         """
-        Creates a new ``ParserIdentifier`` from the given parameters.
+        Creates a new instance from the given parameters.
         
         Parameters
         ----------
@@ -1584,7 +1584,7 @@ class ParserPostfixCheck(ParserBase):
     
     def __new__(cls, parser, message):
         """
-        Creates a new ``ParserPostfixCheck``.
+        Creates a new instance.
         
         Parameters
         ----------
@@ -1636,7 +1636,7 @@ class ParserCharRange(ParserBase):
     
     def __new__(cls, start, end):
         """
-        Creates a new ``ParserCharRange`` from the given parameters.
+        Creates a new instance from the given parameters.
         
         Parameters
         ----------
@@ -1688,7 +1688,7 @@ class ParserOptional(ParserBase):
     
     def __new__(cls, parser):
         """
-        Creates a new ``ParserOptional`` parser instance with the given parser.
+        Creates a new instance parser instance with the given parser.
         
         Parameters
         ----------
@@ -1726,7 +1726,7 @@ class ParserRepeat(ParserBase):
     
     def __new__(cls, parser):
         """
-        Creates a new ``ParserRepeat`` with the given parameters.
+        Creates a new instance with the given parameters.
         
         Parameters
         ----------
@@ -1765,7 +1765,7 @@ class ParserCharOne(ParserBase):
     
     def __new__(cls, value):
         """
-        Creates a new ``ParserCharOne`` with the given character.
+        Creates a new instance with the given character.
         
         Parameters
         ----------
@@ -1809,7 +1809,7 @@ class ParserCharSequence(ParserBase):
     
     def __new__(cls, sequence):
         """
-        Creates a new ``ParserCharSequence`` parser.
+        Creates a new instance parser.
         
         Parameters
         ----------
@@ -1861,7 +1861,7 @@ class ParserCharAny(ParserBase):
     
     def __new__(cls, characters):
         """
-        Creates a new ``ParserCharAny`` parser from the given characters.
+        Creates a new instance parser from the given characters.
         
         Parameters
         ----------
@@ -1906,7 +1906,7 @@ class ParserSequence(ParserBase):
     
     def __new__(cls, parsers):
         """
-        Creates a new ``ParserSequence`` from the given parsers.
+        Creates a new instance from the given parsers.
         
         Parameters
         ----------
@@ -1957,7 +1957,7 @@ class ParserAny(ParserBase):
     
     def __new__(cls, parsers):
         """
-        Creates a new ``ParserAny`` from the given parsers.
+        Creates a new instance from the given parsers.
         
         Parameters
         ----------
@@ -2459,7 +2459,7 @@ class EvaluationError(SlasherCommandError):
     
     def __new__(cls, array, highlight_groups, message):
         """
-        Creates a new ``EvaluationError`` from the given parameters.
+        Creates a new instance from the given parameters.
         
         Parameters
         ----------
@@ -2737,7 +2737,7 @@ class Token:
     
     def __new__(cls, array, start, end, identifier, sub_tokens, value):
         """
-        Creates a new ``Token`` with the given parameters
+        Creates a new instance with the given parameters
         
         Parameters
         ----------
@@ -2821,7 +2821,7 @@ class ParsingState:
     
     def __new__(cls, text):
         """
-        Creates a new ``ParsingState`` from the given text.
+        Creates a new instance from the given text.
         
         Parameters
         ----------

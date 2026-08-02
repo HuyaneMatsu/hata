@@ -3430,7 +3430,7 @@ class Guild(DiscordEntity, immortal = True):
         
         Returns
         -------
-        boosters : `None`, `tuple` of ``ClientUserBase``
+        boosters : ``None | tuple<ClientUserBase>``
         """
         if not self.boost_count:
             return None
@@ -3464,7 +3464,7 @@ class Guild(DiscordEntity, immortal = True):
         
         Returns
         -------
-        boosters : `None`, `tuple` of ``ClientUserBase``
+        boosters : ``None | tuple<ClientUserBase>``
         """
         state = self._state
         if state & GUILD_STATE_MASK_CACHE_BOOSTERS:

@@ -26,7 +26,7 @@ class ParameterConverterInternal(ParameterConverterBase):
     
     def __new__(cls, parameter_name, converter_type, converter):
         """
-        Creates a new ``ParameterConverterInternal`` with the given parameters.
+        Creates a new instance with the given parameters.
         
         Parameters
         ----------

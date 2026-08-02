@@ -6,8 +6,8 @@ from ..fields import validate_value__bool
 def _iter_options__passing():
     yield None, None
     yield '', None
-    yield '\00', '\00'
-    yield '\01', '\01'
+    yield '\000', '\000'
+    yield '\001', '\001'
 
 
 def _iter_options__type_error():

@@ -1,28 +1,59 @@
 import vampytest
 
+from ....attachment_request import AttachmentRequest, attachment_request_create_regular_create
+
 from ..attachments import _is_valid_tuple_attachment
 
-
-class TestType():
-    __slots__ = ('name')
-    
-    def __new__(cls, name):
-        self = object.__new__(cls)
-        self.name = name
-        return self
+from .helpers import TestType
 
 
 def _iter_options():
     instance_0 = TestType('mister')
     
-    yield (instance_0,), [(False, ('mister', instance_0, None))]
-    yield (None, instance_0,), [(False, ('mister', instance_0, None))]
-    yield ('hey', instance_0,), [(False, ('hey', instance_0, None))]
-    yield (None, instance_0, 'satori'), [(False, ('mister', instance_0, 'satori'))]
-    yield ('hey', instance_0, 'satori'), [(False, ('hey', instance_0, 'satori'))]
+    yield (
+        (instance_0,),
+        [
+            attachment_request_create_regular_create('mister', instance_0),
+        ],
+    )
     
-    yield (), []
-    yield (None, instance_0, None, None), []
+    yield (
+        (None, instance_0,),
+        [
+            attachment_request_create_regular_create('mister', instance_0),
+        ],
+    )
+    
+    yield (
+        ('hey', instance_0,),
+        [
+            attachment_request_create_regular_create('hey', instance_0),
+        ],
+    )
+    
+    yield (
+        (None, instance_0, 'satori'),
+        [
+            attachment_request_create_regular_create('mister', instance_0, description = 'satori'),
+        ],
+    )
+    
+    yield (
+        ('hey', instance_0, 'satori'),
+        [
+            attachment_request_create_regular_create('hey', instance_0, description = 'satori'),
+        ],
+    )
+    
+    yield (
+        (),
+        [],
+    )
+    
+    yield (
+        (None, instance_0, None, None),
+        [],
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
@@ -37,11 +68,11 @@ def test__is_valid_tuple_attachment(input_value):
     
     Returns
     -------
-    output : list<(str, object, None | str)>
+    output : ``list<AttachmentRequest>``
     """
     output = [*_is_valid_tuple_attachment(input_value)]
     
     for element in output:
-        vampytest.assert_instance(element, tuple)
+        vampytest.assert_instance(element, AttachmentRequest)
     
     return output

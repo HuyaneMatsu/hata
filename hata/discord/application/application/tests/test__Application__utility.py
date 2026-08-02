@@ -1217,8 +1217,17 @@ def test__Application__has_cache_emoji_by_id():
 
 
 def _iter_options__icon_url():
-    yield 202505310006, None, False
-    yield 202505310007, Icon(IconType.animated, 5), True
+    yield (
+        202505310006,
+        None,
+        False,
+    )
+    
+    yield (
+        202505310007,
+        Icon(IconType.animated, 5),
+        True,
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options__icon_url()).returning_last())
@@ -1249,8 +1258,25 @@ def test__Application__icon_url(application_id, icon):
 
 
 def _iter_options__icon_url_as():
-    yield 202505310008, None, {'ext': 'webp', 'size': 128}, False
-    yield 202505310009, Icon(IconType.animated, 5), {'ext': 'webp', 'size': 128}, True
+    yield (
+        202505310008,
+        None,
+        {
+            'ext': 'webp',
+            'size': 128,
+        },
+        False,
+    )
+    
+    yield (
+        202505310009,
+        Icon(IconType.animated, 5),
+        {
+            'ext': 'webp',
+            'size': 128,
+        },
+        True,
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options__icon_url_as()).returning_last())
@@ -1284,8 +1310,17 @@ def test__Application__icon_url_as(application_id, icon, keyword_parameters):
 
 
 def _iter_options__cover_url():
-    yield 202505310010, None, False
-    yield 202505310011, Icon(IconType.animated, 5), True
+    yield (
+        202505310010,
+        None,
+        False,
+    )
+    
+    yield (
+        202505310011,
+        Icon(IconType.animated, 5),
+        True,
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options__cover_url()).returning_last())
@@ -1316,8 +1351,25 @@ def test__Application__cover_url(application_id, icon):
 
 
 def _iter_options__cover_url_as():
-    yield 202505310012, None, {'ext': 'webp', 'size': 128}, False
-    yield 202505310013, Icon(IconType.animated, 5), {'ext': 'webp', 'size': 128}, True
+    yield (
+        202505310012,
+        None,
+        {
+            'ext': 'webp',
+            'size': 128,
+        },
+        False,
+    )
+    
+    yield (
+        202505310013,
+        Icon(IconType.animated, 5),
+        {
+            'ext': 'webp',
+            'size': 128,
+        },
+        True,
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options__cover_url_as()).returning_last())

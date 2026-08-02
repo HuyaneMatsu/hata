@@ -32,7 +32,7 @@ class Timeouter:
     
     def __init__(self, owner, timeout):
         """
-        Creates a new ``Timeouter`` with the given `owner` and `timeout`.
+        Creates a new instance with the given `owner` and `timeout`.
         
         Parameters
         ----------
@@ -145,7 +145,7 @@ class ComponentInteractionWaiter:
     
     def __new__(cls, client, message, check, timeout):
         """
-        Creates a new ``ComponentInteractionWaiter`` with the given parameters.
+        Creates a new instance with the given parameters.
         
         Parameters
         ----------
@@ -279,7 +279,7 @@ class ComponentInteractionIterator:
     
     def __new__(cls, client, message, check, timeout, count):
         """
-        Creates a new ``ComponentInteractionWaiter`` with the given parameters.
+        Creates a new instance with the given parameters.
         
         Parameters
         ----------

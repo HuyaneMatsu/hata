@@ -19,7 +19,7 @@ def _iter_options():
     )
     
     yield (
-        '\00',
+        '\000',
         False,
         {
             'value': False,
@@ -27,7 +27,7 @@ def _iter_options():
     )
     
     yield (
-        '\00',
+        '\000',
         True,
         {
             'value': False,
@@ -35,7 +35,7 @@ def _iter_options():
     )
     
     yield (
-        '\01',
+        '\001',
         False,
         {
             'value': True,
@@ -43,7 +43,7 @@ def _iter_options():
     )
     
     yield (
-        '\01',
+        '\001',
         True,
         {
             'value': True,

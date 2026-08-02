@@ -420,7 +420,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     @classmethod
     def from_data(cls, data):
         """
-        Creates a new ``InteractionEvent`` with the given parameters.
+        Creates a new instance with the given parameters.
         
         Parameters
         ----------

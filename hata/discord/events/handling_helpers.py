@@ -1924,7 +1924,7 @@ class WaitForHandler:
     
     def __init__(self):
         """
-        Creates a new ``WaitForHandler``.
+        Creates a new instance.
         """
         self.waiters = {}
     

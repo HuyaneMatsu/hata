@@ -189,7 +189,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         
         Parameters
         ----------
-        access : ``Oauth2Access``, ``Oauth2User``, `str`
+        access : ``str | Oauth2Access | Oauth2User``
             Oauth2 access to the respective user or it's access token.
         
         Returns
@@ -200,7 +200,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         Raises
         ------
         TypeError
-            - If `access` is not ``Oauth2Access``, ``Oauth2User``, `str`.
+            - If `access` is not ``str | Oauth2Access | Oauth2User``.
         ConnectionError
             No internet connection.
         DiscordException
@@ -227,7 +227,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         
         Parameters
         ----------
-        access : ``Oauth2Access``, ``Oauth2User``, `str`
+        access : ``str | Oauth2Access | Oauth2User``
             Oauth2 access to the respective user or it's access token.
         
         Returns
@@ -238,7 +238,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         Raises
         ------
         TypeError
-            - If `access` is not ``Oauth2Access``, ``Oauth2User``, `str`.
+            - If `access` is not ``str | Oauth2Access | Oauth2User``.
         ValueError
             - If the given `access` is not providing the required scope.
         ConnectionError
@@ -320,7 +320,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         guild : ``int | Guild``
             The guild, where the user is going to be added.
         
-        access: ``Oauth2Access``, ``Oauth2User``, `str`
+        access: ``str | Oauth2Access | Oauth2User``
             The access of the user, who will be added.
         
         user : `None`, ```ClientUserBase`` = `None`, Optional
@@ -328,7 +328,7 @@ class ClientCompoundOauth2Endpoints(Compound):
             
             This field is optional if access is passed as an ``Oauth2User`` object.
         
-        nick : `None`, `str` = `None`, Optional (Keyword only)
+        nick : `None | str` = `None`, Optional (Keyword only)
             The nickname, which with the user will be added.
         
         roles : `None`, `list` of (``Role``, `int`) = `None`, Optional (Keyword only)
@@ -369,7 +369,7 @@ class ClientCompoundOauth2Endpoints(Compound):
             if (nick is not None):
                 if not isinstance(nick, str):
                     raise AssertionError(
-                        f'`nick` can be `None`, `str`, got {type(nick).__name__}; {nick!r}.'
+                        f'`nick` can be `None | str`, got {type(nick).__name__}; {nick!r}.'
                     )
                 
                 nick_length = len(nick)
@@ -441,7 +441,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         
         Parameters
         ----------
-        access: ``Oauth2Access``, ``Oauth2User``, `str`
+        access: ``str | Oauth2Access | Oauth2User``
             The access of the user, who's guilds will be requested.
         
         Returns
@@ -452,7 +452,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         Raises
         ------
         TypeError
-            - If `access` is not ``Oauth2Access``, ``Oauth2User``, `str`.
+            - If `access` is not ``str | Oauth2Access | Oauth2User``.
         ValueError
             - If the given `access` is not providing the required scope.
         ConnectionError
@@ -477,7 +477,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         
         Parameters
         ----------
-        access: ``Oauth2Access``, ``Oauth2User``, `str`
+        access: ``str | Oauth2Access | Oauth2User``
             The access of the user, who will's application role connections will be requested..
         
         Returns
@@ -487,7 +487,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         Raises
         ------
         TypeError
-            - If `access` is not ``Oauth2Access``, ``Oauth2User``, `str`.
+            - If `access` is not ``str | Oauth2Access | Oauth2User``.
         ValueError
             - If the given `access` is not providing the required scope.
         ConnectionError
@@ -516,10 +516,10 @@ class ClientCompoundOauth2Endpoints(Compound):
         
         Parameters
         ----------
-        access: ``Oauth2Access``, ``Oauth2User``, `str`
+        access: ``str | Oauth2Access | Oauth2User``
             The access of the user, who will's application role connections will be requested..
         
-        application_role_connection_template : `None`, ``ApplicationRoleConnection`` = `None`, Optional
+        application_role_connection_template : ``None | ApplicationRoleConnection`` = `None`, Optional
             Application role connection to use as a template.
         
         **keyword_parameters : Keyword parameters
@@ -527,10 +527,12 @@ class ClientCompoundOauth2Endpoints(Compound):
         
         Other Parameters
         ----------------
-        platform_name : `None`, `str`, Optional (Keyword only)
+        platform_name : `None | str`, Optional (Keyword only)
             The vanity name of the platform the application represents.
-        platform_user_name : `None`, `str`, Optional (Keyword only)
+        
+        platform_user_name : `None | str`, Optional (Keyword only)
             The name of the user on the application's platform.
+        
         metadata_values : `None | dict<str, str>`, Optional (Keyword only)
             Metadata key to attached value relation.
         
@@ -541,7 +543,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         Raises
         ------
         TypeError
-            - If `access` is not ``Oauth2Access``, ``Oauth2User``, `str`.
+            - If `access` is not ``str | Oauth2Access | Oauth2User``.
         ValueError
             - If the given `access` is not providing the required scope.
         ConnectionError
@@ -564,3 +566,39 @@ class ClientCompoundOauth2Endpoints(Compound):
         headers[AUTHORIZATION] = f'Bearer {access_token}'
         data = await self.api.user_application_role_connection_edit(application_id, data, headers)
         return ApplicationRoleConnection.from_data(data)
+    
+    
+    async def user_application_role_connection_delete(self, access):
+        """
+        Deletes a user's application role connections with it's ``Oauth2Access``.
+        The user must provide the `Oauth2Scope.role_connections_write` scope for this request to succeed.
+                
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        access: ``str | Oauth2Access | Oauth2User``
+            The access of the user, who will's application role connections will be requested..
+        
+        Returns
+        -------
+        application_role_connection : ``ApplicationRoleConnection``
+        
+        Raises
+        ------
+        TypeError
+            - If `access` is not ``str | Oauth2Access | Oauth2User``.
+        ValueError
+            - If the given `access` is not providing the required scope.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        application_id = self.application.id
+        assert _assert__application_id(application_id)
+        access_token = get_oauth2_access_token(access, Oauth2Scope.role_connections_write)
+        
+        headers = IgnoreCaseMultiValueDictionary()
+        headers[AUTHORIZATION] = f'Bearer {access_token}'
+        await self.api.user_application_role_connection_delete(application_id, headers)

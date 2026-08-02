@@ -36,7 +36,7 @@ class PollResult(RichAttributeErrorBaseType):
         count : `int`, Optional (Keyword only)
             The amount of votes.
         
-        users : `None`, `iterable` of ``ClientUserBase``, Optional (Keyword only)
+        users : ``None | iterable<ClientUserBase>``, Optional (Keyword only)
             The known voters.
         
         Raises
@@ -206,7 +206,7 @@ class PollResult(RichAttributeErrorBaseType):
         count : `int`, Optional (Keyword only)
             The amount of votes.
         
-        users : `None`, `iterable` of ``ClientUserBase``, Optional (Keyword only)
+        users : ``None | iterable<ClientUserBase>``, Optional (Keyword only)
             The known voters.
         
         Returns

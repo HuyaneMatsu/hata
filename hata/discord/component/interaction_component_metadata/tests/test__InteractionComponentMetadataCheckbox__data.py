@@ -10,11 +10,11 @@ def test__InteractionComponentMetadataCheckbox__from_data():
     Tests whether ``InteractionComponentMetadataCheckbox.from_data`` works as intended.
     """
     custom_id = 'koishi'
-    value = '\01'
+    value = '\001'
     
     data = {
         'custom_id': custom_id,
-        'value': (value == '\01'),
+        'value': (value == '\001'),
     }
     
     interaction_component_metadata = InteractionComponentMetadataCheckbox.from_data(data)
@@ -31,7 +31,7 @@ def test__InteractionComponentMetadataCheckbox__to_data():
     Case: include defaults.
     """
     custom_id = 'koishi'
-    value = '\01'
+    value = '\001'
     
     interaction_component_metadata = InteractionComponentMetadataCheckbox(
         custom_id = custom_id,
@@ -44,6 +44,6 @@ def test__InteractionComponentMetadataCheckbox__to_data():
         ),
         {
             'custom_id': custom_id,
-            'value': (value == '\01'),
+            'value': (value == '\001'),
         },
     )

@@ -152,7 +152,7 @@ class SlashCommand(
         **keyword_parameters,
     ):
         """
-        Creates a new ``SlashCommand`` with the given parameters.
+        Creates a new instance with the given parameters.
         
         Parameters
         ----------

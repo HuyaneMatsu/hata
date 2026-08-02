@@ -219,7 +219,7 @@ class Oauth2User(OrinUserBase):
     @classmethod
     def from_data(cls, data, access):
         """
-        Creates a new ``Oauth2User`` instance.
+        Creates a new instance instance.
         
         Parameters
         ----------

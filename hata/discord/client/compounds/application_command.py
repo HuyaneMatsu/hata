@@ -738,7 +738,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         
         Parameters
         ----------
-        access : ``Oauth2Access``, ``Oauth2User``, `str`
+        access : ``str | Oauth2Access | Oauth2User``
             A user's access token to use.
         
         guild : ``int | Guild``

@@ -43,7 +43,7 @@ class CommandFunction(RichAttributeErrorBaseType):
     
     def __new__(cls, parent, function, name, description):
         """
-        Creates a new ``CommandFunction``.
+        Creates a new instance.
         
         Parameters
         ----------

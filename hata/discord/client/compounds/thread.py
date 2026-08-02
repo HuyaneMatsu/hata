@@ -268,7 +268,7 @@ class ClientCompoundThreadEndpoints(Compound):
         applied_tags : `None`, `(list | tuple)<int | ForumTag>`, `int`, `ForumTag`, Optional (Keyword only)
             Alternative for `applied_tag_ids`.
         
-        attachments : `None | object`, Optional (Keyword only)
+        attachments : ``None | object | AttachmentRequest | iterable<AttachmentRequest>``, Optional (Keyword only)
             Attachments to send.
         
         auto_archive_after : `int`, Optional (Keyword only)

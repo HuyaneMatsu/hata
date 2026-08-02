@@ -590,7 +590,7 @@ class ClientCompoundGuildEndpoints(Compound):
         explicit_content_filter_level : ``ExplicitContentFilterLevel``, `int`, Optional (Keyword only)
             The content filter level of the guild.
         
-        icon : `None`, `bytes-like`, Optional (Keyword only)
+        icon : `None | bytes-like`, Optional (Keyword only)
             The icon of the new guild.
         
         roles : `None`, `list` of (`dict<str, object>`, ``Role``), Optional (Keyword only)

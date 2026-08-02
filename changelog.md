@@ -1,11 +1,54 @@
+## 1.3.96 *\[2026-08-02\]*
+
+### Improvements
+
+- Swap `SubscriptionStatus.inactive` and `.ending`.
+- Use `flags_new` key when serialising and deserialising applications where application.
+- Change pin notes from `50` to `250`.
+- Add `ERROR_CODES.cannot_reference_without_permission_read_message_history`.
+- Add `ERROR_CODES.cannot_reference_nsfw_channel`.
+- Add `ERROR_CODES.invalid_merge_source_user_not_provisional`.
+- Add `ERROR_CODES.invalid_merge_destination_user_provisional`.
+- Add `ERROR_CODES.invalid_merge_source_user_banned`.
+- Add `ERROR_CODES.invalid_merge_too_many_application_identities`.
+- Add `ERROR_CODES.scheduled_event_with_schedule_required`.
+- Add `mention_application_game_by_id`.
+- Add `MentionGame`.
+- Add `Message.metioned_games`.
+- Add `Message.iter_mentioned_channels`.
+- Add `Message.has_mentioned_channels`.
+- Add `GAME_MENTION_RP`.
+- Add `MENTION_GAMES`.
+- Add `RATE_LIMIT_GROUPS.user_application_role_connection_delete`.
+- Add `DiscordAPiClient.user_application_role_connection_delete`.
+- Add `Client.user_application_role_connection_delete`.
+- Add `ChannelFlag.spoiler`.
+- Add `ERROR_CODES.user_limited_access_create_message_in_private_channel`.
+- Add `ERROR_CODES.user_limited_access_create_message_in_guild_channel`.
+- Add `ERROR_CODES.user_limited_access_upload_attachment`.
+- Add `ERROR_CODES.only_one_parent_id_can_be_modified_at_once`.
+- Add `AttachmentRequest`.
+- Add `attachment_request_create_regular_create`, `attachment_request_voice_regular_create`,
+    `attachment_request_create_regular_edit`, `attachment_request_voice_regular_edit` and more to create
+    `AttachmentRequest`-s depending on the requirements.
+
+### Renames, Deprecations & Removals
+
+- Deprecate `voice_attachment` parameters.
+
 ## 1.3.95 *\[2026-05-30\]*
+
+### Improvements
 
 - Add `GuildPreview.home_splash`.
 - Add `GuildPreview.home_splash_url`.
 - Add `GuildPreview.home_splash_url_as`.
 - Add `Message.channel_type`.
-- Fix `Client.owners_access` used an already removed method to create authorisation headers. (gilgameshpromax)
 - Add `8` new unicode emojis.
+
+### Bug fixes
+
+- Fix `Client.owners_access` used an already removed method to create authorisation headers. (gilgameshpromax)
 
 ## 1.3.94 *\[2026-05-09\]*
 

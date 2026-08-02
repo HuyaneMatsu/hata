@@ -147,7 +147,7 @@ class Slotted(type):
     """
     def __new__(cls, type_name, type_parents, type_attributes):
         """
-        Creates a new ``Slotted``.
+        Creates a new instance.
         
         Parameters
         ----------

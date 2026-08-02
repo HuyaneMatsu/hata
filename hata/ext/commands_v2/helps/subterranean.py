@@ -591,7 +591,7 @@ class SubterraneanHelpCommand:
     
     def __new__(cls, prefix = None, embed_postprocessor = None):
         """
-        Creates a new ``SubterraneanHelpCommand``.
+        Creates a new instance.
         
         Parameters
         ----------

@@ -22,18 +22,19 @@ from .fields import (
     parse_activity, parse_application, parse_application_id, parse_attachments, parse_author, parse_call,
     parse_channel_id, parse_channel_type, parse_components, parse_content, parse_edited_at, parse_embeds, parse_flags,
     parse_guild_id, parse_id, parse_interaction, parse_mentioned_channels_cross_guild, parse_mentioned_everyone,
-    parse_mentioned_role_ids, parse_mentioned_users, parse_message_id, parse_nonce, parse_pinned, parse_poll,
-    parse_poll_and_change, parse_reactions, parse_referenced_message, parse_resolved, parse_role_subscription,
-    parse_shared_client_theme, parse_snapshots, parse_soundboard_sounds, parse_stickers, parse_thread, parse_tts,
-    parse_type, put_activity, put_application, put_application_id, put_attachments, put_author, put_call,
-    put_channel_id, put_channel_type, put_components, put_content, put_edited_at, put_embeds, put_flags, put_guild_id,
-    put_id, put_interaction, put_mentioned_channels_cross_guild, put_mentioned_everyone, put_mentioned_role_ids,
-    put_mentioned_users, put_message_id, put_nonce, put_pinned, put_poll, put_reactions, put_referenced_message_into,
-    put_resolved, put_role_subscription, put_shared_client_theme, put_snapshots, put_soundboard_sounds, put_stickers,
-    put_thread, put_tts, put_type, validate_activity, validate_application, validate_application_id,
-    validate_attachments, validate_author, validate_call, validate_channel_id, validate_channel_type,
-    validate_components, validate_content, validate_edited_at, validate_embeds, validate_flags, validate_guild_id,
-    validate_id, validate_interaction, validate_mentioned_channels_cross_guild, validate_mentioned_everyone,
+    parse_mentioned_games, parse_mentioned_role_ids, parse_mentioned_users, parse_message_id, parse_nonce, parse_pinned,
+    parse_poll, parse_poll_and_change, parse_reactions, parse_referenced_message, parse_resolved,
+    parse_role_subscription, parse_shared_client_theme, parse_snapshots, parse_soundboard_sounds, parse_stickers,
+    parse_thread, parse_tts, parse_type, put_activity, put_application, put_application_id, put_attachments, put_author,
+    put_call, put_channel_id, put_channel_type, put_components, put_content, put_edited_at, put_embeds, put_flags,
+    put_guild_id, put_id, put_interaction, put_mentioned_channels_cross_guild, put_mentioned_everyone,
+    put_mentioned_games, put_mentioned_role_ids, put_mentioned_users, put_message_id, put_nonce, put_pinned, put_poll,
+    put_reactions, put_referenced_message_into, put_resolved, put_role_subscription, put_shared_client_theme,
+    put_snapshots, put_soundboard_sounds, put_stickers, put_thread, put_tts, put_type, validate_activity,
+    validate_application, validate_application_id, validate_attachments, validate_author, validate_call,
+    validate_channel_id, validate_channel_type, validate_components, validate_content, validate_edited_at,
+    validate_embeds, validate_flags, validate_guild_id, validate_id, validate_interaction,
+    validate_mentioned_channels_cross_guild, validate_mentioned_everyone, validate_mentioned_games,
     validate_mentioned_role_ids, validate_mentioned_users, validate_nonce, validate_pinned, validate_poll,
     validate_reactions, validate_referenced_message, validate_resolved, validate_role_subscription,
     validate_shared_client_theme, validate_snapshots, validate_soundboard_sounds, validate_stickers, validate_thread,
@@ -75,6 +76,7 @@ PRECREATE_FIELDS = {
     'interaction': ('interaction', validate_interaction),
     'mentioned_channels_cross_guild': ('mentioned_channels_cross_guild', validate_mentioned_channels_cross_guild),
     'mentioned_everyone': ('mentioned_everyone', validate_mentioned_everyone),
+    'mentioned_games': ('mentioned_games', validate_mentioned_games),
     'mentioned_role_ids': ('mentioned_role_ids', validate_mentioned_role_ids),
     'mentioned_roles': ('mentioned_role_ids', validate_mentioned_role_ids),
     'mentioned_users': ('mentioned_users', validate_mentioned_users),
@@ -173,10 +175,13 @@ class Message(DiscordEntity, immortal = True):
     mentioned_everyone : `bool`
         Whether the message contains `@everyone`, `@here`. Defaults to `False`.
     
+    mentioned_games : ``None | tuple<MentionGame>``
+        The mentioned games by the message. Defaults to `None`.
+    
     mentioned_role_ids : `None | tuple<int>`
         The mentioned roles' identifiers. Defaults to `None`.
     
-    mentioned_users : `None`, `tuple` of ``ClientUserBase``
+    mentioned_users : ``None | tuple<ClientUserBase>``
         The mentioned users by the message. Defaults to `None`.
     
     nonce : `None | str`
@@ -239,9 +244,10 @@ class Message(DiscordEntity, immortal = True):
     __slots__ = (
         '_cache_mentioned_channels', '_state', 'activity', 'application', 'application_id', 'attachments', 'author',
         'call', 'channel_id', 'channel_type', 'components', 'content', 'edited_at', 'embeds', 'flags', 'guild_id',
-        'interaction', 'mentioned_channels_cross_guild', 'mentioned_everyone', 'mentioned_role_ids', 'mentioned_users',
-        'nonce', 'pinned', 'poll', 'reactions', 'referenced_message', 'resolved', 'role_subscription',
-        'shared_client_theme', 'snapshots', 'soundboard_sounds', 'stickers', 'thread', 'tts', 'type'
+        'interaction', 'mentioned_channels_cross_guild', 'mentioned_everyone', 'mentioned_games', 'mentioned_role_ids',
+        'mentioned_users', 'nonce', 'pinned', 'poll', 'reactions', 'referenced_message', 'resolved',
+        'role_subscription', 'shared_client_theme', 'snapshots', 'soundboard_sounds', 'stickers', 'thread', 'tts',
+        'type'
     )
     
     
@@ -262,6 +268,7 @@ class Message(DiscordEntity, immortal = True):
         interaction = ...,
         mentioned_channels_cross_guild = ...,
         mentioned_everyone = ...,
+        mentioned_games = ...,
         mentioned_role_ids = ...,
         mentioned_users = ...,
         message_type = ...,
@@ -326,10 +333,13 @@ class Message(DiscordEntity, immortal = True):
         mentioned_everyone : `bool`, Optional (Keyword only)
             Whether the message contains `@everyone`, `@here`.
         
+        mentioned_games : ``None | iterable<MentionGame>``, Optional (Keyword only)
+            The mentioned games by the message.
+        
         mentioned_role_ids : `None`, `iterable` of (`int`, ``Role``), Optional (Keyword only)
             The mentioned roles' identifiers.
         
-        mentioned_users : `None`, `iterable` of ``ClientUserBase``, Optional (Keyword only)
+        mentioned_users : ``None | iterable<ClientUserBase>``, Optional (Keyword only)
             The mentioned users by the message.
         
         message_type : ``MessageType``, `int`, Optional (Keyword only)
@@ -466,6 +476,12 @@ class Message(DiscordEntity, immortal = True):
         else:
             mentioned_everyone = validate_mentioned_everyone(mentioned_everyone)
         
+        # mentioned_games
+        if mentioned_games is ...:
+            mentioned_games = None
+        else:
+            mentioned_games = validate_mentioned_games(mentioned_games)
+        
         # mentioned_role_ids
         if mentioned_role_ids is ...:
             mentioned_role_ids = None
@@ -585,6 +601,7 @@ class Message(DiscordEntity, immortal = True):
         self.interaction = interaction
         self.mentioned_channels_cross_guild = mentioned_channels_cross_guild
         self.mentioned_everyone = mentioned_everyone
+        self.mentioned_games = mentioned_games
         self.mentioned_role_ids = mentioned_role_ids
         self.mentioned_users = mentioned_users
         self.nonce = nonce
@@ -844,6 +861,7 @@ class Message(DiscordEntity, immortal = True):
         self.interaction = interaction = parse_interaction(data)
         self.mentioned_channels_cross_guild = parse_mentioned_channels_cross_guild(data)
         self.mentioned_everyone = parse_mentioned_everyone(data)
+        self.mentioned_games = parse_mentioned_games(data)
         self.mentioned_role_ids = parse_mentioned_role_ids(data)
         self.mentioned_users = parse_mentioned_users(data, guild_id)
         self.nonce = parse_nonce(data)
@@ -1081,6 +1099,10 @@ class Message(DiscordEntity, immortal = True):
         if self.mentioned_everyone != other.mentioned_everyone:
             return False
         
+        # mentioned_games
+        if self.mentioned_games != other.mentioned_games:
+            return False
+        
         # mentioned_role_ids
         if self.mentioned_role_ids != other.mentioned_role_ids:
             return False
@@ -1241,6 +1263,14 @@ class Message(DiscordEntity, immortal = True):
         # mentioned_everyone
         hash_value ^= self.mentioned_everyone << 20
         
+        # mentioned_games
+        mentioned_games = self.mentioned_games
+        if (mentioned_games is not None):
+            hash_value ^= len(mentioned_games) << 25
+            
+            for user in mentioned_games:
+                hash_value ^= hash(user)
+        
         # mentioned_role_ids
         mentioned_role_ids = self.mentioned_role_ids
         if (mentioned_role_ids is not None):
@@ -1375,9 +1405,11 @@ class Message(DiscordEntity, immortal = True):
         +-----------------------------------+-----------------------------------------------------------------------+
         | mentioned_everyone                | `bool`                                                                |
         +-----------------------------------+-----------------------------------------------------------------------+
+        | mentioned_games                   | ``None | tuple<MentionGame>``                                         |
+        +-----------------------------------+-----------------------------------------------------------------------+
         | mentioned_role_ids                | `None | tuple<int>`                                                   |
         +-----------------------------------+-----------------------------------------------------------------------+
-        | mentioned_users                   | `None`, `tuple` of ``ClientUserBase``                                 |
+        | mentioned_users                   | ``None | tuple<ClientUserBase>``                                      |
         +-----------------------------------+-----------------------------------------------------------------------+
         | pinned                            | `bool`                                                                |
         +-----------------------------------+-----------------------------------------------------------------------+
@@ -1435,6 +1467,11 @@ class Message(DiscordEntity, immortal = True):
             old_attributes['mentioned_everyone'] = self.mentioned_everyone
             self.mentioned_everyone = mentioned_everyone
         
+        mentioned_games = parse_mentioned_games(data)
+        if self.mentioned_games != mentioned_games:
+            old_attributes['mentioned_games'] = self.mentioned_games
+            self.mentioned_games = mentioned_games
+        
         mentioned_role_ids = parse_mentioned_role_ids(data)
         if self.mentioned_role_ids != mentioned_role_ids:
             old_attributes['mentioned_role_ids'] = self.mentioned_role_ids
@@ -1477,6 +1514,7 @@ class Message(DiscordEntity, immortal = True):
         self.flags = parse_flags(data)
         self.mentioned_channels_cross_guild = parse_mentioned_channels_cross_guild(data)
         self.mentioned_everyone = parse_mentioned_everyone(data)
+        self.mentioned_games = parse_mentioned_games(data)
         self.mentioned_role_ids = parse_mentioned_role_ids(data)
         self.mentioned_users = parse_mentioned_users(data)
         self.pinned = parse_pinned(data)
@@ -1811,6 +1849,7 @@ class Message(DiscordEntity, immortal = True):
             put_interaction(self.interaction, data, defaults)
             put_mentioned_channels_cross_guild(self.mentioned_channels_cross_guild, data, defaults)
             put_mentioned_everyone(self.mentioned_everyone, data, defaults)
+            put_mentioned_games(self.mentioned_games, data, defaults)
             put_mentioned_role_ids(self.mentioned_role_ids, data, defaults)
             put_mentioned_users(self.mentioned_users, data, defaults, guild_id = self.guild_id)
             put_pinned(self.pinned, data, defaults)
@@ -1892,6 +1931,7 @@ class Message(DiscordEntity, immortal = True):
         self.interaction = None
         self.mentioned_channels_cross_guild = None
         self.mentioned_everyone = False
+        self.mentioned_games = None
         self.mentioned_role_ids = None
         self.mentioned_users = None
         self.nonce = None
@@ -1988,13 +2028,16 @@ class Message(DiscordEntity, immortal = True):
         mentioned_everyone : `bool`, Optional (Keyword only)
             Whether the message contains `@everyone`, `@here`.
         
+        mentioned_games : ``None | iterable<MentionGame>``, Optional (Keyword only)
+            The mentioned games by the message.
+        
         mentioned_role_ids : `None`, `iterable` of (`int`, ``Role``), Optional (Keyword only)
             The mentioned roles' identifiers.
         
         mentioned_roles : `None`, `iterable` of (`int`, ``Role``), Optional (Keyword only)
             Alternative for `mentioned_role_ids`.
         
-        mentioned_users : `None`, `iterable` of ``ClientUserBase``, Optional (Keyword only)
+        mentioned_users : ``None | iterable<ClientUserBase>``, Optional (Keyword only)
             The mentioned users by the message.
         
         message_type : ``MessageType``, `int`, Optional (Keyword only)
@@ -2143,6 +2186,11 @@ class Message(DiscordEntity, immortal = True):
         
         new.mentioned_everyone = self.mentioned_everyone
         
+        mentioned_games = self.mentioned_games
+        if (mentioned_games is not None):
+            mentioned_games = (*(mentioned_game.copy() for mentioned_game in mentioned_games),)
+        new.mentioned_games = mentioned_games
+        
         mentioned_role_ids = self.mentioned_role_ids
         if (mentioned_role_ids is not None):
             mentioned_role_ids = (*mentioned_role_ids,)
@@ -2222,6 +2270,7 @@ class Message(DiscordEntity, immortal = True):
         interaction = ...,
         mentioned_channels_cross_guild = ...,
         mentioned_everyone = ...,
+        mentioned_games = ...,
         mentioned_role_ids = ...,
         mentioned_users = ...,
         message_type = ...,
@@ -2286,10 +2335,13 @@ class Message(DiscordEntity, immortal = True):
         mentioned_everyone : `bool`, Optional (Keyword only)
             Whether the message contains `@everyone`, `@here`.
         
+        mentioned_games : ``None | iterable<MentionGame>``, Optional (Keyword only)
+            The mentioned games by the message.
+        
         mentioned_role_ids : `None`, `iterable` of (`int`, ``Role``), Optional (Keyword only)
             The mentioned roles' identifiers.
         
-        mentioned_users : `None`, `iterable` of ``ClientUserBase``, Optional (Keyword only)
+        mentioned_users : ``None | iterable<ClientUserBase>``, Optional (Keyword only)
             The mentioned users by the message.
         
         message_type : ``MessageType``, `int`, Optional (Keyword only)
@@ -2446,6 +2498,14 @@ class Message(DiscordEntity, immortal = True):
         else:
             mentioned_everyone = validate_mentioned_everyone(mentioned_everyone)
         
+        # mentioned_games
+        if mentioned_games is ...:
+            mentioned_games = self.mentioned_games
+            if (mentioned_games is not None):
+                mentioned_games = (*(mentioned_game.copy() for mentioned_game in mentioned_games),)
+        else:
+            mentioned_games = validate_mentioned_games(mentioned_games)
+                
         # mentioned_role_ids
         if mentioned_role_ids is ...:
             mentioned_role_ids = self.mentioned_role_ids
@@ -2585,6 +2645,8 @@ class Message(DiscordEntity, immortal = True):
         new.interaction = interaction
         new.mentioned_channels_cross_guild = mentioned_channels_cross_guild
         new.mentioned_everyone = mentioned_everyone
+        new.mentioned_games = mentioned_games
+        new.mentioned_games = mentioned_games
         new.mentioned_role_ids = mentioned_role_ids
         new.mentioned_users = mentioned_users
         new.nonce = nonce
@@ -2745,13 +2807,14 @@ class Message(DiscordEntity, immortal = True):
         
         Returns
         -------
-        mentions : `list` of (`str` (`'everyone'`), ``ClientUserBase``, ``Role``, ``Channel``)
+        mentions : `list` of (`str` (`'everyone'`), ``ClientUserBase``, ``Role``, ``Channel``, ``MentionGame``)
         """
         mentions = []
         if self.mentioned_everyone:
             mentions.append('everyone')
         
         mentions.extend(self.iter_mentioned_channels())
+        mentions.extend(self.iter_mentioned_games())
         mentions.extend(self.iter_mentioned_roles())
         mentions.extend(self.iter_mentioned_users())
         
@@ -3100,6 +3163,21 @@ class Message(DiscordEntity, immortal = True):
             yield from mentioned_channels_cross_guild
     
     
+    def iter_mentioned_games(self):
+        """
+        Iterates over the mentioned games in the message.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        mentioned_game : ``MentionGame``
+        """
+        mentioned_games = self.mentioned_games
+        if (mentioned_games is not None):
+            yield from mentioned_games
+    
+    
     def iter_mentioned_role_ids(self):
         """
         Iterates over the mentioned roles' identifiers in the message.
@@ -3333,6 +3411,17 @@ class Message(DiscordEntity, immortal = True):
         has_mentioned_everyone : `bool`
         """
         return self.mentioned_everyone
+    
+    
+    def has_mentioned_games(self):
+        """
+        Returns whether the message has ``.mentioned_games`` set as its non-default value.
+        
+        Returns
+        -------
+        has_games_mentions : `bool`
+        """
+        return (self.mentioned_games is not None)
     
     
     def has_mentioned_role_ids(self):

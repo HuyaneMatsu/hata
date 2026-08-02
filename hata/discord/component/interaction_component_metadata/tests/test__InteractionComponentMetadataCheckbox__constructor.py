@@ -34,7 +34,7 @@ def test__InteractionComponentMetadataCheckbox__new__all_fields():
     Case: all fields given.
     """
     custom_id = 'koishi'
-    value = '\01'
+    value = '\001'
     
     interaction_component_metadata = InteractionComponentMetadataCheckbox(
         custom_id = custom_id,
@@ -65,7 +65,7 @@ def test__InteractionComponentMetadataCheckbox__from_keyword_parameters__all_fie
     Case: all fields given.
     """
     custom_id = 'koishi'
-    value = '\01'
+    value = '\001'
     
     keyword_parameters = {
         'custom_id': custom_id,

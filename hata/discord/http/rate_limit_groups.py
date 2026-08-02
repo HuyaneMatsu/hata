@@ -2084,6 +2084,15 @@ Group Details
     - Resets after : `5.0`
     - Notes : Untested.
 
+- user_application_role_connection_delete
+    - Endpoint : `/users/@me/applications/{application_id}/role-connection`
+    - Method : `DELETE`
+    - Required auth : `bearer`
+    - Limiter : `GLOBAL`
+    - Limit : `UN`
+    - Resets after : `UN`
+    - Notes : Untested.
+
 - user_application_role_connection_get
     - Endpoint : `/users/@me/applications/{application_id}/role-connection`
     - Method : `GET`
@@ -2636,6 +2645,7 @@ user_info_get = RateLimitGroup(optimistic = True)
 client_user_get = RateLimitGroup(optimistic = True)
 client_edit = RateLimitGroup()
 user_achievement_get_all = RateLimitGroup() # untested; has expected global rate limit
+user_application_role_connection_delete = RateLimitGroup()
 user_application_role_connection_get = RateLimitGroup()
 user_application_role_connection_edit = RateLimitGroup()
 user_achievement_update = RateLimitGroup()

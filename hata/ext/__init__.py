@@ -63,7 +63,7 @@ class SetupFunction:
     
     def __new__(cls, extension_name, setup_function, required_parameters, optional_parameters):
         """
-        Creates a new ``SetupFunction`` from the given parameters.
+        Creates a new instance from the given parameters.
         
         Parameters
         ----------

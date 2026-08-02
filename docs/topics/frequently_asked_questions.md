@@ -75,10 +75,16 @@ To upload a file from your file system, we recommend to use `scarletio.ReuAsyncI
 object which also handles retrying requests.
 
 ```py3
+from hata import attachment_request_create_regular_create
 from scarletio import ReuAsyncIO
 
 with (await ReuAsyncIO('flan.png')) as file:
-    await client.message_create(channel, file = file)
+    await client.message_create(
+        channel,
+        attachments = [
+            attachment_request_create_regular_create('flan.png', file),
+        ],
+    )
 ```
 
 To upload multiple files, use a list.
@@ -87,16 +93,13 @@ To upload multiple files, use a list.
 from scarletio import ReuAsyncIO
 
 with (await ReuAsyncIO('flan.png')) as file_1, (await ReuAsyncIO('remi.png')) as file_2:
-    await client.message_create(channel, file=[file_1, file_2])
-```
-
-To send a file with a different name, pass a `name` - `file` pair.
-
-```py3
-from scarletio import ReuAsyncIO
-
-with (await ReuAsyncIO('flan.png')) as file:
-    await client.message_create(channel, file=('vampy.png', file))
+    await client.message_create(
+        channel,
+        attachments = [
+            attachment_request_create_regular_create('flan.png', file_1),
+            attachment_request_create_regular_create('remi.png', file_2),
+        ],
+    )
 ```
 
 If you want to upload something from an url, you will have to request it first. To request anything, you can create
@@ -112,7 +115,12 @@ async with client.http.get(file_url) as response:
 if data is None:
     await client.message_create(channel, 'something went wrong')
 else:
-    await client.message_create(channel, file=('file_name', data))
+    await client.message_create(
+        channel,
+        attachments = [
+            attachment_request_create_regular_create('file_name', data),
+        ],
+    )
 ```
 
 Since a `bytes` object has no name, it is highly recommended to define one when sending it.
@@ -212,6 +220,8 @@ with (await ReuAsyncIO('some_file_path')) as file:
     await client.message_create(
         channel,
         embed = Embed().add_image('attachment://image.png'),
-        file = ('image.png', file),
+        attachments = [
+            attachment_request_create_regular_create('image.png', file)
+        ],
     )
 ```

@@ -92,7 +92,7 @@ class ApplicationCommandPermissionOverwrite(RichAttributeErrorBaseType):
     @classmethod
     def from_data(cls, data):
         """
-        Creates a new ``ApplicationCommandPermissionOverwrite`` from the received data.
+        Creates a new instance from the received data.
         
         Parameters
         ----------

@@ -17,7 +17,7 @@ class QualPath:
     
     def __new__(cls, *paths):
         """
-        Creates a new ``QualPath`` object
+        Creates a new instance object
         
         Parameters
         ----------

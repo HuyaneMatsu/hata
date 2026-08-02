@@ -6,20 +6,14 @@ from ..fields import put_attachments
 
 
 def _iter_options():
-    attachment_id_0 = 202304290007
-    attachment_name_0 = 'Primrose'
-    
-    attachment_id_1 = 202304290008
-    attachment_name_1 = 'Flower'
-    
     attachment_0 = Attachment.precreate(
-        attachment_id_0,
-        name = attachment_name_0,
+        202304290007,
+        name = 'Primrose',
     )
     
     attachment_1 = Attachment.precreate(
-        attachment_id_1,
-        name = attachment_name_1,
+        202304290008,
+        name = 'Flower',
     )
     
     yield (
@@ -39,7 +33,10 @@ def _iter_options():
     )
     
     yield (
-        (attachment_0, attachment_1),
+        (
+            attachment_0,
+            attachment_1,
+        ),
         False,
         False,
         {
@@ -51,7 +48,10 @@ def _iter_options():
     )
     
     yield (
-        (attachment_0, attachment_1),
+        (
+            attachment_0,
+            attachment_1,
+        ),
         True,
         False,
         {
@@ -63,7 +63,10 @@ def _iter_options():
     )
     
     yield (
-        (attachment_0, attachment_1),
+        (
+            attachment_0,
+            attachment_1,
+        ),
         True,
         True,
         {
@@ -84,8 +87,10 @@ def test__put_attachments(input_value, defaults, include_internals):
     ----------
     input_value : ``None | tuple<Attachment>``
         Value to serialize.
+    
     defaults : `bool`
         Whether values as their defaults should be included as well.
+    
     include_internals : `bool`
         Whether internals should be included as well.
     

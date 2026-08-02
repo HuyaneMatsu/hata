@@ -77,7 +77,7 @@ class ClientCompoundWebhookEndpoints(Compound):
             The channel of the created webhook.
         name : `str`
             The name of the new webhook. It's length can be in range [1:80].
-        avatar : `None`, `bytes-like` = `None`, Optional (Keyword only)
+        avatar : `None | bytes-like` = `None`, Optional (Keyword only)
             The webhook's avatar. Can be `'jpg'`, `'png'`, `'webp'`, `'gif'` image's raw data. However if set as
             `'gif'`, it will not have any animation.
             
@@ -90,7 +90,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         ------
         TypeError
             - If `channel` was not given neither as ``Channel`` nor as `int`.
-            - If `avatar` was not given neither as `None`, `bytes-like`.
+            - If `avatar` was not given neither as `None | bytes-like`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -119,7 +119,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         if (avatar is not None):
             if not isinstance(avatar, (bytes, bytearray, memoryview)):
                 raise TypeError(
-                    f'`avatar` can `None`, `bytes-like`, got {avatar.__name__}; {reprlib.repr(avatar)}.'
+                    f'`avatar` can `None | bytes-like`, got {avatar.__name__}; {reprlib.repr(avatar)}.'
                 )
             
             if __debug__:
@@ -399,7 +399,7 @@ class ClientCompoundWebhookEndpoints(Compound):
             The webhook to edit.
         name : `str`, Optional (Keyword only)
             The webhook's new name. It's length can be in range [1:80].
-        avatar : `None`, `bytes-like`, Optional (Keyword only)
+        avatar : `None | bytes-like`, Optional (Keyword only)
             The webhook's new avatar. Can be `'jpg'`, `'png'`, `'webp'`, `'gif'` image's raw data. However if set as
             `'gif'`, it will not have any animation. If passed as `None`, will remove the webhook's current avatar.
         channel : ``Channel``, `int`, Optional (Keyword only)
@@ -449,7 +449,7 @@ class ClientCompoundWebhookEndpoints(Compound):
             else:
                 if not isinstance(avatar, (bytes, bytearray, memoryview)):
                     raise TypeError(
-                        f'`avatar` can be `None`, `bytes-like`, got {type(avatar).__name__}; '
+                        f'`avatar` can be `None | bytes-like`, got {type(avatar).__name__}; '
                         f'{reprlib.repr(avatar)}.'
                     )
                 
@@ -502,7 +502,7 @@ class ClientCompoundWebhookEndpoints(Compound):
             The webhook to edit.
         name : `str`, Optional (Keyword only)
             The webhook's new name. It's length can be between `1` and `80`.
-        avatar : `None`, `bytes-like`, Optional (Keyword only)
+        avatar : `None | bytes-like`, Optional (Keyword only)
             The webhook's new avatar. Can be `'jpg'`, `'png'`, `'webp'`, `'gif'` image's raw data. However if set as
             `'gif'`, it will not have any animation. If passed as `None`, will remove the webhook's current avatar.
         
@@ -554,7 +554,7 @@ class ClientCompoundWebhookEndpoints(Compound):
             else:
                 if not isinstance(avatar, (bytes, bytearray, memoryview)):
                     raise TypeError(
-                        f'`avatar` can be `None`, `bytes-like`, got {type(avatar).__name__}; '
+                        f'`avatar` can be `None | bytes-like`, got {type(avatar).__name__}; '
                         f'{reprlib.repr(avatar)}.'
                     )
                 
@@ -622,7 +622,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         applied_tags : `None`, `(list | tuple)<int | ForumTag>`, `int`, `ForumTag`, Optional (Keyword only)
             Alternative for `applied_tag_ids`.
         
-        attachments : `None | object`, Optional (Keyword only)
+        attachments : ``None | object | AttachmentRequest | iterable<AttachmentRequest>``, Optional (Keyword only)
             Attachments to send.
         
         avatar_url : `None`, `str` = `None`, Optional (Keyword only)
@@ -813,7 +813,7 @@ class ClientCompoundWebhookEndpoints(Compound):
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
             for details.
         
-        attachments : `None | object`, Optional (Keyword only)
+        attachments : ``None | object | AttachmentRequest | iterable<AttachmentRequest>``, Optional (Keyword only)
             Attachments to send.
         
         components : `None`, ``Component``, `(tuple | list)<Component, (tuple | list)<Component>>`

@@ -92,7 +92,7 @@ class ParameterConverterSlashCommand(ParameterConverterBase):
         min_length,
     ):
         """
-        Creates a new ``ParameterConverterSlashCommand`` from the given parameters.
+        Creates a new instance from the given parameters.
         
         Parameters
         ----------

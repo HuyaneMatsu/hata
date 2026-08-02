@@ -259,7 +259,7 @@ def parse_value__bool(data):
     if value is None:
         return None
     
-    return '\01' if value else '\00'
+    return '\001' if value else '\000'
 
 
 def put_value__bool(value, data, defaults):
@@ -282,7 +282,7 @@ def put_value__bool(value, data, defaults):
     data : `dict<str, object>`
     """
     if defaults or (value is not None):
-        data['value'] = None if (value is None) else (value == '\01')
+        data['value'] = None if (value is None) else (value == '\001')
     
     return data
 
@@ -316,8 +316,8 @@ def validate_value__bool(value):
     if not value:
         return None
     
-    if value not in ('\x00', '\01'):
-        raise ValueError(f'`value` can be either `\'\'`, `\'\\00\'` or `\'\\01\'`, got {value!r}.')
+    if value not in ('\000', '\001'):
+        raise ValueError(f'`value` can be either `\'\'`, `\'\\000\'` or `\'\\001\'`, got {value!r}.')
     
     return value
 

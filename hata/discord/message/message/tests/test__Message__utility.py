@@ -13,9 +13,10 @@ from ....resolved import Resolved
 from ....role import Role
 from ....soundboard import SoundboardSound
 from ....sticker import Sticker
-from ....user import GuildProfile, User
+from ....user import ClientUserBase, GuildProfile, User
 
 from ...attachment import Attachment
+from ...mention_game import MentionGame
 from ...message_activity import MessageActivity
 from ...message_application import MessageApplication
 from ...message_call import MessageCall
@@ -274,6 +275,10 @@ def test__Message__copy():
         Channel.precreate(202305040112, channel_type = ChannelType.guild_text, name = 'Yuugi'),
     ]
     mentioned_everyone = True
+    mentioned_games = [
+        MentionGame.precreate(202607040048),
+        MentionGame.precreate(202607040049),
+    ]
     mentioned_role_ids = [202305040113, 202305040114]
     mentioned_users = [
         User.precreate(202305040115, name = 'Scarlet'),
@@ -323,6 +328,7 @@ def test__Message__copy():
         interaction = interaction,
         mentioned_channels_cross_guild = mentioned_channels_cross_guild,
         mentioned_everyone = mentioned_everyone,
+        mentioned_games = mentioned_games,
         mentioned_role_ids = mentioned_role_ids,
         mentioned_users = mentioned_users,
         message_type = message_type,
@@ -380,6 +386,10 @@ def test__Message__copy_with__no_fields():
         Channel.precreate(202305040128, channel_type = ChannelType.guild_text, name = 'Yuugi'),
     ]
     mentioned_everyone = True
+    mentioned_games = [
+        MentionGame.precreate(202607040050),
+        MentionGame.precreate(202607040051),
+    ]
     mentioned_role_ids = [202305040129, 202305040130]
     mentioned_users = [
         User.precreate(202305040131, name = 'Scarlet'),
@@ -429,6 +439,7 @@ def test__Message__copy_with__no_fields():
         interaction = interaction,
         mentioned_channels_cross_guild = mentioned_channels_cross_guild,
         mentioned_everyone = mentioned_everyone,
+        mentioned_games = mentioned_games,
         mentioned_role_ids = mentioned_role_ids,
         mentioned_users = mentioned_users,
         message_type = message_type,
@@ -486,6 +497,10 @@ def test__Message__copy_with__all_fields():
         Channel.precreate(202305040144, channel_type = ChannelType.guild_text, name = 'Yuugi'),
     ]
     old_mentioned_everyone = True
+    old_mentioned_games = [
+        MentionGame.precreate(202607040052),
+        MentionGame.precreate(202607040053),
+    ]
     old_mentioned_role_ids = [202305040145, 202305040146]
     old_mentioned_users = [
         User.precreate(202305040147, name = 'Scarlet'),
@@ -545,6 +560,10 @@ def test__Message__copy_with__all_fields():
         Channel.precreate(202305040159, channel_type = ChannelType.guild_text, name = 'One horned'),
     ]
     new_mentioned_everyone = False
+    new_mentioned_games = [
+        MentionGame.precreate(202607040054),
+        MentionGame.precreate(202607040055),
+    ]
     new_mentioned_role_ids = [202305040160, 202305040161]
     new_mentioned_users = [
         User.precreate(202305040162, name = 'Vampires'),
@@ -593,6 +612,7 @@ def test__Message__copy_with__all_fields():
         interaction = old_interaction,
         mentioned_channels_cross_guild = old_mentioned_channels_cross_guild,
         mentioned_everyone = old_mentioned_everyone,
+        mentioned_games = old_mentioned_games,
         mentioned_role_ids = old_mentioned_role_ids,
         mentioned_users = old_mentioned_users,
         message_type = old_message_type,
@@ -626,6 +646,7 @@ def test__Message__copy_with__all_fields():
         interaction = new_interaction,
         mentioned_channels_cross_guild = new_mentioned_channels_cross_guild,
         mentioned_everyone = new_mentioned_everyone,
+        mentioned_games = new_mentioned_games,
         mentioned_role_ids = new_mentioned_role_ids,
         mentioned_users = new_mentioned_users,
         message_type = new_message_type,
@@ -662,6 +683,7 @@ def test__Message__copy_with__all_fields():
     vampytest.assert_eq(copy.interaction, new_interaction)
     vampytest.assert_eq(copy.mentioned_channels_cross_guild, tuple(new_mentioned_channels_cross_guild))
     vampytest.assert_eq(copy.mentioned_everyone, new_mentioned_everyone)
+    vampytest.assert_eq(copy.mentioned_games, tuple(new_mentioned_games))
     vampytest.assert_eq(copy.mentioned_role_ids, tuple(new_mentioned_role_ids))
     vampytest.assert_eq(copy.mentioned_users, tuple(new_mentioned_users))
     vampytest.assert_eq(copy.nonce, new_nonce)
@@ -929,22 +951,25 @@ def test__Message__mentions():
     channel_id = 202305050008
     user_id = 202305050009
     role_id = 202305050010
+    application_id = 202607040056
     
     channel = Channel.precreate(channel_id)
     role = Role.precreate(role_id)
     user = User.precreate(user_id)
+    mention_game = MentionGame.precreate(application_id)
     
     content = f'{channel:m} {user:m} {role:m} @everyone'
     message = Message(
         content = content,
+        mentioned_everyone = True,
+        mentioned_games = [mention_game],
         mentioned_role_ids = [role_id],
         mentioned_users = [user],
-        mentioned_everyone = True
     )
     
     output = message.mentions
     vampytest.assert_instance(output, list)
-    vampytest.assert_eq({*output}, {channel, role, user, 'everyone'})
+    vampytest.assert_eq({*output}, {channel, role, user, 'everyone', mention_game})
     
     
 def test__Message__clean_embeds():
@@ -1415,6 +1440,57 @@ def _iter_options__iter_mentioned_role_ids():
     yield [role_id_0, role_id_1], [role_id_0, role_id_1]
 
 
+def _iter_options__iter_mentioned_games():
+    mention_game_0 = MentionGame.precreate(202607040060)
+    mention_game_1 = MentionGame.precreate(202607040061)
+    
+    yield (
+        None,
+        [],
+    )
+    
+    yield (
+        [
+            mention_game_0,
+        ],
+        [
+            mention_game_0,
+        ],
+    )
+    
+    yield (
+        [
+            mention_game_0,
+            mention_game_1,
+        ],
+        [
+            mention_game_0,
+            mention_game_1,
+        ],
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_mentioned_games()).returning_last())
+def test__Message__iter_mentioned_games(input_value):
+    """
+    Tests whether ``Message.iter_mentioned_games`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : ``None | list<ClientUserBase>``
+        Value to test with.
+    
+    Returns
+    -------
+    output : ``list<MentionGame>``
+    """
+    message = Message(mentioned_games = input_value)
+    output = [*message.iter_mentioned_games()]
+    for element in output:
+        vampytest.assert_instance(element, MentionGame)
+    return output
+
+
 @vampytest._(vampytest.call_from(_iter_options__iter_mentioned_role_ids()).returning_last())
 def test__Message__iter_mentioned_role_ids(input_value):
     """
@@ -1466,9 +1542,30 @@ def _iter_options__iter_mentioned_users():
     user_0 = User.precreate(202305050030)
     user_1 = User.precreate(202305050031)
     
-    yield None, []
-    yield [user_0], [user_0]
-    yield [user_0, user_1], [user_0, user_1]
+    yield (
+        None,
+        [],
+    )
+    
+    yield (
+        [
+            user_0,
+        ],
+        [
+            user_0,
+        ],
+    )
+    
+    yield (
+        [
+            user_0,
+            user_1,
+        ],
+        [
+            user_0,
+            user_1,
+        ],
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options__iter_mentioned_users()).returning_last())
@@ -1483,10 +1580,13 @@ def test__Message__iter_mentioned_users(input_value):
     
     Returns
     -------
-    output : `list<ClientUserBase>`
+    output : ``list<ClientUserBase>``
     """
     message = Message(mentioned_users = input_value)
-    return [*message.iter_mentioned_users()]
+    output = [*message.iter_mentioned_users()]
+    for element in output:
+        vampytest.assert_instance(element, ClientUserBase)
+    return output
 
 
 def _iter_options__iter_snapshots():
@@ -1936,6 +2036,44 @@ def test__Message__has_mentioned_everyone(input_value):
     return output
 
 
+
+def _iter_options__has_mentioned_games():
+    mentioned_games = [
+        MentionGame.precreate(202607040062),
+        MentionGame.precreate(202607040063),
+    ]
+    
+    yield (
+        None,
+        False,
+    )
+    
+    yield (
+        mentioned_games,
+        True,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__has_mentioned_games()).returning_last())
+def test__Message__has_mentioned_games(input_value):
+    """
+    Tests whether ``Message.has_mentioned_games`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : ``None | list<MentionGame>``
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    message = Message(mentioned_games = input_value)
+    output = message.has_mentioned_games()
+    vampytest.assert_instance(output, bool)
+    return output
+
+
 def _iter_options__has_mentioned_role_ids():
     mentioned_role_ids = [202305050043, 202305050044]
     
@@ -1996,8 +2134,15 @@ def _iter_options__has_mentioned_users():
         User.precreate(202305050048, name = 'Izaoyi'),
     ]
     
-    yield None, False
-    yield mentioned_users, True
+    yield (
+        None,
+        False,
+    )
+    
+    yield (
+        mentioned_users,
+        True,
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options__has_mentioned_users()).returning_last())

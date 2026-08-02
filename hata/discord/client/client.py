@@ -300,7 +300,7 @@ class Client(
         **keyword_parameters,
     ):
         """
-        Creates a new ``Client`` with the given parameters.
+        Creates a new client with the given parameters.
         
         Parameters
         ----------

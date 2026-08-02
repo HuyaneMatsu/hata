@@ -77,7 +77,7 @@ class AudioBalance:
     
     def __new__(cls, *, left = None, right = None):
         """
-        Creates a new ``AudioBalance`` from the given parameters.
+        Creates a new instance from the given parameters.
         
         Parameters
         ----------
@@ -162,7 +162,7 @@ class AudioBalance:
     @classmethod
     def from_data(cls, data):
         """
-        Creates a new ``AudioBalance`` from the given data.
+        Creates a new instance from the given data.
         
         Parameters
         ----------

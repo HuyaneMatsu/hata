@@ -20,7 +20,7 @@ def validate_users(users):
     
     Parameters
     ----------
-    users : `None`, `iterable` of ``ClientUserBase``
+    users : ``None | iterable<ClientUserBase>``
         The users to validate.
     
     Returns

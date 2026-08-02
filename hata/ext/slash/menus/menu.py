@@ -39,7 +39,7 @@ class ComponentSourceIdentityHasher(RichAttributeErrorBaseType):
     
     def __init__(self, component):
         """
-        Creates a new ``ComponentSourceIdentityHasher`` with the given parameters.
+        Creates a new instance with the given parameters.
         
         Parameters
         ----------
@@ -86,7 +86,7 @@ class ComponentDescriptor(RichAttributeErrorBaseType):
     
     def __new__(cls, source_component, sub_components):
         """
-        Creates a new ``ComponentDescriptor`` from the given component.
+        Creates a new instance from the given component.
         
         Parameters
         ----------

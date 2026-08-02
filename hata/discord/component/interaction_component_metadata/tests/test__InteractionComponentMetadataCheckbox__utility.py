@@ -12,7 +12,7 @@ def test__InteractionComponentMetadataCheckbox__copy():
     Tests whether ``InteractionComponentMetadataCheckbox.copy`` works as intended.
     """
     custom_id = 'koishi'
-    value = '\01'
+    value = '\001'
     
     interaction_component_metadata = InteractionComponentMetadataCheckbox(
         custom_id = custom_id,
@@ -33,7 +33,7 @@ def test__InteractionComponentMetadataCheckbox__copy_with__no_fields():
     Case: no fields given.
     """
     custom_id = 'koishi'
-    value = '\01'
+    value = '\001'
     
     interaction_component_metadata = InteractionComponentMetadataCheckbox(
         custom_id = custom_id,
@@ -54,10 +54,10 @@ def test__InteractionComponentMetadataCheckbox__copy_with__all_fields():
     Case: all fields given.
     """
     old_custom_id = 'koishi'
-    old_value = '\01'
+    old_value = '\001'
     
     new_custom_id = 'satori'
-    new_value = '\00'
+    new_value = '\000'
     
     interaction_component_metadata = InteractionComponentMetadataCheckbox(
         custom_id = old_custom_id,
@@ -84,7 +84,7 @@ def test__InteractionComponentMetadataCheckbox__copy_with_keyword_parameters__no
     Case: no fields given.
     """
     custom_id = 'koishi'
-    value = '\01'
+    value = '\001'
     
     interaction_component_metadata = InteractionComponentMetadataCheckbox(
         custom_id = custom_id,
@@ -105,10 +105,10 @@ def test__InteractionComponentMetadataCheckbox__copy_with_keyword_parameters__al
     Case: all fields given.
     """
     old_custom_id = 'koishi'
-    old_value = '\01'
+    old_value = '\001'
     
     new_custom_id = 'satori'
-    new_value = '\00'
+    new_value = '\000'
     
     interaction_component_metadata = InteractionComponentMetadataCheckbox(
         custom_id = old_custom_id,
@@ -137,13 +137,13 @@ def _iter_options__iter_custom_ids_and_values():
     yield (
         {
             'custom_id': 'koishi',
-            'value': '\01',
+            'value': '\001',
         },
         [
             (
                 'koishi',
                 ComponentType.checkbox,
-                '\01',
+                '\001',
             ),
         ],
     )

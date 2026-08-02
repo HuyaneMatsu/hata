@@ -176,6 +176,8 @@ setup(
         'hata.discord.localization',
         'hata.discord.message',
         'hata.discord.message.attachment',
+        'hata.discord.message.attachment_request',
+        'hata.discord.message.mention_game',
         'hata.discord.message.message',
         'hata.discord.message.message_activity',
         'hata.discord.message.message_application',

@@ -1,5 +1,7 @@
 __all__ = ()
 
+from ....env import API_VERSION
+
 from ...field_parsers import (
     bool_parser_factory, entity_id_parser_factory, flag_parser_factory, force_string_parser_factory, int_parser_factory,
     int_postprocess_parser_factory, nullable_array_parser_factory, nullable_entity_array_parser_factory,
@@ -12,7 +14,7 @@ from ...field_putters import (
     int_putter_factory, nullable_entity_array_putter_factory, nullable_entity_optional_putter_factory,
     nullable_string_array_optional_putter_factory, nullable_string_putter_factory,
     nullable_value_array_optional_putter_factory, preinstanced_array_putter_factory, preinstanced_putter_factory,
-    url_optional_putter_factory
+    string_flag_optional_putter_factory, url_optional_putter_factory
 )
 from ...field_validators import (
     bool_validator_factory, entity_id_validator_factory, flag_validator_factory, force_string_validator_factory,
@@ -227,9 +229,44 @@ validate_explicit_content_filter_level = preinstanced_validator_factory(
 
 # flags
 
-parse_flags = flag_parser_factory('flags', ApplicationFlag)
-put_flags = flag_optional_putter_factory('flags', ApplicationFlag())
+if API_VERSION < 10:
+    parse_flags = flag_parser_factory('flags', ApplicationFlag)
+
+else:
+    def parse_flags(data):
+        """
+        Parses flags out from teh given data.
+        
+        Parameters
+        ----------
+        data : `dict<str, object>`
+            Data to parse from.
+        
+        Returns
+        -------
+        flags : ``ApplicationFlag``
+        """
+        flags = data.get('flags_new', None)
+        if (flags is not None):
+            return ApplicationFlag(flags)
+        
+        flags = data.get('flags', None)
+        if (flags is not None):
+            return ApplicationFlag(flags)
+        
+        return ApplicationFlag()
+
+
+put_flags__request = flag_optional_putter_factory('flags', ApplicationFlag())
+
+if API_VERSION < 10:
+    put_flags__serialisation = put_flags__request
+else:
+    put_flags__serialisation = string_flag_optional_putter_factory('flags_new', ApplicationFlag())
+
+
 validate_flags = flag_validator_factory('flags', ApplicationFlag)
+
 
 # guild_id
 

@@ -1,6 +1,6 @@
 __all__ = ('create_auto_custom_id', 'create_identifier_custom_id_from_name')
 
-from base64 import b85encode as to_base85
+from base64 import b85encode as base_85_encode
 from os import urandom as random_bytes
 
 
@@ -13,7 +13,7 @@ def create_auto_custom_id():
     custom_id : `str`
         The created custom id.
     """
-    return to_base85(random_bytes(64)).decode()
+    return base_85_encode(random_bytes(64)).decode()
 
 
 def create_identifier_custom_id_from_name(name):

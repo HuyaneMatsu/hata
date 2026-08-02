@@ -88,7 +88,7 @@ class WaitAndContinue:
     
     def __init__(self, future, check, target, event, timeout):
         """
-        Creates a new ``WaitAndContinue`` with the given parameters.
+        Creates a new instance with the given parameters.
         
         Parameters
         ----------

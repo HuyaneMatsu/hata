@@ -184,7 +184,7 @@ class ClientCompoundChannelEndpoints(Compound):
         
         Other Parameters
         ----------------
-        icon : `None`, `bytes-like`, Optional (Keyword only)
+        icon : `None | bytes-like`, Optional (Keyword only)
             The new icon of the channel. By passing `None` your can remove the actual one.
         
         name : `None`, `str`, Optional (Keyword only)

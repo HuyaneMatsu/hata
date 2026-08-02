@@ -57,7 +57,7 @@ class ComponentCommand(CommandBaseCustomId):
         cls, function, name = None, *deprecated_positional_parameters, custom_id = ..., target = ..., **keyword_parameters
     ):
         """
-        Creates a new ``ComponentCommand`` with the given parameters
+        Creates a new instance with the given parameters
         
         Parameters
         ----------

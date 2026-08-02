@@ -31,7 +31,7 @@ class ApplicationCommandPermission(RichAttributeErrorBaseType):
     
     def __new__(cls, application_command_id, *, permission_overwrites = ...):
         """
-        Creates a new ``ApplicationCommandPermission`` from the given parameters.
+        Creates a new instance from the given parameters.
         
         Parameters
         ----------
@@ -74,7 +74,7 @@ class ApplicationCommandPermission(RichAttributeErrorBaseType):
     @classmethod
     def from_data(cls, data):
         """
-        Creates a new ``ApplicationCommandPermission``.
+        Creates a new instance.
         
         Parameters
         ----------

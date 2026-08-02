@@ -2,6 +2,8 @@ from warnings import catch_warnings, simplefilter as apply_simple_filter
 
 import vampytest
 
+from .....env import API_VERSION
+
 from ....bases import Icon, IconType
 from ....permission import Permission
 from ....user import User
@@ -82,7 +84,7 @@ def test__Application__from_data_ready__attributes():
     
     data = {
         'id': str(application_id),
-        'flags': int(flags),
+        **({'flags': flags} if API_VERSION < 10 else {'flags_new': format(flags, 'd')}),
     }
     
     application = Application.from_data_ready(data)
@@ -223,7 +225,7 @@ def test__Application__from_data_own__attributes():
         'bot_require_code_grant': bot_requires_code_grant,
         'cover_image': cover.as_base_16_hash,
         'description': description,
-        'flags': int(flags),
+        **({'flags': flags} if API_VERSION < 10 else {'flags_new': format(flags, 'd')}),
         'hook': hook,
         'icon': icon.as_base_16_hash,
         'name': name,
@@ -419,7 +421,7 @@ def test__Application__from_data_invite__attributes():
         'bot_require_code_grant': bot_requires_code_grant,
         'cover_image': cover.as_base_16_hash,
         'description': description,
-        'flags': int(flags),
+        **({'flags': flags} if API_VERSION < 10 else {'flags_new': format(flags, 'd')}),
         'hook': hook,
         'icon': icon.as_base_16_hash,
         'name': name,
@@ -478,6 +480,7 @@ def test__Application__from_data_invite__caching():
     vampytest.assert_is(application, test_application)
 
 
+@vampytest.skip_if(API_VERSION < 10)
 def test__Application__from_data_detectable__attributes():
     """
     Tests whether ``Application.from_data_detectable`` works as intended.
@@ -523,7 +526,7 @@ def test__Application__from_data_detectable__attributes():
         'bot_require_code_grant': bot_requires_code_grant,
         'cover_image': cover.as_base_16_hash,
         'description': description,
-        'flags': int(flags),
+        **({'flags': flags} if API_VERSION < 10 else {'flags_new': format(flags, 'd')}),
         'hook': hook,
         'icon_hash': icon.as_base_16_hash,
         'name': name,
@@ -681,6 +684,7 @@ def test__Application__to_data__default():
     )
 
 
+@vampytest.skip_if(API_VERSION < 10)
 def test__Application__to_data_ready():
     """
     Tests whether `Application.to_data`` works as intended.
@@ -697,7 +701,7 @@ def test__Application__to_data_ready():
     
     expected_data = {
         'id': str(application_id),
-        'flags': int(flags),
+        **({'flags': flags} if API_VERSION < 10 else {'flags_new': format(flags, 'd')}),
     }
     
     vampytest.assert_eq(
@@ -837,7 +841,7 @@ def test__Application__to_data_own():
         'bot_require_code_grant': bot_requires_code_grant,
         'cover_image': cover.as_base_16_hash,
         'description': description,
-        'flags': int(flags),
+        **({'flags': flags} if API_VERSION < 10 else {'flags_new': format(flags, 'd')}),
         'hook': hook,
         'icon': icon.as_base_16_hash,
         'name': name,
@@ -953,7 +957,7 @@ def test__Application__to_data_invite():
         'bot_require_code_grant': bot_requires_code_grant,
         'cover_image': cover.as_base_16_hash,
         'description': description,
-        'flags': int(flags),
+        **({'flags': flags} if API_VERSION < 10 else {'flags_new': format(flags, 'd')}),
         'hook': hook,
         'icon': icon.as_base_16_hash,
         'name': name,
@@ -1014,8 +1018,7 @@ def test__Application__to_data_detectable():
     slug = 'https://orindance.party/'
     themes = [ApplicationTheme.action]
     third_party_skus = [ThirdPartySKU(distributor = 'Dead')]
-    application_id = 202211290052
-    flags = ApplicationFlag(96)
+    
     
     application = Application.precreate(
         application_id,
@@ -1056,7 +1059,7 @@ def test__Application__to_data_detectable():
         'bot_require_code_grant': bot_requires_code_grant,
         'cover_image': cover.as_base_16_hash,
         'description': description,
-        'flags': int(flags),
+        **({'flags': flags} if API_VERSION < 10 else {'flags_new': format(flags, 'd')}),
         'hook': hook,
         'icon_hash': icon.as_base_16_hash,
         'name': name,

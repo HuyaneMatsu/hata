@@ -53,7 +53,7 @@ class IconDetailsBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `None`, `bytes-like`
+        data : `None | bytes-like`
         """
     )
     
@@ -199,7 +199,7 @@ class IconDetailsCustom(IconDetailsBase):
     
     Attributes
     ----------
-    data : `None`, `bytes-like`
+    data : `None | bytes-like`
         Icon payload.
     media_type : `str`
         The icon's data's media type.
@@ -212,7 +212,7 @@ class IconDetailsCustom(IconDetailsBase):
         
         Parameters
         ----------
-        data : `None`, `bytes-like`
+        data : `None | bytes-like`
             The icon's raw data.
         media_type : `str`
             The icon's media type.
@@ -330,7 +330,7 @@ class IconType(PreinstancedBase, value_type = int):
         else:
             if not isinstance(data, (bytes, bytearray, memoryview)):
                 raise TypeError(
-                    f'`{name}` can be `None`, `bytes-like`, got {type(data).__name__}; {short_repr(data)}'
+                    f'`{name}` can be `None | bytes-like`, got {type(data).__name__}; {short_repr(data)}'
                 )
             
             media_type = get_image_media_type(data)
@@ -473,7 +473,7 @@ class Icon(RichAttributeErrorBaseType):
     
     def __init__(self, icon_type, icon_hash):
         """
-        Creates a new ``Icon`` object with the given attributes.
+        Creates a new instance object with the given attributes.
         
         Parameters
         ----------

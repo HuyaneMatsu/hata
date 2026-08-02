@@ -659,7 +659,7 @@ class Command:
         hidden_if_checks_fail = None,
     ):
         """
-        Creates a new ``Command`` object.
+        Creates a new instance object.
         
         Parameters
         ----------
@@ -1091,7 +1091,7 @@ class CommandFunction:
     
     def __new__(cls, function, content_parser):
         """
-        Creates a new ``CommandFunction`` with the given parameters.
+        Creates a new instance with the given parameters.
         
         Parameters
         ----------

@@ -22,5 +22,6 @@ def test__attachment_request_copy_with_attachment_id():
     _assert_fields_set(copy)
     
     vampytest.assert_eq(copy.attachment_id, attachment_id_1)
+    vampytest.assert_eq(copy.attachment_request_flags, attachment_request.attachment_request_flags)
     vampytest.assert_is(copy.description, description)
     vampytest.assert_eq(copy.spoiler, spoiler)

@@ -408,9 +408,7 @@ def attachment_request_copy_with_attachment_id(attachment_request, attachment_id
     # Construct
     new = object.__new__(AttachmentRequest)
     new.attachment_id = attachment_id
-    new.attachment_request_flags = (
-        (ATTACHMENT_REQUEST_ACTION_EDIT << ATTACHMENT_REQUEST_SHIFT_ACTION)
-    )
+    new.attachment_request_flags = attachment_request.attachment_request_flags
     new.attachment_id = attachment_id
     new.description = attachment_request.description
     new.duration = attachment_request.duration

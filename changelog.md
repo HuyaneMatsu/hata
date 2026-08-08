@@ -1,3 +1,9 @@
+## 1.3.97 *\[2026-08-08\]*
+
+### Bug fixes
+
+- Fix creating a message with multiple attachment was broken. (Since last update)
+
 ## 1.3.96 *\[2026-08-02\]*
 
 ### Improvements

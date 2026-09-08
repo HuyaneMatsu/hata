@@ -192,6 +192,8 @@ class SessionPlatformType(PreinstancedBase, value_type = str):
     +-----------------------+---------------+-----------+
     | mobile                | mobile        | mobile    |
     +-----------------------+---------------+-----------+
+    | vr                    | vr            | vr        |
+    +-----------------------+---------------+-----------+
     | web                   | web           | web       |
     +-----------------------+---------------+-----------+
     """
@@ -202,4 +204,5 @@ class SessionPlatformType(PreinstancedBase, value_type = str):
     desktop = P('desktop', 'desktop')
     embedded = P('embedded', 'embedded')
     mobile = P('mobile', 'mobile')
+    vr = P('vr', 'vr')
     web = P('web', 'web')

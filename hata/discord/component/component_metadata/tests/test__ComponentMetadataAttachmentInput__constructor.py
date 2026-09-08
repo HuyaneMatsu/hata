@@ -1,5 +1,7 @@
 import vampytest
 
+from ....file_type_filter import FileTypeFilter, file_type_filter_create
+
 from ..attachment_input import ComponentMetadataAttachmentInput
 
 
@@ -14,6 +16,7 @@ def _assert_fields_set(component_metadata):
     """
     vampytest.assert_instance(component_metadata, ComponentMetadataAttachmentInput)
     vampytest.assert_instance(component_metadata.custom_id, str, nullable = True)
+    vampytest.assert_instance(component_metadata.file_type_filter, FileTypeFilter, nullable = True)
     vampytest.assert_instance(component_metadata.max_values, int)
     vampytest.assert_instance(component_metadata.min_values, int)
     vampytest.assert_instance(component_metadata.required, bool)
@@ -36,18 +39,23 @@ def test__ComponentMetadataAttachmentInput__new__all_fields():
     Case: all fields given
     """
     custom_id = 'oriental'
+    file_type_filter = file_type_filter_create(
+        individuals = ['png', 'txt'],
+    )
     max_values = 10
     min_values = 9
     required = True
     
     component_metadata = ComponentMetadataAttachmentInput(
         custom_id = custom_id,
+        file_type_filter = file_type_filter,
         max_values = max_values,
         min_values = min_values,
         required = required,
     )
     _assert_fields_set(component_metadata)
     vampytest.assert_eq(component_metadata.custom_id, custom_id)
+    vampytest.assert_eq(component_metadata.file_type_filter, file_type_filter)
     vampytest.assert_eq(component_metadata.max_values, max_values)
     vampytest.assert_eq(component_metadata.min_values, min_values)
     vampytest.assert_eq(component_metadata.required, required)
@@ -72,12 +80,16 @@ def test__ComponentMetadataAttachmentInput__from_keyword_parameters__all_fields(
     Case: all fields given
     """
     custom_id = 'oriental'
+    file_type_filter = file_type_filter_create(
+        individuals = ['png', 'txt'],
+    )
     max_values = 10
     min_values = 9
     required = True
     
     keyword_parameters = {
         'custom_id': custom_id,
+        'file_type_filter': file_type_filter,
         'max_values': max_values,
         'min_values': min_values,
         'required': required,
@@ -86,6 +98,7 @@ def test__ComponentMetadataAttachmentInput__from_keyword_parameters__all_fields(
     component_metadata = ComponentMetadataAttachmentInput.from_keyword_parameters(keyword_parameters)
     _assert_fields_set(component_metadata)
     vampytest.assert_eq(component_metadata.custom_id, custom_id)
+    vampytest.assert_eq(component_metadata.file_type_filter, file_type_filter)
     vampytest.assert_eq(component_metadata.max_values, max_values)
     vampytest.assert_eq(component_metadata.min_values, min_values)
     vampytest.assert_eq(component_metadata.required, required)

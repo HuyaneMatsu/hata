@@ -13,6 +13,7 @@ from .embed import *
 from .emoji import *
 from .events import *
 from .exceptions import *
+from .file_type_filter import *
 from .gateway import *
 from .guild import *
 from .http import *
@@ -65,6 +66,7 @@ __all__ = (
     *component.__all__,
     *events.__all__,
     *exceptions.__all__,
+    *file_type_filter.__all__,
     *gateway.__all__,
     *guild.__all__,
     *http.__all__,

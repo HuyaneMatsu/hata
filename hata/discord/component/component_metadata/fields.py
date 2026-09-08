@@ -8,22 +8,24 @@ from ...color import Color
 from ...field_parsers import (
     bool_parser_factory, default_entity_parser_factory, entity_id_parser_factory, force_string_parser_factory,
     int_parser_factory, negated_bool_parser_factory, nullable_entity_parser_factory, nullable_flag_parser_factory,
-    nullable_object_array_parser_factory, nullable_string_parser_factory, preinstanced_array_parser_factory,
-    preinstanced_parser_factory
+    nullable_functional_parser_factory, nullable_object_array_parser_factory, nullable_string_parser_factory,
+    preinstanced_array_parser_factory, preinstanced_parser_factory
 )
 from ...field_putters import (
     bool_optional_putter_factory, entity_id_optional_putter_factory, entity_putter_factory, force_string_putter_factory,
     int_optional_putter_factory, int_putter_factory, negated_bool_optional_putter_factory,
     nullable_entity_array_putter_factory, nullable_entity_optional_putter_factory,
-    nullable_flag_optional_putter_factory, nullable_string_optional_putter_factory, nullable_string_putter_factory,
-    preinstanced_array_putter_factory, preinstanced_putter_factory, url_optional_putter_factory
+    nullable_flag_optional_putter_factory, nullable_functional_optional_putter_factory,
+    nullable_string_optional_putter_factory, nullable_string_putter_factory, preinstanced_array_putter_factory,
+    preinstanced_putter_factory, url_optional_putter_factory
 )
 from ...field_validators import (
     bool_validator_factory, entity_id_validator_factory, force_string_validator_factory,
-    int_conditional_validator_factory, nullable_flag_validator_factory, nullable_object_array_validator_factory,
-    nullable_string_validator_factory, preinstanced_array_validator_factory, preinstanced_validator_factory,
-    url_optional_validator_factory
+    int_conditional_validator_factory, nullable_entity_validator_factory, nullable_flag_validator_factory,
+    nullable_object_array_validator_factory, nullable_string_validator_factory, preinstanced_array_validator_factory,
+    preinstanced_validator_factory, url_optional_validator_factory
 )
+from ...file_type_filter import FileTypeFilter, file_type_filter_convert_to_data, file_type_filter_create_from_data
 from ...role import Role
 from ...user import ClientUserBase
 
@@ -377,6 +379,13 @@ validate_divider = bool_validator_factory('divider', True)
 parse_enabled = negated_bool_parser_factory('disabled', True)
 put_enabled = negated_bool_optional_putter_factory('disabled', True)
 validate_enabled = bool_validator_factory('enabled', True)
+
+
+# file_type_filter
+
+parse_file_type_filter = nullable_functional_parser_factory('file_types', file_type_filter_create_from_data)
+put_file_type_filter = nullable_functional_optional_putter_factory('file_types', file_type_filter_convert_to_data)
+validate_file_type_filter = nullable_entity_validator_factory('file_type_filter', FileTypeFilter)
 
 
 # items

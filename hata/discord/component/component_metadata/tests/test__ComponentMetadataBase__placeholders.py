@@ -4,6 +4,7 @@ from ....color import Color
 from ....emoji import Emoji
 
 from ...component import Component
+from ....file_type_filter import FileTypeFilter
 from ...media_info import MediaInfo
 
 from ..base import ComponentMetadataBase
@@ -29,6 +30,7 @@ def test__ComponentMetadataBase__placeholders():
     vampytest.assert_instance(component_metadata.divider, bool)
     vampytest.assert_instance(component_metadata.emoji, Emoji, nullable = True)
     vampytest.assert_instance(component_metadata.enabled, bool)
+    vampytest.assert_instance(component_metadata.file_type_filter, FileTypeFilter, nullable = True)
     vampytest.assert_instance(component_metadata.items, tuple, nullable = True)
     vampytest.assert_instance(component_metadata.label, str, nullable = True)
     vampytest.assert_instance(component_metadata.max_length, int)

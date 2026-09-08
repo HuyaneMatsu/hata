@@ -132,6 +132,7 @@ setup(
         'hata.discord.events.soundboard_sounds_event_handler',
         'hata.discord.exceptions',
         'hata.discord.gateway',
+        'hata.discord.file_type_filter',
         'hata.discord.guild',
         'hata.discord.guild.ban_add_multiple_result',
         'hata.discord.guild.ban_entry',

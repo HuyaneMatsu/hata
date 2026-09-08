@@ -185,7 +185,7 @@ def test__InteractionEvent__copy_with__no_fields():
     application_command_name = '3L'
     application_id = 202211070058
     application_permissions = Permission(123)
-    attachment_size_limit = 10 << 20
+    attachment_size_limit = 20 << 20
     authorizer_user_ids = {
         ApplicationIntegrationType.user_install: 202407170019,
         ApplicationIntegrationType.guild_install: 202407170020,
@@ -238,7 +238,7 @@ def test__InteractionEvent__copy_with__all_fields():
     old_application_id = 202211070064
     old_application_command_name = '3L'
     old_application_permissions = Permission(123)
-    old_attachment_size_limit = 10 << 20
+    old_attachment_size_limit = 20 << 20
     old_authorizer_user_ids = {
         ApplicationIntegrationType.user_install: 202407170021,
         ApplicationIntegrationType.guild_install: 202407170022,
@@ -256,7 +256,7 @@ def test__InteractionEvent__copy_with__all_fields():
     
     new_application_id = 202211070065
     new_application_permissions = Permission(951)
-    new_attachment_size_limit = 11 << 20
+    new_attachment_size_limit = 21 << 20
     new_authorizer_user_ids = {
         ApplicationIntegrationType.user_install: 202407170023,
         ApplicationIntegrationType.guild_install: 202407170024,

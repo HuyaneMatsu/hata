@@ -192,7 +192,7 @@ async def converter_self_interaction_value(client, interaction_event):
     
     Returns
     -------
-    target : `None`, `str`
+    target : `None | str`
         The received value if any.
     """
     if interaction_event.type is not INTERACTION_TYPE_APPLICATION_COMMAND_AUTOCOMPLETE:
@@ -276,7 +276,7 @@ async def converter_str(client, interaction_event, value):
     
     Returns
     -------
-    value : `None`, `str`
+    value : `None | str`
         If conversion fails, then returns `None`.
     """
     return value
@@ -854,28 +854,39 @@ class SlashParameter(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    autocomplete : `None`, `CoroutineFunction`
+    autocomplete : `None | CoroutineFunction`
         Auto complete function for the parameter.
-    channel_types : `None`, `iterable` of (`int`, ``ChannelType``)
+    
+    channel_types : ``None | iterable<int> | iterable<ChannelType>``
         The accepted channel types.
-    description : `None`, `str` = `None`, Optional
+    
+    description : `None | str` = `None`, Optional
         Description for the annotation.
+    
+    file_type_filter : ``None | FileTypeFilter``
+        Filter to apply on accepted file types.
+    
     max_length : `None | int`
         The maximum input length allowed for this option.
+    
     max_value : `None | int | float`
         The maximal accepted value by the parameter.
+    
     min_length : `None | int`
         The minimum input length allowed for this option.
+    
     min_value : `None | int | float`
         The minimal accepted value by the parameter.
-    name : `None`, `str` = `None`, Optional
+    
+    name : `None | str` = `None`, Optional
         Name to use instead of the parameter's.
-    type_or_choice : `None`, `str`, `type`, `list`, `dict`
+    
+    type_or_choice : `None | str | type | list | dict`
         The annotation's value to use.
     """
     __slots__ = (
-        'autocomplete', 'channel_types', 'description', 'max_length', 'max_value', 'min_length', 'min_value', 'name',
-        'type_or_choice'
+        'autocomplete', 'channel_types', 'description', 'file_type_filter', 'max_length', 'max_value', 'min_length',
+        'min_value', 'name', 'type_or_choice'
     )
     
     def __new__(
@@ -886,6 +897,7 @@ class SlashParameter(RichAttributeErrorBaseType):
         *,
         autocomplete = None,
         channel_types = None,
+        file_type_filter = None,
         max_length = None,
         max_value = None,
         min_length = None,
@@ -896,22 +908,33 @@ class SlashParameter(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        type_or_choice : `None`, `str`, `type`, `list`, `dict` = `None`, Optional
+        type_or_choice : `None | str | type | list | dict` = `None`, Optional
             The annotation's value to use.
-        description : `None`, `str` = `None`, Optional
+        
+        description : `None | str` = `None`, Optional
             Description for the annotation.
-        name : `None`, `str` = `None`, Optional
+        
+        name : `None | str` = `None`, Optional
             Name to use instead of the parameter's.
-        autocomplete : `None`, `CoroutineFunction` = `None`, Optional (Keyword only)
+        
+        autocomplete : `None | CoroutineFunction` = `None`, Optional (Keyword only)
             Auto complete function for the parameter.
-        channel_types : `None`, `iterable` of (`int`, ``ChannelType``) = `None`, Optional (Keyword only)
+        
+        channel_types : ``None | iterable<int> | iterable<ChannelType>`` = `None`, Optional (Keyword only)
             The accepted channel types.
+        
+        file_type_filter : ``None | FileTypeFilter`` = `None`, Optional (Keyword only)
+            Filter to apply on accepted file types.
+        
         max_length : `None | int` = `None`, Optional (Keyword only)
             The maximum input length allowed for this option.
+        
         max_value : `None | int | float` = `None`, Optional (Keyword only)
             The maximal accepted value by the parameter.
+        
         min_length : `None | int` = `None`, Optional (Keyword only)
             The minimum input length allowed for this option.
+        
         min_value : `None | int | float` = `None`, Optional (Keyword only)
             The minimal accepted value by the parameter.
         """
@@ -919,6 +942,7 @@ class SlashParameter(RichAttributeErrorBaseType):
         self.autocomplete = autocomplete
         self.channel_types = channel_types
         self.description = description
+        self.file_type_filter = file_type_filter
         self.max_length = max_length
         self.max_value = max_value
         self.min_length = min_length
@@ -959,6 +983,16 @@ class SlashParameter(RichAttributeErrorBaseType):
                 field_added = True
             repr_parts.append(' description = ')
             repr_parts.append(repr(description))
+        
+        # file_type_filter
+        file_type_filter = self.file_type_filter
+        if (file_type_filter is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            repr_parts.append(', file_type_filter = ')
+            repr_parts.append(repr(file_type_filter))
         
         # max_length
         max_length = self.max_length
@@ -1026,7 +1060,7 @@ def preprocess_channel_types(channel_types):
     
     Parameters
     ----------
-    channel_types : `None`, `iterable` of (`int`, ``ChannelType``)
+    channel_types : ``None | iterable<int> | iterable<ChannelType>``
         Channel types to limit a slash command parameter to.
     
     Returns
@@ -1676,7 +1710,7 @@ def parse_annotation_name(name, parameter_name):
     ----------
     name : `str`
         The name of an annotation.
-    parameter_name : `None`, `str`
+    parameter_name : `None | str`
         The parameter's name.
     
     Returns
@@ -1686,7 +1720,7 @@ def parse_annotation_name(name, parameter_name):
     Raises
     ------
     TypeError
-        If `name`'s is neither `None`, `str`.
+        If `name`'s is neither `None | str`.
     """
     if name is None:
         name = parameter_name
@@ -1728,11 +1762,13 @@ def parse_annotation_tuple(parameter, annotation_tuple):
         The parameter's internal type identifier.
     channel_types : ``None | tuple<ChannelType>``
         The accepted channel types.
+    file_type_filter : ``None | FileTypeFilter``
+        Filter to apply on accepted file types.
     max_value : `None | int | float`
         The maximal accepted value.
     min_value : `None | int | float`
         The minimal accepted value.
-    autocomplete : `None`, `CoroutineFunction`
+    autocomplete : `None | CoroutineFunction`
         Autocomplete function.
     choice_enum_type : `None`, `type`
         Enum type of `choices` if applicable.
@@ -1779,7 +1815,7 @@ def parse_annotation_tuple(parameter, annotation_tuple):
         name = None
     
     name = parse_annotation_name(name, parameter.name)
-    return choices, description, name, annotation_type, channel_types, None, None, None, choice_enum_type, 0, 0
+    return choices, description, name, annotation_type, channel_types, None, None, None, None, choice_enum_type, 0, 0
 
 
 def parse_annotation_slash_parameter(parameter, slash_parameter):
@@ -1805,11 +1841,13 @@ def parse_annotation_slash_parameter(parameter, slash_parameter):
         The parameter's internal type identifier.
     channel_types : ``None | tuple<ChannelType>``
         The accepted channel types.
+    file_type_filter : ``None | FileTypeFilter``
+        Filter to apply on accepted file types.
     max_value : `None | int | float`
         The maximal accepted value.
     min_value : `None | int | float`
         The minimal accepted value.
-    autocomplete : `None`, `CoroutineFunction`
+    autocomplete : `None | CoroutineFunction`
         Autocomplete function.
     choice_enum_type : `None`, `type`
         Enum type of `choices` if applicable.
@@ -1851,7 +1889,7 @@ def parse_annotation_slash_parameter(parameter, slash_parameter):
     name = parse_annotation_name(slash_parameter.name, parameter.name)
     
     return (
-        choices, description, name, type_, channel_types, max_value, min_value, slash_parameter.autocomplete,
+        choices, description, name, type_, channel_types, slash_parameter.file_type_filter, max_value, min_value, slash_parameter.autocomplete,
         choice_enum_type, max_length, min_length
     )
 
@@ -1909,11 +1947,13 @@ def parse_pep_593_typing(parameter, annotation_value):
         The parameter's internal type identifier.
     channel_types : ``None | tuple<ChannelType>``
         The accepted channel types.
+    file_type_filter : ``None | FileTypeFilter``
+        Filter to apply on accepted file types.
     max_value : `None | int | float`
         The maximal accepted value.
     min_value : `None | int | float`
         The minimal accepted value.
-    autocomplete : `None`, `CoroutineFunction`
+    autocomplete : `None | CoroutineFunction`
         Autocomplete function.
     choice_enum_type : `None`, `type`
         Enum type of `choices` if applicable.
@@ -1968,7 +2008,7 @@ def parse_annotation_fallback(parameter, annotation_value):
     -------
     choices : `None`, `dict` of ((`int`, `float`, `str`, `Enum`), `str`) items
         Parameter's choices.
-    description : `None`, `str`
+    description : `None | str`
         Parameter's description.
         
         > Returned as `None` for internal parameters or if `description` could not be detected.
@@ -1978,11 +2018,13 @@ def parse_annotation_fallback(parameter, annotation_value):
         The parameter's internal type identifier.
     channel_types : ``None | tuple<ChannelType>``
         The accepted channel types.
+    file_type_filter : ``None | FileTypeFilter``
+        Filter to apply on accepted file types.
     max_value : `None | int | float`
         The maximal accepted value.
     min_value : `None | int | float`
         The minimal accepted value.
-    autocomplete : `None`, `CoroutineFunction`
+    autocomplete : `None | CoroutineFunction`
         Autocomplete function.
     choice_enum_type : `None`, `type`
         Enum type of `choices` if applicable.
@@ -2015,7 +2057,7 @@ def parse_annotation_fallback(parameter, annotation_value):
             choices = None
             channel_types = None
     
-    return choices, None, parameter.name, annotation_type, channel_types, None, None, None, choice_enum_type, 0, 0
+    return choices, None, parameter.name, annotation_type, channel_types, None, None, None, None, choice_enum_type, 0, 0
 
 
 def parse_annotation_internal(annotation):
@@ -2064,7 +2106,7 @@ def parse_annotation(parameter):
     -------
     choices : `None`, `dict` of ((`int`, `float`, `str`, `Enum`), `str`) items
         Parameter's choices.
-    description : `None`, `str`
+    description : `None | str`
         Parameter's description.
         
         > Returned as `None` for internal parameters or if `description` could not be detected.
@@ -2074,11 +2116,13 @@ def parse_annotation(parameter):
         The parameter's internal type identifier.
     channel_types : ``None | tuple<ChannelType>``
         The accepted channel types.
+    file_type_filter : ``None | FileTypeFilter``
+        Filter to apply on accepted file types.
     max_value : `None | int | float`
         The maximal accepted value.
     min_value : `None | int | float`
         The minimal accepted value.
-    autocomplete : `None`, `CoroutineFunction`
+    autocomplete : `None | CoroutineFunction`
         Autocomplete function.
     choice_enum_type : `None`, `type`
         Enum type of `choices` if applicable.
@@ -2152,8 +2196,8 @@ def create_parameter_converter(parameter, parameter_configurer):
     if parameter_configurer is None:
         try:
             (
-                choices, description, name, annotation_type, channel_types, max_value, min_value, autocomplete,
-                choice_enum_type, max_length, min_length
+                choices, description, name, annotation_type, channel_types, file_type_filter, max_value, min_value,
+                autocomplete, choice_enum_type, max_length, min_length
             ) = parse_annotation(parameter)
         except Exception as exception:
             exception_type = type(exception)
@@ -2170,6 +2214,7 @@ def create_parameter_converter(parameter, parameter_configurer):
         name = parameter_configurer._name
         annotation_type = parameter_configurer._type
         channel_types = parameter_configurer._channel_types
+        file_type_filter = parameter_configurer._file_type_filter
         max_value = parameter_configurer._max_value
         min_value = parameter_configurer._min_value
         autocomplete = parameter_configurer._autocomplete
@@ -2207,7 +2252,7 @@ def create_parameter_converter(parameter, parameter_configurer):
         
         parameter_converter = ParameterConverterSlashCommand(
             parameter.name, annotation_type, converter, name, description, default, required, choice_enum_type,
-            choices, channel_types, max_value, min_value, autocomplete, max_length, min_length
+            choices, channel_types, file_type_filter, max_value, min_value, autocomplete, max_length, min_length
         )
     
     return parameter_converter

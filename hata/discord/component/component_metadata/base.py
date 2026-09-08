@@ -366,6 +366,18 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
     )
     
     
+    file_type_filter = PlaceHolder(
+        None,
+        """
+        File type filter of an attachment input component.
+        
+        Returns
+        -------
+        file_type_filter : ``None | FileTypeFilter``
+        """
+    )
+    
+    
     items = PlaceHolder(
         None,
         """

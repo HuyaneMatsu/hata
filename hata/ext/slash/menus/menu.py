@@ -478,7 +478,7 @@ class MenuStructure(RichAttributeErrorBaseType):
         | timeout       | `float`   |
         +---------------+-----------+
     
-    close : `None`, `CoroutineFunction`
+    close : `None | CoroutineFunction`
         Function to call when the menu is closed.
         
         Should accept the following parameters:
@@ -508,7 +508,7 @@ class MenuStructure(RichAttributeErrorBaseType):
         | **keyword_parameters      | Keyword parameters        |
         +---------------------------+---------------------------+
     
-    initial_invoke : `None`, `CoroutineFunction`
+    initial_invoke : `None | CoroutineFunction`
         Function to generate the default page of the menu.
         
         Should accept the following parameters:
@@ -522,7 +522,7 @@ class MenuStructure(RichAttributeErrorBaseType):
     is_final : `bool`
         Whether the Menu has all the required fields fulfilled.
     
-    invoke : `None`, `CoroutineFunction`
+    invoke : `None | CoroutineFunction`
         The function call for result when invoking the menu.
         
         Should accept the following parameters:

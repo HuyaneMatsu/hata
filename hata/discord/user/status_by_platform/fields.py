@@ -33,6 +33,13 @@ validate_mobile = preinstanced_validator_factory('mobile', Status)
 validate_platform = preinstanced_validator_factory('platform', SessionPlatformType)
 
 
+# vr
+
+parse_vr = preinstanced_parser_factory('vr', Status, Status.offline)
+put_vr = preinstanced_optional_putter_factory('vr', Status.offline)
+validate_vr = preinstanced_validator_factory('vr', Status)
+
+
 # web
 
 parse_web = preinstanced_parser_factory('web', Status, Status.offline)

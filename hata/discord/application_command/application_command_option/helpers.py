@@ -5,8 +5,9 @@ from ..application_command_option_metadata.constants import (
 )
 
 from ..application_command_option_metadata.fields import (
-    validate_autocomplete, validate_channel_types, validate_choices, validate_default, validate_max_length,
-    validate_max_value, validate_min_length, validate_min_value, validate_options, validate_required
+    validate_autocomplete, validate_channel_types, validate_choices, validate_default, validate_file_type_filter,
+    validate_max_length, validate_max_value, validate_min_length, validate_min_value, validate_options,
+    validate_required
 )
 
 
@@ -15,6 +16,7 @@ FIELDS = {
     'channel_types': (validate_channel_types, None),
     'choices': (validate_choices, None),
     'default': (validate_default, False),
+    'file_type_filter': (validate_file_type_filter, None),
     'max_length': (validate_max_length, MAX_LENGTH_DEFAULT),
     'max_value': (validate_max_value, None),
     'min_length': (validate_min_length, MIN_LENGTH_DEFAULT),

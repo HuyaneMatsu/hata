@@ -2,24 +2,25 @@ __all__ = ()
 
 from ...channel import ChannelType
 from ...field_parsers import (
-    bool_parser_factory, field_parser_factory, int_parser_factory, nullable_object_array_parser_factory,
-    preinstanced_array_parser_factory
+    bool_parser_factory, field_parser_factory, int_parser_factory, nullable_functional_parser_factory,
+    nullable_object_array_parser_factory, preinstanced_array_parser_factory
 )
 from ...field_putters import (
     bool_optional_putter_factory, int_optional_putter_factory, nullable_entity_array_optional_putter_factory,
-    nullable_field_optional_putter_factory, preinstanced_array_putter_factory,
+    nullable_field_optional_putter_factory, nullable_functional_optional_putter_factory,
+    preinstanced_array_putter_factory
 )
 from ...field_validators import (
-    bool_validator_factory, nullable_object_array_validator_factory, preinstanced_array_validator_factory
+    bool_validator_factory, nullable_entity_validator_factory, nullable_object_array_validator_factory,
+    preinstanced_array_validator_factory
 )
+from ...file_type_filter import FileTypeFilter, file_type_filter_convert_to_data, file_type_filter_create_from_data
 
 from ..application_command_option_choice import ApplicationCommandOptionChoice
 
 from .constants import (
-    CHOICES_MAX, MAX_LENGTH_DEFAULT,
-    MAX_LENGTH_MAX, MAX_LENGTH_MIN,
-    MIN_LENGTH_DEFAULT, MIN_LENGTH_MAX,
-    MIN_LENGTH_MIN, OPTIONS_MAX
+    CHOICES_MAX, MAX_LENGTH_DEFAULT, MAX_LENGTH_MAX, MAX_LENGTH_MIN, MIN_LENGTH_DEFAULT, MIN_LENGTH_MAX, MIN_LENGTH_MIN,
+    OPTIONS_MAX
 )
 
 # autocomplete
@@ -86,6 +87,13 @@ def validate_choices_postprocessed(choices, expected_choice_type):
 parse_default = bool_parser_factory('default', False)
 put_default = bool_optional_putter_factory('default', False)
 validate_default = bool_validator_factory('default', False)
+
+
+# file_type_filter
+
+parse_file_type_filter = nullable_functional_parser_factory('file_types', file_type_filter_create_from_data)
+put_file_type_filter = nullable_functional_optional_putter_factory('file_types', file_type_filter_convert_to_data)
+validate_file_type_filter = nullable_entity_validator_factory('file_type_filter', FileTypeFilter)
 
 
 # max_length

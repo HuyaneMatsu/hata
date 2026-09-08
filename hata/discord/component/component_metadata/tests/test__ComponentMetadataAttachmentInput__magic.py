@@ -1,5 +1,7 @@
 import vampytest
 
+from ....file_type_filter import file_type_filter_create
+
 from ..attachment_input import ComponentMetadataAttachmentInput
 
 
@@ -8,12 +10,16 @@ def test__ComponentMetadataAttachmentInput__repr():
     Tests whether ``ComponentMetadataAttachmentInput.__repr__`` works as intended.
     """
     custom_id = 'oriental'
+    file_type_filter = file_type_filter_create(
+        individuals = ['png', 'txt'],
+    )
     max_values = 10
     min_values = 9
     required = True
     
     component_metadata = ComponentMetadataAttachmentInput(
         custom_id = custom_id,
+        file_type_filter = file_type_filter,
         max_values = max_values,
         min_values = min_values,
         required = required,
@@ -27,12 +33,16 @@ def test__ComponentMetadataAttachmentInput__hash():
     Tests whether ``ComponentMetadataAttachmentInput.__hash__`` works as intended.
     """
     custom_id = 'oriental'
+    file_type_filter = file_type_filter_create(
+        individuals = ['png', 'txt'],
+    )
     max_values = 10
     min_values = 9
     required = True
     
     component_metadata = ComponentMetadataAttachmentInput(
         custom_id = custom_id,
+        file_type_filter = file_type_filter,
         max_values = max_values,
         min_values = min_values,
         required = required,
@@ -43,12 +53,16 @@ def test__ComponentMetadataAttachmentInput__hash():
 
 def _iter_options__eq():
     custom_id = 'oriental'
+    file_type_filter = file_type_filter_create(
+        individuals = ['png', 'txt'],
+    )
     max_values = 10
     min_values = 9
     required = True
     
     keyword_parameters = {
         'custom_id': custom_id,
+        'file_type_filter': file_type_filter,
         'max_values': max_values,
         'min_values': min_values,
         'required': required,
@@ -65,6 +79,15 @@ def _iter_options__eq():
         {
             **keyword_parameters,
             'custom_id': 'dystopia',
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'file_type_filter': None,
         },
         False,
     )

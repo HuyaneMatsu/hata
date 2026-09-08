@@ -7,9 +7,9 @@ from ..shared_helpers import create_auto_custom_id
 from .base import ComponentMetadataBase
 from .constants import MAX_VALUES_DEFAULT, MIN_VALUES_DEFAULT
 from .fields import (
-    parse_custom_id, parse_max_values, parse_min_values, parse_required, put_custom_id, put_max_values, put_min_values,
-    put_required, validate_custom_id, validate_max_values__attachment_input, validate_min_values__attachment_input,
-    validate_required
+    parse_custom_id, parse_file_type_filter, parse_max_values, parse_min_values, parse_required, put_custom_id,
+    put_file_type_filter, put_max_values, put_min_values, put_required, validate_custom_id, validate_file_type_filter,
+    validate_max_values__attachment_input, validate_min_values__attachment_input, validate_required
 )
 
 
@@ -22,6 +22,9 @@ class ComponentMetadataAttachmentInput(ComponentMetadataBase):
     custom_id : `None | str`
         Custom identifier to detect which component was used by the user.
     
+    file_type_filter : ``None | FileTypeFilter``
+        Filter to apply on accepted file types.
+    
     max_values : `int
         The maximal amount of attachments to input.
     
@@ -31,13 +34,14 @@ class ComponentMetadataAttachmentInput(ComponentMetadataBase):
     required : `bool`
         Whether the field is required to be fulfilled.
     """
-    __slots__ = ('custom_id', 'max_values', 'min_values', 'required')
+    __slots__ = ('custom_id', 'file_type_filter', 'max_values', 'min_values', 'required')
     
     
     def __new__(
         cls,
         *,
         custom_id = ...,
+        file_type_filter = ...,
         max_values = ...,
         min_values = ...,
         required = ...,
@@ -49,6 +53,9 @@ class ComponentMetadataAttachmentInput(ComponentMetadataBase):
         ----------
         custom_id : `None | str`, Optional (Keyword only)
             Custom identifier to detect which component was used by the user.
+        
+        file_type_filter : ``None | FileTypeFilter``, Optional (Keyword only)
+            Filter to apply on accepted file types.
         
         max_values : `int, Optional (Keyword only)
             The maximal amount of attachments to input.
@@ -71,6 +78,12 @@ class ComponentMetadataAttachmentInput(ComponentMetadataBase):
             custom_id = None
         else:
             custom_id = validate_custom_id(custom_id)
+        
+        # file_type_filter
+        if file_type_filter is ...:
+            file_type_filter = None
+        else:
+            file_type_filter = validate_file_type_filter(file_type_filter)
         
         # max_values
         if max_values is ...:
@@ -107,6 +120,7 @@ class ComponentMetadataAttachmentInput(ComponentMetadataBase):
         # Construct
         self = object.__new__(cls)
         self.custom_id = custom_id
+        self.file_type_filter = file_type_filter
         self.max_values = max_values
         self.min_values = min_values
         self.required = required
@@ -118,6 +132,7 @@ class ComponentMetadataAttachmentInput(ComponentMetadataBase):
     def from_keyword_parameters(cls, keyword_parameters):
         return cls(
             custom_id = keyword_parameters.pop('custom_id', ...),
+            file_type_filter = keyword_parameters.pop('file_type_filter', ...),
             max_values = keyword_parameters.pop('max_values', ...),
             min_values = keyword_parameters.pop('min_values', ...),
             required = keyword_parameters.pop('required', ...),
@@ -135,6 +150,12 @@ class ComponentMetadataAttachmentInput(ComponentMetadataBase):
         repr_parts.append(repr(self.custom_id))
         
         # Optional descriptive fields: min_values & max_values & required
+        
+        # file_type_filter
+        file_type_filter = self.file_type_filter
+        if (file_type_filter is not None):
+            repr_parts.append(', file_type_filter = ')
+            repr_parts.append(repr(file_type_filter))
         
         # min_values
         min_values = self.min_values
@@ -167,6 +188,11 @@ class ComponentMetadataAttachmentInput(ComponentMetadataBase):
         if (custom_id is not None):
             hash_value ^= hash(custom_id)
         
+        # file_type_filter
+        file_type_filter = self.file_type_filter
+        if (file_type_filter is not None):
+            hash_value ^= hash(file_type_filter)
+        
         # max_values
         max_values = self.max_values
         if (max_values != 1):
@@ -190,6 +216,10 @@ class ComponentMetadataAttachmentInput(ComponentMetadataBase):
         if self.custom_id != other.custom_id:
             return False
         
+        # file_type_filter
+        if self.file_type_filter != other.file_type_filter:
+            return False
+        
         # max_values
         if self.max_values != other.max_values:
             return False
@@ -210,6 +240,7 @@ class ComponentMetadataAttachmentInput(ComponentMetadataBase):
     def from_data(cls, data):
         self = object.__new__(cls)
         self.custom_id = parse_custom_id(data)
+        self.file_type_filter = parse_file_type_filter(data)
         self.max_values = parse_max_values(data)
         self.min_values = parse_min_values(data)
         self.required = parse_required(data)
@@ -221,6 +252,7 @@ class ComponentMetadataAttachmentInput(ComponentMetadataBase):
         data = {}
         
         put_custom_id(self.custom_id, data, defaults)
+        put_file_type_filter(self.file_type_filter, data, defaults)
         put_max_values(self.max_values, data, defaults)
         put_min_values(self.min_values, data, defaults)
         put_required(self.required, data, defaults)
@@ -234,6 +266,9 @@ class ComponentMetadataAttachmentInput(ComponentMetadataBase):
         
         # custom_id
         new.custom_id = self.custom_id
+        
+        # file_type_filter
+        new.file_type_filter = self.file_type_filter
         
         # max_values
         new.max_values = self.max_values
@@ -254,6 +289,9 @@ class ComponentMetadataAttachmentInput(ComponentMetadataBase):
         # custom_id
         new.custom_id = self.custom_id
         
+        # file_type_filter
+        new.file_type_filter = self.file_type_filter
+        
         # max_values
         new.max_values = self.max_values
         
@@ -270,6 +308,7 @@ class ComponentMetadataAttachmentInput(ComponentMetadataBase):
         self,
         *,
         custom_id = ...,
+        file_type_filter = ...,
         max_values = ...,
         min_values = ...,
         required = ...,
@@ -281,6 +320,9 @@ class ComponentMetadataAttachmentInput(ComponentMetadataBase):
         ----------
         custom_id : `None | str`, Optional (Keyword only)
             Custom identifier to detect which component was used by the user.
+        
+        file_type_filter : ``None | FileTypeFilter``, Optional (Keyword only)
+            Filter to apply on accepted file types.
         
         max_values : `int, Optional (Keyword only)
             The maximal amount of attachments to input.
@@ -308,6 +350,12 @@ class ComponentMetadataAttachmentInput(ComponentMetadataBase):
         else:
             custom_id = validate_custom_id(custom_id)
         
+        # file_type_filter
+        if file_type_filter is ...:
+            file_type_filter = self.file_type_filter
+        else:
+            file_type_filter = validate_file_type_filter(file_type_filter)
+        
         # max_values
         if max_values is ...:
             max_values = self.max_values
@@ -334,6 +382,7 @@ class ComponentMetadataAttachmentInput(ComponentMetadataBase):
         # Construct
         new = object.__new__(type(self))
         new.custom_id = custom_id
+        new.file_type_filter = file_type_filter
         new.max_values = max_values
         new.min_values = min_values
         new.required = required
@@ -344,6 +393,7 @@ class ComponentMetadataAttachmentInput(ComponentMetadataBase):
     def copy_with_keyword_parameters(self, keyword_parameters):
         return self.copy_with(
             custom_id = keyword_parameters.pop('custom_id', ...),
+            file_type_filter = keyword_parameters.pop('file_type_filter', ...),
             max_values = keyword_parameters.pop('max_values', ...),
             min_values = keyword_parameters.pop('min_values', ...),
             required = keyword_parameters.pop('required', ...),

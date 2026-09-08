@@ -1,5 +1,7 @@
 import vampytest
 
+from ....file_type_filter import FileTypeFilter
+
 from ..base import ApplicationCommandOptionMetadataBase
 
 
@@ -13,6 +15,7 @@ def test__ApplicationCommandOptionMetadataBase__placeholders():
     vampytest.assert_instance(option_metadata.channel_types, tuple, nullable = True)
     vampytest.assert_instance(option_metadata.choices, tuple, nullable = True)
     vampytest.assert_instance(option_metadata.default, bool)
+    vampytest.assert_instance(option_metadata.file_type_filter, FileTypeFilter, nullable = True)
     vampytest.assert_instance(option_metadata.max_length, int)
     vampytest.assert_instance(option_metadata.max_value, object, nullable = True)
     vampytest.assert_instance(option_metadata.min_length, int)

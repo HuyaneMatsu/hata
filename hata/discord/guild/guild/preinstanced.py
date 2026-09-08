@@ -268,6 +268,8 @@ class GuildFeature(PreinstancedBase, value_type = str):
     +-----------------------------------------------+-----------------------------------------------+-----------------------------------------------------------+
     | products_purchasable                          | products purchasable                          | PRODUCTS_AVAILABLE_FOR_PURCHASE                           |
     +-----------------------------------------------+-----------------------------------------------+-----------------------------------------------------------+
+    | prune_require_administrator_permission        | prune require administrator permission        | PRUNE_REQUIRES_ADMIN                                      |
+    +-----------------------------------------------+-----------------------------------------------+-----------------------------------------------------------+
     | public                                        | public                                        | PUBLIC                                                    |
     +-----------------------------------------------+-----------------------------------------------+-----------------------------------------------------------+
     | public_disabled                               | public disabled                               | PUBLIC_DISABLED                                           |
@@ -790,6 +792,11 @@ class GuildFeature(PreinstancedBase, value_type = str):
     products_purchasable = P(
         'PRODUCTS_AVAILABLE_FOR_PURCHASE',
         'products purchasable',
+        GuildFeatureFlag(),
+    )
+    prune_require_administrator_permission = P(
+        'PRUNE_REQUIRES_ADMIN',
+        'prune require administrator permission',
         GuildFeatureFlag(),
     )
     public = P(

@@ -4,6 +4,7 @@ from ....channel import ChannelType
 from ....color import Color
 from ....core import BUILTIN_EMOJIS
 from ....emoji import Emoji
+from ....file_type_filter import FileTypeFilter, file_type_filter_create
 
 from ...checkbox_group_option import CheckboxGroupOption
 from ...component_metadata import ButtonStyle, SeparatorSpacingSize, TextInputStyle
@@ -37,6 +38,7 @@ def test__Component__proxies__reading_defaults():
     vampytest.assert_instance(component.description, str, nullable = True)
     vampytest.assert_instance(component.emoji, Emoji, nullable = True)
     vampytest.assert_instance(component.enabled, bool)
+    vampytest.assert_instance(component.file_type_filter, FileTypeFilter, nullable = True)
     vampytest.assert_instance(component.divider, bool)
     vampytest.assert_instance(component.label, str, nullable = True)
     vampytest.assert_instance(component.items, tuple, nullable = True)
@@ -401,6 +403,9 @@ def test__Component__proxies__read_attachment_input():
     Case: reading channel select fields.
     """
     custom_id = 'kaguya'
+    file_type_filter = file_type_filter_create(
+        individuals = ['png', 'txt'],
+    )
     max_values = 10
     min_values = 9
     required = True
@@ -408,12 +413,14 @@ def test__Component__proxies__read_attachment_input():
     component = Component(
         ComponentType.attachment_input,
         custom_id = custom_id,
+        file_type_filter = file_type_filter,
         max_values = max_values,
         min_values = min_values,
         required = required,
     )
     
     vampytest.assert_eq(component.custom_id, custom_id)
+    vampytest.assert_eq(component.file_type_filter, file_type_filter)
     vampytest.assert_eq(component.max_values, max_values)
     vampytest.assert_eq(component.min_values, min_values)
     vampytest.assert_eq(component.required, required)
@@ -824,6 +831,9 @@ def test__Component__proxies__write_attachment_input():
     Case: writing channel select fields.
     """
     custom_id = 'kaguya'
+    file_type_filter = file_type_filter_create(
+        individuals = ['png', 'txt'],
+    )
     max_values = 10
     min_values = 9
     required = True
@@ -831,11 +841,13 @@ def test__Component__proxies__write_attachment_input():
     component = Component(ComponentType.attachment_input)
     
     component.custom_id = custom_id
+    component.file_type_filter = file_type_filter
     component.max_values = max_values
     component.min_values = min_values
     component.required = required
     
     vampytest.assert_eq(component.custom_id, custom_id)
+    vampytest.assert_eq(component.file_type_filter, file_type_filter)
     vampytest.assert_eq(component.max_values, max_values)
     vampytest.assert_eq(component.min_values, min_values)
     vampytest.assert_eq(component.required, required)

@@ -44,6 +44,9 @@ class ParameterConverterSlashCommand(ParameterConverterBase):
     description : `None | str
         The parameter's description.
     
+    file_type_filter : ``None | FileTypeFilter``
+        Filter to apply on accepted file types.
+    
     max_length : `int`
         The maximum input length allowed for this option.
     
@@ -70,7 +73,7 @@ class ParameterConverterSlashCommand(ParameterConverterBase):
     """
     __slots__ = (
         'auto_completer', 'channel_types', 'choice_enum_type', 'choices', 'converter', 'default', 'description',
-        'max_length', 'max_value', 'min_length', 'min_value', 'name', 'required', 'type'
+        'file_type_filter', 'max_length', 'max_value', 'min_length', 'min_value', 'name', 'required', 'type'
     )
     
     def __new__(
@@ -85,6 +88,7 @@ class ParameterConverterSlashCommand(ParameterConverterBase):
         choice_enum_type,
         choices,
         channel_types,
+        file_type_filter,
         max_value,
         min_value,
         auto_completer_function,
@@ -126,6 +130,9 @@ class ParameterConverterSlashCommand(ParameterConverterBase):
         channel_types : `None | tuple<ChannelType>`
             The accepted channel types.
         
+        file_type_filter : ``None | FileTypeFilter``
+            Filter to apply on accepted file types.
+        
         max_value : `None | int | float`
             The maximal accepted value by the converter.
         
@@ -150,6 +157,7 @@ class ParameterConverterSlashCommand(ParameterConverterBase):
         self.converter = converter
         self.default = default
         self.description = description
+        self.file_type_filter = file_type_filter
         self.name = name
         self.required = required
         self.type = converter_type
@@ -245,6 +253,12 @@ class ParameterConverterSlashCommand(ParameterConverterBase):
             repr_parts.append(', channel_types = ')
             repr_parts.append(repr(channel_types))
         
+        # file_type_filter
+        file_type_filter = self.file_type_filter
+        if (file_type_filter is not None):
+            repr_parts.append(', file_type_filter = ')
+            repr_parts.append(repr(file_type_filter))
+        
         # min_value
         min_value = self.min_value
         if (min_value is not None):
@@ -292,6 +306,7 @@ class ParameterConverterSlashCommand(ParameterConverterBase):
             autocomplete = (self.auto_completer is not None),
             channel_types = self.channel_types,
             choices = option_choices,
+            file_type_filter = self.file_type_filter,
             required = self.required,
             min_value = self.min_value,
             max_value = self.max_value,

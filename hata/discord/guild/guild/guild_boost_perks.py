@@ -172,7 +172,7 @@ class GuildBoostPerks(RichAttributeErrorBaseType):
 
 
 LEVEL_0 = GuildBoostPerks(
-    8388608,
+    20971520,
     96000,
     2,
     50,

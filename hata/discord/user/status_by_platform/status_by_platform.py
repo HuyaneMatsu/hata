@@ -3,8 +3,8 @@ __all__ = ('StatusByPlatform',)
 from scarletio import RichAttributeErrorBaseType
 
 from .fields import (
-    parse_desktop, parse_embedded, parse_mobile, parse_web, put_desktop, put_embedded, put_mobile, put_web,
-    validate_desktop, validate_embedded, validate_mobile, validate_platform, validate_web
+    parse_desktop, parse_embedded, parse_mobile, parse_vr, parse_web, put_desktop, put_embedded, put_mobile, put_vr,
+    put_web, validate_desktop, validate_embedded, validate_mobile, validate_platform, validate_vr, validate_web
 )
 from .preinstanced import SessionPlatformType, Status
 
@@ -24,13 +24,16 @@ class StatusByPlatform(RichAttributeErrorBaseType):
     mobile : ``Status``
         The user's status on a mobile device.
     
+    vr : ``Status``
+        The user's status in vr.
+    
     web : ``Status``
         The user's status in a web browser (excluding electron).
     """
-    __slots__ = ('desktop', 'embedded', 'mobile', 'web')
+    __slots__ = ('desktop', 'embedded', 'mobile', 'vr', 'web')
     
     
-    def __new__(cls, *, desktop = ..., embedded = ..., mobile = ..., web = ...):
+    def __new__(cls, *, desktop = ..., embedded = ..., mobile = ..., vr = ..., web = ...):
         """
         Creates a new status by platform with the given parameters.
         
@@ -39,13 +42,16 @@ class StatusByPlatform(RichAttributeErrorBaseType):
         desktop : ``Status``, Optional (Keyword only)
             The user's status on your average shitty electron application.
         
-        embedded : ``Status``
+        embedded : ``Status``, Optional (Keyword only)
             The user's status on an embedded platform.
         
-        mobile : ``Status``
+        mobile : ``Status``, Optional (Keyword only)
             The user's status on a mobile device.
+    
+        vr : ``Status``, Optional (Keyword only)
+            The user's status in vr.
         
-        web : ``Status``
+        web : ``Status``, Optional (Keyword only)
             The user's status in a web browser (excluding electron).
         
         Raises
@@ -71,6 +77,12 @@ class StatusByPlatform(RichAttributeErrorBaseType):
         else:
             mobile = validate_mobile(mobile)
         
+        # vr
+        if vr is ...:
+            vr = Status.offline
+        else:
+            vr = validate_vr(vr)
+        
         # web
         if web is ...:
             web = Status.offline
@@ -82,6 +94,7 @@ class StatusByPlatform(RichAttributeErrorBaseType):
         self.desktop = desktop
         self.embedded = embedded
         self.mobile = mobile
+        self.vr = vr
         self.web = web
         return self
     
@@ -123,6 +136,17 @@ class StatusByPlatform(RichAttributeErrorBaseType):
             repr_parts.append(' mobile = ')
             repr_parts.append(mobile.name)
         
+        # vr
+        vr = self.vr
+        if (vr is not Status.offline):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' vr = ')
+            repr_parts.append(vr.name)
+        
         # web
         web = self.web
         if (web is not Status.offline):
@@ -149,6 +173,9 @@ class StatusByPlatform(RichAttributeErrorBaseType):
         # mobile
         hash_value ^= hash(self.mobile) << 16
         
+        # vr
+        hash_value ^= hash(self.vr) << 4
+        
         # web
         hash_value ^= hash(self.web) << 24
         
@@ -170,6 +197,10 @@ class StatusByPlatform(RichAttributeErrorBaseType):
         
         # mobile
         if self.mobile is not other.mobile:
+            return False
+        
+        # vr
+        if self.vr is not other.vr:
             return False
         
         # web
@@ -197,6 +228,7 @@ class StatusByPlatform(RichAttributeErrorBaseType):
         self.desktop = parse_desktop(data)
         self.embedded = parse_embedded(data)
         self.mobile = parse_mobile(data)
+        self.vr = parse_vr(data)
         self.web = parse_web(data)
         return self
     
@@ -219,6 +251,7 @@ class StatusByPlatform(RichAttributeErrorBaseType):
         put_desktop(self.desktop, data, defaults)
         put_embedded(self.embedded, data, defaults)
         put_mobile(self.mobile, data, defaults)
+        put_vr(self.vr, data, defaults)
         put_web(self.web, data, defaults)
         
         return data
@@ -236,11 +269,12 @@ class StatusByPlatform(RichAttributeErrorBaseType):
         new.desktop = self.desktop
         new.embedded = self.embedded
         new.mobile = self.mobile
+        new.vr = self.vr
         new.web = self.web
         return new
     
     
-    def copy_with(self, *, desktop = ..., embedded = ..., mobile = ..., web = ...):
+    def copy_with(self, *, desktop = ..., embedded = ..., mobile = ..., vr = ..., web = ...):
         """
         Copies the status by platform and modifies the defined the defined fields of it.
         
@@ -254,6 +288,9 @@ class StatusByPlatform(RichAttributeErrorBaseType):
         
         mobile : ``Status``
             The user's status on a mobile device.
+        
+        vr : ``Status``, Optional (Keyword only)
+            The user's status in vr.
         
         web : ``Status``
             The user's status in a web browser (excluding electron).
@@ -288,6 +325,12 @@ class StatusByPlatform(RichAttributeErrorBaseType):
         else:
             mobile = validate_mobile(mobile)
         
+        # vr
+        if vr is ...:
+            vr = self.vr
+        else:
+            vr = validate_vr(vr)
+        
         # web
         if web is ...:
             web = self.web
@@ -299,6 +342,7 @@ class StatusByPlatform(RichAttributeErrorBaseType):
         new.desktop = desktop
         new.embedded = embedded
         new.mobile = mobile
+        new.vr = vr
         new.web = web
         return new
     
@@ -341,6 +385,7 @@ class StatusByPlatform(RichAttributeErrorBaseType):
         yield SessionPlatformType.desktop, self.desktop
         yield SessionPlatformType.embedded, self.embedded
         yield SessionPlatformType.mobile, self.mobile
+        yield SessionPlatformType.vr, self.vr
         yield SessionPlatformType.web, self.web
     
 
@@ -348,5 +393,6 @@ STATUS_BY_PLATFORM_SLOT_BY_PLATFORM = {
     SessionPlatformType.desktop : StatusByPlatform.desktop,
     SessionPlatformType.embedded : StatusByPlatform.embedded,
     SessionPlatformType.mobile : StatusByPlatform.mobile,
+    SessionPlatformType.vr : StatusByPlatform.vr,
     SessionPlatformType.web : StatusByPlatform.web,
 }

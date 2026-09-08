@@ -3,10 +3,11 @@ __all__ = ('ApplicationCommandOptionType',)
 from ...bases import Preinstance as P, PreinstancedBase
 
 from ..application_command_option_metadata import (
-    ApplicationCommandOptionMetadataBase, ApplicationCommandOptionMetadataChannel,
-    ApplicationCommandOptionMetadataFloat, ApplicationCommandOptionMetadataInteger,
-    ApplicationCommandOptionMetadataNested, ApplicationCommandOptionMetadataParameter,
-    ApplicationCommandOptionMetadataString, ApplicationCommandOptionMetadataSubCommand
+    ApplicationCommandOptionMetadataAttachment, ApplicationCommandOptionMetadataBase,
+    ApplicationCommandOptionMetadataChannel, ApplicationCommandOptionMetadataFloat,
+    ApplicationCommandOptionMetadataInteger, ApplicationCommandOptionMetadataNested,
+    ApplicationCommandOptionMetadataParameter, ApplicationCommandOptionMetadataString,
+    ApplicationCommandOptionMetadataSubCommand
 )
 
 
@@ -54,7 +55,7 @@ class ApplicationCommandOptionType(PreinstancedBase, value_type = int):
     +-----------------------+-------------------+-------+---------------------------------------------------+
     | float                 | float             | 10    | ``ApplicationCommandOptionMetadataFloat``         |
     +-----------------------+-------------------+-------+---------------------------------------------------+
-    | attachment            | attachment        | 11    | ``ApplicationCommandOptionMetadataParameter``     |
+    | attachment            | attachment        | 11    | ``ApplicationCommandOptionMetadataAttachment``    |
     +-----------------------+-------------------+-------+---------------------------------------------------+
     """
     __slots__ = ('metadata_type',)
@@ -93,4 +94,4 @@ class ApplicationCommandOptionType(PreinstancedBase, value_type = int):
     role = P(8, 'role', ApplicationCommandOptionMetadataParameter)
     mentionable = P(9, 'mentionable', ApplicationCommandOptionMetadataParameter)
     float = P(10, 'float', ApplicationCommandOptionMetadataFloat)
-    attachment = P(11, 'attachment', ApplicationCommandOptionMetadataParameter)
+    attachment = P(11, 'attachment', ApplicationCommandOptionMetadataAttachment)

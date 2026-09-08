@@ -16,11 +16,7 @@ from ...field_validators import (
 from ...localization.helpers import localized_dictionary_builder
 from ...localization.utils import build_locale_dictionary, destroy_locale_dictionary
 
-
-from .constants import (
-    DESCRIPTION_LENGTH_MAX, DESCRIPTION_LENGTH_MIN,
-    NAME_LENGTH_MAX, NAME_LENGTH_MIN
-)
+from .constants import DESCRIPTION_LENGTH_MAX, DESCRIPTION_LENGTH_MIN, NAME_LENGTH_MAX, NAME_LENGTH_MIN
 from .preinstanced import ApplicationCommandOptionType
 
 

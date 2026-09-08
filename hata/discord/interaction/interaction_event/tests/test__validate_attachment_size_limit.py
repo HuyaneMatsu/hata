@@ -7,7 +7,7 @@ from ..fields import validate_attachment_size_limit
 def _iter_options__passing():
     yield None, LEVEL_0.attachment_size_limit
     yield LEVEL_0.attachment_size_limit, LEVEL_0.attachment_size_limit
-    yield 12800000, 12800000
+    yield 20 << 20, 20 << 20
 
 
 def _iter_options__type_error():

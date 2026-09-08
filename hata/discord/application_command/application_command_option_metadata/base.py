@@ -238,6 +238,18 @@ class ApplicationCommandOptionMetadataBase(RichAttributeErrorBaseType):
     )
     
     
+    file_type_filter = PlaceHolder(
+        None,
+        """
+        File type filter of a parameter option.
+        
+        Returns
+        -------
+        file_type_filter : ``None | FileTypeFilter``
+        """
+    )
+    
+    
     max_length = PlaceHolder(
         MAX_LENGTH_DEFAULT,
         """

@@ -1,6 +1,6 @@
 import vampytest
 
-from ..fields import validate_keywords
+from ..fields import validate_individuals
 
 
 def _iter_options__passing():
@@ -42,9 +42,9 @@ def _iter_options__type_error():
 
 @vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
 @vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
-def test__validate_keywords(input_value):
+def test__validate_individuals(input_value):
     """
-    Tests whether `validate_keywords` works as intended.
+    Tests whether `validate_individuals` works as intended.
     
     Parameters
     ----------
@@ -60,6 +60,9 @@ def test__validate_keywords(input_value):
     ------
     TypeError
     """
-    output = validate_keywords(input_value)
+    output = validate_individuals(input_value)
     vampytest.assert_instance(output, tuple, nullable = True)
+    if (output is not None):
+        for element in output:
+            vampytest.assert_instance(element, str)
     return output

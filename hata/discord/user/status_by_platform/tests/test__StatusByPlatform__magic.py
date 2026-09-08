@@ -11,12 +11,14 @@ def test__StatusByPlatform__repr():
     desktop = Status.invisible
     embedded = Status.online
     mobile = Status.idle
+    vr = Status.dnd
     web = Status.dnd
     
     status_by_platform = StatusByPlatform(
         desktop = desktop,
         embedded = embedded,
         mobile = mobile,
+        vr = vr,
         web = web,
     )
     
@@ -31,12 +33,14 @@ def test__StatusByPlatform__hash():
     desktop = Status.invisible
     embedded = Status.online
     mobile = Status.idle
+    vr = Status.dnd
     web = Status.dnd
     
     status_by_platform = StatusByPlatform(
         desktop = desktop,
         embedded = embedded,
         mobile = mobile,
+        vr = vr,
         web = web,
     )
     
@@ -48,12 +52,14 @@ def _iter_options__eq():
     desktop = Status.invisible
     embedded = Status.online
     mobile = Status.idle
+    vr = Status.dnd
     web = Status.dnd
     
     keyword_parameters = {
         'desktop' : desktop,
         'embedded' : embedded,
         'mobile' : mobile,
+        'vr' :  vr,
         'web' :  web,
     }
     
@@ -86,6 +92,15 @@ def _iter_options__eq():
         {
             **keyword_parameters,
             'mobile': Status.offline,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'vr': Status.offline,
         },
         False,
     )
@@ -129,12 +144,14 @@ def _iter_options__getitem():
     desktop = Status.invisible
     embedded = Status.online
     mobile = Status.idle
+    vr = Status.dnd
     web = Status.dnd
     
     keyword_parameters = {
         'desktop' : desktop,
         'embedded' : embedded,
         'mobile' : mobile,
+        'vr' :  vr,
         'web' :  web,
     }
     
@@ -154,6 +171,12 @@ def _iter_options__getitem():
         keyword_parameters,
         SessionPlatformType.mobile,
         mobile,
+    )
+    
+    yield (
+        keyword_parameters,
+        SessionPlatformType.vr,
+        vr,
     )
     
     yield (

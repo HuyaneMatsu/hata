@@ -2,6 +2,8 @@ import vampytest
 
 from ....guild import Guild
 
+from ....file_type_filter import file_type_filter_create
+
 from ..attachment_input import ComponentMetadataAttachmentInput
 
 from .test__ComponentMetadataAttachmentInput__constructor import _assert_fields_set
@@ -15,12 +17,16 @@ def test__ComponentMetadataAttachmentInput__clean_copy():
     guild = Guild.precreate(guild_id)
     
     custom_id = 'oriental'
+    file_type_filter = file_type_filter_create(
+        individuals = ['png', 'txt'],
+    )
     max_values = 10
     min_values = 9
     required = True
     
     component_metadata = ComponentMetadataAttachmentInput(
         custom_id = custom_id,
+        file_type_filter = file_type_filter,
         max_values = max_values,
         min_values = min_values,
         required = required,
@@ -37,12 +43,16 @@ def test__ComponentMetadataAttachmentInput__copy():
     Tests whether ``ComponentMetadataAttachmentInput.copy`` works as intended.
     """
     custom_id = 'oriental'
+    file_type_filter = file_type_filter_create(
+        individuals = ['png', 'txt'],
+    )
     max_values = 10
     min_values = 9
     required = True
     
     component_metadata = ComponentMetadataAttachmentInput(
         custom_id = custom_id,
+        file_type_filter = file_type_filter,
         max_values = max_values,
         min_values = min_values,
         required = required,
@@ -61,12 +71,16 @@ def test__ComponentMetadataAttachmentInput__copy_with__no_fields():
     Case: No fields.
     """
     custom_id = 'oriental'
+    file_type_filter = file_type_filter_create(
+        individuals = ['png', 'txt'],
+    )
     max_values = 10
     min_values = 9
     required = True
     
     component_metadata = ComponentMetadataAttachmentInput(
         custom_id = custom_id,
+        file_type_filter = file_type_filter,
         max_values = max_values,
         min_values = min_values,
         required = required,
@@ -85,23 +99,31 @@ def test__ComponentMetadataAttachmentInput__copy_with__all_fields():
     Case: All fields.
     """
     old_custom_id = 'oriental'
+    old_file_type_filter = file_type_filter_create(
+        individuals = ['png', 'txt'],
+    )
     old_max_values = 10
     old_min_values = 9
     old_required = True
     
     new_custom_id = 'uta'
+    new_file_type_filter = file_type_filter_create(
+        individuals = ['png', 'mp4'],
+    )
     new_max_values = 9
     new_min_values = 8
     new_required = False
     
     component_metadata = ComponentMetadataAttachmentInput(
         custom_id = old_custom_id,
+        file_type_filter = old_file_type_filter,
         max_values = old_max_values,
         min_values = old_min_values,
         required = old_required,
     )
     copy = component_metadata.copy_with(
         custom_id = new_custom_id,
+        file_type_filter = new_file_type_filter,
         max_values = new_max_values,
         min_values = new_min_values,
         required = new_required,
@@ -110,6 +132,7 @@ def test__ComponentMetadataAttachmentInput__copy_with__all_fields():
     _assert_fields_set(copy)
     vampytest.assert_is_not(copy, component_metadata)
     vampytest.assert_eq(copy.custom_id, new_custom_id)
+    vampytest.assert_eq(copy.file_type_filter, new_file_type_filter)
     vampytest.assert_eq(copy.max_values, new_max_values)
     vampytest.assert_eq(copy.min_values, new_min_values)
     vampytest.assert_eq(copy.required, new_required)
@@ -122,12 +145,16 @@ def test__ComponentMetadataAttachmentInput__copy_with_keyword_parameters__no_fie
     Case: No fields.
     """
     custom_id = 'oriental'
+    file_type_filter = file_type_filter_create(
+        individuals = ['png', 'txt'],
+    )
     max_values = 10
     min_values = 9
     required = True
     
     component_metadata = ComponentMetadataAttachmentInput(
         custom_id = custom_id,
+        file_type_filter = file_type_filter,
         max_values = max_values,
         min_values = min_values,
         required = required,
@@ -146,23 +173,31 @@ def test__ComponentMetadataAttachmentInput__copy_with_keyword_parameters__all_fi
     Case: All fields.
     """
     old_custom_id = 'oriental'
+    old_file_type_filter = file_type_filter_create(
+        individuals = ['png', 'txt'],
+    )
     old_max_values = 10
     old_min_values = 9
     old_required = True
     
     new_custom_id = 'uta'
+    new_file_type_filter = file_type_filter_create(
+        individuals = ['png', 'mp4'],
+    )
     new_max_values = 9
     new_min_values = 8
     new_required = False
     
     component_metadata = ComponentMetadataAttachmentInput(
         custom_id = old_custom_id,
+        file_type_filter = old_file_type_filter,
         max_values = old_max_values,
         min_values = old_min_values,
         required = old_required,
     )
     copy = component_metadata.copy_with_keyword_parameters({
         'custom_id': new_custom_id,
+        'file_type_filter': new_file_type_filter,
         'max_values': new_max_values,
         'min_values': new_min_values,
         'required': new_required,
@@ -171,6 +206,7 @@ def test__ComponentMetadataAttachmentInput__copy_with_keyword_parameters__all_fi
     _assert_fields_set(copy)
     vampytest.assert_is_not(copy, component_metadata)
     vampytest.assert_eq(copy.custom_id, new_custom_id)
+    vampytest.assert_eq(copy.file_type_filter, new_file_type_filter)
     vampytest.assert_eq(copy.max_values, new_max_values)
     vampytest.assert_eq(copy.min_values, new_min_values)
     vampytest.assert_eq(copy.required, new_required)
@@ -178,6 +214,9 @@ def test__ComponentMetadataAttachmentInput__copy_with_keyword_parameters__all_fi
 
 def _iter_options__iter_contents():
     custom_id = 'oriental'
+    file_type_filter = file_type_filter_create(
+        individuals = ['png', 'txt'],
+    )
     max_values = 10
     min_values = 9
     required = True
@@ -190,6 +229,7 @@ def _iter_options__iter_contents():
     yield (
         {
             'custom_id': custom_id,
+            'file_type_filter': file_type_filter,
             'max_values': max_values,
             'min_values': min_values,
             'required': required,

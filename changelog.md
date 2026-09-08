@@ -1,3 +1,14 @@
+## 1.3.98 *\[2026-09-08\]*
+
+- Add `FileTypeFilter`, `FileTypeFilterGroup`, `file_type_filter_create` and other related functionality.
+- Add `Component.file_type_filter` and `ComponentMetadataBase.file_type_filter`.
+- Add `file_type_filter` parameter to `create_attachment_input`.
+- Add `ApplicationCommandOption.file_type_filter`, `ApplicationCommandOptionMetadata.file_type_filter` and
+    `ApplicationCommandOptionMetadataAttachment`.
+- Add `GuildFeature.prune_require_administrator_permission`.
+- Add `StatusByPlatform.vr`.
+- Update `attachment_size_limit` from `8MB` to `20MB`.
+
 ## 1.3.97 *\[2026-08-08\]*
 
 ### Bug fixes

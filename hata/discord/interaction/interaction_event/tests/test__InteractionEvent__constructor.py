@@ -69,7 +69,7 @@ def test__InteractionEvent__new__all_fields():
     application_id = 202211070000
     application_command_name = '3L'
     application_permissions = Permission(123)
-    attachment_size_limit = 10 << 20
+    attachment_size_limit = 20 << 20
     authorizer_user_ids = {
         ApplicationIntegrationType.user_install: 202407170000,
         ApplicationIntegrationType.guild_install: 202407170001,
@@ -160,7 +160,7 @@ def test__InteractionEvent__precreate__all_fields():
     application_id = 202211070012
     application_command_name = '3L'
     application_permissions = Permission(123)
-    attachment_size_limit = 10 << 20
+    attachment_size_limit = 20 << 20
     authorizer_user_ids = {
         ApplicationIntegrationType.user_install: 202407170002,
         ApplicationIntegrationType.guild_install: 202407170003,

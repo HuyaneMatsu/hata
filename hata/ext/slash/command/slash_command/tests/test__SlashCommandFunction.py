@@ -89,6 +89,7 @@ def test__SlashCommandFunction__repr():
             None,
             None,
             None,
+            None,
             0,
             0,
         ),
@@ -644,6 +645,7 @@ def test__SlashCommandFunction__autocomplete():
         None,
         None,
         None,
+        None,
         0,
         0,
     )
@@ -731,6 +733,7 @@ def test__SlashCommandFunction__try_resolve_auto_completer__with_match():
             None,
             None,
             None,
+            None,
             0,
             0,
         )
@@ -800,6 +803,7 @@ async def test__SlashCommandFunction__invoke_auto_completion():
         'value',
         False,
         True,
+        None,
         None,
         None,
         None,

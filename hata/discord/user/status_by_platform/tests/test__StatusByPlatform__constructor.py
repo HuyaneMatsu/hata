@@ -17,6 +17,7 @@ def _assert_fields_set(status_by_platform):
     vampytest.assert_instance(status_by_platform.desktop, Status)
     vampytest.assert_instance(status_by_platform.embedded, Status)
     vampytest.assert_instance(status_by_platform.mobile, Status)
+    vampytest.assert_instance(status_by_platform.vr, Status)
     vampytest.assert_instance(status_by_platform.web, Status)
 
 
@@ -39,12 +40,14 @@ def test__StatusByPlatform__new__all_fields():
     desktop = Status.invisible
     embedded = Status.online
     mobile = Status.idle
+    vr = Status.dnd
     web = Status.dnd
     
     status_by_platform = StatusByPlatform(
         desktop = desktop,
         embedded = embedded,
         mobile = mobile,
+        vr = vr,
         web = web,
     )
     _assert_fields_set(status_by_platform)
@@ -52,4 +55,5 @@ def test__StatusByPlatform__new__all_fields():
     vampytest.assert_is(status_by_platform.desktop, desktop)
     vampytest.assert_is(status_by_platform.embedded, embedded)
     vampytest.assert_is(status_by_platform.mobile, mobile)
+    vampytest.assert_is(status_by_platform.vr, vr)
     vampytest.assert_is(status_by_platform.web, web)

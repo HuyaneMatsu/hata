@@ -1,6 +1,7 @@
 import vampytest
 
 from ....channel import ChannelType
+from ....file_type_filter import FileTypeFilter
 from ....localization import Locale
 
 from ...application_command_option_choice import ApplicationCommandOptionChoice
@@ -687,6 +688,7 @@ def test__ApplicationCommandOption__field_proxies():
     vampytest.assert_instance(option.channel_types, tuple, nullable = True)
     vampytest.assert_instance(option.choices, tuple, nullable = True)
     vampytest.assert_instance(option.default, bool)
+    vampytest.assert_instance(option.file_type_filter, FileTypeFilter, nullable = True)
     vampytest.assert_instance(option.max_length, int)
     vampytest.assert_instance(option.max_value, object, nullable = True)
     vampytest.assert_instance(option.min_length, int)

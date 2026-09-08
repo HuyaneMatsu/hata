@@ -24,7 +24,7 @@ def test__InteractionEvent__from_data():
     application_command_name = '3L'
     application_id = 202211070005
     application_permissions = Permission(123)
-    attachment_size_limit = 10 << 20
+    attachment_size_limit = 20 << 20
     authorizer_user_ids = {
         ApplicationIntegrationType.user_install: 202407170004,
         ApplicationIntegrationType.guild_install: 202407170005,
@@ -101,7 +101,7 @@ def test__InteractionEvent__to_data():
     application_command_name = '3L'
     application_id = 202211070019
     application_permissions = Permission(123)
-    attachment_size_limit = 10 << 20
+    attachment_size_limit = 20 << 20
     authorizer_user_ids = {
         ApplicationIntegrationType.user_install: 202407170006,
         ApplicationIntegrationType.guild_install: 202407170007,

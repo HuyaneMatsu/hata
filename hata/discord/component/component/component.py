@@ -5,10 +5,11 @@ from scarletio import RichAttributeErrorBaseType, copy_docs, export
 from ..component_metadata import ComponentMetadataBase
 from ..component_metadata.fields import (
     validate_button_style, validate_channel_types, validate_color, validate_component__label, validate_content,
-    validate_default_values, validate_description, validate_divider, validate_enabled, validate_items, validate_label,
-    validate_max_length, validate_max_values, validate_media, validate_min_length, validate_min_values, validate_name,
-    validate_options, validate_placeholder, validate_required, validate_size, validate_sku_id, validate_spacing_size,
-    validate_spoiler, validate_text_input_style, validate_thumbnail, validate_url, validate_value
+    validate_default_values, validate_description, validate_divider, validate_enabled, validate_file_type_filter,
+    validate_items, validate_label, validate_max_length, validate_max_values, validate_media, validate_min_length,
+    validate_min_values, validate_name, validate_options, validate_placeholder, validate_required, validate_size,
+    validate_sku_id, validate_spacing_size, validate_spoiler, validate_text_input_style, validate_thumbnail,
+    validate_url, validate_value
 )
 from ..shared_fields import validate_components, validate_custom_id, validate_default, validate_emoji
 
@@ -73,17 +74,20 @@ class Component(RichAttributeErrorBaseType):
                 , Optional (Keyword only)
             Entities presented in the select by default.
         
+        description : `None | str`, Optional (Keyword only)
+            Description of the component's media.
+        
+        divider : `bool`, Optional (Keyword only)
+            Whether the separator should contain a divider.
+    
         emoji : ``None | Emoji``, Optional (Keyword only)
             Emoji of the component if applicable.
         
         enabled : `bool`, Optional (Keyword only)
             Whether the component is enabled.
         
-        description : `None | str`, Optional (Keyword only)
-            Description of the component's media.
-        
-        divider : `bool`, Optional (Keyword only)
-            Whether the separator should contain a divider.
+        file_type_filter : ``None | FileTypeFilter``, Optional (Keyword only)
+            Filter to apply on accepted file types.
         
         items : ``None | iterable<str> | iterable<MediaItem>``, Optional (Keyword only)
             The media items shown on the component.
@@ -367,6 +371,9 @@ class Component(RichAttributeErrorBaseType):
         enabled : `bool`, Optional (Keyword only)
             Whether the component is enabled.
         
+        file_type_filter : ``None | FileTypeFilter``, Optional (Keyword only)
+            Filter to apply on accepted file types.
+        
         items : ``None | iterable<str> | iterable<MediaItem>``, Optional (Keyword only)
             The media items shown on the component.
         
@@ -598,6 +605,17 @@ class Component(RichAttributeErrorBaseType):
     @enabled.setter
     def enabled(self, enabled):
         self.metadata.enabled = validate_enabled(enabled)
+    
+    
+    # file_type_filter
+    @property
+    @copy_docs(ComponentMetadataBase.file_type_filter)
+    def file_type_filter(self):
+        return self.metadata.file_type_filter
+    
+    @file_type_filter.setter
+    def file_type_filter(self, file_type_filter):
+        self.metadata.file_type_filter = validate_file_type_filter(file_type_filter)
     
     
     # label

@@ -11,7 +11,7 @@ from ..helpers import with_translation
 from .fields import (
     parse_description, parse_description_localizations, parse_name, parse_name_localizations, parse_type,
     put_description, put_description_localizations, put_name, put_name_localizations, put_type,
-    validate_description, validate_description_localizations, validate_name, validate_name_localizations, validate_type
+    validate_description, validate_description_localizations, validate_name, validate_name_localizations, validate_type,
 )
 from .helpers import _purge_defaults_and_maybe_raise
 from .preinstanced import ApplicationCommandOptionType
@@ -99,6 +99,8 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         default : `bool` = `False`, Optional (Keyword only)
             Whether the option is the default one.
         
+        file_type_filter : ``None | FileTypeFilter``, Optional (Keyword only)
+            Filter to apply on accepted file types.
             
         max_length : `None | int`, Optional (Keyword only)
             The maximum input length allowed for this option.
@@ -325,6 +327,11 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
                 repr_parts.append(', ')
                 continue
         
+        file_type_filter = self.file_type_filter
+        if (file_type_filter is not None):
+            repr_parts.append(', file_type_filter = ')
+            repr_parts.append(repr(file_type_filter))
+        
         # options
         options = self.options
         if (options is not None):
@@ -449,6 +456,11 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         description_localizations = self.description_localizations
         if (description_localizations is not None) and (description_localizations != self.name_localizations):
             hash_value ^= hash_locale_dictionary(description_localizations)
+        
+        # file_type_filter
+        file_type_filter = self.file_type_filter
+        if (file_type_filter is not None):
+            hash_value ^= hash(file_type_filter)
         
         # max_length
         hash_value ^= self.max_length << 9
@@ -629,6 +641,9 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         default : `bool` = `False`, Optional (Keyword only)
             Whether the option is the default one.
         
+        file_type_filter : ``None | FileTypeFilter``, Optional (Keyword only)
+            Filter to apply on accepted file types.
+        
         max_length : `None | int`, Optional (Keyword only)
             The maximum input length allowed for this option.
             
@@ -763,6 +778,16 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
     @default.setter
     def default(self, default):
         self.metadata.default = default
+    
+    # file_type_filter
+    @property
+    @copy_docs(ApplicationCommandOptionMetadataBase.file_type_filter)
+    def file_type_filter(self):
+        return self.metadata.file_type_filter
+    
+    @file_type_filter.setter
+    def file_type_filter(self, file_type_filter):
+        self.metadata.file_type_filter = file_type_filter
     
     # max_length
     @property

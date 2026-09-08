@@ -1,3 +1,4 @@
+from .attachment import *
 from .base import *
 from .channel import *
 from .constants import *
@@ -13,6 +14,7 @@ from .sub_command import *
 
 
 __all__ = (
+    *attachment.__all__,
     *base.__all__,
     *channel.__all__,
     *constants.__all__,

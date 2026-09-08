@@ -13,12 +13,14 @@ def test__StatusByPlatform__from_data():
     desktop = Status.invisible
     embedded = Status.online
     mobile = Status.idle
+    vr = Status.dnd
     web = Status.dnd
     
     data = {
         'desktop': desktop.value,
         'embedded': embedded.value,
         'mobile': mobile.value,
+        'vr': vr.value,
         'web': web.value,
     }
     
@@ -28,6 +30,7 @@ def test__StatusByPlatform__from_data():
     vampytest.assert_is(status_by_platform.desktop, desktop)
     vampytest.assert_is(status_by_platform.embedded, embedded)
     vampytest.assert_is(status_by_platform.mobile, mobile)
+    vampytest.assert_is(status_by_platform.vr, vr)
     vampytest.assert_is(status_by_platform.web, web)
 
 
@@ -40,12 +43,14 @@ def test__StatusByPlatform__to_data():
     desktop = Status.invisible
     embedded = Status.online
     mobile = Status.idle
+    vr = Status.dnd
     web = Status.dnd
     
     expected_output = {
         'desktop': desktop.value,
         'embedded': embedded.value,
         'mobile': mobile.value,
+        'vr': vr.value,
         'web': web.value,
     }
     
@@ -53,6 +58,7 @@ def test__StatusByPlatform__to_data():
         desktop = desktop,
         embedded = embedded,
         mobile = mobile,
+        vr = vr,
         web = web,
     )
     output = status_by_platform.to_data(defaults = True)

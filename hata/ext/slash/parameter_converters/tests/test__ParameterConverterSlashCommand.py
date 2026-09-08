@@ -4,7 +4,8 @@ from types import FunctionType
 import vampytest
 
 from .....discord import (
-    ApplicationCommandOption, ApplicationCommandOptionChoice, ApplicationCommandOptionType, Client, InteractionEvent
+    ApplicationCommandOption, ApplicationCommandOptionChoice, ApplicationCommandOptionType, Client, FileTypeFilter,
+    InteractionEvent, file_type_filter_create
 )
 
 from ...command import SlashCommandFunction, SlashCommandParameterAutoCompleter
@@ -36,6 +37,7 @@ def _assert_fields_set(parameter_converter):
     vampytest.assert_instance(parameter_converter.converter, FunctionType)
     vampytest.assert_instance(parameter_converter.default, object)
     vampytest.assert_instance(parameter_converter.description, str, nullable = True)
+    vampytest.assert_instance(parameter_converter.file_type_filter, FileTypeFilter, nullable = True)
     vampytest.assert_instance(parameter_converter.max_length, int)
     vampytest.assert_instance(parameter_converter.max_value, int, float, nullable = True)
     vampytest.assert_instance(parameter_converter.min_length, int)
@@ -60,6 +62,9 @@ def test__ParameterConverterSlashCommand__new():
     choice_enum_type = None
     choices = None
     channel_types = None
+    file_type_filter = file_type_filter_create(
+        individuals = ['png', 'txt'],
+    )
     max_value = None
     min_value = None
     auto_completer_function = _auto_completer
@@ -77,6 +82,7 @@ def test__ParameterConverterSlashCommand__new():
         choice_enum_type,
         choices,
         channel_types,
+        file_type_filter,
         max_value,
         min_value,
         auto_completer_function,
@@ -95,6 +101,7 @@ def test__ParameterConverterSlashCommand__new():
     vampytest.assert_is(parameter_converter.converter, converter)
     vampytest.assert_eq(parameter_converter.default, default)
     vampytest.assert_eq(parameter_converter.description, description)
+    vampytest.assert_eq(parameter_converter.file_type_filter, file_type_filter)
     vampytest.assert_eq(parameter_converter.max_length, max_length)
     vampytest.assert_eq(parameter_converter.max_value, max_value)
     vampytest.assert_eq(parameter_converter.min_length, min_length)
@@ -121,6 +128,7 @@ async def test__ParameterConverterSlashCommand__call():
     choice_enum_type = None
     choices = None
     channel_types = None
+    file_type_filter = None
     max_value = None
     min_value = None
     auto_completer_function = _auto_completer
@@ -141,6 +149,7 @@ async def test__ParameterConverterSlashCommand__call():
         choice_enum_type,
         choices,
         channel_types,
+        file_type_filter,
         max_value,
         min_value,
         auto_completer_function,
@@ -180,6 +189,7 @@ def test__ParameterConverterSlashCommand__repr():
     choice_enum_type = None
     choices = None
     channel_types = None
+    file_type_filter = None
     max_value = None
     min_value = None
     auto_completer_function = _auto_completer
@@ -197,6 +207,7 @@ def test__ParameterConverterSlashCommand__repr():
         choice_enum_type,
         choices,
         channel_types,
+        file_type_filter,
         max_value,
         min_value,
         auto_completer_function,
@@ -214,7 +225,8 @@ def test__ParameterConverterSlashCommand__repr():
     vampytest.assert_in(f'default = {default!r}', output)
     vampytest.assert_not_in(f'choices = {choices!r}', output)
     vampytest.assert_in(f'auto_completer = {parameter_converter.auto_completer!r}', output)
-    vampytest.assert_not_in(f'channel_types = {channel_types!r}', output)
+    vampytest.assert_not_in(f'file_type_filter = {file_type_filter!r}', output)
+    vampytest.assert_in(f'required = {required!r}', output)
     vampytest.assert_not_in(f'min_value = {min_value!r}', output)
     vampytest.assert_not_in(f'max_value = {max_value!r}', output)
     vampytest.assert_in(f'min_length = {min_length!r}', output)
@@ -235,6 +247,7 @@ def test__ParameterConverterSlashCommand__as_option():
     choice_enum_type = None
     choices = None
     channel_types = None
+    file_type_filter = None
     max_value = None
     min_value = None
     auto_completer_function = _auto_completer
@@ -252,6 +265,7 @@ def test__ParameterConverterSlashCommand__as_option():
         choice_enum_type,
         choices,
         channel_types,
+        file_type_filter,
         max_value,
         min_value,
         auto_completer_function,
@@ -270,6 +284,7 @@ def test__ParameterConverterSlashCommand__as_option():
             ApplicationCommandOptionType.string,
             autocomplete = True,
             channel_types = None,
+            file_type_filter = None,
             choices = None,
             required = required,
             min_value = min_value,
@@ -300,6 +315,7 @@ def test__ParameterConverterSlashCommand__as_option__with_choices():
         'sakuya': 'tea',
     }
     channel_types = None
+    file_type_filter = None
     max_value = None
     min_value = None
     auto_completer_function = None
@@ -317,6 +333,7 @@ def test__ParameterConverterSlashCommand__as_option__with_choices():
         choice_enum_type,
         choices,
         channel_types,
+        file_type_filter,
         max_value,
         min_value,
         auto_completer_function,
@@ -340,6 +357,7 @@ def test__ParameterConverterSlashCommand__as_option__with_choices():
                 ApplicationCommandOptionChoice('cake', 'koishi'),
                 ApplicationCommandOptionChoice('tea', 'sakuya'),
             ],
+            file_type_filter = file_type_filter,
             required = required,
             min_value = min_value,
             max_value = max_value,
@@ -382,6 +400,7 @@ def test__ParameterConverterSlashCommand__can_be_auto_completed(converter_type, 
     required = True
     choice_enum_type = None
     channel_types = None
+    file_type_filter = None
     max_value = None
     min_value = None
     auto_completer_function = None
@@ -399,6 +418,7 @@ def test__ParameterConverterSlashCommand__can_be_auto_completed(converter_type, 
         choice_enum_type,
         choices,
         channel_types,
+        file_type_filter,
         max_value,
         min_value,
         auto_completer_function,
@@ -440,6 +460,7 @@ def test__ParameterConverterSlashCommand__is_auto_completed(auto_completer_funct
     choice_enum_type = None
     choices = None
     channel_types = None
+    file_type_filter = None
     max_value = None
     min_value = None
     max_length = 0
@@ -456,6 +477,7 @@ def test__ParameterConverterSlashCommand__is_auto_completed(auto_completer_funct
         choice_enum_type,
         choices,
         channel_types,
+        file_type_filter,
         max_value,
         min_value,
         auto_completer_function,
@@ -610,6 +632,7 @@ def test__ParameterConverterSlashCommand__register_auto_completer(
     required = True
     choice_enum_type = None
     channel_types = None
+    file_type_filter = None
     max_value = None
     min_value = None
     auto_completer_function = None
@@ -627,6 +650,7 @@ def test__ParameterConverterSlashCommand__register_auto_completer(
         choice_enum_type,
         choices,
         channel_types,
+        file_type_filter,
         max_value,
         min_value,
         auto_completer_function,
@@ -658,6 +682,7 @@ def test__ParameterConverterSlashCommand__bind_parent__none():
     choice_enum_type = None
     choices = None
     channel_types = None
+    file_type_filter = None
     max_value = None
     min_value = None
     auto_completer_function = _auto_completer
@@ -675,6 +700,7 @@ def test__ParameterConverterSlashCommand__bind_parent__none():
         choice_enum_type,
         choices,
         channel_types,
+        file_type_filter,
         max_value,
         min_value,
         auto_completer_function,
@@ -703,6 +729,7 @@ def test__ParameterConverterSlashCommand__bind_parent__slash_command_function():
     choice_enum_type = None
     choices = None
     channel_types = None
+    file_type_filter = None
     max_value = None
     min_value = None
     auto_completer_function = _auto_completer
@@ -720,6 +747,7 @@ def test__ParameterConverterSlashCommand__bind_parent__slash_command_function():
         choice_enum_type,
         choices,
         channel_types,
+        file_type_filter,
         max_value,
         min_value,
         auto_completer_function,

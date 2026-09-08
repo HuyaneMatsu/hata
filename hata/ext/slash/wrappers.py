@@ -289,34 +289,49 @@ class ApplicationCommandParameterConfigurerWrapper(CommandWrapper):
     ----------
     _wrapped : `object`
         The command or other wrapper to wrap.
-    _autocomplete : `None`, `CoroutineFunction`
+    
+    _autocomplete : `None | CoroutineFunction`
         Auto complete function for the parameter.
+    
     _channel_types : `None | tuple<int>`
         The accepted channel types.
-    _choice_enum_type : `None`, `type`
+    
+    _choice_enum_type : `None | type`
         Enum type of `choices` if applicable.
-    _choices : `None`, `dict` of (`str`, `int`, `str`) items
+    
+    _choices : `None | dict<str, int | str>`
         Parameter's choices.
-    _description : `None`, `str`
+    
+    _description : `None | str`
         Parameter's description.
+    
+    _file_type_filter : ``None | FileTypeFilter``
+        Filter to apply on accepted file types.
+    
     _max_length : `int`
         The maximum input length allowed for this option.
+    
     _max_value : `None | int | float`
         The maximal accepted value by the parameter.
+    
     _min_length : `int`
         The minimum input length allowed for this option.
+    
     _min_value : `None | int | float`
         The minimal accepted value by the parameter.
+    
     _name : `str`
         The parameter's name.
+    
     _parameter_name : `str`
         The parameter's internal name.
+    
     _type : `int`
         The parameter's internal type identifier.
     """
     __slots__ = (
-        '_autocomplete', '_channel_types', '_choice_enum_type', '_choices', '_description', '_max_length',
-        '_max_value', '_min_length', '_min_value', '_name', '_parameter_name', '_type'
+        '_autocomplete', '_channel_types', '_choice_enum_type', '_choices', '_description', '_file_type_filter',
+        '_max_length', '_max_value', '_min_length', '_min_value', '_name', '_parameter_name', '_type'
     )
     
     def __new__(
@@ -328,6 +343,7 @@ class ApplicationCommandParameterConfigurerWrapper(CommandWrapper):
         *,
         autocomplete = None,
         channel_types = None,
+        file_type_filter = None,
         max_length = None,
         max_value = None,
         min_length = None,
@@ -340,22 +356,34 @@ class ApplicationCommandParameterConfigurerWrapper(CommandWrapper):
         ----------
         parameter_name : `str`
             The parameter's name to modify.
-        type_or_choice : `str`, `type`, `list`, `dict`
+        
+        type_or_choice : `str | type | list | dict`
             The annotation's value to use.
-        description : `None`, `str` = `None`, Optional
+        
+        description : `None | str` = `None`, Optional
             Description for the annotation.
-        name : `None`, `str` = `None`, Optional
+        
+        name : `None | str` = `None`, Optional
             Name to use instead of the parameter's.
-        autocomplete : `None`, `CoroutineFunction` = `None`, Optional (Keyword only)
+        
+        autocomplete : `None | CoroutineFunction` = `None`, Optional (Keyword only)
             Auto complete function for the parameter.
+        
         channel_types : `None | iterable<int>` = `None`, Optional (Keyword only)
             The accepted channel types.
+        
+        file_type_filter : ``None | FileTypeFilter`` = `None`, Optional (Keyword only)
+            Filter to apply on accepted file types.
+        
         max_length : `None | int` = `None`, Optional (Keyword only)
             The maximum input length allowed for this option.
+        
         max_value : `None | int | float` = `None`, Optional (Keyword only)
             The maximal accepted value by the parameter.
+        
         min_length : `None | int` = `None`, Optional (Keyword only)
             The minimum input length allowed for this option.
+        
         min_value : `None | int | float` = `None`, Optional (Keyword only)
             The minimal accepted value by the parameter.
         
@@ -373,7 +401,7 @@ class ApplicationCommandParameterConfigurerWrapper(CommandWrapper):
             - If `parameter_type_or_choice` is `dict`, but it's items do not match the (`str`, `str`, `int`)
                 pattern.
             - If `parameter_type_or_choice` is unexpected.
-            - If `name`'s is neither `None`, `str`.
+            - If `name`'s is neither `None | str`.
             - If `channel_types` is neither `None` nor `iterable` of `int`.
         ValueError
             - If `description`'s length is out of the expected range [2:100].
@@ -417,6 +445,7 @@ class ApplicationCommandParameterConfigurerWrapper(CommandWrapper):
         self._choice_enum_type = choice_enum_type
         self._choices = choices
         self._description = description
+        self._file_type_filter = file_type_filter
         self._name = name
         self._parameter_name = parameter_name
         self._type = type_
@@ -474,6 +503,12 @@ class ApplicationCommandParameterConfigurerWrapper(CommandWrapper):
         if (channel_types is not None):
             repr_parts.append(', channel_types = ')
             repr_parts.append(repr(channel_types))
+        
+        # file_type_filter
+        file_type_filter = self._file_type_filter
+        if (file_type_filter is not None):
+            repr_parts.append(', file_type_filter = ')
+            repr_parts.append(repr(file_type_filter))
         
         if type_ is ApplicationCommandOptionType.string:
             # min_length

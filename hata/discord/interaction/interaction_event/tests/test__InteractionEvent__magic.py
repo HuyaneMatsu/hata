@@ -20,7 +20,7 @@ def test__InteractionEvent__repr():
     application_command_name = '3L'
     application_id = 202211070025
     application_permissions = Permission(123)
-    attachment_size_limit = 10 << 20
+    attachment_size_limit = 20 << 20
     authorizer_user_ids = {
         ApplicationIntegrationType.user_install: 202407170008,
         ApplicationIntegrationType.guild_install: 202407170009,
@@ -66,7 +66,7 @@ def test__InteractionEvent__hash():
     application_command_name = '3L'
     application_id = 202211070031
     application_permissions = Permission(123)
-    attachment_size_limit = 10 << 20
+    attachment_size_limit = 20 << 20
     authorizer_user_ids = {
         ApplicationIntegrationType.user_install: 202407170010,
         ApplicationIntegrationType.guild_install: 202407170011,
@@ -109,7 +109,7 @@ def _iter_options__eq():
     application_command_name = '3L'
     application_id = 202211070036
     application_permissions = Permission(123)
-    attachment_size_limit = 10 << 20
+    attachment_size_limit = 20 << 20
     authorizer_user_ids = {
         ApplicationIntegrationType.user_install: 202407170015,
         ApplicationIntegrationType.guild_install: 202407170016,

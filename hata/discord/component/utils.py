@@ -743,6 +743,7 @@ def create_label(
 def create_attachment_input(
     custom_id = ...,
     *,
+    file_type_filter = ...,
     max_values = ...,
     min_values = ...,
     required = ...,
@@ -754,6 +755,9 @@ def create_attachment_input(
     ----------
     custom_id : `None | str`, Optional
         Custom identifier to detect which component was used by the file.
+    
+    file_type_filter : ``None | FileTypeFilter``, Optional (Keyword only)
+        Filter to apply on accepted file types.
     
     max_values : `int`, Optional (Keyword only)
         The maximal amount of options to upload.
@@ -778,6 +782,7 @@ def create_attachment_input(
     return Component(
         ComponentType.attachment_input,
         custom_id = custom_id,
+        file_type_filter = file_type_filter,
         max_values = max_values,
         min_values = min_values,
         required = required,

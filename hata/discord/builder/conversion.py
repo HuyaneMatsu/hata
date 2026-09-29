@@ -1,9 +1,9 @@
 __all__ = ()
 
-from scarletio import RichAttributeErrorBaseType
+from scarletio import RICH_TYPE_FEATURE_FLAG_ATTRIBUTE_ERROR, RichType
 
 
-def _poll_type(meta_type, type_name, base_types):
+def _poll_type(meta_type, type_name, type_parents):
     """
     Polls the type to instantiate.
     
@@ -13,7 +13,7 @@ def _poll_type(meta_type, type_name, base_types):
         Type we are sub-instantiating.
     type_name : `str`
         The instance's name to be created.
-    base_types : `tuple<type>`
+    type_parents : `tuple<type>`
         Inherited types.
     
     Returns
@@ -30,24 +30,24 @@ def _poll_type(meta_type, type_name, base_types):
     """
     base_found = None
     
-    for base_type in base_types:
-        if (base_type is object):
+    for type_parent in type_parents:
+        if (type_parent is object):
             continue
         
-        if isinstance(base_type, meta_type):
+        if isinstance(type_parent, meta_type):
             if base_found is None:
-                base_found = base_type
+                base_found = type_parent
                 continue
             
             raise TypeError(
                 f'Base type conflict while creating {type_name!r}. '
                 f'Conversions can only have 1 conversion base type, got at least 2: '
-                f'{base_found.__name__!s}, {base_type.__name__!s}.'
+                f'{base_found.__name__!s}, {type_parent.__name__!s}.'
             )
         
         raise TypeError(
             f'Base type conflict while creating {type_name!r}. '
-            f'Cannot use {base_type.__name__!s} as a conversion base type.'
+            f'Cannot use {type_parent.__name__!s} as a conversion base type.'
         )
     
     if base_found is None:
@@ -95,11 +95,11 @@ def _create_default_putter(serializer_key, serializer_optional, serializer_requi
     return serializer_putter
 
 
-class ConversionMeta(type):
+class ConversionMeta(RichType):
     """
     Meta type for conversions.
     """
-    def __new__(cls, type_name, base_types, type_attributes, *, instance = True):
+    def __new__(cls, type_name, type_parents, type_attributes, *, instance = True):
         """
         Creates a new conversion.
         
@@ -107,7 +107,7 @@ class ConversionMeta(type):
         ----------
         type_name : `str`
             The created type's name.
-        base_types : `tuple<type>`
+        type_parents : `tuple<type>`
             The parent types.
         type_attributes : `dict<str, object>`
             The type attributes of the type to be created.
@@ -119,12 +119,18 @@ class ConversionMeta(type):
         type : `instance<cls> | instance<instance<cls>>`
         """
         if instance:
-            return _poll_type(cls, type_name, base_types)(type_attributes)
+            return _poll_type(cls, type_name, type_parents)(type_attributes)
         
-        return type.__new__(cls, type_name, base_types, type_attributes)
+        return RichType.__new__(
+            cls,
+            type_name,
+            type_parents,
+            type_attributes,
+            rich_type_feature_flags = RICH_TYPE_FEATURE_FLAG_ATTRIBUTE_ERROR,
+        )
 
 
-class Conversion(RichAttributeErrorBaseType, metaclass = ConversionMeta, instance = False):
+class Conversion(metaclass = ConversionMeta, instance = False):
     """
     Conversion type.
     

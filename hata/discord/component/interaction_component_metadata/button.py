@@ -19,7 +19,7 @@ class InteractionComponentMetadataButton(InteractionComponentMetadataBase):
     custom_id : `None | str`
         Custom identifier to detect which component was clicked (or used) by the user.
     """
-    __slots__ = ('custom_id')
+    __slots__ = ('custom_id',)
     
     def __new__(cls, *, custom_id = ...):
         """

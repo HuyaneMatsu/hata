@@ -1,11 +1,9 @@
 __all__ = ('PreinstancedBase',)
 
-from scarletio import RichAttributeErrorBaseType
-
 from .preinstanced_meta import PreinstancedMeta
 
 
-class PreinstancedBase(RichAttributeErrorBaseType, metaclass = PreinstancedMeta, base_type = True):
+class PreinstancedBase(metaclass = PreinstancedMeta, base_type = True):
     """
     Base type for other preinstanced types.
     

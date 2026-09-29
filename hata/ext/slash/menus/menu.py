@@ -1,6 +1,8 @@
 __all__ = ('Menu',)
 
-from scarletio import CallableAnalyzer, CancelledError, RichAttributeErrorBaseType, Task
+from scarletio import (
+    CallableAnalyzer, CancelledError, RichAttributeErrorBaseType, RICH_TYPE_FEATURE_FLAG_ATTRIBUTE_ERROR, RichType, Task
+)
 
 from ....discord.allowed_mentions import AllowedMentionProxy
 from ....discord.channel import Channel
@@ -545,13 +547,13 @@ class MenuStructure(RichAttributeErrorBaseType):
     """
     __slots__ = ('check', 'close', 'get_timeout', 'init', 'is_final', 'initial_invoke', 'invoke')
     
-    def __new__(cls, class_attributes):
+    def __new__(cls, type_attributes):
         """
         Creates a new menu structure instance from the given class attributes dictionary.
         
         Parameters
         ----------
-        class_attributes : `dict<str, object>`
+        type_attributes : `dict<str, object>`
             Class attributes of a type.
         
         Raises
@@ -570,26 +572,26 @@ class MenuStructure(RichAttributeErrorBaseType):
             - If `init` is not `None` or is `async-callable`.
             - If `init` accepts less than `3` parameters.
         """
-        self = class_attributes.get('_menu_structure', None)
+        self = type_attributes.get('_menu_structure', None)
         if (self is not None) and (type(self) is cls):
             return self
         
-        check = class_attributes.get('check', None)
+        check = type_attributes.get('check', None)
         validate_check(check)
         
-        invoke = class_attributes.get('invoke', None)
+        invoke = type_attributes.get('invoke', None)
         validate_invoke(invoke)
         
-        initial_invoke = class_attributes.get('initial_invoke', None)
+        initial_invoke = type_attributes.get('initial_invoke', None)
         validate_initial_invoke(initial_invoke)
         
-        get_timeout = class_attributes.get('get_timeout', None)
+        get_timeout = type_attributes.get('get_timeout', None)
         validate_get_timeout(get_timeout)
         
-        close = class_attributes.get('close', None)
+        close = type_attributes.get('close', None)
         validate_close(close)
         
-        init = class_attributes.get('__init__', None)
+        init = type_attributes.get('__init__', None)
         validate_init(init)
         
         if (invoke is None) or (initial_invoke is None):
@@ -732,7 +734,7 @@ class MenuStructure(RichAttributeErrorBaseType):
         return new
 
 
-def _iter_attributes(class_parents, class_attributes):
+def _iter_attributes(type_parents, type_attributes):
     """
     Iterates over the given class's attributes and the given attributes.
     
@@ -740,9 +742,9 @@ def _iter_attributes(class_parents, class_attributes):
     
     Parameters
     ----------
-    class_parents : `tuple` of `type`
+    type_parents : `tuple` of `type`
         Parent classes.
-    class_attributes : `dict<str, object>`
+    type_attributes : `dict<str, object>`
         Class attributes of the source type.
     
     Yields
@@ -752,10 +754,10 @@ def _iter_attributes(class_parents, class_attributes):
     attribute_value : `object`
         An attribute's value.
     """
-    for class_parent in reversed(class_parents):
-        yield from class_parent.__dict__.items()
+    for type_parent in reversed(type_parents):
+        yield from type_parent.__dict__.items()
     
-    yield from class_attributes.items()
+    yield from type_attributes.items()
 
 
 def _get_component_descriptor(component, component_descriptors, sub_component_descriptors):
@@ -799,21 +801,21 @@ DISALLOWED_MENU_ATTRIBUTE_NAMES = (
 
 Menu = None
 
-class MenuType(type):
+class MenuType(RichType):
     """
     Meta type for ``Menu``-s.
     """
-    def __new__(cls, class_name, class_parents, class_attributes):
+    def __new__(cls, type_name, type_parents, type_attributes):
         """
         Creates a Discord entity type. Subclass ``DiscordEntity`` instead of using this class directly as a metaclass.
         
         Parameters
         ----------
-        class_name : `str`
+        type_name : `str`
             The created class's name.
-        class_parents : `tuple` of `type`
+        type_parents : `tuple` of `type`
             The superclasses of the creates type.
-        class_attributes : `dict<str, object>`
+        type_attributes : `dict<str, object>`
             The class attributes of the created type.
         
         Returns
@@ -824,9 +826,9 @@ class MenuType(type):
             for attribute_name in DISALLOWED_MENU_ATTRIBUTE_NAMES:
                 menu_attribute = getattr(Menu, attribute_name)
                 try:
-                    actual_attribute = class_attributes[attribute_name]
+                    actual_attribute = type_attributes[attribute_name]
                 except KeyError:
-                    class_attributes[attribute_name] = menu_attribute
+                    type_attributes[attribute_name] = menu_attribute
                 else:
                     if (actual_attribute is not menu_attribute):
                         raise TypeError(
@@ -834,25 +836,25 @@ class MenuType(type):
                         )
         
         old_menu_structure = None
-        for class_parent in reversed(class_parents):
-            new_menu_structure = MenuStructure(class_parent.__dict__)
+        for type_parent in reversed(type_parents):
+            new_menu_structure = MenuStructure(type_parent.__dict__)
             if old_menu_structure is None:
                 old_menu_structure = new_menu_structure
             else:
                 old_menu_structure = new_menu_structure.merge(old_menu_structure)
         
-        new_menu_structure = MenuStructure(class_attributes)
+        new_menu_structure = MenuStructure(type_attributes)
         if (old_menu_structure is not None):
             new_menu_structure = new_menu_structure.merge(old_menu_structure)
         
-        class_attributes['_menu_structure'] = new_menu_structure
+        type_attributes['_menu_structure'] = new_menu_structure
         
         
         component_descriptors = {}
         components_to_track = []
         new_attributes = {}
         
-        for attribute_name, attribute_value in _iter_attributes(class_parents, class_attributes):
+        for attribute_name, attribute_value in _iter_attributes(type_parents, type_attributes):
             if isinstance(attribute_value, ComponentDescriptor):
                 component_hasher = ComponentSourceIdentityHasher(attribute_value._source_component)
                 component_descriptors[component_hasher] = attribute_value
@@ -888,15 +890,21 @@ class MenuType(type):
         
         
         for attribute_name, attribute_value in new_attributes.items():
-            class_attributes[attribute_name] = attribute_value
+            type_attributes[attribute_name] = attribute_value
         
-        if '__slots__' not in class_attributes:
-            class_attributes['__slots__'] = ('__dict__', )
+        if '__slots__' not in type_attributes:
+            type_attributes['__slots__'] = ('__dict__', )
         
-        return type.__new__(cls, class_name, class_parents, class_attributes)
+        return RichType.__new__(
+            cls,
+            type_name,
+            type_parents,
+            type_attributes,
+            rich_type_feature_flags = RICH_TYPE_FEATURE_FLAG_ATTRIBUTE_ERROR,
+        )
 
 
-class Menu(RichAttributeErrorBaseType, metaclass = MenuType):
+class Menu(metaclass = MenuType):
     """
     Base class for custom component based menus.
     

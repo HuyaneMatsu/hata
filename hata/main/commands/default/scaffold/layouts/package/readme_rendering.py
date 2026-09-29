@@ -435,7 +435,7 @@ def render_readme_section_structure_constants(into, project_name):
         '\n'
         'Stores the constant and the configuration variables. Variables from the `.env` file are loaded here.\n'
         'This kind of setup allows you to keep the sensitive configuration data separate from your code and customize\n'
-        'the behavior of your application based on the environment settings.\n'
+        'the behaviour of your application based on the environment settings.\n'
     )
     
     return into

@@ -1,5 +1,7 @@
 __all__ = ()
 
+from scarletio import RICH_TYPE_FEATURE_FLAG_ATTRIBUTE_ERROR, RichType
+
 from ..place_holder import PlaceHolder
 
 from .slotted_meta import _get_direct_parent, _inherit_hash, _merge_type_slots, _process_set_slot, Slotted
@@ -74,4 +76,10 @@ class DiscordEntityMeta(Slotted):
         
         type_attributes['__slots__'] = tuple(sorted(final_slots))
         
-        return type.__new__(cls, type_name, type_parents, type_attributes)
+        return RichType.__new__(
+            cls,
+            type_name,
+            type_parents,
+            type_attributes,
+            rich_type_feature_flags = RICH_TYPE_FEATURE_FLAG_ATTRIBUTE_ERROR,
+        )

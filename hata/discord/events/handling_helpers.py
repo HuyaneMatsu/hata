@@ -5,7 +5,7 @@ from types import FunctionType
 
 from scarletio import (
     AttributeError as RichAttributeError, CallableAnalyzer, MethodLike, RemovedDescriptor, RichAttributeErrorBaseType,
-    Task, TaskGroup, WeakKeyDictionary, is_coroutine_function
+    RichType, Task, TaskGroup, WeakKeyDictionary, is_coroutine_function
 )
 from scarletio.utils.compact import NEEDS_DUMMY_INIT
 
@@ -1340,7 +1340,7 @@ class EventHandlerBase(RichAttributeErrorBaseType):
         return _EventHandlerManager(self)
 
 
-class EventWaitforMeta(type):
+class EventWaitforMeta(RichType):
     """
     Metaclass for `waitfor` event handlers
     

@@ -340,7 +340,8 @@ class Oauth2Access(RichAttributeErrorBaseType):
         repr_parts.append(state)
         
         repr_parts.append('scope count: ')
-        repr_parts.append(str(len(self.scopes)))
+        scopes = self.scopes
+        repr_parts.append(str(0 if scopes is None else len(scopes)))
         
         repr_parts.append('>')
         return ''.join(repr_parts)

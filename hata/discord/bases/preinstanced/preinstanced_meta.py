@@ -1,5 +1,7 @@
 __all__ = ()
 
+from scarletio import RICH_TYPE_FEATURE_FLAG_ATTRIBUTE_ERROR, RichType
+
 from ..place_holder import PlaceHolder
 
 from .preinstance import Preinstance
@@ -275,7 +277,7 @@ def _inherit_hash_function(type_attributes, type_parent):
     type_attributes['__hash__'] = type_parent.__hash__
 
 
-class PreinstancedMeta(type):
+class PreinstancedMeta(RichType):
     """
     Meta-type for preinstanced instances.
     """
@@ -339,7 +341,13 @@ class PreinstancedMeta(type):
         _set_slot_place_holders(type_attributes, type_parent, slots, name_default, value_default)
         _inherit_hash_function(type_attributes, type_parent)
         
-        type_ = type.__new__(cls, type_name, type_parents, type_attributes)
+        type_ = RichType.__new__(
+            cls,
+            type_name,
+            type_parents,
+            type_attributes,
+            rich_type_feature_flags = RICH_TYPE_FEATURE_FLAG_ATTRIBUTE_ERROR,
+        )
         
         # add instances
         for attribute_name, attribute_value in to_post_instantiate:

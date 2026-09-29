@@ -3,6 +3,8 @@ __all__ = ('Slotted', )
 from itertools import islice
 from types import MemberDescriptorType
 
+from scarletio import RICH_TYPE_FEATURE_FLAG_ATTRIBUTE_ERROR, RichType
+
 
 def _get_direct_parent(meta_type, type_name, type_parents):
     """
@@ -141,7 +143,7 @@ def _process_set_slot(type_attributes, final_slots):
         type(slotter).__set_slot__(slotter, attribute_name, type_attributes, final_slots)
 
 
-class Slotted(type):
+class Slotted(RichType):
     """
     Meta type for special slotted objects, which require `__set_slot__`.
     """
@@ -167,4 +169,10 @@ class Slotted(type):
         
         type_attributes['__slots__'] = tuple(sorted(final_slots))
         
-        return type.__new__(cls, type_name, type_parents, type_attributes)
+        return RichType.__new__(
+            cls,
+            type_name,
+            type_parents,
+            type_attributes,
+            rich_type_feature_flags = RICH_TYPE_FEATURE_FLAG_ATTRIBUTE_ERROR,
+        )

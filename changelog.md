@@ -1,4 +1,12 @@
+## 1.3.99 *\[2026-09-30\]*
+
+### Bug fixes
+
+- Fix `InteractionComponentMetadataButton` had its `.__slots__` set incorrectly.
+
 ## 1.3.98 *\[2026-09-08\]*
+
+### Improvements
 
 - Add `FileTypeFilter`, `FileTypeFilterGroup`, `file_type_filter_create` and other related functionality.
 - Add `Component.file_type_filter` and `ComponentMetadataBase.file_type_filter`.

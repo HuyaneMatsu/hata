@@ -2,13 +2,13 @@ __all__ = ()
 
 from functools import partial as partial_func
 
-from scarletio import RichAttributeErrorBaseType
+from scarletio import RICH_TYPE_FEATURE_FLAG_ATTRIBUTE_ERROR, RichType
 
 from .conversion import ConversionMeta
 from .descriptor import _conversion_descriptor_sort_key, ConversionDescriptor
 
 
-def _request_type_attribute(type_name, base_types, type_attributes, attribute_name):
+def _request_type_attribute(type_name, type_parents, type_attributes, attribute_name):
     """
     Allows requesting a constructed type's attribute before it was created.
     
@@ -16,7 +16,7 @@ def _request_type_attribute(type_name, base_types, type_attributes, attribute_na
     ----------
     type_name : `str`
         The to create type's name.
-    base_types : `set<type>`
+    type_parents : `set<type>`
         Types to inherit from.
     type_attributes : `dict<str, object>`
             The type attributes of the type to be created.
@@ -37,9 +37,9 @@ def _request_type_attribute(type_name, base_types, type_attributes, attribute_na
     except KeyError:
         pass
     
-    for base_type in base_types:
+    for type_parent in type_parents:
         try:
-            return getattr(base_type, attribute_name)
+            return getattr(type_parent, attribute_name)
         except AttributeError:
             pass
     
@@ -77,7 +77,7 @@ def _without_duplication(elements):
     return output
 
 
-def _collect_meta_type_instances(meta_type, base_types):
+def _collect_meta_type_instances(meta_type, type_parents):
     """
     Collects the types from the inherited ones.
     
@@ -85,7 +85,7 @@ def _collect_meta_type_instances(meta_type, base_types):
     ----------
     meta_type : `type`
         Meta type to match.
-    base_types : `tuple<type>`
+    type_parents : `tuple<type>`
         Types to filter from.
     
     Returns
@@ -94,9 +94,9 @@ def _collect_meta_type_instances(meta_type, base_types):
     """
     conversion_types = []
     
-    for base_type in base_types:
-        if isinstance(base_type, meta_type):
-            conversion_types.append(base_type)
+    for type_parent in type_parents:
+        if isinstance(type_parent, meta_type):
+            conversion_types.append(type_parent)
 
     return conversion_types
 
@@ -186,7 +186,7 @@ def _collect_default_conversions(builder_types, type_attributes):
     return _without_duplication(default_conversions)
 
 
-def _create_conversion_descriptors(type_name, base_types, type_attributes, default_conversions, assigned_conversions):
+def _create_conversion_descriptors(type_name, type_parents, type_attributes, default_conversions, assigned_conversions):
     """
     Creates the conversion descriptors.
     
@@ -194,7 +194,7 @@ def _create_conversion_descriptors(type_name, base_types, type_attributes, defau
     ----------
     type_name : `str`
         The created type's name.
-    base_types : `tuple<type>`
+    type_parents : `tuple<type>`
         The parent types.
     type_attributes : `dict<str, object>`
         The type attributes of the type to be created.
@@ -207,7 +207,7 @@ def _create_conversion_descriptors(type_name, base_types, type_attributes, defau
     -------
     descriptors : `list<ConversionDescriptor>`
     """
-    attribute_requester = partial_func(_request_type_attribute, type_name, base_types, type_attributes)
+    attribute_requester = partial_func(_request_type_attribute, type_name, type_parents, type_attributes)
     descriptors = []
     
     for conversion in default_conversions:
@@ -315,11 +315,11 @@ def _filter_descriptors_keyword(conversion_descriptors):
     return descriptors_keyword
 
 
-class BuilderMeta(type):
+class BuilderMeta(RichType):
     """
-    Builder metatype.
+    Builder meta-type.
     """
-    def __new__(cls, type_name, base_types, type_attributes):
+    def __new__(cls, type_name, type_parents, type_attributes):
         """
         Creates a new builder type.
         
@@ -328,13 +328,13 @@ class BuilderMeta(type):
         type_name : `str`
             The created type's name.
         
-        base_types : `tuple<type>`
+        type_parents : `tuple<type>`
             The parent types.
         
         type_attributes : `dict<str, object>`
             The type attributes of the type to be created.
         """
-        builder_types = _collect_meta_type_instances(cls, base_types)
+        builder_types = _collect_meta_type_instances(cls, type_parents)
         
         # Collect CONVERSIONS_DEFAULT
         default_conversions = _collect_default_conversions(builder_types, type_attributes)
@@ -344,7 +344,7 @@ class BuilderMeta(type):
         
         # create conversion_descriptors
         conversion_descriptors = _create_conversion_descriptors(
-            type_name, base_types, type_attributes, default_conversions, assigned_conversions
+            type_name, type_parents, type_attributes, default_conversions, assigned_conversions
         )
         
         # filter DESCRIPTORS_POSITIONAL
@@ -370,10 +370,16 @@ class BuilderMeta(type):
         
         # create type
         
-        return type.__new__(cls, type_name, base_types, type_attributes)
+        return RichType.__new__(
+            cls,
+            type_name,
+            type_parents,
+            type_attributes,
+            rich_type_feature_flags = RICH_TYPE_FEATURE_FLAG_ATTRIBUTE_ERROR,
+        )
 
 
-class BuilderBase(RichAttributeErrorBaseType, metaclass = BuilderMeta):
+class BuilderBase(metaclass = BuilderMeta):
     """
     Base builder defining default functionality.
     """

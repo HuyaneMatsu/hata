@@ -235,7 +235,7 @@ if API_VERSION < 10:
 else:
     def parse_flags(data):
         """
-        Parses flags out from teh given data.
+        Parses flags out from the given data.
         
         Parameters
         ----------

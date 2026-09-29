@@ -709,7 +709,6 @@ class Client(
         if application_id:
             APPLICATION_ID_TO_CLIENT[application_id] = self
         
-        
         return self
     
     

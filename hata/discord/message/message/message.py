@@ -71,7 +71,6 @@ PRECREATE_FIELDS = {
     'edited_at': ('edited_at', validate_edited_at),
     'embeds': ('embeds', validate_embeds),
     'flags': ('flags', validate_flags),
-    'guild': ('guild_id', validate_guild_id),
     'guild_id': ('guild_id', validate_guild_id),
     'interaction': ('interaction', validate_interaction),
     'mentioned_channels_cross_guild': ('mentioned_channels_cross_guild', validate_mentioned_channels_cross_guild),
@@ -2012,9 +2011,6 @@ class Message(DiscordEntity, immortal = True):
         
         flags : ``MessageFlag``, `int`, Optional (Keyword only)
             The message's flags.
-        
-        guild : `int`, ``Guild``, Optional (Keyword only)
-            Alternative for `guild_id`.
         
         guild_id : `int`, ``Guild``, Optional (Keyword only)
             The guild's identifier where the message was created at.

@@ -5,13 +5,13 @@ from scarletio import include
 from ...application import SKU
 from ...channel import Channel, ChannelType
 from ...color import Color
-from ...field_parsers import (
+from ...fields.field_parsers import (
     bool_parser_factory, default_entity_parser_factory, entity_id_parser_factory, force_string_parser_factory,
     int_parser_factory, negated_bool_parser_factory, nullable_entity_parser_factory, nullable_flag_parser_factory,
     nullable_functional_parser_factory, nullable_object_array_parser_factory, nullable_string_parser_factory,
     preinstanced_array_parser_factory, preinstanced_parser_factory
 )
-from ...field_putters import (
+from ...fields.field_putters import (
     bool_optional_putter_factory, entity_id_optional_putter_factory, entity_putter_factory, force_string_putter_factory,
     int_optional_putter_factory, int_putter_factory, negated_bool_optional_putter_factory,
     nullable_entity_array_putter_factory, nullable_entity_optional_putter_factory,
@@ -19,11 +19,15 @@ from ...field_putters import (
     nullable_string_optional_putter_factory, nullable_string_putter_factory, preinstanced_array_putter_factory,
     preinstanced_putter_factory, url_optional_putter_factory
 )
-from ...field_validators import (
+from ...fields.field_validators import (
     bool_validator_factory, entity_id_validator_factory, force_string_validator_factory,
     int_conditional_validator_factory, nullable_entity_validator_factory, nullable_flag_validator_factory,
     nullable_object_array_validator_factory, nullable_string_validator_factory, preinstanced_array_validator_factory,
     preinstanced_validator_factory, url_optional_validator_factory
+)
+from ...fields.fields_common import (
+    parse_description, parse_placeholder, put_description__optional as put_description,
+    put_placeholder__optional as put_placeholder
 )
 from ...file_type_filter import FileTypeFilter, file_type_filter_convert_to_data, file_type_filter_create_from_data
 from ...role import Role
@@ -360,8 +364,6 @@ def validate_default_values(default_values):
 
 # description
 
-parse_description = nullable_string_parser_factory('description')
-put_description = nullable_string_optional_putter_factory('description')
 validate_description = nullable_string_validator_factory(
     'description', DESCRIPTION_LENGTH_MIN, DESCRIPTION_LENGTH_MAX
 )
@@ -662,8 +664,6 @@ validate_options__string_select = nullable_object_array_validator_factory('optio
 
 # placeholder
 
-parse_placeholder = nullable_string_parser_factory('placeholder')
-put_placeholder = nullable_string_optional_putter_factory('placeholder')
 validate_placeholder = nullable_string_validator_factory('placeholder', 0, PLACEHOLDER_LENGTH_MAX)
 
 

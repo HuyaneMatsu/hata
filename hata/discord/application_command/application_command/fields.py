@@ -3,23 +3,25 @@ __all__ = ()
 from functools import partial as partial_func
 
 from ...application import Application, ApplicationIntegrationType
-from ...field_parsers import (
+from ...fields.field_parsers import (
     bool_parser_factory, entity_id_parser_factory, flag_parser_factory, force_string_parser_factory,
-    nullable_functional_parser_factory, nullable_object_array_parser_factory, nullable_string_parser_factory,
+    nullable_functional_parser_factory, nullable_object_array_parser_factory,
     preinstanced_array_parser_factory, preinstanced_parser_factory
 )
-from ...field_putters import (
+from ...fields.field_putters import (
     bool_optional_putter_factory, entity_id_optional_putter_factory, entity_id_putter_factory,
     force_string_putter_factory, nullable_entity_array_optional_putter_factory,
-    nullable_functional_optional_putter_factory, nullable_string_putter_factory, preinstanced_optional_putter_factory,
+    nullable_functional_optional_putter_factory, preinstanced_optional_putter_factory,
     preinstanced_putter_factory
 )
-from ...field_validators import (
+from ...fields.field_validators import (
     bool_validator_factory, entity_id_validator_factory, flag_validator_factory,
     nullable_object_array_validator_factory, nullable_string_validator_factory, preinstanced_array_validator_factory,
     preinstanced_validator_factory
 )
-from ...guild import Guild
+from ...fields.fields_common import (
+    parse_description, parse_guild_id, put_description, put_guild_id__optional as put_guild_id, validate_guild_id
+)
 from ...localization.helpers import localized_dictionary_builder
 from ...localization.utils import build_locale_dictionary, destroy_locale_dictionary
 from ...permission import Permission
@@ -41,8 +43,6 @@ validate_application_id = entity_id_validator_factory('application_id', Applicat
 
 # description
 
-parse_description = nullable_string_parser_factory('description')
-put_description = nullable_string_putter_factory('description')
 validate_description = nullable_string_validator_factory(
     'description', DESCRIPTION_LENGTH_MIN, DESCRIPTION_LENGTH_MAX
 )
@@ -58,13 +58,6 @@ put_description_localizations = nullable_functional_optional_putter_factory(
 validate_description_localizations = partial_func(
     localized_dictionary_builder, parameter_name = 'description_localizations'
 )
-
-# guild_id
-
-parse_guild_id = entity_id_parser_factory('guild_id')
-put_guild_id = entity_id_optional_putter_factory('guild_id')
-validate_guild_id = entity_id_validator_factory('guild_id', Guild)
-
 
 # handler_type
 

@@ -5,6 +5,8 @@ from ...message.message.fields import validate_channel_id, validate_id
 from ..audit_log_entry_detail_conversion import AuditLogEntryDetailConversion, AuditLogEntryDetailConversionGroup
 from ..conversion_helpers.converters import value_deserializer_id, value_serializer_id
 
+from .helpers import convert_string_to_integer, serialise_integer_to_string
+
 
 # ---- channel_id ----
 
@@ -22,13 +24,9 @@ CHANNEL_ID_CONVERSION = AuditLogEntryDetailConversion(
 COUNT_CONVERSION = AuditLogEntryDetailConversion(
     'count',
     'count',
+    value_deserializer = convert_string_to_integer,
+    value_serializer = serialise_integer_to_string,
 )
-
-@COUNT_CONVERSION.set_value_deserializer
-def count_deserializer(value):
-    if value is None:
-        value = 0
-    return value
 
 
 @COUNT_CONVERSION.set_value_validator

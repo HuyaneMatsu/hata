@@ -21,7 +21,6 @@ from .preinstanced import StickerFormat, StickerType
 PRECREATE_FIELDS = {
     'description': ('description', validate_description),
     'available': ('available', validate_available),
-    'guild': ('guild_id', validate_guild_id),
     'guild_id': ('guild_id', validate_guild_id),
     'name': ('name', validate_name),
     'pack': ('pack_id', validate_pack_id),
@@ -291,10 +290,10 @@ class Sticker(DiscordEntity, immortal = True):
             Whether the sticker is available.
         description : `None`, `str`, Optional (Keyword only)
             The sticker's description.
-        guild : ``int | Guild``, Optional (Keyword only)
-            Alternative for `guild_id`.
-        guild_id : ``int | Guild``, Optional (Keyword only)
-             The sticker's guild's identifier.
+        
+        guild_id : `int`, Optional (Keyword only)
+            The sticker's guild's identifier.
+        
         name : `str`, Optional (Keyword only)
             The sticker's name.
         pack : `int`, ``StickerPack``, Optional (Keyword only)

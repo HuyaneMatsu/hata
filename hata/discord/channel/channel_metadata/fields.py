@@ -4,20 +4,20 @@ from scarletio import include
 
 from ...bases import maybe_snowflake
 from ...emoji import Emoji, create_emoji_from_exclusive_inline_data, put_exclusive_emoji_inline_data_into
-from ...field_parsers import (
+from ...fields.field_parsers import (
     bool_parser_factory, entity_id_array_parser_factory, entity_id_parser_factory, flag_parser_factory,
     force_string_parser_factory, int_parser_factory, int_postprocess_parser_factory,
     nullable_entity_array_parser_factory, nullable_string_parser_factory, nullable_unix_time_parser_factory,
     preinstanced_parser_factory
 )
-from ...field_putters import (
+from ...fields.field_putters import (
     bool_optional_putter_factory, entity_id_optional_putter_factory, flag_optional_putter_factory,
     force_string_putter_factory, int_optional_postprocess_putter_factory, int_putter_factory,
     nullable_entity_array_optional_putter_factory, nullable_string_putter_factory,
     nullable_unix_time_optional_putter_factory, nulled_int_optional_putter_factory,
     optional_entity_id_array_optional_putter_factory, preinstanced_optional_putter_factory, url_optional_putter_factory
 )
-from ...field_validators import (
+from ...fields.field_validators import (
     bool_validator_factory, entity_id_array_validator_factory, entity_id_validator_factory, flag_validator_factory,
     force_string_validator_factory, int_conditional_validator_factory, int_options_validator_factory,
     nullable_date_time_validator_factory, nullable_entity_array_validator_factory, nullable_entity_validator_factory,

@@ -1,18 +1,17 @@
 __all__ = ()
 
 from ...emoji import Emoji
-from ...field_parsers import (
-    entity_id_parser_factory, force_string_parser_factory, int_parser_factory, nullable_string_parser_factory,
-    preinstanced_array_parser_factory
+from ...fields.field_parsers import (
+    entity_id_parser_factory, force_string_parser_factory, int_parser_factory, preinstanced_array_parser_factory
 )
-from ...field_putters import (
-    entity_id_putter_factory, force_string_putter_factory, int_putter_factory, nullable_string_putter_factory,
-    preinstanced_array_putter_factory
+from ...fields.field_putters import (
+    entity_id_putter_factory, force_string_putter_factory, int_putter_factory, preinstanced_array_putter_factory
 )
-from ...field_validators import (
+from ...fields.field_validators import (
     entity_id_validator_factory, force_string_validator_factory, int_conditional_validator_factory,
     nullable_string_validator_factory, preinstanced_array_validator_factory
 )
+from ...fields.fields_common import parse_description, put_description
 from ...sticker import Sticker
 
 from .constants import DESCRIPTION_LENGTH_MAX, NAME_LENGTH_MAX
@@ -41,8 +40,6 @@ validate_approximate_user_count = int_conditional_validator_factory(
 
 # description
 
-parse_description = nullable_string_parser_factory('description')
-put_description = nullable_string_putter_factory('description')
 validate_description = nullable_string_validator_factory('description', 0, DESCRIPTION_LENGTH_MAX)
 
 # emojis

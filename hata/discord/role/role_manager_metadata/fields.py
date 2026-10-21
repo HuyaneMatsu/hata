@@ -1,8 +1,8 @@
 __all__ = ()
 
-from ...field_parsers import entity_id_parser_factory
-from ...field_putters import entity_id_optional_putter_factory
-from ...field_validators import bool_validator_factory, entity_id_validator_factory
+from ...fields.field_parsers import entity_id_parser_factory
+from ...fields.field_putters import entity_id_optional_putter_factory
+from ...fields.field_validators import bool_validator_factory, entity_id_validator_factory
 from ...user import ClientUserBase
 
 from .constants import BOT_ID_KEY, INTEGRATION_ID_KEY, PURCHASABLE_KEY, SUBSCRIPTION_LISTING_ID_KEY

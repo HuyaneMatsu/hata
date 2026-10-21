@@ -7,6 +7,7 @@ from ...audit_log_entry_detail_conversion.tests.test__AuditLogEntryDetailConvers
     _assert_fields_set as _assert_conversion_group_fields_set
 )
 
+from ..helpers import convert_string_to_integer, serialise_integer_to_string
 from ..guild import DAYS_CONVERSION, GUILD_CONVERSIONS, USERS_REMOVED_CONVERSION
 
 
@@ -28,31 +29,8 @@ def test__DAYS_CONVERSION__generic():
     Tests whether ``DAYS_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(DAYS_CONVERSION)
-    vampytest.assert_is(DAYS_CONVERSION.value_serializer, None)
-
-
-def _iter_options__days__value_deserializer():
-    days = 123
-    yield 0, 0
-    yield days, days
-    yield None, 0
-
-
-@vampytest._(vampytest.call_from(_iter_options__days__value_deserializer()).returning_last())
-def test__DAYS_CONVERSION__value_deserializer(input_value):
-    """
-    Tests whether `DAYS_CONVERSION.value_deserializer` works as intended.
-    
-    Parameters
-    ----------
-    input_value : `int`
-        Raw value.
-    
-    Returns
-    -------
-    output : `int`
-    """
-    return DAYS_CONVERSION.value_deserializer(input_value)
+    vampytest.assert_is(DAYS_CONVERSION.value_deserializer, convert_string_to_integer)
+    vampytest.assert_is(DAYS_CONVERSION.value_serializer, serialise_integer_to_string)
 
 
 def _iter_options__days__value_validator__passing():
@@ -100,31 +78,8 @@ def test__USERS_REMOVED_CONVERSION__generic():
     Tests whether ``USERS_REMOVED_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(USERS_REMOVED_CONVERSION)
-    vampytest.assert_is(USERS_REMOVED_CONVERSION.value_serializer, None)
-
-
-def _iter_options__users_removed__value_deserializer():
-    users_removed = 123
-    yield 0, 0
-    yield users_removed, users_removed
-    yield None, 0
-
-
-@vampytest._(vampytest.call_from(_iter_options__users_removed__value_deserializer()).returning_last())
-def test__USERS_REMOVED_CONVERSION__value_deserializer(input_value):
-    """
-    Tests whether `USERS_REMOVED_CONVERSION.value_deserializer` works as intended.
-    
-    Parameters
-    ----------
-    input_value : `int`
-        Raw value.
-    
-    Returns
-    -------
-    output : `int`
-    """
-    return USERS_REMOVED_CONVERSION.value_deserializer(input_value)
+    vampytest.assert_is(USERS_REMOVED_CONVERSION.value_deserializer, convert_string_to_integer)
+    vampytest.assert_is(USERS_REMOVED_CONVERSION.value_serializer, serialise_integer_to_string)
 
 
 def _iter_options__users_removed__value_validator__passing():

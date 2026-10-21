@@ -1,19 +1,20 @@
 __all__ = ()
 
 from ...channel import Channel
-from ...field_parsers import (
+from ...fields.field_parsers import (
     bool_parser_factory, entity_id_array_parser_factory, entity_id_parser_factory, force_string_parser_factory,
     nullable_object_array_parser_factory, preinstanced_parser_factory
 )
-from ...field_putters import (
+from ...fields.field_putters import (
     bool_optional_putter_factory, entity_id_optional_putter_factory, entity_id_putter_factory,
     force_string_putter_factory, optional_entity_id_array_optional_putter_factory,
     nullable_object_array_optional_putter_factory, preinstanced_putter_factory
 )
-from ...field_validators import (
+from ...fields.field_validators import (
     bool_validator_factory, entity_id_array_validator_factory, entity_id_validator_factory,
     force_string_validator_factory, nullable_object_array_validator_factory, preinstanced_validator_factory
 )
+from ...fields.fields_common import parse_guild_id, put_guild_id__optional as put_guild_id, validate_guild_id
 from ...role import Role
 from ...user import ClientUserBase
 
@@ -65,12 +66,6 @@ validate_excluded_channel_ids = entity_id_array_validator_factory('excluded_chan
 parse_excluded_role_ids = entity_id_array_parser_factory('exempt_roles')
 put_excluded_role_ids = optional_entity_id_array_optional_putter_factory('exempt_roles')
 validate_excluded_role_ids = entity_id_array_validator_factory('excluded_role_ids', Role)
-
-# guild_id
-
-parse_guild_id = entity_id_parser_factory('guild_id')
-put_guild_id = entity_id_optional_putter_factory('guild_id')
-validate_guild_id = entity_id_validator_factory('guild_id', NotImplemented, include = 'Guild')
 
 # name
 

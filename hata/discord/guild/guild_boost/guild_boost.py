@@ -17,10 +17,8 @@ from .fields import (
 PRECREATE_FIELDS = {
     'ended': ('ended', validate_ended),
     'ends_at': ('ends_at', validate_ends_at),
-    'guild': ('guild_id', validate_guild_id),
     'guild_id': ('guild_id', validate_guild_id),
     'paused_until': ('paused_until', validate_paused_until),
-    'user': ('user_id', validate_user_id),
     'user_id': ('user_id', validate_user_id),
 }
 
@@ -247,7 +245,7 @@ class GuildBoost(DiscordEntity, immortal = True):
     
     def _get_hash_partial(self):
         """
-        Calculates the guild boosts's hash based on their fields.
+        Calculates the guild boosts' hash based on their fields.
         
         This method is called by ``.__hash__`` if the guild boost has no ``.id`` set.
         
@@ -363,20 +361,14 @@ class GuildBoost(DiscordEntity, immortal = True):
         ends_at : `None | DateTime`, Optional (Keyword only)
             When the boost ends at.
         
-        guild : ``None | int | Guild``, Optional (Keyword only)
-            Alternative for `guild_id`.
-        
-        guild_id : ``None | int | Guild``, Optional (Keyword only)
+        guild_id : `int`, Optional (Keyword only)
             The guild's identifier the boost is for.
         
         paused_until : `None | DateTime`, Optional (Keyword only)
             Until when the boost is paused.
         
-        user : ``None | int | ClientUserBase``, Optional (Keyword only)
-            Alternative for `user_id`.
-        
-        user_id : ``None | int | ClientUserBase``, Optional (Keyword only)
-            The user who owns the boost.
+        user_id : `int`, Optional (Keyword only)
+            The user's identifier who owns the boost.
         
         Returns
         -------

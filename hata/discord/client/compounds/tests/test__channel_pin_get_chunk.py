@@ -55,6 +55,8 @@ async def test__Client__channel_pin_get_chunk__stuffed():
         nonlocal channel_id
         nonlocal limit
         nonlocal chunk_0
+        nonlocal after
+        nonlocal before
         
         mock_api_channel_pin_get_chunk_called = True
         vampytest.assert_eq(channel_id, input_channel_id)

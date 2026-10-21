@@ -73,9 +73,6 @@ INTENT_SHIFT_EVENTS = {
         'THREAD_MEMBER_UPDATE',
         'THREAD_MEMBERS_UPDATE',
         'GUILD_APPLICATION_COMMAND_COUNTS_UPDATE',
-        'GUILD_JOIN_REQUEST_CREATE',
-        'GUILD_JOIN_REQUEST_DELETE',
-        'GUILD_JOIN_REQUEST_UPDATE',
         'EMBEDDED_ACTIVITY_UPDATE',
         'EMBEDDED_ACTIVITY_UPDATE_V2',
         'CHANNEL_TOPIC_UPDATE',
@@ -95,6 +92,9 @@ INTENT_SHIFT_EVENTS = {
         'GUILD_AUDIT_LOG_ENTRY_CREATE',
         'GUILD_BAN_ADD',
         'GUILD_BAN_REMOVE',
+        'GUILD_JOIN_REQUEST_CREATE',
+        'GUILD_JOIN_REQUEST_DELETE',
+        'GUILD_JOIN_REQUEST_UPDATE',
     ),
     INTENT_SHIFT_GUILD_EXPRESSIONS: (
         'GUILD_EMOJIS_UPDATE',
@@ -276,9 +276,6 @@ class IntentFlag(FlagBase):
     |                                               |       |                               | THREAD_LIST_SYNC,                           |
     |                                               |       |                               | THREAD_MEMBER_UPDATE,                       |
     |                                               |       |                               | THREAD_MEMBERS_UPDATE,                      |
-    |                                               |       |                               | GUILD_JOIN_REQUEST_CREATE,                  |
-    |                                               |       |                               | GUILD_JOIN_REQUEST_DELETE,                  |
-    |                                               |       |                               | GUILD_JOIN_REQUEST_UPDATE,                  |
     |                                               |       |                               | EMBEDDED_ACTIVITY_UPDATE,                   |
     |                                               |       |                               | EMBEDDED_ACTIVITY_UPDATE_V2,                |
     |                                               |       |                               | CHANNEL_TOPIC_UPDATE,                       |
@@ -295,7 +292,10 @@ class IntentFlag(FlagBase):
     +-----------------------------------------------+-------+-------------------------------+---------------------------------------------+
     | INTENT_SHIFT_GUILD_MODERATION                 | 2     | guild_bans                    | GUILD_AUDIT_LOG_ENTRY_CREATE,               |
     |                                               |       |                               | GUILD_BAN_ADD,                              |
-    |                                               |       |                               | GUILD_BAN_REMOVE                            |
+    |                                               |       |                               | GUILD_BAN_REMOVE,                           |
+    |                                               |       |                               | GUILD_JOIN_REQUEST_CREATE,                  |
+    |                                               |       |                               | GUILD_JOIN_REQUEST_DELETE,                  |
+    |                                               |       |                               | GUILD_JOIN_REQUEST_UPDATE                   |
     +-----------------------------------------------+-------+-------------------------------+---------------------------------------------+
     | INTENT_SHIFT_GUILD_EXPRESSIONS                | 3     | guild_expressions             | GUILD_EMOJIS_UPDATE,                        |
     |                                               |       |                               | GUILD_SOUNDBOARD_SOUND_CREATE,              |

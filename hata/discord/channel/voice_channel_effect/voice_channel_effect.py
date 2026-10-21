@@ -71,14 +71,14 @@ class VoiceChannelEffect(EventBase):
             The channel or its identifier where the effect was sent.
         emoji : ``None | Emoji``, Optional (Keyword only)
             The emoji sent.
-        guild_id : `int`, ``Guild``, Optional (Keyword only)
+        guild_id : `int`, Optional (Keyword only)
             The guild or its identifier where the event was sent.
         sound_id : `int`, ``SoundboardSound``, Optional (Keyword only)
             The played sound's identifier.
         sound_volume : `float`, Optional (Keyword only)
             The played sound's volume.
-        user_id : ``None | int | ClientUserBase``, Optional (Keyword only)
-            The user or its identifier who sent the effect.
+        user_id : `int`, Optional (Keyword only)
+            The user's identifier who sent the effect.
         
         Raises
         ------
@@ -375,14 +375,14 @@ class VoiceChannelEffect(EventBase):
             The channel or its identifier where the effect was sent.
         emoji : ``None | Emoji``, Optional (Keyword only)
             The emoji sent.
-        guild_id : `int`, ``Guild``, Optional (Keyword only)
+        guild_id : `int`, Optional (Keyword only)
             The guild or its identifier where the event was sent.
         sound_id : `int`, ``SoundboardSound``, Optional (Keyword only)
             The played sound's identifier.
         sound_volume : `float`, Optional (Keyword only)
             The played sound's volume.
-        user_id : ``None | int | ClientUserBase``, Optional (Keyword only)
-            The user or its identifier who sent the effect.
+        user_id : `int`, Optional (Keyword only)
+            The user's identifier who sent the effect.
         
         Returns
         -------

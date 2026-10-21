@@ -1,6 +1,6 @@
 __all__ = ()
 
-from ...field_validators import int_conditional_validator_factory
+from ...fields.field_validators import int_conditional_validator_factory
 
 from .constants import CHANNELS_DEFAULT, FRAME_LENGTH_DEFAULT, SAMPLING_RATE_DEFAULT
 

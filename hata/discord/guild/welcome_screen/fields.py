@@ -1,12 +1,11 @@
 __all__ = ()
 
-from ...field_parsers import nullable_object_array_parser_factory, nullable_string_parser_factory
-from ...field_putters import (
-    force_bool_putter_factory, nullable_object_array_optional_putter_factory, nullable_string_putter_factory
-)
-from ...field_validators import (
+from ...fields.field_parsers import nullable_object_array_parser_factory
+from ...fields.field_putters import force_bool_putter_factory, nullable_object_array_optional_putter_factory
+from ...fields.field_validators import (
     bool_validator_factory, nullable_object_array_validator_factory, nullable_string_validator_factory
 )
+from ...fields.fields_common import parse_description, put_description
 
 from ..welcome_screen_channel import WelcomeScreenChannel
 
@@ -14,8 +13,6 @@ from .constants import DESCRIPTION_LENGTH_MAX
 
 # description
 
-parse_description = nullable_string_parser_factory('description')
-put_description = nullable_string_putter_factory('description')
 validate_description = nullable_string_validator_factory('description', 0, DESCRIPTION_LENGTH_MAX)
 
 # enabled

@@ -1,6 +1,6 @@
 __all__ = ()
 
-from ...field_validators import force_date_time_validator_factory
+from ...fields.field_validators import force_date_time_validator_factory
 from ...sticker import create_partial_sticker_data
 from ...utils import DISCORD_EPOCH_START, datetime_to_timestamp, timestamp_to_datetime
 

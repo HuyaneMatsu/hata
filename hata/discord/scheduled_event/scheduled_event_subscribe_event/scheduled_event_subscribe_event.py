@@ -40,8 +40,8 @@ class ScheduledEventSubscribeEvent(EventBase):
         
         Parameters
         ----------
-        guild_id : ˙`None | int | Guild``, Optional (Keyword only)
-            The guild or its identifier where the event will be.
+        guild_id : `int`, Optional (Keyword only)
+            The guild's identifier where the event will be.
         
         scheduled_event_id : ``None | int | ScheduledEvent``, Optional (Keyword only)
             The scheduled event or its identifier.
@@ -49,8 +49,8 @@ class ScheduledEventSubscribeEvent(EventBase):
         timestamp : `None | DateTime`, Optional (Keyword only)
             The timestamp of the occurrence the user subscribed for if applicable.
         
-        user_id : ``None | int | ClientUserBase``, Optional (Keyword only)
-            The user or their their identifier who subscribed to the event.
+        user_id : `int`, Optional (Keyword only)
+            The user's identifier who subscribed to the event.
         
         Raises
         ------
@@ -239,8 +239,8 @@ class ScheduledEventSubscribeEvent(EventBase):
         
         Parameters
         ----------
-        guild_id : ˙`None | int | Guild``, Optional (Keyword only)
-            The guild or its identifier where the event will be.
+        guild_id : `int`, Optional (Keyword only)
+            The guild's identifier where the event will be.
         
         scheduled_event_id : ``None | int | ScheduledEvent``, Optional (Keyword only)
             The scheduled event or its identifier.
@@ -248,8 +248,8 @@ class ScheduledEventSubscribeEvent(EventBase):
         timestamp : `None | DateTime`, Optional (Keyword only)
             The timestamp of the occurrence the user subscribed for if applicable.
         
-        user_id : ``None | int | ClientUserBase``, Optional (Keyword only)
-            The user or their their identifier who subscribed to the event.
+        user_id : `int`, Optional (Keyword only)
+            The user's identifier who subscribed to the event.
         
         Returns
         -------

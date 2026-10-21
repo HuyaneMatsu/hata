@@ -1,3 +1,44 @@
+## 1.3.100 *\[2026-10-20\]*
+
+- Add audit log detail converters for `message_id`, `unique_count`, `unique_overflow` keys.
+- Add `Client.invite_allowed_user_id_add`.
+- Add `Client.invite_allowed_user_id_delete`.
+- Add `Client.invite_allowed_user_id_add_many`.
+- Add `Client.invite_allowed_user_id_delete_many`.
+- Add `DiscordApiClient.invite_allowed_user_id_add`.
+- Add `DiscordApiClient.invite_allowed_user_id_delete`.
+- Add `DiscordApiClient.invite_allowed_user_id_add_many`.
+- Add `DiscordApiClient.invite_allowed_user_id_delete_many`.
+- Add `RATE_LIMIT_GROUPS.invite_allowed_user_id_add`.
+- Add `RATE_LIMIT_GROUPS.invite_allowed_user_id_delete`.
+- Add `RATE_LIMIT_GROUPS.invite_allowed_user_id_add_many`.
+- Add `RATE_LIMIT_GROUPS.invite_allowed_user_id_delete_many`.
+- Add `ERROR_CODES.max_allowed_use_ids`.
+- Add `Client.events.guild_update_badge`.
+- Add `ERROR_CODES.relationship_friend_limit_reached`.
+- Add `ERROR_CODES.relationship_invalid_not_incoming`.
+- Add `ERROR_CODES.relationship_invalid_no_common_application`.
+- Add `GuildJoinRequest.id`.
+- Add `GuildJoinRequestCreateAndUpdateEvent`.
+- `GuildJoinRequestDeleteEvent` now has its fields updated.
+- `GuildJoinRequest.user_id` is now an attribute. `.user` is now nullable.
+- Rewrite `GuildJoinRequest`, `GuildJoinRequestDeleteEvent` and `GuildJoinRequestFormResponse`
+    (modified to `GuildJoinRequestFormFieldResponse`).
+- Add `GuildJoinRequestCreateAndDeleteEvent`, `GuildJoinRequestFormFieldType`,
+    `GuildJoinRequestFormFieldTextInputStyle` and a lot of other related functions.
+- Add `Client.guild_join_request_action`.
+- Add `DiscordApiClient.guild_join_request_action`.
+- Add `RATE_LIMIT_GROUPS.guild_join_request_action`.
+- Add `Client.guild_join_request_get_chunk`.
+- Add `GuildJoinRequestGetChunkResponse`.
+- Add `DiscordApiClient.guild_join_request_get_chunk`.
+- Add `RATE_LIMIT_GROUPS.guild_join_request_get_chunk`.
+- Add `ERROR_CODES.feature_temporarily_disabled`.
+
+### Bug fixes
+
+- Fix a few event handlers were not called as intended.
+
 ## 1.3.99 *\[2026-09-30\]*
 
 ### Bug fixes

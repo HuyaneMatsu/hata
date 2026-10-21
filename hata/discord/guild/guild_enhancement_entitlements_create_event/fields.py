@@ -1,8 +1,9 @@
 __all__ = ()
 
-from ...field_parsers import entity_id_parser_factory, nullable_entity_array_parser_factory
-from ...field_putters import entity_id_putter_factory, nullable_entity_array_putter_factory
-from ...field_validators import entity_id_validator_factory, nullable_entity_array_validator_factory
+from ...fields.field_parsers import nullable_entity_array_parser_factory
+from ...fields.field_putters import nullable_entity_array_putter_factory
+from ...fields.field_validators import nullable_entity_array_validator_factory
+from ...fields.fields_common import parse_guild_id, put_guild_id, validate_guild_id
 
 from ..guild import Guild
 
@@ -18,10 +19,3 @@ put_entitlements = nullable_entity_array_putter_factory(
 validate_entitlements = nullable_entity_array_validator_factory(
     'entitlements', NotImplemented, include = 'Entitlement'
 )
-
-
-# guild_id
-
-parse_guild_id = entity_id_parser_factory('guild_id')
-put_guild_id = entity_id_putter_factory('guild_id')
-validate_guild_id = entity_id_validator_factory('guild_id', Guild)

@@ -1,8 +1,7 @@
 __all__ = ()
 
-from ...field_parsers import nullable_string_parser_factory
-from ...field_putters import nullable_string_optional_putter_factory
-from ...field_validators import nullable_string_validator_factory
+from ...fields.field_validators import nullable_string_validator_factory
+from ...fields.fields_common import parse_title, put_title__optional as put_title
 
 from ..component import Component, ComponentType, ComponentTypeLayoutFlag
 from ..shared_fields import parse_components, parse_custom_id, put_components, put_custom_id, validate_custom_id
@@ -84,6 +83,4 @@ def validate_components(components):
 
 # title
 
-parse_title = nullable_string_parser_factory('title')
-put_title = nullable_string_optional_putter_factory('title')
 validate_title = nullable_string_validator_factory('title', TITLE_LENGTH_MIN, TITLE_LENGTH_MAX)

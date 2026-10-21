@@ -1,0 +1,43 @@
+import vampytest
+
+from ..fields import validate_choice_index
+
+
+def _iter_options__passing():
+    yield (
+        None,
+        -1,
+    )
+    
+    yield (
+        0,
+        0,
+    )
+    
+    yield (
+        1,
+        1,
+    )
+    
+    yield (
+        -1,
+        -1,
+    )
+
+
+def _iter_options__type_error():
+    yield 12.6
+    yield '12'
+
+
+def _iter_options__value_error():
+    yield -2
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+@vampytest._(vampytest.call_from(_iter_options__value_error()).raising(ValueError))
+def test__validate_choice_index(input_value):
+    output = validate_choice_index(input_value)
+    vampytest.assert_instance(output, int)
+    return output

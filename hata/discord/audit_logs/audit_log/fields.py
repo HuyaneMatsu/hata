@@ -4,7 +4,7 @@ __all__ = ()
 from ...application_command import ApplicationCommand
 from ...auto_moderation import AutoModerationRule
 from ...channel import Channel
-from ...field_validators import entity_id_validator_factory
+from ...fields.field_validators import entity_id_validator_factory
 from ...guild import Guild
 from ...integration import Integration
 from ...scheduled_event import ScheduledEvent

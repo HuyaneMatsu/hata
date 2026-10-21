@@ -25,7 +25,6 @@ PRECREATE_FIELDS = {
     'sku_ids': ('sku_ids', validate_sku_ids),
     'renewal_sku_ids': ('renewal_sku_ids', validate_renewal_sku_ids),
     'status': ('status', validate_status),
-    'user': ('user_id', validate_user_id),
     'user_id': ('user_id', validate_user_id),
 }
 
@@ -87,7 +86,7 @@ class Subscription(DiscordEntity):
         sku_ids : `None | iterable<int> | iterable<SKU>`, Optional (Keyword only)
             The third party stock keeping unit the subscription is linked to.
         
-        user_id : `int | ClientUserBase`, Optional (Keyword only)
+        user_id : `int`, Optional (Keyword only)
             The subscribed user's identifier.
         
         Raises
@@ -413,10 +412,7 @@ class Subscription(DiscordEntity):
         status : `SubscriptionStatus | int`, Optional (Keyword only)
             The subscription's status.
         
-        user : `int | ClientUserBase`, Optional (Keyword only)
-            Alternative for `user_id`.
-        
-        user_id : `int | ClientUserBase`, Optional (Keyword only)
+        user_id : `int`, Optional (Keyword only)
             The subscribed user's identifier.
         
         Returns

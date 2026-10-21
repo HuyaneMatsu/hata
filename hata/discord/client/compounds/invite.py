@@ -9,7 +9,7 @@ from ...exceptions import DiscordException, ERROR_CODES
 from ...guild import Guild
 from ...http import DiscordApiClient
 from ...invite import Invite, InviteAllowedUserIdsStatus
-from ...invite.invite.fields import validate_code, validate_allowed_user_ids
+from ...invite.invite.fields import validate_code, validate_allowed_user_id, validate_allowed_user_ids
 from ...invite.invite.utils import INVITE_GUILD_FIELD_CONVERTERS
 from ...payload_building import build_create_payload
 from ...permission.permission import PERMISSION_MASK_CREATE_INSTANT_INVITE
@@ -587,7 +587,8 @@ class ClientCompoundInviteEndpoints(Compound):
         Raises
         ------
         TypeError
-            If `invite` was given as invalid type.
+            - If `invite` is given as invalid type.
+            - If `allowed_user_ids` is given as an invalid type.
         ConnectionError
             No internet connection.
         DiscordException
@@ -609,3 +610,123 @@ class ClientCompoundInviteEndpoints(Compound):
         # Example error:
         # target_users_file.GUILD_INVITE_TARGET_USERS_NO_VALID_IDS('No valid user IDs found in CSV file')
         # target_users_file.GUILD_INVITE_TARGET_USERS_INVALID_FORMAT('Line 2: invalid user ID format')
+    
+    
+    async def invite_allowed_user_id_add(self, invite, allowed_user_id):
+        """
+        Adds the user's identifier to be allowed to be accept by the invite.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        invite : ``str | Invite``
+            The invite to request for.
+        
+        allowed_user_id : ``int | ClientUserBase``
+            The new users who are allowed to accept this invite.
+        
+        Raises
+        ------
+        TypeError
+            - If `invite` is given as invalid type.
+            - If `allowed_user_id` is given as an invalid type.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        invite_code = get_invite_code(invite)
+        allowed_user_id = validate_allowed_user_id(allowed_user_id)
+        
+        await self.api.invite_allowed_user_id_add(invite_code, allowed_user_id)
+    
+    
+    async def invite_allowed_user_id_delete(self, invite, allowed_user_id):
+        """
+        Deletes the user's identifier to be disallowed to be accept by the invite.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        invite : ``str | Invite``
+            The invite to request for.
+        
+        allowed_user_id : ``int | ClientUserBase``
+            The new users who are disallowed to accept this invite.
+        
+        Raises
+        ------
+        TypeError
+            - If `invite` is given as invalid type.
+            - If `allowed_user_id` is given as an invalid type.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        invite_code = get_invite_code(invite)
+        allowed_user_id = validate_allowed_user_id(allowed_user_id)
+        
+        await self.api.invite_allowed_user_id_delete(invite_code, allowed_user_id)
+
+
+    async def invite_allowed_user_id_add_many(self, invite, allowed_user_ids):
+        """
+        Adds users' identifiers to be allowed to accept by the invite.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        invite : ``str | Invite``
+            The invite to request for.
+        
+        allowed_user_ids : ``None | iterable<int> | iterable<ClientUserBase>``
+            The new users who are allowed to accept this invite.
+        
+        Raises
+        ------
+        TypeError
+            - If `invite` is given as invalid type.
+            - If `allowed_user_ids` is given as an invalid type.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        invite_code = get_invite_code(invite)
+        allowed_user_ids = validate_allowed_user_ids(allowed_user_ids)
+        
+        await self.api.invite_allowed_user_id_add_many(invite_code, {'user_ids': sorted(allowed_user_ids)})
+    
+    
+    async def invite_allowed_user_id_delete_many(self, invite, allowed_user_ids):
+        """
+        Deletes users' identifiers to be disallowed to accept by the invite.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        invite : ``str | Invite``
+            The invite to request for.
+        
+        allowed_user_ids : ``None | iterable<int> | iterable<ClientUserBase>``
+            The new users who are allowed to accept this invite.
+        
+        Raises
+        ------
+        TypeError
+            - If `invite` is given as invalid type.
+            - If `allowed_user_ids` is given as an invalid type.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        invite_code = get_invite_code(invite)
+        allowed_user_ids = validate_allowed_user_ids(allowed_user_ids)
+        
+        await self.api.invite_allowed_user_id_delete_many(invite_code, {'user_ids': sorted(allowed_user_ids)})

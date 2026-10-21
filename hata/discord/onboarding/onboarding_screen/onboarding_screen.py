@@ -19,7 +19,6 @@ PRECREATE_FIELDS = {
     'default_channels': ('default_channel_ids', validate_default_channel_ids),
     'enabled': ('enabled', validate_enabled),
     'guild_id': ('guild_id', validate_guild_id),
-    'guild': ('guild_id', validate_guild_id),
     'mode': ('mode', validate_mode),
     'prompts': ('prompts', validate_prompts),
 }
@@ -292,10 +291,10 @@ class OnboardingScreen(RichAttributeErrorBaseType):
             Alternative of `default_channel_ids`.
         enabled : `bool`, Optional (Keyword only)
             Whether onboarding is enabled.
-        guild : `int`, ``Guild``, Optional (Keyword only)
-            Alternative of `guild_id`.
-        guild_id : `int`, ``Guild``, Optional (Keyword only)
+        
+        guild_id : `int`, Optional (Keyword only)
             The guild's identifier the onboarding screen is part of.
+        
         mode : ``OnboardingMode``, `int`, Optional (Keyword only)
             Onboarding mode.
         prompts : `None`, `iterable` of ``OnboardingPrompt``, Optional (Keyword only)

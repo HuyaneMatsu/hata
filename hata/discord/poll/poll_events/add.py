@@ -37,7 +37,7 @@ class PollVoteAddEvent(EventBase):
         answer_id : `int`
             The answer_id used.
         user_id : `int`
-            The user_id who reacted.
+            The user's identifier who reacted.
         
         Raises
         ------
@@ -217,7 +217,7 @@ class PollVoteAddEvent(EventBase):
         message : ``Message``, Optional (Keyword only)
             The respective message.
         user_id : `int`, Optional (Keyword only)
-            The user_id who reacted.
+            The user's identifier who reacted.
         
         Returns
         -------

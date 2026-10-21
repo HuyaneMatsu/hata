@@ -1,19 +1,20 @@
 __all__ = ()
 
 from ...channel import ChannelType
-from ...field_parsers import (
+from ...fields.field_parsers import (
     bool_parser_factory, field_parser_factory, int_parser_factory, nullable_functional_parser_factory,
     nullable_object_array_parser_factory, preinstanced_array_parser_factory
 )
-from ...field_putters import (
+from ...fields.field_putters import (
     bool_optional_putter_factory, int_optional_putter_factory, nullable_entity_array_optional_putter_factory,
     nullable_field_optional_putter_factory, nullable_functional_optional_putter_factory,
     preinstanced_array_putter_factory
 )
-from ...field_validators import (
+from ...fields.field_validators import (
     bool_validator_factory, nullable_entity_validator_factory, nullable_object_array_validator_factory,
     preinstanced_array_validator_factory
 )
+from ...fields.fields_common import parse_required, put_required__optional as put_required, validate_required
 from ...file_type_filter import FileTypeFilter, file_type_filter_convert_to_data, file_type_filter_create_from_data
 
 from ..application_command_option_choice import ApplicationCommandOptionChoice
@@ -401,9 +402,3 @@ def validate_options_postprocessed(options):
         options = options[:OPTIONS_MAX]
     
     return options
-
-# required
-
-parse_required = bool_parser_factory('required', False)
-put_required = bool_optional_putter_factory('required', False)
-validate_required = bool_validator_factory('required', False)

@@ -1,14 +1,15 @@
 __all__ = ()
 
-from ...field_parsers import bool_parser_factory, entity_id_parser_factory, nullable_date_time_parser_factory
-from ...field_putters import (
+from ...fields.field_parsers import bool_parser_factory, entity_id_parser_factory, nullable_date_time_parser_factory
+from ...fields.field_putters import (
     bool_optional_putter_factory, entity_id_putter_factory, nullable_date_time_optional_putter_factory
 )
-from ...field_validators import bool_validator_factory, entity_id_validator_factory, nullable_date_time_validator_factory
-from ...user import ClientUserBase
-
-from ..guild import Guild
-
+from ...fields.field_validators import (
+    bool_validator_factory, entity_id_validator_factory, nullable_date_time_validator_factory
+)
+from ...fields.fields_common import (
+    parse_guild_id, parse_user_id, put_guild_id, put_user_id, validate_guild_id, validate_user_id
+)
 
 # ended
 
@@ -24,13 +25,6 @@ put_ends_at = nullable_date_time_optional_putter_factory('ends_at')
 validate_ends_at = nullable_date_time_validator_factory('ends_at')
 
 
-# guild_id
-
-parse_guild_id = entity_id_parser_factory('guild_id')
-put_guild_id = entity_id_putter_factory('guild_id')
-validate_guild_id = entity_id_validator_factory('guild_id', Guild)
-
-
 # id
 
 parse_id = entity_id_parser_factory('id')
@@ -43,10 +37,3 @@ validate_id = entity_id_validator_factory('guild_boost_id')
 parse_paused_until = nullable_date_time_parser_factory('pause_ends_at')
 put_paused_until = nullable_date_time_optional_putter_factory('pause_ends_at')
 validate_paused_until = nullable_date_time_validator_factory('paused_until')
-
-
-# user_id
-
-parse_user_id = entity_id_parser_factory('user_id')
-put_user_id = entity_id_putter_factory('user_id')
-validate_user_id = entity_id_validator_factory('user_id', ClientUserBase)

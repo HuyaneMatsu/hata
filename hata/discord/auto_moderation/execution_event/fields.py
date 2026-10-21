@@ -1,20 +1,23 @@
 __all__ = ()
 
 from ...channel import Channel
-from ...field_parsers import (
+from ...fields.field_parsers import (
     default_entity_parser_factory, entity_id_parser_factory, nullable_string_parser_factory,
     preinstanced_parser_factory
 )
-from ...field_putters import (
+from ...fields.field_putters import (
     entity_id_optional_putter_factory, entity_putter_factory, nullable_string_putter_factory,
     preinstanced_putter_factory
 )
-from ...field_validators import (
+from ...fields.field_validators import (
     default_entity_validator_factory, entity_id_validator_factory, nullable_string_validator_factory,
     preinstanced_validator_factory
 )
+from ...fields.fields_common import (
+    parse_guild_id, parse_user_id, put_guild_id__optional as put_guild_id, put_user_id__optional as put_user_id,
+    validate_guild_id, validate_user_id
+)
 from ...message import Message
-from ...user import ClientUserBase
 
 from ..action import AutoModerationAction
 from ..rule import AutoModerationRule, AutoModerationRuleTriggerType
@@ -47,11 +50,6 @@ parse_content = nullable_string_parser_factory('content')
 put_content = nullable_string_putter_factory('content')
 validate_content = nullable_string_validator_factory('content', 0, 10000)
 
-# guild_id
-
-parse_guild_id = entity_id_parser_factory('guild_id')
-put_guild_id = entity_id_optional_putter_factory('guild_id')
-validate_guild_id = entity_id_validator_factory('guild_id', NotImplemented, include = 'Guild')
 
 # matched_content
 
@@ -78,9 +76,3 @@ parse_rule_trigger_type = preinstanced_parser_factory(
 )
 put_rule_trigger_type = preinstanced_putter_factory('rule_trigger_type')
 validate_rule_trigger_type = preinstanced_validator_factory('rule_trigger_type', AutoModerationRuleTriggerType)
-
-# user_id
-
-parse_user_id = entity_id_parser_factory('user_id')
-put_user_id = entity_id_optional_putter_factory('user_id')
-validate_user_id = entity_id_validator_factory('user_id', ClientUserBase)

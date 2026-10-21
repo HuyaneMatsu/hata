@@ -1,18 +1,12 @@
 __all__ = ()
 
-from ...field_parsers import entity_id_parser_factory
-from ...field_putters import entity_id_optional_putter_factory, entity_id_putter_factory
-from ...field_validators import entity_id_validator_factory, entity_validator_factory
+from ...fields.field_parsers import entity_id_parser_factory
+from ...fields.field_putters import entity_id_putter_factory
+from ...fields.field_validators import entity_id_validator_factory, entity_validator_factory
+from ...fields.fields_common import parse_guild_id, put_guild_id__optional as put_guild_id, validate_guild_id
 
 from ..scheduled_event import ScheduledEvent
 from ..scheduled_event_occasion_overwrite import ScheduledEventOccasionOverwrite
-
-
-# guild_id
-
-parse_guild_id = entity_id_parser_factory('guild_id')
-put_guild_id = entity_id_optional_putter_factory('guild_id')
-validate_guild_id = entity_id_validator_factory('guild_id', NotImplemented, include = 'Guild')
 
 
 # scheduled_event_id

@@ -49,7 +49,7 @@ class GuildUserChunkEvent(EventBase):
             The total number of chunk responses what Discord sends for the respective gateway.
         chunk_index : `int`, Optional (Keyword only)
             The chunk_index of the received chunk response (0 <= chunk_index < chunk_count).
-        guild_id : `int`, ``Guild``, Optional (Keyword only)
+        guild_id : `int`, Optional (Keyword only)
             The guild's identifier, what received the user chunk.
         nonce : `None`, `str`, Optional (Keyword only)
             A nonce to identify guild user chunk response.
@@ -266,7 +266,7 @@ class GuildUserChunkEvent(EventBase):
             The total number of chunk responses what Discord sends for the respective gateway.
         chunk_index : `int`, Optional (Keyword only)
             The chunk_index of the received chunk response (0 <= chunk_index < chunk_count).
-        guild_id : `int`, ``Guild``, Optional (Keyword only)
+        guild_id : `int`, Optional (Keyword only)
             The guild's identifier, what received the user chunk.
         nonce : `None`, `str`, Optional (Keyword only)
             A nonce to identify guild user chunk response.

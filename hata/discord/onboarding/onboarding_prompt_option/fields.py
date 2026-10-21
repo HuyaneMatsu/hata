@@ -2,17 +2,20 @@ __all__ = ()
 
 from ...channel import Channel
 from ...emoji import Emoji, create_partial_emoji_data, create_partial_emoji_from_data
-from ...field_parsers import (
+from ...fields.field_parsers import (
     entity_id_array_parser_factory, entity_id_parser_factory, force_string_parser_factory,
-    nullable_functional_parser_factory, nullable_string_parser_factory
+    nullable_functional_parser_factory
 )
-from ...field_putters import (
+from ...fields.field_putters import (
     entity_id_putter_factory, force_string_putter_factory, optional_entity_id_array_optional_putter_factory,
-    nullable_functional_optional_putter_factory, nullable_string_putter_factory
+    nullable_functional_optional_putter_factory
 )
-from ...field_validators import (
+from ...fields.field_validators import (
     entity_id_array_validator_factory, entity_id_validator_factory, force_string_validator_factory,
-    nullable_entity_validator_factory, nullable_string_validator_factory
+    nullable_entity_validator_factory
+)
+from ...fields.fields_common import (
+    parse_description, put_description, validate_description__range_0_1024 as validate_description
 )
 from ...role import Role
 
@@ -21,12 +24,6 @@ from ...role import Role
 parse_channel_ids = entity_id_array_parser_factory('channel_ids')
 put_channel_ids = optional_entity_id_array_optional_putter_factory('channel_ids')
 validate_channel_ids = entity_id_array_validator_factory('channel_ids', Channel)
-
-# description
-
-parse_description = nullable_string_parser_factory('description')
-put_description = nullable_string_putter_factory('description')
-validate_description = nullable_string_validator_factory('description', 0, 1024)
 
 # emoji
 

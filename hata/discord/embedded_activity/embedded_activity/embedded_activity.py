@@ -421,7 +421,7 @@ class EmbeddedActivity(DiscordEntity):
         application_id : `int | str | Application`, Optional (Keyword only)
             The owner application's identifier.
         
-        guild_id : `int | str | Guild`, Optional (Keyword only)
+        guild_id : `int`, Optional (Keyword only)
             The respective guild's identifier.
         
         launch_id : `int | str`, Optional (Keyword only)

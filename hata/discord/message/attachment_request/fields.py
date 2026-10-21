@@ -1,7 +1,7 @@
 __all__ = ()
 
-from ...field_putters import bool_optional_putter_factory, float_putter_factory, nullable_string_optional_putter_factory
-from ...field_validators import bool_validator_factory, entity_id_validator_factory
+from ...fields.field_putters import bool_optional_putter_factory, float_putter_factory, nullable_string_optional_putter_factory
+from ...fields.field_validators import bool_validator_factory, entity_id_validator_factory
 
 from ..attachment.fields import (
     put_title, put_waveform, validate_description, validate_duration, validate_name, validate_title, validate_waveform

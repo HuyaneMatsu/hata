@@ -1,6 +1,6 @@
 __all__ = ()
 
-from ..field_validators import preinstanced_array_validator_factory, nullable_string_array_validator_factory
+from ..fields.field_validators import preinstanced_array_validator_factory, nullable_string_array_validator_factory
 
 from .preinstanced import FileTypeFilterGroup
 

@@ -32,7 +32,6 @@ PRECREATE_FIELDS = {
     'application_id': ('application_id', validate_application_id),
     'description': ('description', validate_description),
     'description_localizations': ('description_localizations', validate_description_localizations),
-    'guild': ('guild_id', validate_guild_id),
     'guild_id': ('guild_id', validate_guild_id),
     'handler_type': ('handler_type', validate_handler_type),
     'integration_context_types': ('integration_context_types', validate_integration_context_types),
@@ -303,10 +302,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
                 , Optional (Keyword only)
             Localized descriptions of the application command.
         
-        guild : `int`, ``Guild``, Optional (Keyword only)
-            Alternative for `guild_id`.
-        
-        guild_id : `int`, ``Guild``, Optional (Keyword only)
+        guild_id : `int`, Optional (Keyword only)
             The guild's identifier to which the command is bound to.
         
         handler_type : `ApplicationCommandHandlerType | None | int`, Optional (Keyword only)

@@ -1,16 +1,16 @@
 __all__ = ()
 
 from ...color import Color
-from ...field_parsers import (
+from ...fields.field_parsers import (
     bool_parser_factory, entity_id_parser_factory, flag_parser_factory, force_string_parser_factory, int_parser_factory,
     nullable_functional_parser_factory
 )
-from ...field_putters import (
+from ...fields.field_putters import (
     bool_optional_putter_factory, entity_id_putter_factory, entity_putter_factory, flag_optional_putter_factory,
     force_string_putter_factory, int_putter_factory, nullable_functional_optional_putter_factory,
     string_flag_putter_factory
 )
-from ...field_validators import (
+from ...fields.field_validators import (
     bool_validator_factory, default_entity_validator_factory, entity_id_validator_factory, flag_validator_factory,
     force_string_validator_factory, int_conditional_validator_factory, nullable_entity_conditional_validator_factory,
     preinstanced_validator_factory
@@ -256,6 +256,7 @@ parse_permissions = flag_parser_factory(PERMISSION_KEY, Permission)
 put_permissions = string_flag_putter_factory(PERMISSION_KEY)
 validate_permissions = flag_validator_factory('permission', Permission)
 
+
 # position
 
 parse_position = int_parser_factory('position', 0)
@@ -263,7 +264,7 @@ put_position = int_putter_factory('position')
 validate_position = int_conditional_validator_factory(
     'position',
     0,
-    (lambda position : position >= 0),
+    lambda position : position >= 0,
     '>= 0',
 )
 

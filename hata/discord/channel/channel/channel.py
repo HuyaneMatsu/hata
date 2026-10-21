@@ -2283,7 +2283,7 @@ class Channel(DiscordEntity, immortal = True):
         channel_type : ``None | ChannelType | int``, Optional (Keyword only)
             The channel's type.
 
-        guild_id : `int`, ``Guild``, Optional (Keyword only)
+        guild_id : `int`, Optional (Keyword only)
             The channel's parent guild's identifier.
         
         **keyword_parameters : Keyword parameters

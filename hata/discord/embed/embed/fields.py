@@ -1,18 +1,21 @@
 __all__ = ()
 
 from ...color import Color
-from ...field_parsers import (
+from ...fields.field_parsers import (
     flag_parser_factory, nullable_date_time_parser_factory, nullable_entity_parser_factory,
     nullable_flag_parser_factory, nullable_string_parser_factory, preinstanced_parser_factory
 )
-from ...field_putters import (
+from ...fields.field_putters import (
     flag_optional_putter_factory, nullable_date_time_optional_putter_factory, nullable_entity_optional_putter_factory,
     nullable_flag_optional_putter_factory, nullable_string_optional_putter_factory, preinstanced_putter_factory,
     url_optional_putter_factory
 )
-from ...field_validators import (
+from ...fields.field_validators import (
     flag_validator_factory, nullable_date_time_validator_factory, nullable_entity_validator_factory,
     nullable_flag_validator_factory, preinstanced_validator_factory, url_optional_validator_factory
+)
+from ...fields.fields_common import (
+    parse_description, parse_title, put_description__optional as put_description, put_title__optional as put_title
 )
 
 from ..embed_author import EmbedAuthor
@@ -39,11 +42,8 @@ parse_color = nullable_flag_parser_factory('color', Color)
 put_color = nullable_flag_optional_putter_factory('color')
 validate_color = nullable_flag_validator_factory('color', Color)
 
+
 # description
-
-parse_description = nullable_string_parser_factory('description')
-put_description = nullable_string_optional_putter_factory('description')
-
 
 def validate_description(description):
     """
@@ -215,11 +215,8 @@ parse_timestamp = nullable_date_time_parser_factory('timestamp')
 put_timestamp = nullable_date_time_optional_putter_factory('timestamp')
 validate_timestamp = nullable_date_time_validator_factory('timestamp')
 
+
 # title
-
-parse_title = nullable_string_parser_factory('title')
-put_title = nullable_string_optional_putter_factory('title')
-
 
 def validate_title(title):
     """

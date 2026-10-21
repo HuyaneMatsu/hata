@@ -2,7 +2,7 @@ __all__ = ()
 
 from scarletio import include
 
-from ...field_validators import default_entity_validator_factory, entity_validator_factory
+from ...fields.field_validators import default_entity_validator_factory, entity_validator_factory
 from ...user import ClientUserBase, User, ZEROUSER, create_partial_user_from_id
 
 from ..reaction.fields import parse_emoji, parse_type, put_emoji, put_type, validate_emoji, validate_type

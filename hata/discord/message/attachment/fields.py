@@ -3,22 +3,25 @@ __all__ = ()
 from base64 import b64decode as base_64_decode, b64encode as base_64_encode
 
 from ...application import Application
-from ...field_parsers import (
+from ...fields.field_parsers import (
     bool_parser_factory, entity_id_parser_factory, flag_parser_factory, float_parser_factory,
     force_string_parser_factory, int_parser_factory, nullable_date_time_parser_factory,
     nullable_entity_array_parser_factory, nullable_functional_parser_factory, nullable_string_parser_factory
 )
-from ...field_putters import (
+from ...fields.field_putters import (
     bool_optional_putter_factory, entity_id_putter_factory, flag_optional_putter_factory, float_optional_putter_factory,
     force_string_putter_factory, int_putter_factory, nullable_date_time_optional_putter_factory,
-    nullable_entity_array_optional_putter_factory, nullable_string_optional_putter_factory,
-    nullable_string_putter_factory, url_optional_putter_factory
+    nullable_entity_array_optional_putter_factory, nullable_string_putter_factory, url_optional_putter_factory
 )
-from ...field_validators import (
+from ...fields.field_validators import (
     bool_validator_factory, entity_id_validator_factory, flag_validator_factory, float_conditional_validator_factory,
     force_string_validator_factory, int_conditional_validator_factory, nullable_bytes_validator_factory,
     nullable_date_time_validator_factory, nullable_entity_array_validator_factory, nullable_entity_validator_factory,
     nullable_string_validator_factory, url_optional_validator_factory, url_required_validator_factory
+)
+from ...fields.fields_common import (
+    parse_description, parse_title, put_description, put_title__optional as put_title,
+    validate_title__range_0_1024 as validate_title
 )
 from ...user import User
 
@@ -88,8 +91,6 @@ validate_content_type = nullable_string_validator_factory('content_type', 0, 102
 
 # description
 
-parse_description = nullable_string_parser_factory('description')
-put_description = nullable_string_putter_factory('description')
 validate_description = nullable_string_validator_factory('description', 0, DESCRIPTION_LENGTH_MAX)
 
 # duration
@@ -155,11 +156,6 @@ parse_temporary = bool_parser_factory('ephemeral', False)
 put_temporary = bool_optional_putter_factory('ephemeral', False)
 validate_temporary = bool_validator_factory('temporary', False)
 
-# title
-
-parse_title = nullable_string_parser_factory('title')
-put_title = nullable_string_optional_putter_factory('title')
-validate_title = nullable_string_validator_factory('title', 0, 1024)
 
 # url
 

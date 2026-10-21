@@ -1,19 +1,19 @@
 __all__ = ()
 
 from ...channel import Channel
-from ...field_parsers import (
-    bool_parser_factory, entity_id_array_parser_factory, entity_id_parser_factory, nullable_object_array_parser_factory,
+from ...fields.field_parsers import (
+    bool_parser_factory, entity_id_array_parser_factory, nullable_object_array_parser_factory,
     preinstanced_parser_factory
 )
-from ...field_putters import (
-    bool_optional_putter_factory, entity_id_putter_factory, nullable_entity_array_putter_factory,
+from ...fields.field_putters import (
+    bool_optional_putter_factory, nullable_entity_array_putter_factory,
     optional_entity_id_array_optional_putter_factory, preinstanced_putter_factory
 )
-from ...field_validators import (
-    bool_validator_factory, entity_id_array_validator_factory, entity_id_validator_factory,
+from ...fields.field_validators import (
+    bool_validator_factory, entity_id_array_validator_factory,
     nullable_object_array_validator_factory, preinstanced_validator_factory
 )
-from ...guild import Guild
+from ...fields.fields_common import parse_guild_id, put_guild_id, validate_guild_id
 
 from ..onboarding_prompt import OnboardingPrompt
 
@@ -30,12 +30,6 @@ validate_default_channel_ids = entity_id_array_validator_factory('default_channe
 parse_enabled = bool_parser_factory('enabled', True)
 put_enabled = bool_optional_putter_factory('enabled', True)
 validate_enabled = bool_validator_factory('enabled', True)
-
-# guild_id
-
-parse_guild_id = entity_id_parser_factory('guild_id')
-put_guild_id = entity_id_putter_factory('guild_id')
-validate_guild_id = entity_id_validator_factory('guild_id', Guild)
 
 # mode
 

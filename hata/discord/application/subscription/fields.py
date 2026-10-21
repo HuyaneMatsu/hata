@@ -1,19 +1,19 @@
 __all__ = ()
 
 
-from ...field_parsers import (
+from ...fields.field_parsers import (
     entity_id_array_parser_factory, entity_id_parser_factory, nullable_date_time_parser_factory,
     nullable_string_parser_factory, preinstanced_parser_factory
 )
-from ...field_putters import (
+from ...fields.field_putters import (
     entity_id_putter_factory, nullable_date_time_optional_putter_factory,
     optional_entity_id_array_optional_putter_factory, preinstanced_putter_factory, url_optional_putter_factory
 )
-from ...field_validators import (
+from ...fields.field_validators import (
     entity_id_array_validator_factory, entity_id_validator_factory, nullable_date_time_validator_factory,
     nullable_string_validator_factory, preinstanced_validator_factory
 )
-from ...user import ClientUserBase
+from ...fields.fields_common import parse_user_id, put_user_id, validate_user_id
 
 from ..sku import SKU
 
@@ -69,7 +69,7 @@ put_renewal_sku_ids = optional_entity_id_array_optional_putter_factory('renewal_
 validate_renewal_sku_ids = entity_id_array_validator_factory('renewal_sku_ids', SKU)
 
 
-# sku_idpa
+# sku_id
 
 validate_sku_id = entity_id_validator_factory('sku_id', SKU)
 
@@ -86,10 +86,3 @@ validate_sku_ids = entity_id_array_validator_factory('sku_ids', SKU)
 parse_status = preinstanced_parser_factory('status', SubscriptionStatus, SubscriptionStatus.active)
 put_status = preinstanced_putter_factory('status')
 validate_status = preinstanced_validator_factory('status', SubscriptionStatus)
-
-
-# user_id
-
-parse_user_id = entity_id_parser_factory('user_id')
-put_user_id = entity_id_putter_factory('user_id')
-validate_user_id = entity_id_validator_factory('user_id', ClientUserBase)

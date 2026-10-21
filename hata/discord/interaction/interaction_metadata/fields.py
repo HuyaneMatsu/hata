@@ -7,7 +7,7 @@ from ...application_command.application_command.constants import (
 from ...bases import DiscordEntity
 from ...component import InteractionComponent
 from ...component.shared_fields import validate_custom_id
-from ...field_validators import (
+from ...fields.field_validators import (
     entity_id_validator_factory, force_string_validator_factory, nullable_entity_validator_factory,
     nullable_object_array_validator_factory, preinstanced_validator_factory
 )

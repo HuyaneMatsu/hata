@@ -98,7 +98,7 @@ class AutoModerationActionExecutionEvent(EventBase):
         content : `None`, `str`, Optional (Keyword only)
             The user generated text content.
         
-        guild_id : ``None | Guild``, `int`, Optional (Keyword only)
+        guild_id : `int`, Optional (Keyword only)
             The guild's identifier where the action was executed.
         
         matched_content : `None`, `str`, Optional (Keyword only)
@@ -113,8 +113,8 @@ class AutoModerationActionExecutionEvent(EventBase):
         rule_trigger_type : `None`, ``AutoModerationRuleTriggerType``, `int`, Optional (Keyword only)
             The triggered rule's type.
         
-        user_id : ``None | int | ClientUserBase`, Optional (Keyword only)
-            The user who generated the content triggering the rule.
+        user_id : `int`, Optional (Keyword only)
+            The user's identifier who generated the content triggering the rule.
         
         Returns
         -------
@@ -494,7 +494,7 @@ class AutoModerationActionExecutionEvent(EventBase):
         content : `None`, `str`, Optional (Keyword only)
             The user generated text content.
         
-        guild_id : ``None | Guild``, `int`, Optional (Keyword only)
+        guild_id :  `int`, Optional (Keyword only)
             The guild's identifier where the action was executed.
         
         matched_content : `None`, `str`, Optional (Keyword only)
@@ -509,8 +509,8 @@ class AutoModerationActionExecutionEvent(EventBase):
         rule_trigger_type : `None`, ``AutoModerationRuleTriggerType``, `int`, Optional (Keyword only)
             The triggered rule's type.
         
-        user_id : ``None | int | ClientUserBase`, Optional (Keyword only)
-            The user who generated the content triggering the rule.
+        user_id : `int`, Optional (Keyword only)
+            The user's identifier who generated the content triggering the rule.
         
         Returns
         -------

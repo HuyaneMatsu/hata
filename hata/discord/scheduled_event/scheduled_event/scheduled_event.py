@@ -35,7 +35,6 @@ PRECREATE_FIELDS = {
     'description': ('description', validate_description),
     'end': ('end', validate_end),
     'entity_id': ('entity_id', validate_entity_id),
-    'guild': ('guild_id', validate_guild_id),
     'guild_id': ('guild_id', validate_guild_id),
     'image': ('image', SCHEDULED_EVENT_IMAGE.validate_icon),
     'name': ('name', validate_name),
@@ -919,9 +918,6 @@ class ScheduledEvent(DiscordEntity):
         
         entity_id : `int`, Optional (Keyword only)
             The event's entity's identifier.
-        
-        guild : ``None | int | Guild``, Optional (Keyword only)
-            Alternative for `guild_id`.
         
         guild_id : ``None | int | Guild``, Optional (Keyword only)
             The scheduled event's guild or its identifier.

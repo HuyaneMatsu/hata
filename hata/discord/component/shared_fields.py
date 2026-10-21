@@ -3,18 +3,19 @@ __all__ = ()
 from scarletio import include_with_callback
 
 from ..emoji import Emoji, create_partial_emoji_data, create_partial_emoji_from_data
-from ..field_parsers import (
+from ..fields.field_parsers import (
     bool_parser_factory, force_string_parser_factory, nullable_functional_parser_factory,
     nullable_object_array_parser_factory, nullable_string_parser_factory
 )
-from ..field_putters import (
+from ..fields.field_putters import (
     bool_optional_putter_factory, force_string_putter_factory, nullable_entity_array_putter_factory,
-    nullable_functional_optional_putter_factory, nullable_string_putter_factory, url_optional_putter_factory
+    nullable_functional_optional_putter_factory, url_optional_putter_factory
 )
-from ..field_validators import (
+from ..fields.field_validators import (
     bool_validator_factory, force_string_validator_factory, nullable_entity_validator_factory,
     nullable_string_validator_factory
 )
+from ..fields.fields_common import parse_description, put_description
 
 from .shared_constants import CUSTOM_ID_LENGTH_MAX, DESCRIPTION_LENGTH_MAX, LABEL_LENGTH_MAX, VALUE_LENGTH_MAX
 
@@ -243,8 +244,6 @@ validate_default = bool_validator_factory('default', False)
 
 # description
 
-parse_description = nullable_string_parser_factory('description')
-put_description = nullable_string_putter_factory('description')
 validate_description = nullable_string_validator_factory('description', 0, DESCRIPTION_LENGTH_MAX)
 
 

@@ -21,7 +21,6 @@ PRECREATE_FIELDS = {
     'channel': ('channel_id', validate_channel_id),
     'channel_id': ('channel_id', validate_channel_id),
     'discoverable': ('discoverable', validate_discoverable),
-    'guild': ('guild_id', validate_guild_id),
     'guild_id': ('guild_id', validate_guild_id),
     'invite_code': ('invite_code', validate_invite_code),
     'privacy_level': ('privacy_level', validate_privacy_level),
@@ -427,10 +426,8 @@ class Stage(DiscordEntity, immortal = True):
             The stage channel or its identifier where the stage is active.
         discoverable : `bool`, Optional (Keyword only)
             Whether the stage is discoverable. Only applies for public stages.
-        guild : `int`, ``Guild``, Optional (Keyword only)
-            Alternative for `guild_id`.
-        guild_id : `int`, ``Guild``, Optional (Keyword only)
-            The stage's guild or its identifier.
+        guild_id : `int`, Optional (Keyword only)
+            The stage's guild's its identifier.
         invite_code : `None`, `str`, Optional (Keyword only)
             Invite code to the stage's channel.
         privacy_level : ``PrivacyLevel``, `int`, Optional (Keyword only)

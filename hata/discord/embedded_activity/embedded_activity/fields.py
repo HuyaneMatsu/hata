@@ -1,10 +1,9 @@
 __all__ = ()
 
-from ...field_parsers import entity_id_parser_factory, nullable_entity_parser_factory
-from ...field_putters import (
-    entity_id_optional_putter_factory, entity_id_putter_factory, nullable_entity_putter_factory
-)
-from ...field_validators import entity_id_validator_factory, nullable_entity_validator_factory
+from ...fields.field_parsers import entity_id_parser_factory, nullable_entity_parser_factory
+from ...fields.field_putters import entity_id_putter_factory, nullable_entity_putter_factory
+from ...fields.field_validators import entity_id_validator_factory, nullable_entity_validator_factory
+from ...fields.fields_common import parse_guild_id, put_guild_id__optional as put_guild_id, validate_guild_id
 
 from ..embedded_activity_location import EmbeddedActivityLocation
 from ..embedded_activity_user_state import EmbeddedActivityUserState
@@ -15,13 +14,6 @@ from ..embedded_activity_user_state import EmbeddedActivityUserState
 parse_application_id = entity_id_parser_factory('application_id')
 put_application_id = entity_id_putter_factory('application_id')
 validate_application_id = entity_id_validator_factory('application_id', NotImplemented, include = 'Application')
-
-
-# guild_id
-
-parse_guild_id = entity_id_parser_factory('guild_id')
-put_guild_id = entity_id_optional_putter_factory('guild_id')
-validate_guild_id = entity_id_validator_factory('guild_id', NotImplemented, include = 'Guild')
 
 
 # id

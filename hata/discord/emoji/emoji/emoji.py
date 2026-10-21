@@ -25,7 +25,6 @@ ROLE_MANAGER_TYPE_SUBSCRIPTION = RoleManagerType.subscription
 PRECREATE_FIELDS = {
     'animated': ('animated', validate_animated),
     'available': ('available', validate_available),
-    'guild': ('guild_id', validate_guild_id),
     'guild_id': ('guild_id', validate_guild_id),
     'managed': ('managed', validate_managed),
     'name': ('name', validate_name),
@@ -290,10 +289,10 @@ class Emoji(DiscordEntity, immortal = True):
              Whether the emoji is animated.
         available : `bool`, Optional (Keyword only)
              Whether the emoji is available.
-        guild : ``int | Guild``, Optional (Keyword only)
-            Alternative for `guild_id`.
+          
         guild_id : ``int | Guild``, Optional (Keyword only)
              The emoji's guild's identifier.
+        
         managed : `bool`, Optional (Keyword only)
             Whether the emoji is managed by an integration.
         name : `str`, Optional (Keyword only)

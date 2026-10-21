@@ -30,8 +30,9 @@ from ..emoji.reaction_events.fields import (
     parse_user as parse_reaction_event_user
 )
 from ..guild import (
-    Guild, GuildBoost, GuildEnhancementEntitlementsCreateEvent, GuildEnhancementEntitlementsDeleteEvent, GuildJoinRequest,
-    GuildJoinRequestDeleteEvent, GuildUserChunkEvent, create_partial_guild_from_id
+    Guild, GuildBoost, GuildEnhancementEntitlementsCreateEvent, GuildEnhancementEntitlementsDeleteEvent,
+    GuildUserChunkEvent, create_partial_guild_from_id, guild_join_request_create_and_update_event_create_from_data,
+    guild_join_request_delete_event_create_from_data
 )
 from ..guild.guild.constants import (
     EMOJI_EVENT_CREATE, EMOJI_EVENT_DELETE, EMOJI_EVENT_UPDATE, SOUNDBOARD_SOUND_EVENT_CREATE,
@@ -39,6 +40,7 @@ from ..guild.guild.constants import (
     STICKER_EVENT_UPDATE, VOICE_STATE_EVENT_JOIN, VOICE_STATE_EVENT_LEAVE, VOICE_STATE_EVENT_MOVE,
     VOICE_STATE_EVENT_UPDATE
 )
+from ..guild.guild.fields import parse_badge as parse_guild_badge
 from ..guild.guild_boost.fields import parse_guild_id as parse_guild_boost_guild_id, parse_id as parse_guild_boost_id
 from ..integration import Integration
 from ..interaction import InteractionEvent
@@ -2380,7 +2382,7 @@ del (
 
 
 def GUILD_JOIN_REQUEST_CREATE__CAL(client, data):
-    event = GuildJoinRequest.from_data(data)
+    event = guild_join_request_create_and_update_event_create_from_data(data)
     
     Task(KOKORO, client.events.guild_join_request_create(client, event))
 
@@ -2403,7 +2405,7 @@ del (
 # This is a low priority event. Is called after `GUILD_MEMBER_REMOVE`, so we should have everything cached.
 
 def GUILD_JOIN_REQUEST_DELETE__CAL(client, data):
-    event = GuildJoinRequestDeleteEvent.from_data(data)
+    event = guild_join_request_delete_event_create_from_data(data)
     
     Task(KOKORO, client.events.guild_join_request_delete(client, event))
 
@@ -2425,7 +2427,7 @@ del (
 
 
 def GUILD_JOIN_REQUEST_UPDATE__CAL(client, data):
-    event = GuildJoinRequest.from_data(data)
+    event = guild_join_request_create_and_update_event_create_from_data(data)
     
     Task(KOKORO, client.events.guild_join_request_update(client, event))
 
@@ -2547,10 +2549,17 @@ def GUILD_UPDATE__CAL_SC(client, data):
         return
     
     old_attributes = guild._difference_update_attributes(data)
-    if not old_attributes:
-        return
+    if old_attributes:
+        event_handler = client.events.guild_update
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(KOKORO, event_handler(client, guild, old_attributes))
     
-    Task(KOKORO, client.events.guild_update(client, guild, old_attributes))
+    hit, guild_badge = parse_guild_badge(data)
+    if hit:
+        event_handler = client.events.guild_update_badge
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(KOKORO, event_handler(client, guild, guild_badge))
+            
 
 def GUILD_UPDATE__CAL_MC(client, data):
     guild_id = int(data['guild_id'])
@@ -2566,14 +2575,22 @@ def GUILD_UPDATE__CAL_MC(client, data):
         return
     
     old_attributes = guild._difference_update_attributes(data)
-    if not old_attributes:
+    hit, guild_badge = parse_guild_badge(data)
+    if (not old_attributes) and (not hit):
         clients.close()
         return
     
     for client_ in clients:
-        event_handler = client_.events.guild_update
-        if (event_handler is DEFAULT_EVENT_HANDLER):
-            Task(KOKORO, event_handler(client_, guild, old_attributes))
+        if old_attributes:
+            event_handler = client_.events.guild_update
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(KOKORO, event_handler(client_, guild, old_attributes))
+        
+        if hit:
+            event_handler = client_.events.guild_update_badge
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(KOKORO, event_handler(client_, guild, guild_badge))
+
 
 def GUILD_UPDATE__OPT_SC(client, data):
     guild_id = int(data['guild_id'])
@@ -2584,6 +2601,7 @@ def GUILD_UPDATE__OPT_SC(client, data):
         return
     
     guild._update_attributes(data)
+
 
 def GUILD_UPDATE__OPT_MC(client, data):
     guild_id = int(data['guild_id'])
@@ -4522,7 +4540,7 @@ def GUILD_SCHEDULED_EVENT_EXCEPTION_CREATE__CAL_SC(client, data):
         )
         
         event_handler = client.events.scheduled_event_occasion_overwrite_create
-        if (event_handler is DEFAULT_EVENT_HANDLER):
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
             Task(KOKORO, event_handler(client, event))
     
     else:
@@ -4533,7 +4551,7 @@ def GUILD_SCHEDULED_EVENT_EXCEPTION_CREATE__CAL_SC(client, data):
         )
         
         event_handler = client.events.scheduled_event_occasion_overwrite_update
-        if (event_handler is DEFAULT_EVENT_HANDLER):
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
             Task(KOKORO, event_handler(client, event))
 
 

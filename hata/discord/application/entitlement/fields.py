@@ -1,18 +1,22 @@
 __all__ = ()
 
-from ...field_parsers import (
+from ...fields.field_parsers import (
     bool_parser_factory, entity_id_parser_factory, flag_parser_factory, nullable_date_time_parser_factory,
     nullable_entity_parser_factory, preinstanced_parser_factory
 )
-from ...field_putters import (
+from ...fields.field_putters import (
     bool_optional_putter_factory, entity_id_optional_putter_factory, entity_id_putter_factory,
     flag_optional_putter_factory, nullable_date_time_optional_putter_factory, nullable_entity_optional_putter_factory,
     preinstanced_putter_factory
 )
-from ...field_validators import (
+from ...fields.field_validators import (
     bool_validator_factory, entity_id_array_validator_factory, entity_id_validator_factory,
     flag_validator_factory, nullable_date_time_validator_factory, nullable_entity_validator_factory,
     preinstanced_validator_factory
+)
+from ...fields.fields_common import (
+    parse_guild_id, parse_user_id, put_guild_id__optional as put_guild_id, put_user_id__optional as put_user_id,
+    validate_guild_id, validate_user_id
 )
 from ...guild import Guild
 from ...user import ClientUserBase
@@ -64,12 +68,6 @@ parse_gift_code_flags = flag_parser_factory('gift_code_flags', GiftCodeFlag)
 put_gift_code_flags = flag_optional_putter_factory('gift_code_flags', GiftCodeFlag())
 validate_gift_code_flags = flag_validator_factory('gift_code_flags', GiftCodeFlag)
 
-
-# guild_id
-
-parse_guild_id = entity_id_parser_factory('guild_id')
-put_guild_id = entity_id_optional_putter_factory('guild_id')
-validate_guild_id = entity_id_validator_factory('guild_id', Guild)
 
 # id
 
@@ -209,10 +207,3 @@ validate_subscription_id = entity_id_validator_factory('subscription_id', Subscr
 parse_type = preinstanced_parser_factory('type', EntitlementType, EntitlementType.none)
 put_type = preinstanced_putter_factory('type')
 validate_type = preinstanced_validator_factory('entitlement_type', EntitlementType)
-
-
-# user_id
-
-parse_user_id = entity_id_parser_factory('user_id')
-put_user_id = entity_id_optional_putter_factory('user_id')
-validate_user_id = entity_id_validator_factory('user_id', ClientUserBase)

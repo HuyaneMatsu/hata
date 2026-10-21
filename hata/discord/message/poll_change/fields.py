@@ -1,6 +1,6 @@
 __all__ = ()
 
-from ...field_validators import nullable_entity_validator_factory
+from ...fields.field_validators import nullable_entity_validator_factory
 from ...poll import Poll
 
 from ..poll_update import PollUpdate

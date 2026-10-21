@@ -3,6 +3,7 @@ from .auto_moderation_action_execution import *
 from .channel import *
 from .channel_permission_overwrite import *
 from .guild import *
+from .helpers import *
 from .message import *
 from .scheduled_event_occasion_overwrite import *
 from .stage import *
@@ -15,6 +16,7 @@ __all__ = (
     *channel.__all__,
     *channel_permission_overwrite.__all__,
     *guild.__all__,
+    *helpers.__all__,
     *message.__all__,
     *scheduled_event_occasion_overwrite.__all__,
     *stage.__all__,

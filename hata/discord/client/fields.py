@@ -5,7 +5,7 @@ from scarletio.http_client import HTTPClient
 from ..activity import Activity, ActivityType
 from ..application import Application
 from ..events import IntentFlag
-from ..field_validators import (
+from ..fields.field_validators import (
     bool_validator_factory, entity_id_validator_factory, flag_validator_factory, nullable_entity_validator_factory
 )
 from ..http import DiscordApiClient

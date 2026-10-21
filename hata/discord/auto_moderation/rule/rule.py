@@ -959,7 +959,7 @@ class AutoModerationRule(DiscordEntity, immortal = True):
         excluded_role_ids : ``None | int | Role | iterable<int> | iterable<Role>``, Optional (Keyword only)
             Excluded roles from the rule.
         
-        guild_id : `int`, ``Guild``, Optional (Keyword only)
+        guild_id : `int`, Optional (Keyword only)
             The guild's identifier where the rule is.
         
         name : `str`, Optional (Keyword only)

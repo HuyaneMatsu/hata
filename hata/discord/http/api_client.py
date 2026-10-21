@@ -913,6 +913,24 @@ class DiscordApiClient(RichAttributeErrorBaseType):
         )
     
     
+    async def guild_join_request_action(self, guild_id, guild_join_request_id, query):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.guild_join_request_action, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_PATCH,
+            f'{API_ENDPOINT}/guilds/{guild_id}/requests/{guild_join_request_id}',
+            query = query,
+        )
+    
+    
+    async def guild_join_request_get_chunk(self, guild_id, query):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.guild_join_request_get_chunk, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET,
+            f'{API_ENDPOINT}/guilds/{guild_id}/requests',
+            query = query,
+        )
+    
+    
     async def guild_ban_add(self, guild_id, user_id, data, reason):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.guild_ban_add, NO_SPECIFIC_RATE_LIMITER),
@@ -1397,6 +1415,39 @@ class DiscordApiClient(RichAttributeErrorBaseType):
             data,
         )
     
+    
+    async def invite_allowed_user_id_add(self, invite_code, allowed_user_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.invite_allowed_user_id_add, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_PUT,
+            f'{API_ENDPOINT}/invites/{invite_code}/target-users/{allowed_user_id}',
+        )
+    
+    
+    async def invite_allowed_user_id_delete(self, invite_code, allowed_user_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.invite_allowed_user_id_delete, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_DELETE,
+            f'{API_ENDPOINT}/invites/{invite_code}/target-users/{allowed_user_id}',
+        )
+    
+    
+    async def invite_allowed_user_id_add_many(self, invite_code, data):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.invite_allowed_user_id_add_many, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_POST,
+            f'{API_ENDPOINT}/invites/{invite_code}/target-users/bulk-add',
+            data,
+        )
+    
+    
+    async def invite_allowed_user_id_delete_many(self, invite_code, data):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.invite_allowed_user_id_delete_many, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_POST,
+            f'{API_ENDPOINT}/invites/{invite_code}/target-users/bulk-delete',
+            data,
+        )
     
     # role
     

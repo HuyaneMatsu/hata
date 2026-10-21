@@ -1,7 +1,7 @@
 __all__ = ()
 
 from ...channel import Channel, create_partial_channel_from_data
-from ...field_validators import nullable_entity_dictionary_validator_factory
+from ...fields.field_validators import nullable_entity_dictionary_validator_factory
 from ...message import Attachment, Message
 from ...role import Role
 from ...user import ClientUserBase, User

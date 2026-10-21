@@ -6,26 +6,28 @@ from ...application import Application
 from ...bases import id_sort_key
 from ...embed import Embed
 from ...emoji import ReactionMapping, merge_update_reaction_mapping
-from ...field_parsers import (
+from ...fields.field_parsers import (
     bool_parser_factory, entity_id_array_parser_factory, entity_id_parser_factory, flag_parser_factory,
     nullable_date_time_parser_factory, nullable_entity_array_parser_factory, nullable_entity_parser_factory,
     nullable_functional_array_parser_factory, nullable_object_array_parser_factory, nullable_string_parser_factory,
     preinstanced_parser_factory
 )
-from ...field_putters import (
-    bool_optional_putter_factory, entity_id_optional_putter_factory, entity_id_putter_factory,
+from ...fields.field_putters import (
+    bool_optional_putter_factory, entity_id_putter_factory,
     flag_optional_putter_factory, nullable_date_time_optional_putter_factory,
     nullable_entity_array_optional_putter_factory, nullable_entity_optional_putter_factory,
     nullable_functional_array_optional_putter_factory, nullable_object_array_optional_putter_factory,
     nullable_string_optional_putter_factory, optional_entity_id_array_optional_putter_factory,
     preinstanced_optional_putter_factory, preinstanced_putter_factory, url_optional_putter_factory
 )
-from ...field_validators import (
+from ...fields.field_validators import (
     bool_validator_factory, default_entity_validator_factory, entity_id_array_validator_factory,
     entity_id_validator_factory, flag_validator_factory, nullable_date_time_validator_factory,
     nullable_entity_array_validator_factory, nullable_entity_validator_factory, nullable_object_array_validator_factory,
     nullable_string_validator_factory, preinstanced_validator_factory
 )
+from ...fields.fields_common import parse_guild_id, put_guild_id__optional as put_guild_id, validate_guild_id
+
 from ...poll import Poll
 from ...role import Role
 from ...soundboard import SoundboardSound
@@ -318,12 +320,6 @@ validate_edited_at = nullable_date_time_validator_factory('edited_at')
 parse_flags = flag_parser_factory('flags', MessageFlag)
 put_flags = flag_optional_putter_factory('flags', MessageFlag())
 validate_flags = flag_validator_factory('flags', MessageFlag)
-
-# guild_id
-
-parse_guild_id = entity_id_parser_factory('guild_id')
-put_guild_id = entity_id_optional_putter_factory('guild_id')
-validate_guild_id = entity_id_validator_factory('guild_id', NotImplemented, include = 'Guild')
 
 # id
 

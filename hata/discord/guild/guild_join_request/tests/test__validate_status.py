@@ -28,22 +28,6 @@ def _iter_options__type_error():
 @vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
 @vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
 def test__validate_status(input_value):
-    """
-    Validates whether ``validate_status`` works as intended.
-    
-    Parameters
-    ----------
-    input_value : `object`
-        Value to validate.
-    
-    Returns
-    -------
-    output : ``GuildJoinRequestStatus``
-    
-    Raises
-    ------
-    TypeError
-    """
     output = validate_status(input_value)
     vampytest.assert_instance(output, GuildJoinRequestStatus)
     return output

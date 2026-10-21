@@ -18,10 +18,8 @@ from .fields import (
 PRECREATE_FIELDS = {
     'available': ('available', validate_available),
     'emoji': ('emoji', validate_emoji),
-    'guild': ('guild_id', validate_guild_id),
     'guild_id': ('guild_id', validate_guild_id),
     'name': ('name', validate_name),
-    'user': ('user_id', validate_user_id),
     'user_id': ('user_id', validate_user_id),
     'volume': ('volume', validate_volume),
 }
@@ -62,8 +60,8 @@ class SoundboardSound(DiscordEntity, immortal = True):
             Emoji assigned to the sound.
         name : `str`, Optional (Keyword only)
             The name of the sound.
-        user_id : ``None | int | ClientUserBase``, Optional (Keyword only)
-            The user or their identifier who created the sound.
+        user_id : `int`, Optional (Keyword only)
+            The user's identifier who created the sound.
         volume : `float`, Optional (Keyword only)
             The volume of the sound to play as.
         
@@ -493,16 +491,14 @@ class SoundboardSound(DiscordEntity, immortal = True):
             Whether the sound is available.
         emoji : ``None | Emoji``, Optional (Keyword only)
             Emoji assigned to the sound.
-        guild : `int`, `None`, ``Guild``, Optional (Keyword only)
-            Alternative of `guild_id`.
-        guild_id : `int`, `None`, ``Guild``, Optional (Keyword only)
-            The guild or its identifier to which the sound is added to.
+        
+        guild_id : `int`, Optional (Keyword only)
+            The guild's identifier to which the sound is added to.
+        
         name : `str`, Optional (Keyword only)
             The name of the sound.
-        user_id : ``None | int | ClientUserBase``, Optional (Keyword only)
-            Alternative of `user`.
-        user_id : ``None | int | ClientUserBase``, Optional (Keyword only)
-            The user or their identifier who created the sound.
+        user_id : `int`, Optional (Keyword only)
+            The user's identifier who created the sound.
         volume : `float`, Optional (Keyword only)
             The volume of the sound to play as.
         
@@ -572,8 +568,8 @@ class SoundboardSound(DiscordEntity, immortal = True):
             Emoji assigned to the sound.
         name : `str`, Optional (Keyword only)
             The name of the sound.
-        user_id : ``None | int | ClientUserBase``, Optional (Keyword only)
-            The user or their identifier who created the sound.
+        user_id : `int`, Optional (Keyword only)
+            The user's identifier who created the sound.
         volume : `float`, Optional (Keyword only)
             The volume of the sound to play as.
         

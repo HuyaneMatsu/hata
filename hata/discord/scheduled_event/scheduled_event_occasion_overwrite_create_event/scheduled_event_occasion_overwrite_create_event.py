@@ -37,8 +37,8 @@ class ScheduledEventOccasionOverwriteCreateEvent(EventBase):
         
         Parameters
         ----------
-        guild_id : ˙`None | int | Guild``, Optional (Keyword only)
-            The guild or its identifier where the event will be.
+        guild_id : `int`, Optional (Keyword only)
+            The guild's identifier where the event will be.
         
         occasion_overwrite : ``ScheduledEventOccasionOverwrite``, Optional (Keyword only)
             The affected occasion overwrite.
@@ -82,7 +82,8 @@ class ScheduledEventOccasionOverwriteCreateEvent(EventBase):
     @classmethod
     def from_fields(cls, guild_id, scheduled_event_id, occasion_overwrite):
         """
-        Creates a scheduled event occasion overwrite (create / update / delete) event from the given already parsed fields.
+        Creates a scheduled event occasion overwrite (create / update / delete) event from the given already parsed
+        fields.
         
         Parameters
         ----------
@@ -225,8 +226,8 @@ class ScheduledEventOccasionOverwriteCreateEvent(EventBase):
         
         Parameters
         ----------
-        guild_id : ˙`None | int | Guild``, Optional (Keyword only)
-            The guild or its identifier where the event will be.
+        guild_id : `int`, Optional (Keyword only)
+            The guild's identifier where the event will be.
         
         occasion_overwrite : ``ScheduledEventOccasionOverwrite``, Optional (Keyword only)
             The affected occasion overwrite.

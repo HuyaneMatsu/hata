@@ -1,18 +1,23 @@
 __all__ = ()
 
 from ...emoji import Emoji, create_emoji_from_exclusive_inline_data, put_exclusive_emoji_inline_data_into
-from ...field_parsers import (
+from ...fields.field_parsers import (
     bool_parser_factory, entity_id_parser_factory, float_parser_factory, force_string_parser_factory,
     nullable_entity_parser_factory
 )
-from ...field_putters import (
-    bool_optional_putter_factory, entity_id_optional_putter_factory, entity_id_putter_factory,
-    float_optional_putter_factory, force_string_putter_factory, nullable_entity_optional_putter_factory,
+from ...fields.field_putters import (
+    bool_optional_putter_factory, entity_id_putter_factory, float_optional_putter_factory, force_string_putter_factory,
+    nullable_entity_optional_putter_factory,
 )
-from ...field_validators import (
+from ...fields.field_validators import (
     bool_validator_factory, entity_id_validator_factory, float_conditional_validator_factory,
     force_string_validator_factory, nullable_entity_validator_factory
 )
+from ...fields.fields_common import (
+    parse_guild_id, parse_user_id, put_guild_id__optional as put_guild_id, put_user_id, validate_guild_id,
+    validate_user_id
+)
+
 from ...user import ClientUserBase, User
 
 from .constants import NAME_LENGTH_MAX, NAME_LENGTH_MIN
@@ -72,11 +77,6 @@ def put_emoji(emoji, data, defaults):
 
 validate_emoji = nullable_entity_validator_factory('emoji', Emoji)
 
-# guild_id
-
-parse_guild_id = entity_id_parser_factory('guild_id')
-put_guild_id = entity_id_optional_putter_factory('guild_id')
-validate_guild_id = entity_id_validator_factory('guild_id', NotImplemented, include = 'Guild')
 
 # id
 
@@ -95,12 +95,6 @@ validate_name = force_string_validator_factory('name', NAME_LENGTH_MIN, NAME_LEN
 parse_user = nullable_entity_parser_factory('user', User)
 put_user = nullable_entity_optional_putter_factory('user', ClientUserBase, force_include_internals = True)
 validate_user = nullable_entity_validator_factory('user', ClientUserBase)
-
-# user_id
-
-parse_user_id = entity_id_parser_factory('user_id')
-put_user_id = entity_id_putter_factory('user_id')
-validate_user_id = entity_id_validator_factory('user_id', ClientUserBase)
 
 # volume
 

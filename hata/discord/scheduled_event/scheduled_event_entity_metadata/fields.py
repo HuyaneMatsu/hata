@@ -1,8 +1,8 @@
 __all__ = ()
 
-from ...field_parsers import entity_id_array_parser_factory, nullable_string_parser_factory
-from ...field_putters import optional_entity_id_array_optional_putter_factory, nullable_string_putter_factory
-from ...field_validators import entity_id_array_validator_factory, nullable_string_validator_factory
+from ...fields.field_parsers import entity_id_array_parser_factory, nullable_string_parser_factory
+from ...fields.field_putters import optional_entity_id_array_optional_putter_factory, nullable_string_putter_factory
+from ...fields.field_validators import entity_id_array_validator_factory, nullable_string_validator_factory
 from ...user import ClientUserBase
 
 # location

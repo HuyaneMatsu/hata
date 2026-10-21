@@ -1,24 +1,18 @@
 __all__ = ()
 
-
-from ...field_parsers import (
-    int_parser_factory,
-    nullable_string_parser_factory, entity_id_parser_factory
-)
-from ...field_putters import (
-    int_putter_factory,
-    entity_id_putter_factory, url_optional_putter_factory
-)
-from ...field_validators import (
-    entity_id_validator_factory, int_conditional_validator_factory,
-    nullable_string_validator_factory
-)
-from .constants import NONCE_LENGTH_MAX
-from ..guild import Guild
-from ...user import User, ClientUserBase
 from scarletio import set_docs
+
 from ....env import CACHE_PRESENCE
+
 from ...core import GUILDS
+from ...fields.field_parsers import int_parser_factory, nullable_string_parser_factory
+from ...fields.field_putters import int_putter_factory, url_optional_putter_factory
+from ...fields.field_validators import int_conditional_validator_factory, nullable_string_validator_factory
+from ...fields.fields_common import parse_guild_id, put_guild_id, validate_guild_id
+from ...user import ClientUserBase, User
+
+from .constants import NONCE_LENGTH_MAX
+
 
 # chunk_count
 
@@ -42,11 +36,6 @@ validate_chunk_index = int_conditional_validator_factory(
     '>= 0',
 )
 
-# guild_id
-
-parse_guild_id = entity_id_parser_factory('guild_id')
-put_guild_id = entity_id_putter_factory('guild_id')
-validate_guild_id = entity_id_validator_factory('guild_id', Guild)
 
 # nonce
 

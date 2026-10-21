@@ -1,0 +1,20 @@
+import vampytest
+
+from ..fields import validate_value
+
+
+def _iter_options__passing():
+    yield None, None
+    yield 'a', 'a'
+
+
+def _iter_options__type_error():
+    yield 12.6
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_value(input_value):
+    output = validate_value(input_value)
+    vampytest.assert_instance(output, str, nullable = True)
+    return output

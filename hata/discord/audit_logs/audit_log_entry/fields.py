@@ -3,17 +3,17 @@ __all__ = ()
 from ....env import ALLOW_DEBUG_MESSAGES
 from ....utils.debug import call_debug_logger
 
-from ...field_parsers import entity_id_parser_factory, nullable_string_parser_factory, preinstanced_parser_factory
-from ...field_putters import (
+from ...fields.field_parsers import entity_id_parser_factory, nullable_string_parser_factory, preinstanced_parser_factory
+from ...fields.field_putters import (
     entity_id_optional_putter_factory, entity_id_putter_factory, nullable_string_optional_putter_factory,
     preinstanced_putter_factory
 )
-from ...field_validators import (
+from ...fields.field_validators import (
     entity_id_validator_factory, nullable_entity_validator_factory, nullable_string_validator_factory,
     preinstanced_validator_factory
 )
+from ...fields.fields_common import parse_user_id, put_user_id__optional as put_user_id, validate_user_id
 from ...guild import Guild
-from ...user import ClientUserBase
 
 from ..audit_log_change import AuditLogChange
 from ..audit_log_entry_change_conversion.value_mergers import value_merger_replace
@@ -446,9 +446,3 @@ validate_target_id = entity_id_validator_factory('target_id')
 parse_type = preinstanced_parser_factory('action_type', AuditLogEntryType, AuditLogEntryType.none)
 put_type = preinstanced_putter_factory('action_type')
 validate_type = preinstanced_validator_factory('entry_type', AuditLogEntryType)
-
-# user_id
-
-parse_user_id = entity_id_parser_factory('user_id')
-put_user_id = entity_id_optional_putter_factory('user_id')
-validate_user_id = entity_id_validator_factory('user_id', ClientUserBase)

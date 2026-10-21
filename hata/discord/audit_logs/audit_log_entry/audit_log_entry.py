@@ -17,10 +17,8 @@ from .preinstanced import AuditLogEntryType
 
 
 PRECREATE_FIELDS = {
-    'guild': ('guild_id', validate_guild_id),
     'guild_id': ('guild_id', validate_guild_id),
     'reason': ('reason', validate_reason),
-    'user': ('user_id', validate_user_id),
     'user_id': ('user_id', validate_user_id),
     'target_id': ('target_id', validate_target_id),
 }
@@ -98,7 +96,7 @@ class AuditLogEntry(DiscordEntity):
         target_id : `int`, Optional (Keyword only)
             The entry's target's identifier.
         
-        user_id : `int`, ``None | ClientUserBase```, Optional (Keyword only)
+        user_id : `int`, Optional (Keyword only)
             The user's identifier who triggered the event.
         
         Raises
@@ -264,10 +262,6 @@ class AuditLogEntry(DiscordEntity):
         
         Other Parameters
         ----------------
-        
-        guild : `int`, ``None | Guild``, Optional (Keyword only)
-            Alternative for `guild_id`.
-        
         guild_id : `int`, `None`, ``Guild``, Optional (Keyword only)
             The source guild's identifier.
         
@@ -277,10 +271,7 @@ class AuditLogEntry(DiscordEntity):
         target_id : `int`, Optional (Keyword only)
             The entry's target's identifier.
         
-        user : `int`, ``None | ClientUserBase```, Optional (Keyword only)
-            Alternative for `user_id`.
-        
-        user_id : `int`, ``None | ClientUserBase```, Optional (Keyword only)
+        user_id : `int`, Optional (Keyword only)
             The user's identifier who triggered the event.
         
         Returns
@@ -416,7 +407,7 @@ class AuditLogEntry(DiscordEntity):
         target_id : `int`, Optional (Keyword only)
             The entry's target's identifier.
         
-        user_id : `int`, ``None | ClientUserBase```, Optional (Keyword only)
+        user_id : `int`, Optional (Keyword only)
             The user's identifier who triggered the event.
         Returns
         -------

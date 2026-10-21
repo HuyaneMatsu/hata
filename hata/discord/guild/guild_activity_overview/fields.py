@@ -1,20 +1,20 @@
 __all__ = ()
 
 from ...color import Color
-from ...field_parsers import (
+from ...fields.field_parsers import (
     entity_id_array_parser_factory, entity_id_parser_factory, force_string_parser_factory, int_parser_factory,
-    nullable_string_parser_factory, preinstanced_array_parser_factory, preinstanced_parser_factory
+    preinstanced_array_parser_factory, preinstanced_parser_factory
 )
-from ...field_putters import (
+from ...fields.field_putters import (
     entity_id_putter_factory, force_string_putter_factory, int_optional_putter_factory, int_putter_factory,
-    nullable_string_putter_factory, optional_entity_id_array_optional_putter_factory, preinstanced_array_putter_factory,
-    preinstanced_putter_factory
+    optional_entity_id_array_optional_putter_factory, preinstanced_array_putter_factory, preinstanced_putter_factory
 )
-from ...field_validators import (
+from ...fields.field_validators import (
     entity_id_array_validator_factory, entity_id_validator_factory, force_string_validator_factory,
     int_conditional_validator_factory, int_options_validator_factory, nullable_object_array_validator_factory,
     nullable_string_validator_factory, preinstanced_array_validator_factory, preinstanced_validator_factory
 )
+from ...fields.fields_common import parse_description, put_description
 from ...scheduled_event import PrivacyLevel
 
 from ..guild import GuildFeature
@@ -467,8 +467,6 @@ validate_boost_level = int_options_validator_factory('boost_level', frozenset(LE
 
 # description
 
-parse_description = nullable_string_parser_factory('description')
-put_description = nullable_string_putter_factory('description')
 validate_description = nullable_string_validator_factory('description', 0, DESCRIPTION_LENGTH_MAX)
 
 

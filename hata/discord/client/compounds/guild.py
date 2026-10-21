@@ -6,8 +6,8 @@ from ...audit_logs import AuditLog, AuditLogEntryType, AuditLogIterator
 from ...bases import maybe_snowflake
 from ...channel import VoiceRegion
 from ...guild import (
-    Guild, GuildActivityOverview, GuildPreview, GuildWidget, VerificationScreen, WelcomeScreen,
-    create_partial_guild_from_data
+    Guild, GuildActivityOverview, GuildJoinRequestStatus, GuildPreview, GuildWidget, VerificationScreen, WelcomeScreen,
+    create_partial_guild_from_data, guild_join_request_get_chunk_response_create_from_data
 )
 from ...guild.guild.utils import GUILD_FIELD_CONVERTERS, create_new_guild_data
 from ...guild.guild_activity_overview.utils import GUILD_ACTIVITY_OVERVIEW_FIELD_CONVERTERS
@@ -485,55 +485,8 @@ class ClientCompoundGuildEndpoints(Compound):
                 profile._update_attributes(user_data)
         
         return guild
-
-##    # Disable user syncing, takes too much time
-##    async def _guild_sync_post_process(self, guild):
-##        for client in CLIENTS.values():
-##            try:
-##                user_data = await self.api.guild_user_get(guild.id, client.id)
-##           except (DiscordException, ConnectionError):
-##                continue
-##            try:
-##                profile = client.guild_profiles[guild.id]
-##            except KeyError:
-##                client.guild_profiles[guild.id] = GuildProfile.from_data(user_data)
-##                if client not in guild.clients:
-##                    guild.clients.append(client)
-##            else:
-##                profile._update_attributes(user_data)
-##
-##        if not CACHE_USER:
-##            return
-##
-##        old_ids = set(guild.users)
-##        data = {'limit': 1000, 'after': '0'}
-##        while True:
-##            user_datas = await self.api.guild_users(guild.id, data)
-##            for user_data in user_datas:
-##                user = User._create_and_update(user_data, guild)
-##                try:
-##                    old_ids.remove(user.id)
-##                except KeyError:
-##                    pass
-##
-##             if len(user_datas)< 1 000:
-##                 break
-##
-##             data['after'] = user_datas[999]['user']['id']
-##
-##        del data
-##
-##        for id_ in old_ids:
-##            try:
-##               user = guild.users.pop(id_)
-##           except KeyError:
-##               continue #huh?
-##           try:
-##               del user.guild_profiles[guild.id]
-##           except KeyError:
-##               pass # huh??
-
-
+    
+    
     async def guild_delete(self, guild):
         """
         Deletes the given guild. The client must be the owner of the guild.
@@ -1137,9 +1090,9 @@ class ClientCompoundGuildEndpoints(Compound):
         limit : `int` = `100`, Optional
             The amount of audit logs to request. Can be between 1 and 100. Defaults to 100.
         before : ``None | int | DiscordEntity | DateTime`` = `None`, Optional (Keyword only)
-            The timestamp before the audit log entries wer created.
+            The timestamp before the audit log entries were created.
         after : ``None | int | DiscordEntity | DateTime`` = `None`, Optional (Keyword only)
-            The timestamp after the audit log entries wer created.
+            The timestamp after the audit log entries were created.
         user : ``None | int | ClientUserBase` = `None`, Optional (Keyword only)
             Whether the audit logs should be filtered only to those, which were created by the given user.
         entry_type : `None`, ``AuditLogEntryType``, `int` = `None`, Optional (Keyword only)
@@ -1508,3 +1461,170 @@ class ClientCompoundGuildEndpoints(Compound):
         data = await self.api.guild_role_user_counts_get(guild_id)
         
         return {int(key) : value for key, value in data}
+    
+    
+    async def guild_join_request_action(self, guild_id, guild_join_request_id, action, *, rejection_reason = None):
+        """
+        Actions the guild join request.
+        
+        This function is a coroutine.
+        
+        Parameters
+        ----------
+        guild_id : `int`
+            The guild's identifier.
+        
+        guild_join_request_id : `int`
+            The guild join request's identifier to action.
+        
+        action : ``GuildJoinRequestStatus``
+            The action to perform.
+        
+        rejection_reason : `None | str` = `None`, Optional (Keyword only)
+            Rejection reason if action is `rejected`.
+        
+        Returns
+        -------
+        role_user_counts : `dict<int, int>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is invalid.
+        ValueError
+            - If a parameter's value is incorrect.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        if not isinstance(guild_id, int):
+            raise TypeError(
+                f'`guild_id` can be `int`; got {type(guild_id).__name__}; {guild_id!r}.'
+            )    
+        
+        if not isinstance(guild_join_request_id, int):
+            raise TypeError(
+                f'`guild_join_request_id` can be `int`; got {type(guild_join_request_id).__name__}; '
+                f'{guild_join_request_id!r}.'
+            )
+        
+        if not isinstance(action, GuildJoinRequestStatus):
+            raise TypeError(
+                f'`action` can be `{GuildJoinRequestStatus.__name__}`; got {type(action).__name__}; '
+                f'{action!r}.'
+            )
+        
+        if (
+            (action is not GuildJoinRequestStatus.approved) and
+            (action is not GuildJoinRequestStatus.rejected)
+        ):
+            raise ValueError(
+                f'`action` can be either `.approved`, `.rejected`; got `{GuildJoinRequestStatus.name}`.'
+            )
+        
+        if (rejection_reason is not None):
+            if (not isinstance(rejection_reason, str)):
+                raise TypeError(
+                    f'`rejection_reason` can be `None | str`; got {type(rejection_reason).__name__}; '
+                    f'{rejection_reason!r}.'
+                )
+            
+            if (len(rejection_reason) > 160):
+                raise ValueError(
+                    f'`rejection_reason` can be length [0:160]; got {len(rejection_reason)}; {rejection_reason!r}.'
+                )
+        
+        query = {
+            'action': action.value
+        }
+        
+        if (action is not GuildJoinRequestStatus.approved):
+            query['rejection_reason'] = rejection_reason
+        
+        await self.api.guild_join_request_action(guild_id, guild_join_request_id, query)
+    
+    
+    async def guild_join_request_get_chunk(
+        self,
+        guild_id,
+        *,
+        after = None,
+        before = None,
+        limit = 100,
+        status = None, 
+    ):
+        """
+        Gets a chunk of the guild join requests of the guild.
+        
+        This function is a coroutine.
+        
+        Parameters
+        ----------
+        guild_id : `int`
+            The guild's identifier.
+        
+        after : ``None | int | DiscordEntity | DateTime`` = `None`, Optional (Keyword only)
+            The timestamp after the requests were created.
+        
+        before : ``None | int | DiscordEntity | DateTime`` = `None`, Optional (Keyword only)
+            The timestamp before the requests were created.
+        
+        limit : `int` = `100`, Optional
+            The amount of requests to request. Can be between 1 and 100. Defaults to 100.
+        
+        status : ``None | GuildJoinRequestStatus``
+            Status to filter for.
+        
+        Returns
+        -------
+        response : ``GuildJoinRequestGetCHunkResponse``
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is invalid.
+        ValueError
+            - If a parameter's value is incorrect.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        if not isinstance(guild_id, int):
+            raise TypeError(
+                f'`guild_id` can be `int`; got {type(guild_id).__name__}; {guild_id!r}.'
+            )    
+        
+        query = {}
+        
+        if (after is not None):
+            query['after'] = log_time_converter(after)
+        
+        if (before is not None):
+            query['before'] = log_time_converter(before)
+        
+        if not isinstance(limit, int):
+            raise TypeError(
+                f'`limit` can be `None | int`; got {type(limit).__name__}; {limit!r}.'
+            )
+        
+        if (limit < 1) or (limit > 100):
+            raise ValueError(
+                f'`limit` out of the expected range [1:100]; got {limit!r}.'
+            )
+        
+        if (limit != 100):
+            query['limit'] = limit
+        
+        if (status is not None):
+            if not isinstance(status, GuildJoinRequestStatus):
+                raise TypeError(
+                    f'`status` can be `{GuildJoinRequestStatus.__name__}`; got {type(status).__name__}; '
+                    f'{status!r}.'
+                )
+            
+            query['status'] = status.value
+        
+        data = await self.api.guild_join_request_get_chunk(guild_id, query)
+        return guild_join_request_get_chunk_response_create_from_data(data)

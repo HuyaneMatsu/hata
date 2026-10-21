@@ -7,24 +7,25 @@ from ....env import CACHE_PRESENCE
 from ...channel import Channel
 from ...embedded_activity import EmbeddedActivity
 from ...emoji import Emoji
-from ...field_parsers import (
+from ...fields.field_parsers import (
     bool_parser_factory, entity_id_parser_factory, flag_parser_factory, force_string_parser_factory, int_parser_factory,
     negated_bool_parser_factory, nullable_entity_parser_factory, nullable_string_parser_factory,
     preinstanced_array_parser_factory, preinstanced_parser_factory
 )
-from ...field_putters import (
+from ...fields.field_putters import (
     bool_optional_putter_factory, entity_dictionary_putter_factory, entity_id_optional_putter_factory,
     entity_id_putter_factory, flag_putter_factory, force_string_putter_factory, int_optional_putter_factory,
     int_putter_factory, negated_bool_optional_putter_factory, nullable_entity_putter_factory,
     nullable_string_optional_putter_factory, preinstanced_array_putter_factory, preinstanced_putter_factory
 )
-from ...field_validators import (
+from ...fields.field_validators import (
     bool_validator_factory, entity_dictionary_validator_factory, entity_id_validator_factory, flag_validator_factory,
     force_string_validator_factory, int_conditional_validator_factory, int_options_validator_factory,
     nullable_entity_dictionary_validator_factory, nullable_entity_set_validator_factory,
     nullable_entity_validator_factory, nullable_string_validator_factory, preinstanced_array_validator_factory,
     preinstanced_validator_factory
 )
+from ...fields.fields_common import parse_description, put_description__optional as put_description
 from ...localization import Locale
 from ...localization.utils import LOCALE_DEFAULT
 from ...role import Role
@@ -34,6 +35,7 @@ from ...stage import Stage
 from ...sticker import Sticker
 from ...user import ClientUserBase, User, VoiceState
 
+from ..guild_badge import GuildBadge
 from ..guild_incidents import GuildIncidents
 from ..guild_inventory_settings import GuildInventorySettings
 
@@ -87,6 +89,36 @@ validate_approximate_user_count = int_conditional_validator_factory(
 parse_available = negated_bool_parser_factory('unavailable', True)
 put_available = negated_bool_optional_putter_factory('unavailable', True)
 validate_available = bool_validator_factory('unavailable', True)
+
+
+# badge
+
+def parse_badge(data):
+    """
+    Parses a guild badge out from the given data.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    hit_and_badge : ``(bool, None | GuildBadge)``
+    """
+    try:
+        guild_badge_data = data['profile']
+    except KeyError:
+        hit = False
+        badge = None
+    else:
+        hit = True
+        if guild_badge_data is None:
+            badge = None
+        else:
+            badge = GuildBadge.from_data(guild_badge_data)
+    
+    return hit, badge
 
 
 # boost_count
@@ -206,11 +238,11 @@ validate_default_message_notification_level = preinstanced_validator_factory(
     'default_message_notification_level', MessageNotificationLevel
 )
 
+
 # description
 
-parse_description = nullable_string_parser_factory('description')
-put_description = nullable_string_optional_putter_factory('description')
 validate_description = nullable_string_validator_factory('description', 0, DESCRIPTION_LENGTH_MAX)
+
 
 # embedded_activities
 

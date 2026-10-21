@@ -84,7 +84,7 @@ def test__AuditLogEntry__to_data():
     expected_output = {
         'id': str(entry_id),
         'changes': [{'key': change.attribute_name, 'new_value': change.after} for change in changes],
-        'options': {'members_removed': details['users_removed']},
+        'options': {'members_removed': str(details['users_removed'])},
         'action_type': entry_type.value,
         'guild_id': str(guild_id),
         'reason': reason,

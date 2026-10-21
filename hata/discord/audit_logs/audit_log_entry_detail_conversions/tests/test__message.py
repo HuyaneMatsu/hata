@@ -10,6 +10,7 @@ from ...audit_log_entry_detail_conversion.tests.test__AuditLogEntryDetailConvers
 )
 from ...conversion_helpers.converters import value_deserializer_id, value_serializer_id
 
+from ..helpers import convert_string_to_integer, serialise_integer_to_string
 from ..message import CHANNEL_ID_CONVERSION, COUNT_CONVERSION, ID_CONVERSION, MESSAGE_CONVERSIONS
 
 
@@ -43,33 +44,8 @@ def test__COUNT_CONVERSION__generic():
     Tests whether ``COUNT_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(COUNT_CONVERSION)
-    vampytest.assert_is(COUNT_CONVERSION.value_serializer, None)
-
-
-def _iter_options__count__value_deserializer():
-    count = 123
-    yield 0, 0
-    yield count, count
-    yield None, 0
-
-
-@vampytest._(vampytest.call_from(_iter_options__count__value_deserializer()).returning_last())
-def test__COUNT_CONVERSION__value_deserializer(input_value):
-    """
-    Tests whether `COUNT_CONVERSION.value_deserializer` works as intended.
-    
-    Parameters
-    ----------
-    input_value : `int`
-        Raw value.
-    
-    Returns
-    -------
-    output : `int`
-    """
-    output = COUNT_CONVERSION.value_deserializer(input_value)
-    vampytest.assert_instance(output, int)
-    return output
+    vampytest.assert_is(COUNT_CONVERSION.value_deserializer, convert_string_to_integer)
+    vampytest.assert_is(COUNT_CONVERSION.value_serializer, serialise_integer_to_string)
 
 
 def _iter_options__count__value_validator__passing():

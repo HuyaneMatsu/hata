@@ -13,6 +13,7 @@ from .embed import *
 from .emoji import *
 from .events import *
 from .exceptions import *
+from .fields import *
 from .file_type_filter import *
 from .gateway import *
 from .guild import *
@@ -40,9 +41,6 @@ from .allowed_mentions import *
 from .ansi_format import *
 from .color import *
 from .core import *
-from .field_parsers import *
-from .field_putters import *
-from .field_validators import *
 from .object_binding import *
 from .payload_building import *
 from .preconverters import *
@@ -66,6 +64,7 @@ __all__ = (
     *component.__all__,
     *events.__all__,
     *exceptions.__all__,
+    *fields.__all__,
     *file_type_filter.__all__,
     *gateway.__all__,
     *guild.__all__,
@@ -91,9 +90,6 @@ __all__ = (
     
     *ansi_format.__all__,
     *core.__all__,
-    *field_parsers.__all__,
-    *field_putters.__all__,
-    *field_validators.__all__,
     *color.__all__,
     *object_binding.__all__,
     *payload_building.__all__,
@@ -101,13 +97,3 @@ __all__ = (
     *precreate_helpers.__all__,
     *utils.__all__,
 )
-
-
-# Deprecations
-
-from ..utils.module_deprecation import deprecated_import
-
-# 2025-04-25
-deprecated_import(GuildBadge, 'UserClan')
-
-del deprecated_import

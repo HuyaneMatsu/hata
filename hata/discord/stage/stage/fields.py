@@ -1,19 +1,20 @@
 __all__ = ()
 
 from ...channel import Channel
-from ...field_parsers import (
+from ...fields.field_parsers import (
     bool_parser_factory, entity_id_parser_factory, negated_bool_parser_factory, nullable_string_parser_factory,
     preinstanced_parser_factory
 )
-from ...field_putters import (
+from ...fields.field_putters import (
     bool_optional_putter_factory, entity_id_optional_putter_factory, entity_id_putter_factory,
     negated_bool_optional_putter_factory, nullable_string_putter_factory, preinstanced_putter_factory,
     url_optional_putter_factory
 )
-from ...field_validators import (
+from ...fields.field_validators import (
     bool_validator_factory, entity_id_validator_factory, nullable_string_validator_factory,
     preinstanced_validator_factory
 )
+from ...fields.fields_common import parse_guild_id, put_guild_id, validate_guild_id
 from ...scheduled_event import PrivacyLevel
 from ...scheduled_event import ScheduledEvent
 
@@ -32,17 +33,11 @@ parse_discoverable = negated_bool_parser_factory('discoverable_disabled', True)
 put_discoverable = negated_bool_optional_putter_factory('discoverable_disabled', True)
 validate_discoverable = bool_validator_factory('discoverable', True)
 
-# guild_id
-
-parse_guild_id = entity_id_parser_factory('guild_id')
-put_guild_id = entity_id_putter_factory('guild_id')
-validate_guild_id = entity_id_validator_factory('guild_id', NotImplemented, include = 'Guild')
-
 # id
 
 parse_id = entity_id_parser_factory('id')
 put_id = entity_id_putter_factory('id')
-validate_id = entity_id_validator_factory('emoji_id')
+validate_id = entity_id_validator_factory('stage_id')
 
 # invite_code
 

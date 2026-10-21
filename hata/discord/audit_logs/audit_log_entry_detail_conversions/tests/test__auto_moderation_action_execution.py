@@ -69,7 +69,7 @@ def test__TRIGGER_TYPE_CONVERSION__generic():
 
 def _iter_options__trigger_type__value_deserializer():
     yield None, AutoModerationRuleTriggerType.none
-    yield AutoModerationRuleTriggerType.keyword.value, AutoModerationRuleTriggerType.keyword
+    yield str(AutoModerationRuleTriggerType.keyword.value), AutoModerationRuleTriggerType.keyword
 
 
 @vampytest._(vampytest.call_from(_iter_options__trigger_type__value_deserializer()).returning_last())
@@ -90,8 +90,8 @@ def test__TRIGGER_TYPE_CONVERSION__value_deserializer(input_value):
 
 
 def _iter_options__trigger_type__value_serializer():
-    yield AutoModerationRuleTriggerType.none, AutoModerationRuleTriggerType.none.value
-    yield AutoModerationRuleTriggerType.keyword, AutoModerationRuleTriggerType.keyword.value
+    yield AutoModerationRuleTriggerType.none, str(AutoModerationRuleTriggerType.none.value)
+    yield AutoModerationRuleTriggerType.keyword, str(AutoModerationRuleTriggerType.keyword.value)
 
 
 @vampytest._(vampytest.call_from(_iter_options__trigger_type__value_serializer()).returning_last())

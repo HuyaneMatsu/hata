@@ -33,8 +33,8 @@ class GuildEnhancementEntitlementsCreateEvent(EventBase):
         entitlements : ``None | iterable<Entitlement>``, Optional (Keyword only)
             The affected entitlements.
         
-        guild_id : ``None | int | Guild``, Optional (Keyword only)
-            The guild or its identifier where the event will be.
+        guild_id : `int`, Optional (Keyword only)
+            The guild's identifier where the event will be.
         
         Raises
         ------
@@ -191,8 +191,8 @@ class GuildEnhancementEntitlementsCreateEvent(EventBase):
         entitlements : ``None | iterable<Entitlement>``, Optional (Keyword only)
             The affected entitlements.
         
-        guild_id : ``None | int | Guild``, Optional (Keyword only)
-            The guild or its identifier where the event will be.
+        guild_id : `int`, Optional (Keyword only)
+            The guild's identifier where the event will be.
         
         Returns
         -------

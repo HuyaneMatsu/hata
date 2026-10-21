@@ -177,6 +177,8 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | max_friends                                                       | 30001     | 10000     |
 +-------------------------------------------------------------------+-----------+-----------+
+| relationship_friend_limit_reached                                 | 30002     | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | max_pins                                                          | 30003     | 250       |
 +-------------------------------------------------------------------+-----------+-----------+
 | max_recipients                                                    | 30004     | 10        |
@@ -257,6 +259,8 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | max_friend_requests                                               | 30078     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| max_allowed_use_ids                                               | 30084     | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | rate_limit_resource                                               | 31002     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | unauthorized                                                      | 40001     | -         |
@@ -274,6 +278,8 @@ Error Codes
 | feature_disabled                                                  | 40006     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | message_entity_empty                                              | 40006     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| feature_temporarily_disabled                                      | 40006     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | user_banned                                                       | 40007     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -555,7 +561,11 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | relationship_invalid_discord_tag                                  | 80004     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| relationship_invalid_not_incoming                                 | 80005     | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | relationship_already_friends                                      | 80007     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| relationship_invalid_no_common_application                        | 80009     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | relationship_invalid_not_confirmed                                | 80013     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -859,6 +869,7 @@ vanity_url_requirements_not_met = 20045
 
 max_guilds = 30001 # 100
 max_friends = 30001 # 10000
+relationship_friend_limit_reached = 30002
 max_pins = 30003 # 50
 max_recipients = 30004 # 10
 max_roles = 30005 # 250
@@ -899,6 +910,7 @@ channels_too_large = 30061
 max_published_product_listing = 30065
 max_saved_messages = 30074
 max_friend_requests = 30078
+max_allowed_use_ids = 30084
 rate_limit_resource = 31002
 
 unauthorized = 40001
@@ -907,6 +919,7 @@ rate_limit_private_channel_opening = 40003
 send_message_temporarily_disabled = 40004
 message_entity_too_large = 40005
 message_entity_empty = 40006
+feature_temporarily_disabled = 40006
 user_banned = 40007
 only_one_parent_id_can_be_modified_at_once = 40009
 connection_revoked = 40012
@@ -1051,7 +1064,9 @@ relationship_incoming_blocked = 80001
 relationship_invalid_target_bot = 80002
 relationship_invalid_target_self = 80003
 relationship_invalid_discord_tag = 80004
+relationship_invalid_not_incoming = 80005
 relationship_already_friends = 80007
+relationship_invalid_no_common_application = 80009
 relationship_invalid_not_confirmed = 80013
 
 reaction_blocked = 90001

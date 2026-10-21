@@ -1,9 +1,10 @@
 __all__ = ()
 
 from ...channel import Channel
-from ...field_parsers import entity_id_parser_factory, preinstanced_parser_factory
-from ...field_putters import entity_id_optional_putter_factory, preinstanced_putter_factory
-from ...field_validators import entity_id_validator_factory, preinstanced_validator_factory
+from ...fields.field_parsers import entity_id_parser_factory, preinstanced_parser_factory
+from ...fields.field_putters import entity_id_optional_putter_factory, preinstanced_putter_factory
+from ...fields.field_validators import entity_id_validator_factory, preinstanced_validator_factory
+from ...fields.fields_common import parse_guild_id, put_guild_id__optional as put_guild_id, validate_guild_id
 
 from .preinstanced import EmbeddedActivityLocationType
 
@@ -13,13 +14,6 @@ from .preinstanced import EmbeddedActivityLocationType
 parse_channel_id = entity_id_parser_factory('channel_id')
 put_channel_id = entity_id_optional_putter_factory('channel_id')
 validate_channel_id = entity_id_validator_factory('channel_id', Channel)
-
-
-# guild_id
-
-parse_guild_id = entity_id_parser_factory('guild_id')
-put_guild_id = entity_id_optional_putter_factory('guild_id')
-validate_guild_id = entity_id_validator_factory('guild_id', NotImplemented, include = 'Guild')
 
 
 # type

@@ -1,7 +1,7 @@
 __all__ = ()
 
 
-from ...field_validators import entity_id_validator_factory, preinstanced_validator_factory
+from ...fields.field_validators import entity_id_validator_factory, preinstanced_validator_factory
 from ...user import ClientUserBase
 
 from ..audit_log.fields import validate_guild_id

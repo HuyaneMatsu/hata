@@ -13,8 +13,10 @@ from .guild_enhancement_entitlements_delete_event import *
 from .guild_incidents import *
 from .guild_inventory_settings import *
 from .guild_join_request import *
+from .guild_join_request_create_and_update_event import *
 from .guild_join_request_delete_event import *
-from .guild_join_request_form_response import *
+from .guild_join_request_form_field_response import *
+from .guild_join_request_get_chunk_response import *
 from .guild_preview import *
 from .guild_user_chunk_event import *
 from .guild_widget import *
@@ -42,8 +44,10 @@ __all__ = (
     *guild_incidents.__all__,
     *guild_inventory_settings.__all__,
     *guild_join_request.__all__,
+    *guild_join_request_create_and_update_event.__all__,
     *guild_join_request_delete_event.__all__,
-    *guild_join_request_form_response.__all__,
+    *guild_join_request_form_field_response.__all__,
+    *guild_join_request_get_chunk_response.__all__,
     *guild_preview.__all__,
     *guild_user_chunk_event.__all__,
     *guild_widget.__all__,

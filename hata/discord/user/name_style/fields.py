@@ -1,9 +1,9 @@
 __all__ = ()
 
 from ...color import Color
-from ...field_parsers import nullable_functional_array_parser_factory, preinstanced_parser_factory
-from ...field_putters import nullable_functional_array_optional_putter_factory, preinstanced_putter_factory
-from ...field_validators import nullable_object_array_validator_factory, preinstanced_validator_factory
+from ...fields.field_parsers import nullable_functional_array_parser_factory, preinstanced_parser_factory
+from ...fields.field_putters import nullable_functional_array_optional_putter_factory, preinstanced_putter_factory
+from ...fields.field_validators import nullable_object_array_validator_factory, preinstanced_validator_factory
 
 from .preinstanced import NameStyleEffect, NameStyleFont
 

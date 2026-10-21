@@ -1,8 +1,8 @@
 __all__ = ()
 
-from ...field_parsers import bool_parser_factory
-from ...field_putters import bool_optional_putter_factory
-from ...field_validators import bool_validator_factory
+from ...fields.field_parsers import bool_parser_factory
+from ...fields.field_putters import bool_optional_putter_factory
+from ...fields.field_validators import bool_validator_factory
 
 # emoji_pack_collectible
 

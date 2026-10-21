@@ -790,7 +790,10 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         | widget_enabled                        | `bool`                                |
         +---------------------------------------+---------------------------------------+
     
-    guild_join_request_create(client: ``Client``, join_request: ``GuildJoinRequest``)
+    guild_update_badge(client: ``Client``, guild: ``Guild``, badge: ``None | GuildBadge``):
+        Called when a guild's badge is updated.
+    
+    guild_join_request_create(client: ``Client``, event: ``GuildJoinRequestCreateAndUpdateEvent``)
         Called when a user completes the verification screen of the guild, which needs an approval.
     
     guild_join_request_delete(client: ``Client``, event: ``GuildJoinRequestDeleteEvent``)
@@ -798,7 +801,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         
         > ``.guild_user_delete`` is called as well.
     
-    guild_join_request_update(client: ``Client``, join_request: ``GuildJoinRequest``)
+    guild_join_request_update(client: ``Client``, event: ``GuildJoinRequestCreateAndUpdateEvent``)
         Called when a completed verification screen is updated (approved, denied and such).
     
     guild_user_add(client: ``Client``, guild: ``Guild``, user: ``ClientUserBase``):

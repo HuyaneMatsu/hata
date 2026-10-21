@@ -28,7 +28,6 @@ PRECREATE_FIELDS = {
     'ends_at': ('ends_at', validate_ends_at),
     'entitlement_type': ('type', validate_type),
     'gift_code_flags': ('gift_code_flags', validate_gift_code_flags),
-    'guild': ('guild_id', validate_guild_id),
     'guild_id': ('guild_id', validate_guild_id),
     'promotion_id': ('promotion_id', validate_promotion_id),
     'source_type': ('source_type', validate_source_type),
@@ -37,7 +36,6 @@ PRECREATE_FIELDS = {
     'starts_at': ('starts_at', validate_starts_at),
     'subscription': ('subscription_id', validate_subscription_id),
     'subscription_id': ('subscription_id', validate_subscription_id),
-    'user': ('user_id', validate_user_id),
     'user_id': ('user_id', validate_user_id),
 }
 
@@ -110,13 +108,13 @@ class Entitlement(DiscordEntity):
         
         Parameters
         ----------
-        guild_id : ``None | int | Guild``, Optional (Keyword only)
+        guild_id : `int`, Optional (Keyword only)
             The guild's identifier that was granted access to the stock keeping unit.
     
         sku_id : ``None | int | SKU``, Optional (Keyword only)
             The stock keeping unit's identifier the this entitlement grants access to.
         
-        user_id : ``None | int | ClientUserBase``, Optional (Keyword only)
+        user_id : `int`, Optional (Keyword only)
             The user's identifier that was granted access to the stock keeping unit.
         
         Raises
@@ -432,10 +430,7 @@ class Entitlement(DiscordEntity):
         gift_code_flags : ``None | int | GiftCodeFlag``, Optional (Keyword only)
             The flags of the gift code the entitlement is created from.
         
-        guild : ``None | int | Guild``, Optional (Keyword only)
-            Alternative for `guild_id`.
-        
-        guild_id : ``None | int | Guild``, Optional (Keyword only)
+        guild_id : `int`, Optional (Keyword only)
             The guild's identifier that was granted access to the stock keeping unit.
         
         promotion_id : `int`, Optional (Keyword only)
@@ -459,10 +454,7 @@ class Entitlement(DiscordEntity):
         subscription_id : `None | int`, Optional (Keyword only)
             The subscription's identifier the entitlement is part of.
         
-        user : ``None | int | ClientUserBase``, Optional (Keyword only)
-            Alternative for `user_id`.
-        
-        user_id : ``None | int | ClientUserBase``, Optional (Keyword only)
+        user_id : `int`, Optional (Keyword only)
             The user's identifier that was granted access to the stock keeping unit.
         
         Returns
@@ -658,13 +650,13 @@ class Entitlement(DiscordEntity):
         
         Parameters
         ----------
-        guild_id : ``None | int | Guild``, Optional (Keyword only)
+        guild_id : `int`, Optional (Keyword only)
             The guild's identifier that was granted access to the stock keeping unit.
     
         sku_id : ``None | int | SKU``, Optional (Keyword only)
             The stock keeping unit's identifier the this entitlement grants access to.
         
-        user_id : ``None | int | ClientUserBase``, Optional (Keyword only)
+        user_id : `int`, Optional (Keyword only)
             The user's identifier that was granted access to the stock keeping unit.
         
         Returns

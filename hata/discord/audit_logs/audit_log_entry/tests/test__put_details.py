@@ -10,14 +10,14 @@ def _iter_options():
     
     data = {
         'options': {
-            'delete_member_days': 60,
-            'members_removed': 5
+            'delete_member_days': '60',
+            'members_removed': '5',
         }
     }
     
     details = {
         'days': 60,
-        'users_removed': 5
+        'users_removed': 5,
     }
     
     yield details, False, data

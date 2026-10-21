@@ -4,19 +4,19 @@ from ...application import Application
 from ...channel import (
     Channel, ChannelType, create_partial_channel_data, create_partial_channel_from_data, create_partial_channel_from_id
 )
-from ...field_parsers import (
+from ...fields.field_parsers import (
     bool_parser_factory, default_entity_parser_factory, entity_id_array_parser_factory, flag_parser_factory,
     force_string_parser_factory, int_parser_factory, nullable_date_time_parser_factory, nullable_entity_parser_factory,
     nullable_functional_parser_factory, nullable_int_parser_factory, preinstanced_parser_factory
 )
-from ...field_putters import (
+from ...fields.field_putters import (
     bool_optional_putter_factory, default_entity_putter_factory, entity_id_optional_putter_factory,
     entity_id_putter_factory, flag_optional_putter_factory, force_string_putter_factory, int_putter_factory,
     nullable_date_time_optional_putter_factory, nullable_entity_optional_putter_factory,
     nullable_field_optional_putter_factory, optional_entity_id_array_optional_putter_factory,
     preinstanced_putter_factory
 )
-from ...field_validators import (
+from ...fields.field_validators import (
     bool_validator_factory, default_entity_validator_factory, entity_id_array_validator_factory,
     entity_id_validator_factory, flag_validator_factory, force_string_validator_factory,
     int_conditional_validator_factory, nullable_date_time_validator_factory, nullable_entity_array_validator_factory,
@@ -32,6 +32,11 @@ from ...user import ClientUserBase, User, ZEROUSER
 
 from .flags import InviteFlag
 from .preinstanced import InviteTargetType, InviteType
+
+
+# allowed_user_id
+
+validate_allowed_user_id = entity_id_validator_factory('allowed_user_id', ClientUserBase)
 
 
 # allowed_user_ids

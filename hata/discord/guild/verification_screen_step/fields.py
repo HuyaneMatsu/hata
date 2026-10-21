@@ -1,30 +1,21 @@
 __all__ = ()
 
-from ...field_parsers import (
-    bool_parser_factory, force_string_parser_factory, nullable_array_parser_factory, preinstanced_parser_factory
+from ...fields.field_parsers import nullable_array_parser_factory, preinstanced_parser_factory
+from ...fields.field_putters import nullable_string_array_optional_putter_factory, preinstanced_putter_factory
+from ...fields.field_validators import (
+    force_string_validator_factory, nullable_string_array_validator_factory, preinstanced_validator_factory
 )
-from ...field_putters import (
-    bool_optional_putter_factory, force_string_putter_factory, nullable_string_array_optional_putter_factory,
-    preinstanced_putter_factory
-)
-from ...field_validators import (
-    bool_validator_factory, force_string_validator_factory, nullable_string_array_validator_factory,
-    preinstanced_validator_factory
+from ...fields.fields_common import (
+    parse_required, parse_title__from_label as parse_title, put_required__optional as put_required,
+    put_title__to_label as put_title, validate_required
 )
 
 from .constants import TITLE_LENGTH_MAX
 from .preinstanced import VerificationScreenStepType
 
-# required
-
-parse_required = bool_parser_factory('required', False)
-put_required = bool_optional_putter_factory('required', False)
-validate_required = bool_validator_factory('required', False)
 
 # title
 
-parse_title = force_string_parser_factory('label')
-put_title = force_string_putter_factory('label')
 validate_title = force_string_validator_factory('title', 0, TITLE_LENGTH_MAX)
 
 # type

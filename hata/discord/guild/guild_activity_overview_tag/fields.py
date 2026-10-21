@@ -1,9 +1,8 @@
 __all__ = ()
 
 from ...emoji import Emoji, create_partial_emoji_from_inline_data, put_partial_emoji_inline_data_into
-from ...field_parsers import force_string_parser_factory
-from ...field_putters import force_string_putter_factory
-from ...field_validators import force_string_validator_factory, nullable_entity_validator_factory
+from ...fields.field_validators import force_string_validator_factory, nullable_entity_validator_factory
+from ...fields.fields_common import parse_title__from_label as parse_title, put_title__to_label as put_title
 
 from .constants import TITLE_LENGTH_MAX, TITLE_LENGTH_MIN
 
@@ -42,6 +41,4 @@ validate_emoji = nullable_entity_validator_factory('emoji', Emoji)
 
 # title
 
-parse_title = force_string_parser_factory('label')
-put_title = force_string_putter_factory('label')
 validate_title = force_string_validator_factory('title', TITLE_LENGTH_MIN, TITLE_LENGTH_MAX)

@@ -32,7 +32,7 @@ class SoundboardSoundsEvent(EventBase):
         
         Parameters
         ----------
-        guild_id : `int`, ``Guild``, Optional (Keyword only)
+        guild_id : `int`, Optional (Keyword only)
             The guild's identifier that the event represents.
         sounds : `None`, `iterable` of ``SoundboardSound``, Optional (Keyword only)
             The responded sounds.
@@ -216,7 +216,7 @@ class SoundboardSoundsEvent(EventBase):
         
         Parameters
         ----------
-        guild_id : `int`, ``Guild``, Optional (Keyword only)
+        guild_id : `int`, Optional (Keyword only)
             The guild's identifier that the event represents.
         sounds : `None`, `iterable` of ``SoundboardSound``, Optional (Keyword only)
             The responded sounds.

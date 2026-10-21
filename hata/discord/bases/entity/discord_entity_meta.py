@@ -1,6 +1,6 @@
 __all__ = ()
 
-from scarletio import RICH_TYPE_FEATURE_FLAG_ATTRIBUTE_ERROR, RichType
+from scarletio import RICH_TYPE_FEATURE_FLAG_ATTRIBUTE_ERROR, RICH_TYPE_FEATURE_FLAG_REPRESENTATION, RichType
 
 from ..place_holder import PlaceHolder
 
@@ -81,5 +81,5 @@ class DiscordEntityMeta(Slotted):
             type_name,
             type_parents,
             type_attributes,
-            rich_type_feature_flags = RICH_TYPE_FEATURE_FLAG_ATTRIBUTE_ERROR,
+            rich_type_feature_flags = RICH_TYPE_FEATURE_FLAG_ATTRIBUTE_ERROR | RICH_TYPE_FEATURE_FLAG_REPRESENTATION,
         )

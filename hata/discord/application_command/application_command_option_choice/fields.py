@@ -3,8 +3,8 @@ __all__ = ()
 from enum import Enum
 from functools import partial as partial_func
 
-from ...field_parsers import field_parser_factory, force_string_parser_factory, nullable_functional_parser_factory
-from ...field_putters import (
+from ...fields.field_parsers import field_parser_factory, force_string_parser_factory, nullable_functional_parser_factory
+from ...fields.field_putters import (
     field_putter_factory, force_string_putter_factory, nullable_functional_optional_putter_factory
 )
 from ...localization.helpers import localized_dictionary_builder

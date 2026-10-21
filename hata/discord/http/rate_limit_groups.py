@@ -130,6 +130,12 @@ Shared Groups
     - Limit : `15`
     - Resets after : `5.0`
 
+- GROUP_INVITE_ALLOWED_USER_ID_OPERATE_MANY
+    - Used by : `invite_allowed_user_id_add_many`, `invite_allowed_user_id_delete_many`
+    - Limiter : `GLOBAL`
+    - Limit : `3`
+    - Resets after : `5`
+
 
 Group Details
 -----------
@@ -1550,6 +1556,22 @@ Group Details
     - Limit : `OPT`
     - Resets after : `OPT`
 
+- guild_join_request_get_chunk
+    - Endpoint : `/guilds/{guild_id}/requests`
+    - Method : `GET`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `6`
+    - Resets after : `5`
+
+- guild_join_request_action
+    - Endpoint : `/guilds/{guild_id}/requests/{guild_join_request_id}`
+    - Method : `PATCH`
+    - Required auth : `bot`
+    - Limiter : `UNLIMITED`
+    - Limit : `UNLIMITED`
+    - Resets after : `UNLIMITED`
+
 - guild_role_get_all
     - Endpoint : `/guilds/{guild_id}/roles`
     - Method : `GET`
@@ -1928,6 +1950,38 @@ Group Details
     - Limiter : `GLOBAL`
     - Limit : `3`
     - Resets after : `5`
+
+- invite_allowed_user_id_delete
+    - Endpoint : `/invites/{invite_code}/target-users/{allowed_user_id}`
+    - Method : `DELETE`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `10`
+    - Resets after : `5`
+
+- invite_allowed_user_id_add
+    - Endpoint : `/invites/{invite_code}/target-users/{allowed_user_id}`
+    - Method : `PUT`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `3`
+    - Resets after : `5`
+
+- invite_allowed_user_id_add_many
+    - Endpoint : `/invites/{invite_code}/target-users/bulk-add`
+    - Method : `POST`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `3`
+    - Resets after : `4`
+
+- invite_allowed_user_id_delete_many
+    - Endpoint : `/invites/{invite_code}/target-users/bulk-delete`
+    - Method : `POST`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `6`
+    - Resets after : `30`
 
 - invite_allowed_user_ids_get_status
     - Endpoint : `/invites/{invite_code}/target-users/job-status`
@@ -2412,6 +2466,7 @@ GROUP_THREAD_CREATE = RateLimitGroup()
 GROUP_THREAD_ACTION = RateLimitGroup()
 GROUP_ENTITLEMENT_ACTION = RateLimitGroup()
 GROUP_VOICE_STATE_ACTION = RateLimitGroup()
+GROUP_INVITE_ALLOWED_USER_ID_OPERATE_MANY = RateLimitGroup()
 
 oauth2_token = RateLimitGroup(optimistic = True)
 application_get = RateLimitGroup().unlimited()
@@ -2581,6 +2636,8 @@ guild_activity_overview_edit = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 guild_prune_estimate = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 guild_prune = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 guild_voice_region_get_all = RateLimitGroup(LIMITER_GUILD, optimistic = True)
+guild_join_request_get_chunk = RateLimitGroup()
+guild_join_request_action = RateLimitGroup.unlimited()
 guild_role_get_all = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 role_move = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 role_create = RateLimitGroup(LIMITER_GUILD)
@@ -2627,6 +2684,10 @@ invite_get = RateLimitGroup()
 invite_allowed_user_ids_get = RateLimitGroup()
 invite_allowed_user_ids_edit = RateLimitGroup()
 invite_allowed_user_ids_get_status = RateLimitGroup()
+invite_allowed_user_id_add = RateLimitGroup()
+invite_allowed_user_id_delete = RateLimitGroup()
+invite_allowed_user_id_add_many = GROUP_INVITE_ALLOWED_USER_ID_OPERATE_MANY
+invite_allowed_user_id_delete_many = GROUP_INVITE_ALLOWED_USER_ID_OPERATE_MANY
 oauth2_application_get_own = RateLimitGroup(optimistic = True)
 bulk_ack = RateLimitGroup(optimistic = True) # untested
 subscription_get_chunk_sku_user = RateLimitGroup()

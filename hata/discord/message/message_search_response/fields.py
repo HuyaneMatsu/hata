@@ -1,9 +1,9 @@
 __all__ = ()
 
 from ...channel import Channel
-from ...field_parsers import bool_parser_factory, int_parser_factory
-from ...field_putters import bool_optional_putter_factory, int_putter_factory
-from ...field_validators import (
+from ...fields.field_parsers import bool_parser_factory, int_parser_factory
+from ...fields.field_putters import bool_optional_putter_factory, int_putter_factory
+from ...fields.field_validators import (
     bool_validator_factory, int_conditional_validator_factory, nullable_entity_array_validator_factory,
     nullable_object_array_validator_factory
 )

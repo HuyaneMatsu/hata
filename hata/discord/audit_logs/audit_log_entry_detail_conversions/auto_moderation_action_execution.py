@@ -9,6 +9,8 @@ from ..conversion_helpers.converters import (
     value_deserializer_id, value_deserializer_name, value_serializer_id, value_serializer_name
 )
 
+from .helpers import convert_string_to_integer
+
 
 # ---- channel_id ----
 
@@ -41,12 +43,12 @@ TRIGGER_TYPE_CONVERSION = AuditLogEntryDetailConversion(
 
 @TRIGGER_TYPE_CONVERSION.set_value_deserializer
 def trigger_type_value_deserializer(value):
-    return AutoModerationRuleTriggerType(value)
+    return AutoModerationRuleTriggerType(convert_string_to_integer(value))
 
 
 @TRIGGER_TYPE_CONVERSION.set_value_serializer
 def trigger_type_value_serializer(value):
-    return value.value
+    return str(value.value)
 
 
 # ---- Construct ----

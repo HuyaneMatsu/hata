@@ -1,8 +1,8 @@
 __all__ = ()
 
-from ...field_parsers import bool_parser_factory, nullable_string_parser_factory
-from ...field_putters import bool_optional_putter_factory, nullable_string_putter_factory
-from ...field_validators import bool_validator_factory
+from ...fields.field_parsers import bool_parser_factory, nullable_string_parser_factory
+from ...fields.field_putters import bool_optional_putter_factory, nullable_string_putter_factory
+from ...fields.field_validators import bool_validator_factory
 
 from .constants import NAME_LENGTH_MAX, VALUE_LENGTH_MAX
 

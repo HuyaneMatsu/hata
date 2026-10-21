@@ -1,12 +1,12 @@
 __all__ = ()
 
-from ...field_parsers import entity_id_parser_factory, force_string_parser_factory, nullable_string_parser_factory
-from ...field_putters import (
-    entity_id_optional_putter_factory, entity_id_putter_factory, force_string_putter_factory,
-    nullable_string_putter_factory
+from ...fields.field_parsers import entity_id_parser_factory, force_string_parser_factory
+from ...fields.field_putters import (
+    entity_id_optional_putter_factory, entity_id_putter_factory, force_string_putter_factory
 )
-from ...field_validators import (
-    entity_id_validator_factory, force_string_validator_factory, nullable_string_validator_factory
+from ...fields.field_validators import entity_id_validator_factory, force_string_validator_factory
+from ...fields.fields_common import (
+    parse_description, put_description, validate_description__range_0_1024 as validate_description
 )
 
 from ..sticker import Sticker
@@ -22,12 +22,6 @@ validate_banner_id = entity_id_validator_factory('banner_id')
 parse_cover_sticker_id = entity_id_parser_factory('cover_sticker_id')
 put_cover_sticker_id = entity_id_optional_putter_factory('cover_sticker_id')
 validate_cover_sticker_id = entity_id_validator_factory('cover_sticker_id', Sticker)
-
-# description
-
-parse_description = nullable_string_parser_factory('description')
-put_description = nullable_string_putter_factory('description')
-validate_description = nullable_string_validator_factory('description', 0, 1024)
 
 # id
 

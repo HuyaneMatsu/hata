@@ -1,10 +1,10 @@
 __all__ = ()
 
-from ...field_parsers import bool_parser_factory, entity_id_parser_factory, force_string_parser_factory
-from ...field_putters import entity_id_putter_factory, force_bool_putter_factory, force_string_putter_factory
-from ...field_validators import bool_validator_factory, entity_id_validator_factory, force_string_validator_factory
-
-from ..guild import Guild
+from ...fields.field_parsers import bool_parser_factory, entity_id_parser_factory, force_string_parser_factory
+from ...fields.field_putters import entity_id_putter_factory, force_bool_putter_factory, force_string_putter_factory
+from ...fields.field_validators import (
+    bool_validator_factory, entity_id_validator_factory, force_string_validator_factory
+)
 
 from .constants import BADGE_TAG_LENGTH_MAX, BADGE_TAG_LENGTH_MIN
 
@@ -18,7 +18,7 @@ validate_enabled = bool_validator_factory('enabled', True)
 
 parse_guild_id = entity_id_parser_factory('identity_guild_id')
 put_guild_id = entity_id_putter_factory('identity_guild_id')
-validate_guild_id = entity_id_validator_factory('guild_id', Guild)
+validate_guild_id = entity_id_validator_factory('guild_id')
 
 # tag
 

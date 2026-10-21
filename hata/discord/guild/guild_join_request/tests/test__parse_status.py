@@ -9,6 +9,7 @@ def _iter_options():
         {},
         GuildJoinRequestStatus.started,
     )
+    
     yield (
         {
             'application_status': None,
@@ -26,18 +27,6 @@ def _iter_options():
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
 def test__parse_status(input_data):
-    """
-    Tests whether ``parse_status`` works as intended.
-    
-    Parameters
-    ----------
-    input_data : `dict<str, object>`
-        Data to parse from.
-        
-    Returns
-    -------
-    output : ``GuildJoinRequestStatus``
-    """
     output = parse_status(input_data)
     vampytest.assert_instance(output, GuildJoinRequestStatus)
     return output

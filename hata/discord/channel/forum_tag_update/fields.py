@@ -1,6 +1,6 @@
 __all__ = ()
 
-from ...field_validators import entity_validator_factory
+from ...fields.field_validators import entity_validator_factory
 
 from ..forum_tag import ForumTag
 

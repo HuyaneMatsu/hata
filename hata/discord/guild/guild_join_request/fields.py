@@ -1,24 +1,25 @@
 __all__ = ()
 
-from ...field_parsers import (
-    default_entity_parser_factory, entity_id_parser_factory, nullable_date_time_parser_factory,
-    nullable_entity_parser_factory, nullable_object_array_parser_factory, nullable_string_parser_factory,
-    preinstanced_parser_factory
+from ...fields.field_parsers import (
+    entity_id_parser_factory, nullable_date_time_parser_factory, nullable_entity_parser_factory,
+    nullable_functional_array_parser_factory, nullable_string_parser_factory, preinstanced_parser_factory
 )
-from ...field_putters import (
-    entity_id_putter_factory, entity_putter_factory, nullable_date_time_optional_putter_factory,
-    nullable_entity_optional_putter_factory, nullable_object_array_optional_putter_factory, preinstanced_putter_factory,
+from ...fields.field_putters import (
+    entity_id_putter_factory, nullable_date_time_optional_putter_factory, nullable_entity_optional_putter_factory,
+    nullable_functional_array_optional_putter_factory_with_defaults, preinstanced_putter_factory,
     url_optional_putter_factory
 )
-from ...field_validators import (
-    default_entity_validator_factory, entity_id_validator_factory, nullable_date_time_validator_factory,
-    nullable_entity_validator_factory, nullable_object_array_validator_factory, nullable_string_validator_factory,
-    preinstanced_validator_factory
+from ...fields.field_validators import (
+    entity_id_validator_factory, nullable_date_time_validator_factory, nullable_entity_validator_factory,
+    nullable_object_array_validator_factory, nullable_string_validator_factory, preinstanced_validator_factory
 )
-from ...user import ClientUserBase, User, ZEROUSER
+from ...fields.fields_common import (
+    parse_guild_id, parse_user_id, put_guild_id, put_user_id, validate_guild_id, validate_user_id
+)
+from ...user import ClientUserBase, User
 
-from ..guild import Guild
-from ..guild_join_request_form_response import GuildJoinRequestFormResponse
+from ..guild_join_request_form_field_response import guild_join_request_form_field_response_create_from_data, \
+    GuildJoinRequestFormFieldResponse, guild_join_request_form_field_response_convert_to_data
 
 from .preinstanced import GuildJoinRequestStatus
 
@@ -40,17 +41,26 @@ parse_created_at = nullable_date_time_parser_factory('created_at')
 put_created_at = nullable_date_time_optional_putter_factory('created_at')
 validate_created_at = nullable_date_time_validator_factory('created_at')
 
-# form_responses
 
-parse_form_responses = nullable_object_array_parser_factory('form_responses', GuildJoinRequestFormResponse)
-put_form_responses = nullable_object_array_optional_putter_factory('form_responses')
-validate_form_responses = nullable_object_array_validator_factory('form_responses', GuildJoinRequestFormResponse)
+# form_field_responses
 
-# guild_id
+parse_form_field_responses = nullable_functional_array_parser_factory(
+    'form_responses', guild_join_request_form_field_response_create_from_data
+)
+put_form_field_responses = nullable_functional_array_optional_putter_factory_with_defaults(
+    'form_responses', guild_join_request_form_field_response_convert_to_data
+)
+validate_form_field_responses = nullable_object_array_validator_factory(
+    'form_field_responses', GuildJoinRequestFormFieldResponse
+)
 
-parse_guild_id = entity_id_parser_factory('guild_id')
-put_guild_id = entity_id_putter_factory('guild_id')
-validate_guild_id = entity_id_validator_factory('guild_id', Guild)
+
+# id
+
+parse_id = entity_id_parser_factory('id')
+put_id = entity_id_putter_factory('id')
+validate_id = entity_id_validator_factory('guild_join_request_id')
+
 
 # last_seen_at
 
@@ -72,10 +82,6 @@ validate_status = preinstanced_validator_factory('application_status', GuildJoin
 
 # user
 
-parse_user = default_entity_parser_factory('user', User, default = ZEROUSER)
-put_user = entity_putter_factory('user', ClientUserBase, force_include_internals = True)
-validate_user = default_entity_validator_factory('user', ClientUserBase, default = ZEROUSER)
-
-# user_id
-
-put_user_id = entity_id_putter_factory('user_id')
+parse_user = nullable_entity_parser_factory('user', User)
+put_user = nullable_entity_optional_putter_factory('user', ClientUserBase, force_include_internals = True)
+validate_user = nullable_entity_validator_factory('user', ClientUserBase)

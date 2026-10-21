@@ -1,18 +1,21 @@
 __all__ = ()
 
-from ...field_parsers import (
+from ...fields.field_parsers import (
     bool_parser_factory, default_entity_parser_factory, entity_id_parser_factory, force_string_parser_factory,
     int_parser_factory, nullable_string_parser_factory, preinstanced_parser_factory
 )
-from ...field_putters import (
+from ...fields.field_putters import (
     bool_optional_putter_factory, default_entity_putter_factory, entity_id_optional_putter_factory,
     entity_id_putter_factory, force_string_putter_factory, int_putter_factory, nullable_string_putter_factory, 
     preinstanced_putter_factory
 )
-from ...field_validators import (
+from ...fields.field_validators import (
     bool_validator_factory, default_entity_validator_factory, entity_id_validator_factory,
     force_string_validator_factory, int_conditional_validator_factory, nullable_string_validator_factory,
     preinstanced_validator_factory
+)
+from ...fields.fields_common import (
+    parse_description, parse_guild_id, put_description, put_guild_id__optional as put_guild_id, validate_guild_id
 )
 from ...user import ClientUserBase, User, ZEROUSER
 
@@ -28,23 +31,17 @@ parse_available = bool_parser_factory('available', True)
 put_available = bool_optional_putter_factory('available', True)
 validate_available = bool_validator_factory('available', True)
 
+
 # description 
 
-parse_description = nullable_string_parser_factory('description')
-put_description = nullable_string_putter_factory('description')
 validate_description = nullable_string_validator_factory('description', DESCRIPTION_LENGTH_MIN, DESCRIPTION_LENGTH_MAX)
+
 
 # format
 
 parse_format = preinstanced_parser_factory('format_type', StickerFormat, StickerFormat.none)
 put_format = preinstanced_putter_factory('format_type')
 validate_format = preinstanced_validator_factory('format', StickerFormat)
-
-# guild_id
-
-parse_guild_id = entity_id_parser_factory('guild_id')
-put_guild_id = entity_id_optional_putter_factory('guild_id')
-validate_guild_id = entity_id_validator_factory('guild_id', NotImplemented, include = 'Guild')
 
 # id
 

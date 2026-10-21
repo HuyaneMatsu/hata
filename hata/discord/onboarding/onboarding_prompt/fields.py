@@ -1,17 +1,18 @@
 __all__ = ()
 
-from ...field_parsers import (
+from ...fields.field_parsers import (
     bool_parser_factory, entity_id_parser_factory, force_string_parser_factory, nullable_object_array_parser_factory,
     preinstanced_parser_factory
 )
-from ...field_putters import (
+from ...fields.field_putters import (
     entity_id_putter_factory, force_bool_putter_factory, force_string_putter_factory,
     nullable_entity_array_putter_factory, preinstanced_putter_factory
 )
-from ...field_validators import (
+from ...fields.field_validators import (
     bool_validator_factory, entity_id_validator_factory, force_string_validator_factory,
     nullable_object_array_validator_factory, preinstanced_validator_factory
 )
+from ...fields.fields_common import parse_required, put_required, validate_required
 
 from ..onboarding_prompt_option import OnboardingPromptOption
 
@@ -41,11 +42,6 @@ parse_options = nullable_object_array_parser_factory('options', OnboardingPrompt
 put_options = nullable_entity_array_putter_factory('options', OnboardingPromptOption)
 validate_options = nullable_object_array_validator_factory('options', OnboardingPromptOption)
 
-# required
-
-parse_required = bool_parser_factory('required', False)
-put_required = force_bool_putter_factory('required')
-validate_required = bool_validator_factory('required', False)
 
 # single_select
 

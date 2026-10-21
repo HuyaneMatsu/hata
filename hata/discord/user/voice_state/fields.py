@@ -1,17 +1,19 @@
 __all__ = ()
 
-from ...field_parsers import (
+from ...fields.field_parsers import (
     bool_parser_factory, entity_id_parser_factory, force_string_parser_factory, negated_bool_parser_factory,
     nullable_date_time_parser_factory
 )
-from ...field_putters import (
+from ...fields.field_putters import (
     bool_optional_putter_factory, entity_id_putter_factory, force_bool_putter_factory, force_string_putter_factory,
     negated_bool_optional_putter_factory, nullable_date_time_optional_putter_factory
 )
-from ...field_validators import (
+from ...fields.field_validators import (
     bool_validator_factory, entity_id_validator_factory, force_string_validator_factory,
     nullable_date_time_validator_factory
 )
+from ...fields.fields_common import parse_user_id, put_user_id, validate_user_id
+
 from ..user import ClientUserBase, User
 
 # channel_id
@@ -77,12 +79,6 @@ validate_session_id = force_string_validator_factory('session_id', 0, 1024)
 parse_speaker = negated_bool_parser_factory('suppress', False)
 put_speaker = negated_bool_optional_putter_factory('suppress', False)
 validate_speaker = bool_validator_factory('speaker', False)
-
-# user_id
-
-parse_user_id = entity_id_parser_factory('user_id')
-put_user_id = entity_id_putter_factory('user_id')
-validate_user_id = entity_id_validator_factory('user_id', ClientUserBase)
 
 # user
 

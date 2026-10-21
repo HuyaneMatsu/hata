@@ -2,7 +2,7 @@ import vampytest
 
 from ....integration import IntegrationType
 from ....integration.integration.fields import validate_type as validate_integration_type
-from ....user.voice_state.fields import validate_channel_id
+from ....user.voice_state.fields import validate_channel_id, validate_user_id
 
 from ...audit_log_entry_detail_conversion.tests.test__AuditLogEntryDetailConversion import (
     _assert_fields_set as _assert_conversion_fields_set
@@ -12,9 +12,12 @@ from ...audit_log_entry_detail_conversion.tests.test__AuditLogEntryDetailConvers
 )
 from ...conversion_helpers.converters import value_deserializer_id, value_serializer_id
 
+from ..helpers import (
+    convert_string_to_boolean, convert_string_to_integer, serialise_boolean_to_string, serialise_integer_to_string
+)
 from ..user import (
     CHANNEL_ID_CONVERSION, COUNT_CONVERSION, DELETE_MESSAGE_DURATION_CONVERSION, INTEGRATION_TYPE_CONVERSION,
-    USER_CONVERSIONS
+    USER_CONVERSIONS, UNIQUE_COUNT_CONVERSION, UNIQUE_COUNT_OVERFLOWN_CONVERSION, USER_ID_CONVERSION
 )
 
 
@@ -25,7 +28,10 @@ def test__USER_CONVERSIONS():
     _assert_conversion_group_fields_set(USER_CONVERSIONS)
     vampytest.assert_eq(
         {conversion.field_key for conversion in USER_CONVERSIONS.conversions},
-        {'delete_message_seconds', 'delete_message_days', 'count', 'integration_type', 'channel_id'},
+        {
+            'delete_message_seconds', 'delete_message_days', 'count', 'integration_type', 'channel_id', 'member_id',
+            'unique_count', 'unique_overflow',
+        },
     )
 
 
@@ -48,31 +54,8 @@ def test__COUNT_CONVERSION__generic():
     Tests whether ``COUNT_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(COUNT_CONVERSION)
-    vampytest.assert_is(COUNT_CONVERSION.value_serializer, None)
-
-
-def _iter_options__count__value_deserializer():
-    count = 123
-    yield 0, 0
-    yield count, count
-    yield None, 0
-
-
-@vampytest._(vampytest.call_from(_iter_options__count__value_deserializer()).returning_last())
-def test__COUNT_CONVERSION__value_deserializer(input_value):
-    """
-    Tests whether `COUNT_CONVERSION.value_deserializer` works as intended.
-    
-    Parameters
-    ----------
-    input_value : `int`
-        Raw value.
-    
-    Returns
-    -------
-    output : `int`
-    """
-    return COUNT_CONVERSION.value_deserializer(input_value)
+    vampytest.assert_is(DELETE_MESSAGE_DURATION_CONVERSION.value_deserializer, convert_string_to_integer)
+    vampytest.assert_is(DELETE_MESSAGE_DURATION_CONVERSION.value_serializer, serialise_integer_to_string)
 
 
 def _iter_options__count__value_validator__passing():
@@ -120,31 +103,8 @@ def test__DELETE_MESSAGE_DURATION_CONVERSION__generic():
     Tests whether ``DELETE_MESSAGE_DURATION_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(DELETE_MESSAGE_DURATION_CONVERSION)
-    vampytest.assert_is(DELETE_MESSAGE_DURATION_CONVERSION.value_serializer, None)
-
-
-def _iter_options__delete_message_duration__value_deserializer():
-    delete_message_duration = 123
-    yield 0, 0
-    yield delete_message_duration, delete_message_duration
-    yield None, 0
-
-
-@vampytest._(vampytest.call_from(_iter_options__delete_message_duration__value_deserializer()).returning_last())
-def test__DELETE_MESSAGE_DURATION_CONVERSION__value_deserializer(input_value):
-    """
-    Tests whether `DELETE_MESSAGE_DURATION_CONVERSION.value_deserializer` works as intended.
-    
-    Parameters
-    ----------
-    input_value : `int`
-        Raw value.
-    
-    Returns
-    -------
-    output : `int`
-    """
-    return DELETE_MESSAGE_DURATION_CONVERSION.value_deserializer(input_value)
+    vampytest.assert_is(DELETE_MESSAGE_DURATION_CONVERSION.value_deserializer, convert_string_to_integer)
+    vampytest.assert_is(DELETE_MESSAGE_DURATION_CONVERSION.value_serializer, serialise_integer_to_string)
 
 
 def _iter_options__delete_message_duration__value_validator__passing():
@@ -243,3 +203,73 @@ def test__INTEGRATION_TYPE_CONVERSION__value_serializer(input_value):
     output : `str`
     """
     return INTEGRATION_TYPE_CONVERSION.value_serializer(input_value)
+
+
+# ---- unique_count ----
+
+def test__UNIQUE_COUNT_CONVERSION__generic():
+    """
+    Tests whether ``UNIQUE_COUNT_CONVERSION`` works as intended.
+    """
+    _assert_conversion_fields_set(UNIQUE_COUNT_CONVERSION)
+    vampytest.assert_is(UNIQUE_COUNT_CONVERSION.value_deserializer, convert_string_to_integer)
+    vampytest.assert_is(UNIQUE_COUNT_CONVERSION.value_serializer, serialise_integer_to_string)
+
+
+def _iter_options__unique_count__value_validator__passing():
+    yield 0, 0
+    yield 1123, 1123
+
+
+def _iter_options__unique_count__value_validator__type_error():
+    yield 12.6
+
+
+def _iter_options__unique_count__value_validator__value_error():
+    yield -12
+
+
+@vampytest._(vampytest.call_from(_iter_options__unique_count__value_validator__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__unique_count__value_validator__type_error()).raising(TypeError))
+@vampytest._(vampytest.call_from(_iter_options__unique_count__value_validator__value_error()).raising(ValueError))
+def test__UNIQUE_COUNT_CONVERSION__value_validator(input_value):
+    return UNIQUE_COUNT_CONVERSION.value_validator(input_value)
+
+
+# ---- unique_count_overflown ----
+
+def test__UNIQUE_COUNT_OVERFLOWN_CONVERSION__generic():
+    """
+    Tests whether ``UNIQUE_COUNT_OVERFLOWN_CONVERSION`` works as intended.
+    """
+    _assert_conversion_fields_set(UNIQUE_COUNT_OVERFLOWN_CONVERSION)
+    vampytest.assert_is(UNIQUE_COUNT_OVERFLOWN_CONVERSION.value_deserializer, convert_string_to_boolean)
+    vampytest.assert_is(UNIQUE_COUNT_OVERFLOWN_CONVERSION.value_serializer, serialise_boolean_to_string)
+
+
+def _iter_options__unique_count_overflown__value_validator__passing():
+    yield False, False
+    yield True, True
+
+
+def _iter_options__unique_count_overflown__value_validator__type_error():
+    yield 12.6
+
+
+
+@vampytest._(vampytest.call_from(_iter_options__unique_count_overflown__value_validator__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__unique_count_overflown__value_validator__type_error()).raising(TypeError))
+def test__UNIQUE_COUNT_OVERFLOWN_CONVERSION__value_validator(input_value):
+    return UNIQUE_COUNT_OVERFLOWN_CONVERSION.value_validator(input_value)
+
+
+# ---- user_id ----
+
+def test__USER_ID_CONVERSION__generic():
+    """
+    Tests whether ``USER_ID_CONVERSION`` works as intended.
+    """
+    _assert_conversion_fields_set(USER_ID_CONVERSION)
+    vampytest.assert_is(USER_ID_CONVERSION.value_deserializer, value_deserializer_id)
+    vampytest.assert_is(USER_ID_CONVERSION.value_serializer, value_serializer_id)
+    vampytest.assert_is(USER_ID_CONVERSION.value_validator, validate_user_id)

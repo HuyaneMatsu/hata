@@ -2,17 +2,16 @@ __all__ = ()
 
 from functools import partial as partial_func
 
-from ...field_parsers import (
-    force_string_parser_factory, nullable_functional_parser_factory, nullable_string_parser_factory,
-    preinstanced_parser_factory
+from ...fields.field_parsers import (
+    force_string_parser_factory, nullable_functional_parser_factory, preinstanced_parser_factory
 )
-from ...field_putters import (
-    force_string_putter_factory, nullable_functional_optional_putter_factory, nullable_string_putter_factory,
-    preinstanced_putter_factory
+from ...fields.field_putters import (
+    force_string_putter_factory, nullable_functional_optional_putter_factory, preinstanced_putter_factory
 )
-from ...field_validators import (
+from ...fields.field_validators import (
     force_string_validator_factory, nullable_string_validator_factory, preinstanced_validator_factory
 )
+from ...fields.fields_common import parse_description, put_description
 from ...localization.helpers import localized_dictionary_builder
 from ...localization.utils import build_locale_dictionary, destroy_locale_dictionary
 
@@ -21,11 +20,11 @@ from .constants import (
 )
 from .preinstanced import ApplicationRoleConnectionMetadataType
 
+
 # description 
 
-parse_description = nullable_string_parser_factory('description')
-put_description = nullable_string_putter_factory('description')
 validate_description = nullable_string_validator_factory('description', DESCRIPTION_LENGTH_MIN, DESCRIPTION_LENGTH_MAX)
+
 
 # description_localizations
 
